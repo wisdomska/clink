@@ -8,6 +8,7 @@ import {
   capsuleUnlock,
   accountDeletion,
   exportCleanup,
+  milestones,
 } from "@/lib/server/jobs";
 
 export const maxDuration = 60;
@@ -40,6 +41,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ job: strin
   } else if (job === "daily") {
     await run("account-deletion", accountDeletion);
     await run("export-cleanup", exportCleanup);
+    await run("milestones", milestones);
   } else {
     return NextResponse.json({ error: "unknown_job" }, { status: 404 });
   }

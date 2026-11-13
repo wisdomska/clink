@@ -5,6 +5,7 @@ import { notify } from "@/lib/server/push";
 import { executeWipe } from "@/lib/server/wipe";
 import { audit } from "@/lib/server/api";
 import { wallTime } from "@/lib/time";
+import { reachedMilestones } from "@/lib/milestones";
 
 /** expire-media: files past expires_at, and View once items closed over 60 s ago. Verified gone. */
 export async function expireMedia() {
@@ -206,4 +207,39 @@ export async function exportCleanup() {
         data.map((d) => d.id),
       );
   return { removed: paths.length };
+}
+
+/** milestones (KEEP-03, ACC-06): 100 days, 500, 1000 and each anniversary on the timeline. */
+export async function milestones() {
+  const admin = supabaseAdmin();
+  const today = new Date().toISOString().slice(0, 10);
+  let added = 0;
+  for (let from = 0; ; from += 500) {
+    const { data: couples } = await admin
+      .from("couples")
+      .select("id, started_on, linked_at")
+      .is("unlinked_at", null)
+      .range(from, from + 499);
+    if (!couples?.length) break;
+    const rows = couples.flatMap((c) =>
+      reachedMilestones(c.started_on ?? c.linked_at.slice(0, 10), today, Boolean(c.started_on)).map(
+        (m) => ({
+          couple_id: c.id,
+          kind: "auto",
+          title: m.title,
+          happened_on: m.date,
+          source_key: m.key,
+        }),
+      ),
+    );
+    if (rows.length) {
+      const { data } = await admin
+        .from("timeline_entries")
+        .upsert(rows, { onConflict: "couple_id,source_key", ignoreDuplicates: true })
+        .select("id");
+      added += data?.length ?? 0;
+    }
+    if (couples.length < 500) break;
+  }
+  return { added };
 }

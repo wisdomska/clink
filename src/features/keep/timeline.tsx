@@ -6,6 +6,7 @@ import { useCouple } from "@/features/couple/context";
 import { IconButton } from "@/components/ui/button";
 import { Display, Mono } from "@/components/ui/heading";
 import { useKeep, tagDate } from "./data";
+import { nextAnniversary } from "@/lib/milestones";
 
 /** KEEP-03 full timeline: auto milestones plus manual entries with photos. */
 export function TimelineScreen() {
@@ -14,6 +15,9 @@ export function TimelineScreen() {
   const { data } = useKeep();
   const [now] = useState(() => Date.now());
   const days = Math.floor((now - new Date(startedOn ?? linkedAt).getTime()) / 86400000);
+  const anniversary = startedOn
+    ? nextAnniversary(startedOn, new Date(now).toISOString().slice(0, 10))
+    : null;
   return (
     <div className="screen an-screen flex max-w-[720px] flex-col gap-5">
       <IconButton label="Back" onClick={() => router.push("/keep")}>
@@ -24,6 +28,13 @@ export function TimelineScreen() {
         <p className="mono text-muted m-0 mt-1 text-sm">
           DAY {days.toLocaleString("en-GB")} {startedOn ? "TOGETHER" : "ON CLINK"}
         </p>
+        {anniversary && (
+          <p className="text-muted m-0 mt-1 text-sm">
+            {anniversary.inDays === 0
+              ? "Happy anniversary."
+              : `${anniversary.years === 1 ? "First" : `Year ${anniversary.years}`} anniversary in ${anniversary.inDays} ${anniversary.inDays === 1 ? "day" : "days"}.`}
+          </p>
+        )}
       </div>
       <ol className="border-line m-0 ml-1.5 flex list-none flex-col border-l-[1.5px] p-0">
         {(data?.timeline ?? []).map((t, i) => (
