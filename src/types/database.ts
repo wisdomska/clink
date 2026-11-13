@@ -837,14 +837,14 @@ isOneToOne: false
                   ]
                 },"reports": {
                   Row: {
-                    "assigned_to": string | null,"attachment_media_ids": (string)[],"category": string,"couple_id": string | null,"created_at": string,"details": string | null,"from_after_dark": boolean,"id": string,"priority": string,"reported_user_id": string | null,"reporter_id": string | null,"resolution": string | null,"status": string,"updated_at": string
+                    "assigned_to": string | null,"attachment_media_ids": (string)[],"attachment_paths": (string)[],"category": string,"couple_id": string | null,"created_at": string,"details": string | null,"from_after_dark": boolean,"id": string,"priority": string,"reported_user_id": string | null,"reporter_id": string | null,"resolution": string | null,"status": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "assigned_to"?: string | null,"attachment_media_ids"?: (string)[],"category": string,"couple_id"?: string | null,"created_at"?: string,"details"?: string | null,"from_after_dark"?: boolean,"id"?: string,"priority"?: string,"reported_user_id"?: string | null,"reporter_id"?: string | null,"resolution"?: string | null,"status"?: string,"updated_at"?: string
+                    "assigned_to"?: string | null,"attachment_media_ids"?: (string)[],"attachment_paths"?: (string)[],"category": string,"couple_id"?: string | null,"created_at"?: string,"details"?: string | null,"from_after_dark"?: boolean,"id"?: string,"priority"?: string,"reported_user_id"?: string | null,"reporter_id"?: string | null,"resolution"?: string | null,"status"?: string,"updated_at"?: string
                   }
                   Update: {
-                    "assigned_to"?: string | null,"attachment_media_ids"?: (string)[],"category"?: string,"couple_id"?: string | null,"created_at"?: string,"details"?: string | null,"from_after_dark"?: boolean,"id"?: string,"priority"?: string,"reported_user_id"?: string | null,"reporter_id"?: string | null,"resolution"?: string | null,"status"?: string,"updated_at"?: string
+                    "assigned_to"?: string | null,"attachment_media_ids"?: (string)[],"attachment_paths"?: (string)[],"category"?: string,"couple_id"?: string | null,"created_at"?: string,"details"?: string | null,"from_after_dark"?: boolean,"id"?: string,"priority"?: string,"reported_user_id"?: string | null,"reporter_id"?: string | null,"resolution"?: string | null,"status"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {

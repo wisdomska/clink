@@ -40,7 +40,9 @@ export function Onboarding({
   initialName,
   initialIcon,
   next,
+  editing = false,
 }: {
+  editing?: boolean;
   needsDob: boolean;
   initialName: string;
   initialIcon: string;
@@ -48,7 +50,7 @@ export function Onboarding({
 }) {
   const router = useRouter();
   const [dobDone, setDobDone] = useState(!needsDob);
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(editing ? 2 : 1);
   const [name, setName] = useState(initialName);
   const [icon, setIcon] = useState<IconKey>((initialIcon as IconKey) ?? "moon");
   const [photo, setPhoto] = useState<string | null>(null);
@@ -112,7 +114,7 @@ export function Onboarding({
           longitude: city?.lng,
           finish: true,
         });
-        router.replace(next?.startsWith("/link") ? next : "/link");
+        router.replace(editing ? "/settings" : next?.startsWith("/link") ? next : "/link");
         router.refresh();
       }
     } catch (e) {

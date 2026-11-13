@@ -1,0 +1,409 @@
+"use client";
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, CaretRight, Wine, NotePencil, CloudSun, Trash, ChatCircle, BellSimple, BellRinging } from "@phosphor-icons/react";
+import { useCouple } from "@/features/couple/context";
+import { Avatar } from "@/components/ui/avatar";
+import { Button, IconButton } from "@/components/ui/button";
+import { Toggle } from "@/components/ui/toggle";
+import { Sheet } from "@/components/ui/sheet";
+import { Input, Label, FieldError } from "@/components/ui/field";
+import { Display } from "@/components/ui/heading";
+import { toast } from "@/components/ui/toast";
+import { cn } from "@/components/ui/cn";
+import { enablePush } from "@/lib/pwa";
+
+const ICONS = [
+  { key: "clink", label: "Clink", Icon: Wine },
+  { key: "notes", label: "Notes", Icon: NotePencil },
+  { key: "weather", label: "Weather", Icon: CloudSun },
+] as const;
+
+async function patchSettings(body: Record<string, unknown>) {
+  const r = await fetch("/api/me/settings", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (!r.ok) throw new Error((await r.json()).message ?? "Couldn't save that.");
+}
+
+function Row({ children, last, danger, onClick, href }: { children: React.ReactNode; last?: boolean; danger?: boolean; onClick?: () => void; href?: string }) {
+  const cls = cn(
+    "press flex min-h-14 w-full items-center justify-between gap-3 bg-transparent px-4 py-2.5 text-left text-base font-medium",
+    !last && "border-b border-line",
+    danger ? "text-danger hover:text-danger" : "text-text hover:text-text",
+    (onClick || href) && "cursor-pointer",
+  );
+  if (href) return <Link href={href} className={cls}>{children}</Link>;
+  if (onClick) return <button type="button" onClick={onClick} className={cls}>{children}</button>;
+  return <div className={cls}>{children}</div>;
+}
+
+export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myTiers: string[] }) {
+  const router = useRouter();
+  const ctx = useCouple();
+  const { me, partner, settings } = ctx;
+  const [notify, setNotify] = useState<Record<string, boolean>>({ clinks: true, chat: true, games: true, dates: true, keepsakes: true, dark: false, detailed: false, ...settings.notify });
+  const [quiet, setQuiet] = useState({ start: settings.quietStart, end: settings.quietEnd });
+  const [icon, setIcon] = useState(settings.appIcon);
+  const [discreet, setDiscreet] = useState(ctx.discreet);
+  const [saved, setSaved] = useState(settings.allowSavedSpicyMine);
+  const [savedBoth, setSavedBoth] = useState(settings.allowSavedSpicyBoth);
+  const [unlink, setUnlink] = useState<0 | 1 | 2>(0);
+  const [unlinkToken, setUnlinkToken] = useState<string | null>(null);
+  const [del, setDel] = useState(false);
+  const [delText, setDelText] = useState("");
+  const [edit, setEdit] = useState(false);
+  const [quietOpen, setQuietOpen] = useState(false);
+  const [startedOn, setStartedOn] = useState(ctx.startedOn ?? "");
+  const [busy, setBusy] = useState(false);
+
+  async function tog(k: string, v: boolean) {
+    const prev = notify[k];
+    setNotify((n) => ({ ...n, [k]: v }));
+    try {
+      await patchSettings({ notify: { [k]: v } });
+    } catch {
+      setNotify((n) => ({ ...n, [k]: prev ?? false }));
+      toast("Couldn't save that.");
+    }
+  }
+
+  const since = new Date(ctx.linkedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }).toUpperCase();
+
+  return (
+    <div className="screen an-screen flex max-w-[760px] flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <IconButton label="Back" onClick={() => router.push("/us")}>
+          <ArrowLeft size={20} />
+        </IconButton>
+        <Display size={36}>Settings</Display>
+      </div>
+
+      <div className="flex items-center gap-3.5 py-1">
+        <Avatar name={me.name} side="me" size={64} photoUrl={me.avatarUrl} icon={me.avatarIcon} />
+        <div className="min-w-0 flex-1">
+          <div className="text-lg font-bold">{me.name}</div>
+          <div className="truncate text-sm text-muted">
+            {me.city || me.timezone}
+            {partner.nickname ? ` · ${partner.name} calls you "${partner.nickname}"` : ""}
+          </div>
+        </div>
+        <Button variant="secondary" size="xs" onClick={() => setEdit(true)}>
+          Edit
+        </Button>
+      </div>
+
+      <h2 className="m-0 mt-1 text-lg font-bold">Notifications</h2>
+      <div className="overflow-hidden rounded-card border border-line bg-s1">
+        <Toggle label="Clinks" checked={notify.clinks !== false} onChange={(v) => tog("clinks", v)} />
+        <Toggle label="Chat" checked={notify.chat !== false} onChange={(v) => tog("chat", v)} />
+        <Toggle label="Games" sub="Your turn and invites" checked={notify.games !== false} onChange={(v) => tog("games", v)} />
+        <Toggle label="Dates" sub="1 day and 1 hour before" checked={notify.dates !== false} onChange={(v) => tog("dates", v)} />
+        <Toggle label="Keepsakes" sub="Letters opened, capsules ready" checked={notify.keepsakes !== false} onChange={(v) => tog("keepsakes", v)} />
+        <Toggle label="After Dark" sub="Always generic text" checked={notify.dark === true} onChange={(v) => tog("dark", v)} />
+        <Toggle label="Show message text" sub='Off: "New moment in Clink". Never for After Dark.' checked={notify.detailed === true} onChange={(v) => tog("detailed", v)} />
+        <Row onClick={() => setQuietOpen(true)}>
+          <span>Quiet hours</span>
+          <span className="mono text-sm text-muted">
+            {quiet.start} to {quiet.end}
+          </span>
+        </Row>
+        <Row
+          last
+          onClick={async () => {
+            const r = await enablePush();
+            toast(r === "granted" ? "This device gets notifications." : r === "unsupported" ? "Install Clink first, then turn these on." : "Notifications are blocked in your browser settings.");
+          }}
+        >
+          <span className="flex items-center gap-2">
+            <BellRinging size={18} aria-hidden /> Notifications on this device
+          </span>
+          <CaretRight size={18} className="text-faint" aria-hidden />
+        </Row>
+      </div>
+
+      <h2 className="m-0 mt-1 text-lg font-bold">App icon and name</h2>
+      <div className="flex gap-3" role="radiogroup" aria-label="App icon and name">
+        {ICONS.map(({ key, label, Icon }) => (
+          <button
+            key={key}
+            type="button"
+            role="radio"
+            aria-checked={icon === key}
+            onClick={async () => {
+              setIcon(key);
+              await patchSettings({ app_icon: key });
+              toast(key === "clink" ? "Back to Clink." : `Shows as ${label}. Reinstall from the browser to update the home screen.`);
+            }}
+            className="press flex flex-1 cursor-pointer flex-col items-center gap-2 rounded-card bg-s1 py-3 text-text"
+            style={{ border: icon === key ? "2px solid var(--accent)" : "1px solid var(--line)" }}
+          >
+            <span className="flex h-[52px] w-[52px] items-center justify-center rounded-input" style={{ background: key === "clink" ? "var(--accent)" : "var(--surface-3)", color: key === "clink" ? "var(--on-accent)" : "var(--text)" }}>
+              <Icon size={26} aria-hidden />
+            </span>
+            <span className="text-sm font-medium">{label}</span>
+          </button>
+        ))}
+      </div>
+
+      <h2 className="m-0 mt-1 text-lg font-bold">After Dark</h2>
+      <div className="overflow-hidden rounded-card border border-line bg-s1">
+        {darkSetUp ? (
+          <>
+            <Toggle
+              label="Allow saved spicy media"
+              sub={savedBoth ? "On for both of you" : saved ? `On for you. Waiting on ${partner.name}.` : "You both need this on"}
+              checked={saved}
+              onChange={async (v) => {
+                setSaved(v);
+                const r = await fetch("/api/couple/allow-saved", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ allow: v }) });
+                const d = await r.json();
+                setSavedBoth(Boolean(d.both));
+              }}
+            />
+            <Toggle
+              label="Discreet mode"
+              sub="Hide the moon. Long-press the wordmark."
+              checked={discreet}
+              onChange={async (v) => {
+                setDiscreet(v);
+                await patchSettings({ discreet_mode: v });
+                router.refresh();
+              }}
+            />
+            <Row href="/dark/consent" last>
+              <span>Your tiers</span>
+              <span className="text-sm font-normal text-muted">{myTiers.length ? myTiers.join(", ") : "None yet"}</span>
+            </Row>
+          </>
+        ) : (
+          <Row href="/dark/setup" last>
+            <span>
+              Set up After Dark
+              <span className="block text-[13px] font-normal text-faint">18+, private, opens only when you both say yes.</span>
+            </span>
+            <CaretRight size={18} className="text-faint" aria-hidden />
+          </Row>
+        )}
+      </div>
+
+      <h2 className="m-0 mt-1 text-lg font-bold">Linking and account</h2>
+      <div className="overflow-hidden rounded-card border border-line bg-s1">
+        <Row>
+          <span>Linked with {partner.name}</span>
+          <span className="mono text-[13px] text-muted">SINCE {since}</span>
+        </Row>
+        <div className="flex min-h-14 items-center justify-between gap-3 border-b border-line px-4 py-2.5">
+          <label htmlFor="started" className="text-base font-medium">
+            Together since
+          </label>
+          <input
+            id="started"
+            type="date"
+            value={startedOn}
+            max={new Date().toISOString().slice(0, 10)}
+            onChange={async (e) => {
+              setStartedOn(e.target.value);
+              const r = await fetch("/api/couple", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ started_on: e.target.value || null }) });
+              if (r.ok) toast("Saved. It's on your timeline.");
+            }}
+            className="mono h-10 rounded-input border border-line bg-s2 px-3 text-sm text-text"
+          />
+        </div>
+        <Row href="/help">
+          Help and safety
+          <CaretRight size={18} className="text-faint" aria-hidden />
+        </Row>
+        <Row
+          onClick={async () => {
+            setBusy(true);
+            const r = await fetch("/api/me/export", { method: "POST" });
+            const d = await r.json();
+            setBusy(false);
+            if (!r.ok) return toast(d.message ?? "Couldn't build your export.");
+            window.location.href = d.url;
+            toast("Your export is ready. The link works for 48 h.");
+          }}
+        >
+          {busy ? "Packing your data" : "Download my data"}
+          <CaretRight size={18} className="text-faint" aria-hidden />
+        </Row>
+        <Row
+          onClick={async () => {
+            await fetch("/api/auth/signout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ everywhere: false }) });
+            window.location.href = "/";
+          }}
+        >
+          Sign out
+        </Row>
+        <Row
+          onClick={async () => {
+            await fetch("/api/auth/signout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ everywhere: true }) });
+            window.location.href = "/login";
+          }}
+        >
+          Sign out of all devices
+        </Row>
+        <Row danger onClick={() => setUnlink(1)}>
+          Unlink from {partner.name}
+        </Row>
+        <Row danger last onClick={() => setDel(true)}>
+          Delete my account
+        </Row>
+      </div>
+
+      <Sheet open={unlink > 0} onOpenChange={(v) => !v && setUnlink(0)} title={`Unlink from ${partner.name}`} handle>
+        {unlink === 1 ? (
+          <>
+            <div className="mono text-xs text-faint">STEP 1 OF 2</div>
+            <div className="display text-[28px] leading-[1.05]">Unlink from {partner.name}?</div>
+            <div className="flex flex-col gap-2.5 text-base leading-[1.45]">
+              <div className="flex gap-2.5">
+                <Trash size={20} className="flex-none text-danger" aria-hidden />
+                Vault and View once media deleted for both of you within 1 hour.
+              </div>
+              <div className="flex gap-2.5">
+                <ChatCircle size={20} className="flex-none text-muted" aria-hidden />
+                Chat becomes read-only for 30 days, then it&apos;s deleted.
+              </div>
+              <div className="flex gap-2.5">
+                <BellSimple size={20} className="flex-none text-muted" aria-hidden />
+                {partner.name} gets a short, neutral notice.
+              </div>
+            </div>
+            <Button
+              variant="danger-outline"
+              size="lg"
+              onClick={async () => {
+                const r = await fetch("/api/couple/unlink", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ step: "start" }) });
+                setUnlinkToken((await r.json()).token);
+                setUnlink(2);
+              }}
+            >
+              Continue
+            </Button>
+            <Button variant="secondary" size="lg" onClick={() => setUnlink(0)}>
+              Cancel
+            </Button>
+          </>
+        ) : (
+          <>
+            <div className="mono text-xs text-faint">STEP 2 OF 2</div>
+            <div className="display text-[28px] leading-[1.05]">Last check. This can&apos;t be undone.</div>
+            <p className="m-0 text-base leading-normal text-muted">You&apos;ll both go back to the link screen.</p>
+            <Button
+              variant="danger"
+              size="lg"
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true);
+                const r = await fetch("/api/couple/unlink", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ step: "confirm", token: unlinkToken }) });
+                setBusy(false);
+                if (!r.ok) return toast((await r.json()).message ?? "Couldn't unlink.");
+                toast("Unlinked. Wipe finishes within 1 hour.");
+                window.location.href = "/link";
+              }}
+            >
+              Yes, unlink and wipe
+            </Button>
+            <Button variant="secondary" size="lg" onClick={() => setUnlink(0)}>
+              Keep us linked
+            </Button>
+          </>
+        )}
+      </Sheet>
+
+      <Sheet open={del} onOpenChange={setDel} title="Delete your account" handle>
+        <div className="display text-[28px] leading-[1.05]">Delete your account?</div>
+        <p className="m-0 text-base leading-normal text-muted">
+          You&apos;re unlinked from {partner.name} straight away and every private item is wiped within 1 hour. Everything else you made, including what {partner.name} can see, is deleted within 30 days.
+        </p>
+        <div>
+          <Label htmlFor="del">Type DELETE to confirm</Label>
+          <Input id="del" value={delText} onChange={(e) => setDelText(e.target.value)} autoCapitalize="characters" />
+        </div>
+        <Button
+          variant="danger"
+          size="lg"
+          disabled={delText !== "DELETE" || busy}
+          onClick={async () => {
+            setBusy(true);
+            const r = await fetch("/api/me/delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirm: "DELETE" }) });
+            setBusy(false);
+            if (!r.ok) return toast((await r.json()).message ?? "Couldn't delete.");
+            window.location.href = "/";
+          }}
+        >
+          Delete everything
+        </Button>
+      </Sheet>
+
+      <Sheet open={quietOpen} onOpenChange={setQuietOpen} title="Quiet hours" handle>
+        <div className="display text-[28px]">Quiet hours</div>
+        <p className="m-0 text-sm text-muted">In your time zone ({me.timezone}). Clinks still arrive, silently.</p>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Label htmlFor="qs">From</Label>
+            <Input id="qs" type="time" value={quiet.start} onChange={(e) => setQuiet((q) => ({ ...q, start: e.target.value }))} />
+          </div>
+          <div>
+            <Label htmlFor="qe">To</Label>
+            <Input id="qe" type="time" value={quiet.end} onChange={(e) => setQuiet((q) => ({ ...q, end: e.target.value }))} />
+          </div>
+        </div>
+        <Button
+          onClick={async () => {
+            await patchSettings({ quiet_start: quiet.start, quiet_end: quiet.end });
+            setQuietOpen(false);
+            toast("Quiet hours saved.");
+          }}
+        >
+          Save
+        </Button>
+      </Sheet>
+
+      <ProfileSheet open={edit} onOpenChange={setEdit} />
+    </div>
+  );
+}
+
+function ProfileSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+  const router = useRouter();
+  const { me, partner } = useCouple();
+  const [name, setName] = useState(me.name);
+  const [nick, setNick] = useState(me.nickname ?? "");
+  const [phone, setPhone] = useState(me.phone ?? "");
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange} title="Edit profile" handle>
+      <div className="display text-[28px]">You</div>
+      <div>
+        <Label htmlFor="pn">Your name</Label>
+        <Input id="pn" value={name} maxLength={40} onChange={(e) => setName(e.target.value)} />
+      </div>
+      <div>
+        <Label htmlFor="nick">What you call {partner.name}</Label>
+        <Input id="nick" value={nick} maxLength={40} placeholder="A nickname, no pronouns needed" onChange={(e) => setNick(e.target.value)} />
+      </div>
+      <div>
+        <Label htmlFor="ph">Your number, for call shortcuts</Label>
+        <Input id="ph" type="tel" inputMode="tel" autoComplete="tel" value={phone} placeholder="+44 7700 900123" onChange={(e) => setPhone(e.target.value)} />
+      </div>
+      <FieldError>{error}</FieldError>
+      <Button
+        onClick={async () => {
+          setError(null);
+          const r = await fetch("/api/me/profile", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ display_name: name, partner_nickname: nick, phone }) });
+          if (!r.ok) return setError((await r.json()).message);
+          onOpenChange(false);
+          toast("Saved.");
+          router.refresh();
+        }}
+      >
+        Save
+      </Button>
+      <Link href="/onboarding?edit=1" className="text-center text-sm font-medium">
+        Change photo or home city
+      </Link>
+    </Sheet>
+  );
+}
