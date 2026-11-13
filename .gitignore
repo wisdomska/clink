@@ -1,0 +1,43 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# next
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# service worker build output
+public/sw.js
+public/sw.js.map
+public/swe-worker-*.js
+
+# env and secrets
+.env
+.env.*
+!.env.example
+*.pem
+
+# tests
+coverage/
+playwright-report/
+test-results/
+blob-report/
+.lighthouseci/
+tests/visual/__diff__/
+
+# supabase local
+supabase/.temp/
+supabase/.branches/
+
+# os / editor
+.DS_Store
+*.log
+.vercel
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# local claude state
+.claude/settings.local.json

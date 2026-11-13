@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800&amp;f[]=satoshi@400,500,700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@500&amp;display=swap">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#09080A;color:#F4F0F5;font-family:Satoshi,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#E68AF5;text-decoration:none}a:hover{color:#F4F0F5}
+button{font-family:Satoshi,sans-serif}
+input::placeholder,textarea::placeholder{color:#7C7581}
+@keyframes glassL{0%{transform:rotate(-14deg)}40%{transform:rotate(6deg) translateX(10px)}58%{transform:rotate(2deg) translateX(7px)}100%{transform:rotate(-14deg)}}
+@keyframes glassR{0%{transform:rotate(14deg)}40%{transform:rotate(-6deg) translateX(-10px)}58%{transform:rotate(-2deg) translateX(-7px)}100%{transform:rotate(14deg)}}
+@keyframes spark{0%{opacity:0;transform:translateY(-6px)}20%{opacity:1}100%{opacity:0;transform:translateY(-46px)}}
+@keyframes sparkFar{0%{opacity:0;transform:translateY(-84px)}20%{opacity:1}100%{opacity:0;transform:translateY(-134px)}}
+@keyframes ripple{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.6);opacity:0}}
+@keyframes slideDown{from{transform:translateY(-110%)}}
+@keyframes pulseRing{0%{box-shadow:0 0 0 0 rgba(230,138,245,.55)}100%{box-shadow:0 0 0 24px rgba(230,138,245,0)}}
+@keyframes linkL{from{transform:translateX(-120px);opacity:0}}
+@keyframes linkR{from{transform:translateX(120px);opacity:0}}
+@keyframes flip{from{transform:rotateX(90deg)}}
+@keyframes sealL{to{transform:translate(-50px,40px) rotate(-40deg);opacity:0}}
+@keyframes sealR{to{transform:translate(50px,40px) rotate(40deg);opacity:0}}
+@keyframes letterUp{from{transform:translateY(40px);opacity:0}}
+@keyframes cork{40%{transform:translateY(-70px) rotate(-30deg)}100%{transform:translate(70px,-40px) rotate(-100deg);opacity:0}}
+@keyframes sheetUp{from{transform:translateY(100%)}}
+@keyframes flame{from{transform:scale(.5) rotate(-45deg);opacity:0}to{transform:scale(1) rotate(-45deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+@keyframes screenIn{from{opacity:0;transform:translateY(6px)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px) scale(.96)}}
+@keyframes fadeIn{from{opacity:0}}
+@keyframes fadeOut{to{opacity:0}}
+@keyframes tear{to{transform:translate(48px,120px) rotate(22deg);opacity:0}}
+@keyframes floatUp{0%{transform:translateY(0) scale(.8);opacity:0}12%{opacity:1;transform:translateY(-16px) scale(1)}100%{transform:translateY(-170px);opacity:0}}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes live{0%,100%{box-shadow:0 0 0 0 rgba(230,138,245,.55)}50%{box-shadow:0 0 0 5px rgba(230,138,245,0)}}
+@keyframes dots{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes skel{0%,100%{opacity:.55}50%{opacity:1}}
+@media (prefers-reduced-motion: reduce){*{animation-duration:180ms!important;animation-iteration-count:1!important}}
+</style>
+</helmet>
+<div style="min-height:100dvh;background:#09080A;display:flex;flex-wrap:wrap;gap:40px;padding:40px 32px;justify-content:center;align-items:flex-start">
+
+<aside style="width:210px;display:flex;flex-direction:column;gap:22px">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <div style="font:800 32px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">clink</div>
+    <div style="font:400 14px/1.4 Satoshi,sans-serif;color:#ADA6B2">MVP prototype · 390 × 844. Everything is clickable.</div>
+  </div>
+  <sc-for list="{{ navGroups }}" as="g" hint-placeholder-count="3">
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <div style="font:500 12px 'Geist Mono',monospace;color:#7C7581;text-transform:uppercase;letter-spacing:.08em;padding:0 12px 6px">{{ g.title }}</div>
+      <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="5">
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ it.go }}" style="text-align:left;padding:8px 12px;border-radius:999px;border:none;cursor:pointer;font:500 14px Satoshi,sans-serif;background:{{ it.bg }};color:{{ it.color }};transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">{{ it.label }}</button>
+      </sc-for>
+    </div>
+  </sc-for>
+</aside>
+
+<div style="position:relative;width:390px;height:844px;flex:none;border-radius:52px;background:#0F0E11;overflow:hidden;box-shadow:0 0 0 10px #1B191E,0 0 0 11px #36313B,0 40px 100px rgba(0,0,0,.55);font-family:Satoshi,sans-serif;color:#F4F0F5">
+
+<div style="position:absolute;top:0;left:0;right:0;height:48px;padding:0 30px;display:flex;align-items:center;justify-content:space-between;z-index:45;font:700 15px Satoshi,sans-serif;pointer-events:none;background:{{ statusBg }}">
+  <span>{{ niaTime }}</span>
+  <span style="display:flex;gap:6px;font-size:16px"><i class="ph ph-cell-signal-full"></i><i class="ph ph-wifi-high"></i><i class="ph ph-battery-full"></i></span>
+</div>
+
+<sc-if value="{{ s.landing }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};overflow-y:auto;scrollbar-width:none;padding:52px 0 32px">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:48px">
+    <div style="font:800 28px 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">clink</div>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ goAuth }}" style="height:44px;padding:0 18px;border-radius:999px;background:transparent;border:1px solid #36313B;color:#F4F0F5;font:500 14px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Log in</button>
+  </div>
+  <div style="margin:16px 16px 0;height:232px;display:grid;grid-template-columns:1fr 1fr;border-radius:20px;overflow:hidden;border:1px solid #36313B;position:relative">
+    <div style="background:#18161B;display:flex;align-items:center;justify-content:flex-end;position:relative">
+      <i class="ph ph-wine" style="font-size:104px;color:#F4F0F5;margin-right:-10px;transform-origin:50% 90%;transform:rotate(-14deg);animation:{{ an.glassL }}"></i>
+      <span style="position:absolute;left:14px;bottom:12px;font:500 12px 'Geist Mono',monospace;color:#ADA6B2">LDN 21:14</span>
+    </div>
+    <div style="background:#211E25;display:flex;align-items:center;justify-content:flex-start;position:relative">
+      <i class="ph ph-wine" style="font-size:104px;color:#E68AF5;margin-left:-10px;transform-origin:50% 90%;transform:rotate(14deg);animation:{{ an.glassR }}"></i>
+      <span style="position:absolute;right:14px;bottom:12px;font:500 12px 'Geist Mono',monospace;color:#ADA6B2">ACC 21:14</span>
+    </div>
+    <div style="position:absolute;left:50%;top:34%;width:0;height:0">
+      <sc-for list="{{ sparks }}" as="sp" hint-placeholder-count="0">
+        <div style="position:absolute;left:0;top:0;transform:rotate({{ sp.a }}deg)"><div style="width:4px;height:10px;margin:-5px 0 0 -2px;border-radius:2px;background:#E68AF5;opacity:0;animation:{{ an.spark }}"></div></div>
+      </sc-for>
+    </div>
+  </div>
+  <h1 style="margin:28px 16px 0;font:800 48px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Do things <em>together</em>, from apart.</h1>
+  <p style="margin:12px 16px 0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2;text-wrap:pretty">Games, dates, dares and letters for two people in two places. One account links to exactly one person.</p>
+  <div style="display:flex;flex-direction:column;gap:8px;margin:24px 16px 0">
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ goAuth }}" style="height:56px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Start with your person <i class="ph ph-arrow-right" style="font-size:20px"></i></button>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ goLink }}" style="height:52px;border-radius:999px;background:#211E25;color:#F4F0F5;border:1px solid #36313B;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">I have a code</button>
+  </div>
+  <div style="margin:56px 16px 0;display:flex;flex-direction:column;gap:40px">
+    <h2 style="margin:0;font:800 28px/1.1 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Four things on the table.</h2>
+    <div style="display:grid;grid-template-columns:112px 1fr;gap:20px;align-items:center">
+      <div style="width:100px;height:132px;border-radius:12px;background:#2C2830;border:1px solid #36313B;position:relative;overflow:hidden;transform:rotate(-4deg)">
+        <div style="position:absolute;left:12px;top:14px;font:800 22px/1 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">dare<br>no. 7</div>
+        <div style="position:absolute;left:12px;bottom:30px;font:500 12px 'Geist Mono',monospace;color:#ADA6B2">strike</div>
+        <div style="position:absolute;left:0;right:0;bottom:0;height:22px;background:repeating-linear-gradient(90deg,#4A4450 0 2px,#211E25 2px 5px);border-top:1px solid #36313B"></div>
+      </div>
+      <div><div style="font:800 22px/1.1 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Dares, one match at a time.</div><p style="margin:6px 0 0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">Spin, strike, reveal. Pass is always free.</p></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 156px;gap:16px;align-items:center">
+      <div><div style="font:800 22px/1.1 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Date nights with a stub.</div><p style="margin:6px 0 0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">Cook together, stargaze, tour a museum. Tear it off when you're done.</p></div>
+      <div style="width:156px;height:84px;display:flex;border-radius:12px;overflow:hidden;transform:rotate(3deg)">
+        <div style="flex:1;background:#211E25;padding:10px 12px;display:flex;flex-direction:column;justify-content:space-between"><span style="font:500 12px 'Geist Mono',monospace;color:#ADA6B2">SAT 21:00</span><span style="font:800 18px 'Cabinet Grotesk',sans-serif">Stargazing</span></div>
+        <div style="width:0;border-left:2px dashed #0F0E11"></div>
+        <div style="width:34px;background:#E68AF5;color:#0F0E11;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font:500 12px 'Geist Mono',monospace;letter-spacing:.1em">ADMIT 2</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:156px 1fr;gap:16px;align-items:center">
+      <div style="width:150px;height:100px;border-radius:12px;background:#211E25;border:1px solid #36313B;position:relative;overflow:hidden;transform:rotate(-2deg)">
+        <div style="position:absolute;inset:0;background:#2C2830;clip-path:polygon(0 0,100% 0,50% 60%)"></div>
+        <div style="position:absolute;left:50%;top:60%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:#E68AF5;color:#0F0E11;display:flex;align-items:center;justify-content:center;font:800 12px 'Cabinet Grotesk',sans-serif">N&amp;T</div>
+      </div>
+      <div><div style="font:800 22px/1.1 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Letters for later.</div><p style="margin:6px 0 0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">Open when you can't sleep. Sealed until they need it.</p></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;gap:4px;align-items:flex-end">
+        <sc-for list="{{ boardMini }}" as="b" hint-placeholder-count="6">
+          <div style="width:34px;height:48px;border-radius:6px;border:1px solid #36313B;background:linear-gradient(#211E25 0 50%,#18161B 50% 100%);display:flex;align-items:center;justify-content:center;font:500 26px 'Geist Mono',monospace;margin-right:{{ b.gap }}">{{ b.ch }}</div>
+        </sc-for>
+      </div>
+      <div><div style="font:800 22px/1.1 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">The countdown to arrivals.</div><p style="margin:6px 0 0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">Your next visit, flipping down on a departure board.</p></div>
+    </div>
+  </div>
+  <div style="margin:48px 16px 0;padding:16px;border-radius:20px;border:1px solid #36313B;display:flex;gap:12px;align-items:flex-start">
+    <div style="flex:none;width:44px;height:44px;border-radius:50%;border:1.5px solid #F4F0F5;display:flex;align-items:center;justify-content:center;font:800 16px 'Cabinet Grotesk',sans-serif">18+</div>
+    <p style="margin:0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">Clink is for adults in a relationship. After Dark, the private space, only opens when you both say yes.</p>
+  </div>
+  <div style="margin:40px 16px 0;padding-top:20px;border-top:1px solid #36313B;display:flex;justify-content:space-between;align-items:flex-end">
+    <div><div style="font:800 22px 'Cabinet Grotesk',sans-serif">clink</div><div style="font:400 14px Satoshi,sans-serif;color:#7C7581">Made for two.</div></div>
+    <div style="display:flex;flex-direction:column;gap:4px;text-align:right;font:500 14px Satoshi,sans-serif"><a href="#" style="color:#ADA6B2">Privacy</a><a href="#" style="color:#ADA6B2">Terms</a><a href="#" style="color:#ADA6B2">Help and safety</a></div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ s.auth }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};overflow-y:auto;scrollbar-width:none;padding:52px 20px 32px;display:flex;flex-direction:column">
+  <button style-active="transform:scale(0.97)" type="button" onClick="{{ goLanding }}" aria-label="Back" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #36313B;background:transparent;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-arrow-left" style="font-size:20px"></i></button>
+  <sc-if value="{{ au.form }}" hint-placeholder-val="{{ true }}">
+    <h1 style="margin:24px 0 0;font:800 36px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Make your <em>account</em></h1>
+    <p style="margin:8px 0 0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">Takes a minute. Clink is 18+ only.</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:24px">
+      <button style-active="transform:scale(0.97)" type="button" style="height:52px;border-radius:999px;background:#211E25;color:#F4F0F5;border:1px solid #36313B;font:500 16px Satoshi,sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-fingerprint" style="font-size:22px"></i>Continue with a passkey</button>
+      <button style-active="transform:scale(0.97)" type="button" style="height:52px;border-radius:999px;background:#211E25;color:#F4F0F5;border:1px solid #36313B;font:500 16px Satoshi,sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-google-logo" style="font-size:22px"></i>Continue with Google</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin:24px 0 16px;color:#7C7581;font:500 14px Satoshi,sans-serif"><span style="flex:1;height:1px;background:#36313B"></span>or use email<span style="flex:1;height:1px;background:#36313B"></span></div>
+    <label style="font:500 14px Satoshi,sans-serif;color:#ADA6B2;margin-bottom:6px">Email</label>
+    <input value="{{ email }}" readOnly style="flex:none;height:52px;border-radius:14px;background:#211E25;border:1px solid {{ emailBorder }};padding:0 16px;color:#F4F0F5;font:400 16px Satoshi,sans-serif;outline:none">
+    <sc-if value="{{ au.error }}"><div style="display:flex;gap:6px;align-items:center;margin-top:8px;color:#FF7A6B;font:500 14px Satoshi,sans-serif"><i class="ph ph-warning-circle" style="font-size:18px"></i>That email looks off. Missing a dot somewhere?</div></sc-if>
+    <label style="font:500 14px Satoshi,sans-serif;color:#ADA6B2;margin:16px 0 6px">Date of birth</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:8px">
+      <input value="14" readOnly aria-label="Day" style="height:52px;min-width:0;border-radius:14px;background:#211E25;border:1px solid #36313B;text-align:center;color:#F4F0F5;font:500 18px 'Geist Mono',monospace;outline:none">
+      <input value="03" readOnly aria-label="Month" style="height:52px;min-width:0;border-radius:14px;background:#211E25;border:1px solid #36313B;text-align:center;color:#F4F0F5;font:500 18px 'Geist Mono',monospace;outline:none">
+      <input value="1998" readOnly aria-label="Year" style="height:52px;min-width:0;border-radius:14px;background:#211E25;border:1px solid #36313B;text-align:center;color:#F4F0F5;font:500 18px 'Geist Mono',monospace;outline:none">
+    </div>
+    <p style="margin:8px 0 0;font:400 14px/1.5 Satoshi,sans-serif;color:#7C7581">We check you're 18+. Your partner never sees this.</p>
+    <div style="flex:1;min-height:24px"></div>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ authContinue }}" style="flex:none;height:56px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Continue</button>
+  </sc-if>
+  <sc-if value="{{ au.sent }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px;animation:{{ an.reveal }}">
+      <div style="width:180px;height:120px;border-radius:14px;background:#211E25;border:1px solid #36313B;position:relative;overflow:hidden;transform:rotate(-3deg)">
+        <div style="position:absolute;inset:0;background:#2C2830;clip-path:polygon(0 0,100% 0,50% 60%)"></div>
+        <div style="position:absolute;left:50%;top:60%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:#E68AF5;display:flex;align-items:center;justify-content:center;color:#0F0E11"><i class="ph ph-check" style="font-size:20px"></i></div>
+      </div>
+      <h1 style="margin:8px 0 0;font:800 36px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Check your <em>inbox</em></h1>
+      <p style="margin:0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">We sent a link to nia@hey.com. Tap it on this phone and you're in.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ goOnboard }}" style="height:56px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Open email app</button>
+      <button style-active="transform:scale(0.97)" type="button" style="height:52px;border-radius:999px;background:transparent;color:#7C7581;border:none;font:500 16px Satoshi,sans-serif;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Resend in 0:42</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{ au.blocked }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px;animation:{{ an.reveal }}">
+      <div style="width:72px;height:72px;border-radius:50%;border:2px solid #FF7A6B;color:#FF7A6B;display:flex;align-items:center;justify-content:center;font:800 22px 'Cabinet Grotesk',sans-serif">18+</div>
+      <h1 style="margin:8px 0 0;font:800 36px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Clink is for <em>adults</em>.</h1>
+      <p style="margin:0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">Come back when you're 18. You can't try again for 24 hours.</p>
+    </div>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ goLanding }}" style="height:52px;border-radius:999px;background:#211E25;color:#F4F0F5;border:1px solid #36313B;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Back to the start</button>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ s.onboard }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};overflow-y:auto;scrollbar-width:none;padding:52px 20px 32px;display:flex;flex-direction:column">
+  <div style="display:flex;align-items:center;gap:12px;height:44px;flex:none">
+    <div style="flex:1;display:flex;gap:6px"><sc-for list="{{ obBars }}" as="b" hint-placeholder-count="3"><span style="flex:1;height:4px;border-radius:999px;background:{{ b.bg }}"></span></sc-for></div>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ obNext }}" style="height:44px;padding:0 12px;background:none;border:none;color:#ADA6B2;font:500 14px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Skip</button>
+  </div>
+  <div style="font:500 12px 'Geist Mono',monospace;color:#7C7581;margin-top:16px">STEP {{ ob }} OF 3</div>
+  <sc-if value="{{ obs.one }}" hint-placeholder-val="{{ true }}">
+    <h1 style="margin:12px 0 0;font:800 36px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">What should we <em>call</em> you?</h1>
+    <p style="margin:8px 0 24px;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">Your person sees this. Nicknames welcome.</p>
+    <input value="Nia" readOnly style="flex:none;height:56px;border-radius:14px;background:#211E25;border:2px solid #E68AF5;padding:0 16px;color:#F4F0F5;font:500 18px Satoshi,sans-serif;outline:none">
+  </sc-if>
+  <sc-if value="{{ obs.two }}" hint-placeholder-val="{{ false }}">
+    <h1 style="margin:12px 0 0;font:800 36px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Pick a <em>face</em></h1>
+    <p style="margin:8px 0 24px;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">A photo, or one of ours.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+      <button style-active="transform:scale(0.97)" type="button" style="aspect-ratio:1;border-radius:50%;border:1.5px dashed #7C7581;background:transparent;color:#ADA6B2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 14px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-camera" style="font-size:26px"></i>Photo</button>
+      <sc-for list="{{ avatarOpts }}" as="o" hint-placeholder-count="5">
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ o.pick }}" style="aspect-ratio:1;border-radius:50%;background:#211E25;border:{{ o.border }};color:#F4F0F5;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph {{ o.icon }}" style="font-size:34px"></i></button>
+      </sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{ obs.three }}" hint-placeholder-val="{{ false }}">
+    <h1 style="margin:12px 0 0;font:800 36px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Where's <em>home</em>?</h1>
+    <p style="margin:8px 0 24px;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">For your clock and quiet hours. Never a precise location.</p>
+    <div style="height:52px;border-radius:14px;background:#211E25;border:1px solid #36313B;display:flex;align-items:center;gap:10px;padding:0 16px"><i class="ph ph-magnifying-glass" style="font-size:20px;color:#ADA6B2"></i><span style="font:400 16px Satoshi,sans-serif">{{ cityQuery }}</span></div>
+    <div style="margin-top:8px;border-radius:20px;background:#18161B;border:1px solid #36313B;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #36313B"><span style="font:500 16px Satoshi,sans-serif">{{ cityPick }}</span><span style="display:flex;gap:10px;align-items:center"><span style="font:500 14px 'Geist Mono',monospace;color:#ADA6B2">{{ niaTime }}</span><i class="ph ph-check" style="color:#E68AF5;font-size:20px"></i></span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;color:#ADA6B2"><span style="font:400 16px Satoshi,sans-serif">{{ cityAlt }}</span><span style="font:500 14px 'Geist Mono',monospace">{{ cityAltTime }}</span></div>
+    </div>
+  </sc-if>
+  <div style="flex:1;min-height:24px"></div>
+  <button style-active="transform:scale(0.97)" type="button" onClick="{{ obNext }}" style="flex:none;height:56px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Continue</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ s.link }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};overflow-y:auto;scrollbar-width:none;padding:52px 20px 32px;display:flex;flex-direction:column">
+  <sc-if value="{{ lk.notLinked }}" hint-placeholder-val="{{ true }}">
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ goOnboard }}" aria-label="Back" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #36313B;background:transparent;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-arrow-left" style="font-size:20px"></i></button>
+    <h1 style="margin:24px 0 0;font:800 36px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Link your <em>person</em></h1>
+    <p style="margin:8px 0 0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">One account, one person. Send them this code, or enter theirs.</p>
+    <div style="display:flex;gap:6px;margin:28px 0 10px;position:relative">
+      <sc-for list="{{ codeChars }}" as="c" hint-placeholder-count="6">
+        <div style="flex:1;height:64px;border-radius:12px;background:#18161B;border:1px solid #36313B;display:flex;align-items:center;justify-content:center;font:500 30px 'Geist Mono',monospace;opacity:{{ codeOpacity }};margin-right:{{ c.gap }}">{{ c.ch }}</div>
+      </sc-for>
+      <sc-if value="{{ lk.expired }}"><div style="position:absolute;left:-4px;right:-4px;top:50%;height:2px;background:#FF7A6B;transform:rotate(-4deg)"></div></sc-if>
+    </div>
+    <sc-if value="{{ lk.live }}"><div style="font:500 14px 'Geist Mono',monospace;color:#ADA6B2">Expires in 47 h. Single use.</div></sc-if>
+    <sc-if value="{{ lk.expired }}"><div style="font:500 14px Satoshi,sans-serif;color:#FF7A6B;display:flex;gap:6px;align-items:center"><i class="ph ph-hourglass-simple-low" style="font-size:18px"></i>That code expired. Codes last 48 h.</div></sc-if>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:24px">
+      <sc-if value="{{ lk.live }}">
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ shareWA }}" style="height:56px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-whatsapp-logo" style="font-size:22px"></i>Share to WhatsApp</button>
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ copyCode }}" style="height:52px;border-radius:999px;background:#211E25;color:#F4F0F5;border:1px solid #36313B;font:500 16px Satoshi,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph {{ copyIcon }}" style="font-size:20px"></i>{{ copyLabel }}</button>
+      </sc-if>
+      <sc-if value="{{ lk.expired }}">
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ newCode }}" style="height:56px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Make a new code</button>
+      </sc-if>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin:32px 0 12px;color:#7C7581;font:500 14px Satoshi,sans-serif"><span style="flex:1;height:1px;background:#36313B"></span>Got their code?<span style="flex:1;height:1px;background:#36313B"></span></div>
+    <div style="display:flex;gap:8px">
+      <input placeholder="6 characters" aria-label="Partner code" style="flex:1;min-width:0;height:52px;border-radius:14px;background:#211E25;border:1px solid #36313B;padding:0 16px;color:#F4F0F5;font:500 18px 'Geist Mono',monospace;text-transform:uppercase;outline:none">
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ doLink }}" style="height:52px;padding:0 22px;border-radius:999px;background:#211E25;color:#F4F0F5;border:1px solid #36313B;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Link</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{ lk.linked }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+      <div style="position:relative;height:150px;display:flex;align-items:center;justify-content:center">
+        <div style="width:112px;height:112px;border-radius:50%;background:#211E25;border:3px solid #E68AF5;display:flex;align-items:center;justify-content:center;font:800 44px 'Cabinet Grotesk',sans-serif;margin-right:-14px;position:relative;z-index:1;animation:{{ an.linkL }}">N</div>
+        <div style="width:112px;height:112px;border-radius:50%;background:#2C2830;border:3px solid #8FD9C8;display:flex;align-items:center;justify-content:center;font:800 44px 'Cabinet Grotesk',sans-serif;margin-left:-14px;animation:{{ an.linkR }}">T</div>
+        <div style="position:absolute;left:50%;top:14px;width:0;height:0;z-index:2">
+          <sc-for list="{{ sparks }}" as="sp" hint-placeholder-count="0">
+            <div style="position:absolute;left:0;top:0;transform:rotate({{ sp.a }}deg)"><div style="width:4px;height:10px;margin:-5px 0 0 -2px;border-radius:2px;background:#E68AF5;opacity:0;animation:{{ an.sparkLate }}"></div></div>
+          </sc-for>
+        </div>
+      </div>
+      <h1 style="margin:28px 0 0;font:800 48px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">You're <em>linked</em>.</h1>
+      <p style="margin:12px 0 0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">Nia and Theo. Two cities, one Clink.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ firstClink }}" style="height:56px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-wine" style="font-size:22px"></i>Send your first Clink</button>
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ goInstall }}" style="height:52px;border-radius:999px;background:transparent;color:#F4F0F5;border:none;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Add Clink to your home screen</button>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ s.install }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};overflow-y:auto;scrollbar-width:none;padding:52px 20px 32px;display:flex;flex-direction:column">
+  <h1 style="margin:16px 0 0;font:800 36px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Put Clink on your <em>home screen</em></h1>
+  <p style="margin:8px 0 20px;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">So Clinks arrive like texts. Takes 20 seconds.</p>
+  <div style="display:flex;padding:4px;border-radius:999px;background:#18161B;border:1px solid #36313B;flex:none">
+    <sc-for list="{{ installTabs }}" as="t" hint-placeholder-count="3">
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ t.go }}" style="flex:1;height:40px;border-radius:999px;border:none;background:{{ t.bg }};color:{{ t.color }};font:500 14px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">{{ t.label }}</button>
+    </sc-for>
+  </div>
+  <sc-if value="{{ ins.steps }}" hint-placeholder-val="{{ true }}">
+    <div style="margin-top:20px;height:180px;flex:none;border-radius:20px;border:1px solid #36313B;background:repeating-linear-gradient(135deg,#18161B 0 8px,#1C1A20 8px 16px);display:flex;align-items:center;justify-content:center;font:500 12px 'Geist Mono',monospace;color:#7C7581">{{ installShot }}</div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:20px">
+      <sc-for list="{{ installSteps }}" as="st" hint-placeholder-count="3">
+        <div style="display:flex;gap:12px;align-items:center"><span style="flex:none;width:36px;height:36px;border-radius:50%;border:1px solid #36313B;background:#18161B;display:flex;align-items:center;justify-content:center;font:500 14px 'Geist Mono',monospace;color:#E68AF5">{{ st.n }}</span><span style="font:400 16px/1.4 Satoshi,sans-serif">{{ st.t }}</span></div>
+      </sc-for>
+    </div>
+    <p style="margin:16px 0 0;font:400 14px/1.5 Satoshi,sans-serif;color:#7C7581">{{ installNote }}</p>
+  </sc-if>
+  <sc-if value="{{ ins.done }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:12px;animation:{{ an.reveal }}">
+      <i class="ph ph-check-circle" style="font-size:56px;color:#E68AF5"></i>
+      <div style="font:800 28px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Already on your home screen.</div>
+      <p style="margin:0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">Notifications are on. Clinks will find you.</p>
+    </div>
+  </sc-if>
+  <div style="flex:1;min-height:20px"></div>
+  <button style-active="transform:scale(0.97)" type="button" onClick="{{ goUs }}" style="flex:none;height:56px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Done</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ s.us }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};overflow-y:auto;scrollbar-width:none;padding:52px 16px 108px;display:flex;flex-direction:column;gap:16px">
+  <div style="display:flex;align-items:center;justify-content:space-between;height:44px;flex:none">
+    <div onPointerDown="{{ wordDown }}" onPointerUp="{{ wordUp }}" onPointerLeave="{{ wordUp }}" style="font:800 30px 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em;user-select:none">clink</div>
+    <div style="display:flex;gap:8px">
+      <sc-if value="{{ showMoon }}" hint-placeholder-val="{{ true }}"><button style-active="transform:scale(0.97)" type="button" onClick="{{ goDarkLock }}" aria-label="After Dark" style="width:44px;height:44px;border-radius:50%;background:#18161B;border:1px solid #36313B;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-moon" style="font-size:20px"></i></button></sc-if>
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ goSettings }}" aria-label="Settings" style="width:44px;height:44px;border-radius:50%;background:#18161B;border:1px solid #36313B;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-gear-six" style="font-size:20px"></i></button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:84px 1fr 84px;align-items:start;flex:none">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <div style="width:56px;height:56px;border-radius:50%;background:#211E25;border:2px solid #E68AF5;display:flex;align-items:center;justify-content:center;font:800 22px 'Cabinet Grotesk',sans-serif">N</div>
+      <div style="font:500 14px/1.3 Satoshi,sans-serif;text-align:center">You<br><span style="color:#ADA6B2">free</span></div>
+    </div>
+    <div style="position:relative;height:56px">
+      <sc-if value="{{ threadTaut }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:-14px;right:-14px;top:27px;height:2px;border-radius:2px;background:#E68AF5;box-shadow:0 0 10px rgba(230,138,245,.6)"></div></sc-if>
+      <sc-if value="{{ threadSag }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:-14px;right:-14px;top:6px;height:40px;border-bottom:1.5px solid #7C7581;border-radius:0 0 50% 50%"></div></sc-if>
+      <div style="position:absolute;left:0;right:0;top:64px;text-align:center;font:500 12px 'Geist Mono',monospace;color:#7C7581">{{ diffLabel }}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <div style="position:relative;width:56px;height:56px;border-radius:50%;background:#2C2830;border:2px solid {{ theoRing }};display:flex;align-items:center;justify-content:center;font:800 22px 'Cabinet Grotesk',sans-serif;opacity:{{ theoOpacity }}">T
+        <sc-if value="{{ theoLive }}"><span style="position:absolute;right:-2px;bottom:-2px;width:14px;height:14px;border-radius:50%;background:#E68AF5;border:3px solid #0F0E11;animation:{{ an.dot }}"></span></sc-if>
+      </div>
+      <div style="font:500 14px/1.3 Satoshi,sans-serif;text-align:center">Theo<br><span style="color:#ADA6B2">{{ theoStatus }}</span></div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;border-radius:20px;overflow:hidden;border:1px solid #36313B;flex:none">
+    <div style="background:{{ niaClockBg }};padding:16px">
+      <div style="display:flex;gap:6px;align-items:center;font:500 14px Satoshi,sans-serif;color:#ADA6B2"><i class="ph {{ niaIcon }}" style="font-size:16px"></i>{{ niaCity }}</div>
+      <div style="font:500 36px/1.2 'Geist Mono',monospace;font-variant-numeric:tabular-nums;margin-top:4px">{{ niaTime }}</div>
+      <div style="font:400 14px Satoshi,sans-serif;color:#7C7581">{{ niaWeather }}</div>
+    </div>
+    <div style="background:{{ theoClockBg }};padding:16px;border-left:1px solid #36313B;text-align:right">
+      <div style="display:flex;gap:6px;align-items:center;justify-content:flex-end;font:500 14px Satoshi,sans-serif;color:#ADA6B2">{{ theoCity }}<i class="ph {{ theoIcon }}" style="font-size:16px"></i></div>
+      <div style="font:500 36px/1.2 'Geist Mono',monospace;font-variant-numeric:tabular-nums;margin-top:4px">{{ theoTime }}</div>
+      <div style="font:400 14px Satoshi,sans-serif;color:#7C7581">{{ theoWeather }}</div>
+    </div>
+  </div>
+  <sc-if value="{{ isAsleep }}" hint-placeholder-val="{{ false }}">
+    <div style="border-radius:20px;background:#18161B;border:1px solid #36313B;padding:16px;display:flex;flex-direction:column;gap:12px;flex:none">
+      <div style="display:flex;gap:10px;align-items:flex-start"><i class="ph ph-moon-stars" style="font-size:24px;color:#E68AF5;flex:none"></i><p style="margin:0;font:500 16px/1.45 Satoshi,sans-serif">It's 2:14 am for Theo. Leave something for the morning?</p></div>
+      <div style="display:flex;gap:8px">
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ goChat }}" style="height:44px;padding:0 16px;border-radius:999px;background:#211E25;border:1px solid #36313B;color:#F4F0F5;font:500 14px Satoshi,sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-microphone" style="font-size:18px"></i>Voice note</button>
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ goKeep }}" style="height:44px;padding:0 16px;border-radius:999px;background:#211E25;border:1px solid #36313B;color:#F4F0F5;font:500 14px Satoshi,sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-envelope-simple" style="font-size:18px"></i>Open When letter</button>
+      </div>
+    </div>
+  </sc-if>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 0 4px;flex:none">
+    <div style="position:relative;width:188px;height:188px">
+      <sc-if value="{{ clinking }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;border-radius:50%;border:2px solid #E68AF5;animation:{{ an.ripple }}"></div>
+        <div style="position:absolute;left:50%;top:50%;width:0;height:0">
+          <sc-for list="{{ sparks }}" as="sp" hint-placeholder-count="0">
+            <div style="position:absolute;left:0;top:0;transform:rotate({{ sp.a }}deg)"><div style="width:4px;height:12px;margin:-6px 0 0 -2px;border-radius:2px;background:#E68AF5;opacity:0;animation:{{ an.sparkBtn }}"></div></div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <button type="button" onPointerDown="{{ pressDown }}" onPointerUp="{{ pressUp }}" onPointerLeave="{{ pressCancel }}" onKeyDown="{{ clinkKey }}" aria-label="Send a Clink. Hold to glow together." style="position:absolute;inset:0;border-radius:50%;background:#E68AF5;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease" style-focus="outline:2px solid #E68AF5;outline-offset:4px" style-active="transform:scale(.96)">
+        <i class="ph ph-wine" style="font-size:72px;color:#0F0E11;margin-right:-14px;transform-origin:50% 90%;transform:rotate(-14deg);animation:{{ an.btnL }}"></i>
+        <i class="ph ph-wine" style="font-size:72px;color:#0F0E11;margin-left:-14px;transform-origin:50% 90%;transform:rotate(14deg);animation:{{ an.btnR }}"></i>
+      </button>
+    </div>
+    <div style="font:800 22px 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">{{ clinkLabel }}</div>
+    <div style="font:400 14px Satoshi,sans-serif;color:#ADA6B2">12-day streak. Hold to glow together.</div>
+  </div>
+  <div style="border-radius:20px;background:#18161B;border:1px solid #36313B;padding:16px;display:flex;flex-direction:column;gap:12px;flex:none">
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font:700 18px Satoshi,sans-serif">How are you, really?</div><div style="font:400 14px Satoshi,sans-serif;color:#7C7581">Once a day</div></div>
+    <div style="display:flex;gap:8px;align-items:center;font:400 14px Satoshi,sans-serif;color:#ADA6B2"><span style="width:10px;height:10px;background:#8FD9C8;flex:none"></span>Theo is cosy. "soup and rain."</div>
+    <div style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 0 4px">
+      <sc-for list="{{ moods }}" as="m" hint-placeholder-count="6">
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ m.go }}" style="flex:none;width:72px;height:72px;border-radius:50%;background:#211E25;border:{{ m.border }};color:{{ m.color }};font:500 13px/1.15 Satoshi,sans-serif;cursor:pointer;position:relative;padding:8px;text-align:center;animation:{{ m.anim }};transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><span style="position:absolute;inset:7px 5px 3px 9px;border-radius:50%;border:2px solid rgba(173,166,178,.08)"></span>{{ m.label }}</button>
+      </sc-for>
+    </div>
+    <sc-if value="{{ moodSent }}"><div style="font:500 14px Satoshi,sans-serif;color:#E68AF5;animation:{{ an.reveal }}">Sent. Theo sees it on Us.</div></sc-if>
+  </div>
+  <div style="border-radius:20px;background:#18161B;border:1px solid #36313B;padding:16px;display:flex;flex-direction:column;gap:14px;flex:none">
+    <div style="display:flex;justify-content:space-between;align-items:center"><div style="font:700 18px Satoshi,sans-serif">Next visit</div><div style="font:500 12px 'Geist Mono',monospace;color:#ADA6B2;letter-spacing:.06em">ACC → LHR · GATE 2</div></div>
+    <sc-if value="{{ countdown }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;gap:14px;perspective:400px">
+        <sc-for list="{{ flaps }}" as="f" hint-placeholder-count="3">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:3px">
+              <sc-for list="{{ f.d }}" as="dg" hint-placeholder-count="2">
+                <div style="width:40px;height:56px;border-radius:6px;border:1px solid #36313B;background:linear-gradient(#211E25 0 50%,#18161B 50% 100%);display:flex;align-items:center;justify-content:center;font:500 32px 'Geist Mono',monospace;transform-origin:50% 50%;animation:{{ dg.anim }}">{{ dg.ch }}</div>
+              </sc-for>
+            </div>
+            <div style="font:500 12px 'Geist Mono',monospace;color:#7C7581">{{ f.label }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font:400 14px Satoshi,sans-serif;color:#ADA6B2">Theo lands Fri 22 Nov, 06:40 London time.</div>
+    </sc-if>
+    <sc-if value="{{ noCountdown }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;gap:3px;opacity:.5"><sc-for list="{{ boardMini }}" as="b" hint-placeholder-count="6"><div style="width:36px;height:50px;border-radius:6px;border:1px dashed #36313B;display:flex;align-items:center;justify-content:center;font:500 26px 'Geist Mono',monospace;color:#7C7581;margin-right:{{ b.gap }}">-</div></sc-for></div>
+      <p style="margin:0;font:400 16px/1.45 Satoshi,sans-serif;color:#ADA6B2">Nothing on the board yet. Add your next visit and we'll start the flip.</p>
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ addCountdown }}" style="align-self:flex-start;height:44px;padding:0 18px;border-radius:999px;background:#211E25;border:1px solid #36313B;color:#F4F0F5;font:500 14px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Add a countdown</button>
+    </sc-if>
+  </div>
+  <div style="border-radius:20px;background:#211E25;padding:20px 16px;display:flex;flex-direction:column;gap:12px;flex:none;transform:rotate(-1deg)">
+    <div style="font:500 14px Satoshi,sans-serif;color:#ADA6B2">Today's ritual, 21:00 for both</div>
+    <div style="font:800 22px/1.15 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">One small thing that made you think of me today.</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <div style="display:flex;gap:8px;align-items:center;font:400 14px Satoshi,sans-serif;color:#ADA6B2"><span style="width:10px;height:10px;background:#8FD9C8"></span>Theo answered. Both reveal together.</div>
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ goChat }}" style="flex:none;height:44px;padding:0 18px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 14px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Answer</button>
+    </div>
+  </div>
+</div>
+<sc-if value="{{ incoming }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ dismissIncoming }}" style="position:absolute;inset:0;background:rgba(15,14,17,.72);z-index:30;animation:fadeIn 200ms both"></div>
+  <div style="position:absolute;left:12px;right:12px;top:56px;z-index:31;border-radius:20px;background:#18161B;border:1px solid #36313B;box-shadow:0 20px 50px rgba(0,0,0,.4);padding:20px;display:flex;flex-direction:column;gap:16px;animation:{{ an.slideDown }}">
+    <div style="display:flex;gap:14px;align-items:center">
+      <div style="width:56px;height:56px;border-radius:50%;background:#2C2830;border:2px solid #8FD9C8;display:flex;align-items:center;justify-content:center;font:800 22px 'Cabinet Grotesk',sans-serif;animation:{{ an.pulse }}">T</div>
+      <div><div style="font:800 22px 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Theo sent a Clink</div><div style="font:400 14px Satoshi,sans-serif;color:#ADA6B2">Answer within 10 min to keep the streak.</div></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ clinkBack }}" style="flex:1;height:52px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-wine" style="font-size:20px"></i>Clink back</button>
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ dismissIncoming }}" style="height:52px;padding:0 20px;border-radius:999px;background:transparent;color:#F4F0F5;border:1px solid #36313B;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Later</button>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{ holding }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;z-index:32;background:#0F0E11;box-shadow:inset 0 0 140px rgba(230,138,245,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;animation:fadeIn 320ms both">
+    <div style="display:flex"><div style="width:88px;height:88px;border-radius:50%;background:#211E25;border:3px solid #E68AF5;display:flex;align-items:center;justify-content:center;font:800 34px 'Cabinet Grotesk',sans-serif;margin-right:-10px;z-index:1">N</div><div style="width:88px;height:88px;border-radius:50%;background:#2C2830;border:3px solid #8FD9C8;display:flex;align-items:center;justify-content:center;font:800 34px 'Cabinet Grotesk',sans-serif">T</div></div>
+    <div style="font:800 28px 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Holding <em>together</em></div>
+    <div style="font:500 64px 'Geist Mono',monospace;font-variant-numeric:tabular-nums;color:#E68AF5">00:{{ holdSecs }}</div>
+    <div style="font:400 16px Satoshi,sans-serif;color:#ADA6B2">Theo's thumb is on it too. Let go whenever.</div>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ stopHold }}" style="margin-top:20px;height:52px;padding:0 28px;border-radius:999px;background:transparent;color:#F4F0F5;border:1px solid #36313B;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Let go</button>
+  </div>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ s.chat }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};padding:48px 0 84px;display:flex;flex-direction:column">
+  <div style="flex:none;display:flex;align-items:center;gap:12px;padding:8px 16px 12px;border-bottom:1px solid #36313B">
+    <div style="width:44px;height:44px;border-radius:50%;background:#2C2830;border:2px solid #8FD9C8;display:flex;align-items:center;justify-content:center;font:800 18px 'Cabinet Grotesk',sans-serif">T</div>
+    <div style="flex:1;min-width:0"><div style="font:700 18px Satoshi,sans-serif">Theo</div><div style="font:400 13px Satoshi,sans-serif;color:#ADA6B2">{{ chatSub }}</div></div>
+    <button style-active="transform:scale(0.97)" type="button" aria-label="Call" style="width:44px;height:44px;border-radius:50%;background:#18161B;border:1px solid #36313B;color:#F4F0F5;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-phone" style="font-size:20px"></i></button>
+    <button style-active="transform:scale(0.97)" type="button" aria-label="Video call" style="width:44px;height:44px;border-radius:50%;background:#18161B;border:1px solid #36313B;color:#F4F0F5;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-video-camera" style="font-size:20px"></i></button>
+  </div>
+  <sc-if value="{{ ch.failed }}"><div style="flex:none;display:flex;gap:8px;align-items:center;padding:10px 16px;background:#2C2830;font:500 14px Satoshi,sans-serif"><i class="ph ph-wifi-slash" style="font-size:18px;color:#F2B84B"></i>You're offline. Messages send when you're back.</div></sc-if>
+  <div style="flex:1;overflow-y:auto;scrollbar-width:none;padding:16px;display:flex;flex-direction:column;gap:8px">
+    <sc-if value="{{ ch.loading }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:10px" aria-label="Loading messages">
+        <sc-for list="{{ skel }}" as="k" hint-placeholder-count="6"><div style="align-self:{{ k.side }};width:{{ k.w }};height:{{ k.h }};border-radius:20px;background:#211E25;animation:{{ an.skel }};animation-delay:{{ k.d }}"></div></sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{ ch.empty }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center">
+        <div style="display:flex;flex-direction:column;align-items:center"><div style="display:flex;gap:28px"><i class="ph ph-coffee" style="font-size:44px;color:#F4F0F5"></i><i class="ph ph-coffee" style="font-size:44px;color:#E68AF5;transform:scaleX(-1)"></i></div><div style="width:160px;height:2px;background:#36313B;border-radius:2px;margin-top:2px"></div></div>
+        <div style="font:800 28px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Say something.<br>Or just send a <em>Clink</em>.</div>
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ goUs }}" style="height:44px;padding:0 18px;border-radius:999px;background:#211E25;border:1px solid #36313B;color:#F4F0F5;font:500 14px Satoshi,sans-serif;cursor:pointer;display:flex;gap:6px;align-items:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-wine" style="font-size:18px"></i>Send a Clink</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{ ch.full }}" hint-placeholder-val="{{ true }}">
+      <div style="align-self:center;font:500 12px 'Geist Mono',monospace;color:#7C7581;padding:4px 0">Today 20:58</div>
+      <div style="align-self:flex-start;max-width:78%;padding:10px 14px;border-radius:20px 20px 20px 6px;background:#18161B;border:1px solid #36313B;font:400 16px/1.4 Satoshi,sans-serif">made jollof. saving you none</div>
+      <div style="align-self:flex-end;max-width:78%;padding:10px 14px;border-radius:20px 20px 6px 20px;background:#2C2830;font:400 16px/1.4 Satoshi,sans-serif">rude. at least send proof</div>
+      <div style="align-self:flex-start;display:grid;grid-template-columns:1fr 1fr;gap:4px;width:70%;position:relative">
+        <div style="aspect-ratio:4/5;border-radius:12px;background:repeating-linear-gradient(135deg,#211E25 0 8px,#1C1A20 8px 16px);display:flex;align-items:flex-end;padding:8px;font:500 11px 'Geist Mono',monospace;color:#7C7581">PHOTO: JOLLOF IN THE POT</div>
+        <div style="aspect-ratio:4/5;border-radius:12px;background:repeating-linear-gradient(135deg,#211E25 0 8px,#1C1A20 8px 16px);display:flex;align-items:flex-end;padding:8px;font:500 11px 'Geist Mono',monospace;color:#7C7581">PHOTO: THEO'S KITCHEN</div>
+        <div style="position:absolute;right:-8px;bottom:-12px;padding:2px 8px;border-radius:999px;background:#2C2830;border:1px solid #36313B;font-size:14px">😭</div>
+      </div>
+      <div style="align-self:center;display:flex;gap:6px;align-items:center;font:500 12px 'Geist Mono',monospace;color:#7C7581;padding:10px 0 4px"><i class="ph ph-wine" style="font-size:14px;color:#E68AF5"></i>Theo sent a Clink, 21:02</div>
+      <div style="align-self:flex-end;width:78%;padding:10px 12px;border-radius:20px 20px 6px 20px;background:#2C2830;display:flex;align-items:center;gap:10px">
+        <button style-active="transform:scale(0.97)" type="button" aria-label="Play voice note" style="flex:none;width:36px;height:36px;border-radius:50%;background:#E68AF5;border:none;color:#0F0E11;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-play" style="font-size:16px"></i></button>
+        <div style="flex:1;display:flex;align-items:center;gap:2px;height:32px"><sc-for list="{{ wave }}" as="w" hint-placeholder-count="20"><span style="flex:1;height:{{ w.h }};border-radius:2px;background:#ADA6B2"></span></sc-for></div>
+        <span style="font:500 12px 'Geist Mono',monospace;color:#ADA6B2">0:42</span>
+        <span style="padding:2px 6px;border-radius:999px;border:1px solid #4A4450;font:500 11px 'Geist Mono',monospace;color:#ADA6B2">1x</span>
+      </div>
+      <div style="align-self:flex-start;max-width:78%;padding:10px 14px;border-radius:20px 20px 20px 6px;background:#18161B;border:1px solid #36313B;display:flex;flex-direction:column;gap:6px">
+        <div style="padding:6px 10px;border-radius:12px;background:#211E25;font:400 13px Satoshi,sans-serif;color:#ADA6B2;display:flex;gap:6px;align-items:center"><i class="ph ph-microphone" style="font-size:14px"></i>Your voice note · 0:42</div>
+        <span style="font:400 16px/1.4 Satoshi,sans-serif">your laugh at 0:31. again please</span>
+      </div>
+      <div style="align-self:flex-end;width:96px;height:96px;border-radius:50%;background:#18161B;border:1px solid #36313B;display:flex;align-items:center;justify-content:center;font:800 22px 'Cabinet Grotesk',sans-serif;color:#E68AF5;transform:rotate(-8deg)">clink!</div>
+      <div style="align-self:flex-end;max-width:78%;padding:10px 14px;border-radius:20px 20px 6px 20px;background:#2C2830;font:400 16px/1.4 Satoshi,sans-serif">ok fine. sunday call?</div>
+      <sc-if value="{{ ch.read }}"><div style="align-self:flex-end;font:500 12px 'Geist Mono',monospace;color:#7C7581">Read 21:14</div></sc-if>
+      <sc-if value="{{ ch.failed }}"><button style-active="transform:scale(0.97)" type="button" onClick="{{ retry }}" style="align-self:flex-end;display:flex;gap:6px;align-items:center;background:none;border:none;color:#FF7A6B;font:500 14px Satoshi,sans-serif;cursor:pointer;padding:4px 0;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-warning-circle" style="font-size:16px"></i>Not sent. Tap to retry</button></sc-if>
+      <sc-if value="{{ ch.typing }}"><div style="align-self:flex-start;padding:14px 16px;border-radius:20px 20px 20px 6px;background:#18161B;border:1px solid #36313B;display:flex;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:#ADA6B2;animation:{{ an.typing }}"></span><span style="width:7px;height:7px;border-radius:50%;background:#ADA6B2;animation:{{ an.typing }};animation-delay:.2s"></span><span style="width:7px;height:7px;border-radius:50%;background:#ADA6B2;animation:{{ an.typing }};animation-delay:.4s"></span></div></sc-if>
+    </sc-if>
+  </div>
+  <sc-if value="{{ tray }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:none;border-top:1px solid #36313B;background:#18161B;padding:12px 16px;animation:{{ an.sheet }}">
+      <div style="font:500 12px 'Geist Mono',monospace;color:#7C7581;margin-bottom:10px">RECENT · CLINK STARTER PACK</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+        <sc-for list="{{ stickers }}" as="k" hint-placeholder-count="8"><button style-active="transform:scale(0.97)" type="button" onClick="{{ k.go }}" style="aspect-ratio:1;border-radius:50%;background:#211E25;border:1px solid #36313B;color:#F4F0F5;font:800 15px 'Cabinet Grotesk',sans-serif;cursor:pointer;transform:rotate({{ k.rot }});transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">{{ k.t }}</button></sc-for>
+      </div>
+    </div>
+  </sc-if>
+  <div style="flex:none;display:flex;gap:8px;align-items:center;padding:10px 12px">
+    <button style-active="transform:scale(0.97)" type="button" aria-label="Add media" style="flex:none;width:44px;height:44px;border-radius:50%;background:#211E25;border:1px solid #36313B;color:#F4F0F5;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-plus" style="font-size:20px"></i></button>
+    <div style="flex:1;height:44px;border-radius:14px;background:#211E25;border:1px solid #36313B;display:flex;align-items:center;padding:0 6px 0 14px;gap:6px"><input placeholder="Message Theo" style="flex:1;min-width:0;background:none;border:none;outline:none;color:#F4F0F5;font:400 16px Satoshi,sans-serif"><button style-active="transform:scale(0.97)" type="button" onClick="{{ toggleTray }}" aria-label="Stickers" style="width:36px;height:36px;border:none;background:none;color:#ADA6B2;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-sticker" style="font-size:22px"></i></button></div>
+    <button style-active="transform:scale(0.97)" type="button" aria-label="Hold to record" style="flex:none;width:44px;height:44px;border-radius:50%;background:#E68AF5;border:none;color:#0F0E11;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-microphone" style="font-size:20px"></i></button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ s.play }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};overflow-y:auto;scrollbar-width:none;padding:52px 16px 108px;display:flex;flex-direction:column;gap:20px">
+  <h1 style="margin:8px 0 0;font:800 48px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Play <em>together</em></h1>
+  <div style="border-radius:20px;background:#18161B;border:1px solid #36313B;padding:16px;display:flex;flex-direction:column;gap:10px;flex:none">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;gap:8px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:#E68AF5"></span><span style="font:500 16px Satoshi,sans-serif">Nia</span><span style="font:500 28px 'Geist Mono',monospace">23</span></div>
+      <div style="font:500 12px 'Geist Mono',monospace;color:#7C7581">LIFETIME</div>
+      <div style="display:flex;gap:8px;align-items:center"><span style="font:500 28px 'Geist Mono',monospace">19</span><span style="font:500 16px Satoshi,sans-serif">Theo</span><span style="width:12px;height:12px;background:#8FD9C8"></span></div>
+    </div>
+    <div style="display:flex;height:6px;border-radius:999px;overflow:hidden;gap:2px"><span style="flex:23;background:#E68AF5"></span><span style="flex:19;background:#8FD9C8"></span></div>
+    <div style="font:400 14px Satoshi,sans-serif;color:#ADA6B2">Nia leads. For now.</div>
+  </div>
+  <sc-if value="{{ play.on }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:8px;align-items:center;font:500 16px Satoshi,sans-serif"><span style="width:8px;height:8px;border-radius:50%;background:#E68AF5;animation:{{ an.dot }}"></span>Theo's here. Live games are open.</div></sc-if>
+  <sc-if value="{{ play.off }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:8px;align-items:center;font:500 16px Satoshi,sans-serif;color:#ADA6B2"><span style="width:8px;height:8px;border-radius:50%;border:1.5px solid #7C7581"></span>Theo's away. Turn-based games work any time.</div></sc-if>
+  <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:14px;padding-bottom:20px">
+    <sc-for list="{{ games }}" as="g" hint-placeholder-count="4">
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ g.go }}" style="margin-top:{{ g.mt }};aspect-ratio:1;width:100%;border-radius:50%;background:#18161B;border:{{ g.border }};position:relative;cursor:pointer;color:#F4F0F5;opacity:{{ g.op }};animation:{{ g.anim }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:22px;text-align:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">
+        <span style="position:absolute;inset:9px;border-radius:50%;border:1px solid rgba(244,240,245,.06)"></span>
+        <span style="position:absolute;inset:24px 10px 4px 30px;border-radius:50%;border:3px solid rgba(173,166,178,.06)"></span>
+        <i class="ph {{ g.icon }}" style="font-size:28px;color:#E68AF5"></i>
+        <span style="font:700 15px/1.2 Satoshi,sans-serif">{{ g.name }}</span>
+        <span style="font:500 11px 'Geist Mono',monospace;color:#ADA6B2">{{ g.meta }}</span>
+        <sc-if value="{{ g.pending }}"><span style="position:absolute;top:2px;right:-4px;padding:4px 10px;border-radius:999px;background:#E68AF5;color:#0F0E11;font:700 12px Satoshi,sans-serif">Invite sent</span></sc-if>
+      </button>
+    </sc-for>
+  </div>
+  <div style="font:700 18px Satoshi,sans-serif;color:#F4F0F5">Turn by turn, any time</div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="border-radius:20px;background:#18161B;border:1px solid #36313B;padding:14px 16px;display:flex;gap:12px;align-items:center">
+      <i class="ph ph-grid-four" style="font-size:24px;color:#ADA6B2"></i>
+      <div style="flex:1"><div style="font:700 16px Satoshi,sans-serif">Word game</div><div style="font:400 14px Satoshi,sans-serif;color:#ADA6B2">Day 3 · you lead 62 to 58</div></div>
+      <span style="padding:6px 12px;border-radius:999px;background:#E68AF5;color:#0F0E11;font:700 13px Satoshi,sans-serif">Your turn</span>
+    </div>
+    <div style="border-radius:20px;background:#18161B;border:1px solid #36313B;padding:14px 16px;display:flex;gap:12px;align-items:center">
+      <i class="ph ph-book-open-text" style="font-size:24px;color:#ADA6B2"></i>
+      <div style="flex:1"><div style="font:700 16px Satoshi,sans-serif">Story builder</div><div style="font:400 14px Satoshi,sans-serif;color:#ADA6B2">Line 14 of 40 · "and then the goat"</div></div>
+      <span style="padding:6px 12px;border-radius:999px;border:1px solid #36313B;color:#ADA6B2;font:500 13px Satoshi,sans-serif">Their turn</span>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ s.game }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};overflow-y:auto;scrollbar-width:none;padding:52px 20px 32px;display:flex;flex-direction:column;gap:16px">
+  <div style="display:flex;align-items:center;gap:12px;flex:none">
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ goPlay }}" aria-label="Leave game" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #36313B;background:transparent;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-x" style="font-size:20px"></i></button>
+    <div style="flex:1;font:500 14px Satoshi,sans-serif;color:#ADA6B2">How well do you know me</div>
+    <div style="font:500 16px 'Geist Mono',monospace">04/10</div>
+  </div>
+  <div style="height:4px;border-radius:999px;background:#36313B;flex:none"><div style="width:40%;height:100%;border-radius:999px;background:#E68AF5"></div></div>
+  <sc-if value="{{ gm.playing }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;gap:16px;font:500 14px Satoshi,sans-serif;color:#ADA6B2"><span style="display:flex;gap:6px;align-items:center"><span style="width:10px;height:10px;border-radius:50%;background:#E68AF5"></span>You guess</span><span style="display:flex;gap:6px;align-items:center"><span style="width:10px;height:10px;background:#8FD9C8"></span>Theo answered about himself</span></div>
+    <h2 style="margin:12px 0 8px;font:800 36px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">What would Theo order at <em>2 am</em>?</h2>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <sc-for list="{{ opts }}" as="o" hint-placeholder-count="4">
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ o.go }}" style="min-height:56px;padding:12px 18px;border-radius:999px;background:#18161B;border:{{ o.border }};color:#F4F0F5;font:500 16px Satoshi,sans-serif;text-align:left;cursor:pointer;display:flex;align-items:center;gap:10px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">
+          <span style="flex:1">{{ o.t }}</span>
+          <sc-if value="{{ o.me }}"><span style="width:12px;height:12px;border-radius:50%;background:#E68AF5"></span></sc-if>
+          <sc-if value="{{ o.theo }}"><span style="width:12px;height:12px;background:#8FD9C8"></span></sc-if>
+        </button>
+      </sc-for>
+    </div>
+    <sc-if value="{{ gm.reveal }}">
+      <div style="border-radius:20px;background:#211E25;padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;animation:{{ an.reveal }}">
+        <div><div style="font:800 22px 'Cabinet Grotesk',sans-serif">Close. It was Indomie.</div><div style="font:400 14px Satoshi,sans-serif;color:#ADA6B2">"two eggs, non-negotiable"</div></div>
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ nextQ }}" style="flex:none;height:48px;padding:0 20px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Next</button>
+      </div>
+    </sc-if>
+  </sc-if>
+  <sc-if value="{{ gm.results }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:12px;animation:{{ an.reveal }}">
+      <div style="font:500 12px 'Geist Mono',monospace;color:#7C7581">ROUND OVER</div>
+      <div style="font:500 96px/1 'Geist Mono',monospace;color:#E68AF5">7<span style="color:#7C7581">/10</span></div>
+      <div style="font:800 28px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">You know Theo <em>suspiciously</em> well.</div>
+      <div style="display:flex;gap:6px;align-items:flex-end;height:60px;margin-top:12px"><span style="width:20px;height:30%;background:#36313B;border-radius:4px"></span><span style="width:20px;height:50%;background:#36313B;border-radius:4px"></span><span style="width:20px;height:40%;background:#36313B;border-radius:4px"></span><span style="width:20px;height:60%;background:#36313B;border-radius:4px"></span><span style="width:20px;height:70%;background:#E68AF5;border-radius:4px"></span><span style="font:500 12px 'Geist Mono',monospace;color:#7C7581;margin-left:6px">LAST 5</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ rematch }}" style="height:56px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Rematch, Theo guesses</button>
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ goPlay }}" style="height:52px;border-radius:999px;background:transparent;color:#F4F0F5;border:1px solid #36313B;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Back to the lobby</button>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ s.plans }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};overflow-y:auto;scrollbar-width:none;padding:52px 16px 108px;display:flex;flex-direction:column;gap:20px">
+<sc-if value="{{ pl.hub }}" hint-placeholder-val="{{ true }}">
+  <div><h1 style="margin:8px 0 0;font:800 48px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Plans</h1><p style="margin:4px 0 0;font:400 16px Satoshi,sans-serif;color:#ADA6B2">Dates that work in two time zones.</p></div>
+  <div style="position:relative;height:176px;flex:none">
+    <div style="position:absolute;inset:0;display:flex">
+      <div style="flex:1;background:#211E25;border-radius:20px 0 0 20px;padding:18px;display:flex;flex-direction:column;justify-content:space-between">
+        <div style="font:500 12px 'Geist Mono',monospace;color:#ADA6B2;letter-spacing:.06em">SAT 16 NOV · NEXT DATE</div>
+        <div style="font:800 36px/1 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Stargazing <em>night</em></div>
+        <div style="display:flex;gap:12px;font:500 13px 'Geist Mono',monospace;color:#F4F0F5"><span>21:00 {{ niaCity }}</span><span style="color:#7C7581">/</span><span>{{ theoDate }} Accra</span></div>
+      </div>
+      <div style="width:0;border-left:2px dashed #0F0E11;position:relative"><span style="position:absolute;left:-11px;top:-10px;width:20px;height:20px;border-radius:50%;background:#0F0E11"></span><span style="position:absolute;left:-11px;bottom:-10px;width:20px;height:20px;border-radius:50%;background:#0F0E11"></span></div>
+      <div style="width:84px"></div>
+    </div>
+    <sc-if value="{{ notTorn }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;right:0;top:0;bottom:0;width:84px;background:#E68AF5;color:#0F0E11;border-radius:0 20px 20px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px"><span style="writing-mode:vertical-rl;font:500 14px 'Geist Mono',monospace;letter-spacing:.2em">ADMIT TWO</span><span style="font:500 11px 'Geist Mono',monospace">0042</span></div></sc-if>
+    <sc-if value="{{ torn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:0;top:0;bottom:0;width:84px;background:#E68AF5;border-radius:0 20px 20px 0;animation:{{ an.tear }}"></div><div style="position:absolute;right:0;top:0;bottom:0;width:84px;display:flex;align-items:center;justify-content:center;color:#E68AF5"><i class="ph ph-check-circle" style="font-size:32px"></i></div></sc-if>
+  </div>
+  <sc-if value="{{ notTorn }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:8px;margin-top:-8px"><button style-active="transform:scale(0.97)" type="button" style="height:44px;padding:0 16px;border-radius:999px;background:#211E25;border:1px solid #36313B;color:#F4F0F5;font:500 14px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Open the kit</button><button style-active="transform:scale(0.97)" type="button" onClick="{{ tearStub }}" style="height:44px;padding:0 16px;border-radius:999px;background:transparent;border:none;color:#E68AF5;font:700 14px Satoshi,sans-serif;cursor:pointer;display:flex;gap:6px;align-items:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-scissors" style="font-size:18px"></i>We did it. Tear the stub</button></div></sc-if>
+  <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:10px">
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ goRoulette }}" style="text-align:left;border-radius:20px;background:#18161B;border:1px solid #36313B;padding:16px;color:#F4F0F5;cursor:pointer;display:flex;flex-direction:column;gap:20px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">
+      <i class="ph ph-shuffle" style="font-size:26px;color:#E68AF5"></i><span style="font:800 22px/1.05 'Cabinet Grotesk',sans-serif">Can't pick? <em>Spin</em> for a date.</span>
+    </button>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ goWatch }}" style="text-align:left;border-radius:20px;background:#18161B;border:1px solid #36313B;padding:16px;color:#F4F0F5;cursor:pointer;display:flex;flex-direction:column;gap:20px;margin-top:24px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">
+      <i class="ph ph-television-simple" style="font-size:26px;color:#E68AF5"></i><span style="font:800 22px/1.05 'Cabinet Grotesk',sans-serif">Watch party</span>
+    </button>
+  </div>
+  <div style="font:700 18px Satoshi,sans-serif;color:#F4F0F5">Date night kits</div>
+  <div style="display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px 4px">
+    <sc-for list="{{ kits }}" as="k" hint-placeholder-count="4">
+      <div style="animation:{{ k.anim }};flex:none;width:200px;height:104px;display:flex;border-radius:16px;overflow:hidden">
+        <div style="flex:1;background:#18161B;border:1px solid #36313B;border-right:none;border-radius:16px 0 0 16px;padding:12px;display:flex;flex-direction:column;justify-content:space-between"><span style="font:800 20px/1.05 'Cabinet Grotesk',sans-serif">{{ k.k }}</span><span style="font:500 12px 'Geist Mono',monospace;color:#ADA6B2">{{ k.mins }}</span></div>
+        <div style="width:0;border-left:2px dashed #36313B"></div>
+        <div style="width:30px;background:#211E25;border:1px solid #36313B;border-left:none;border-radius:0 16px 16px 0;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font:500 11px 'Geist Mono',monospace;color:#7C7581;letter-spacing:.1em">ADMIT 2</div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="border-radius:20px;background:#18161B;border:1px solid #36313B;padding:16px;display:flex;flex-direction:column;gap:14px;flex:none">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div><div style="font:500 12px 'Geist Mono',monospace;color:#ADA6B2">CHALLENGE · DAY 12 OF 30</div><div style="font:800 22px 'Cabinet Grotesk',sans-serif;margin-top:4px">A voice note a day</div></div>
+      <div style="text-align:right"><div style="font:500 36px/1 'Geist Mono',monospace;color:#E68AF5">12</div><div style="font:500 11px 'Geist Mono',monospace;color:#7C7581">STREAK</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+      <sc-for list="{{ week }}" as="d" hint-placeholder-count="7">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span style="font:500 12px 'Geist Mono',monospace;color:{{ d.today }}">{{ d.d }}</span><span style="width:16px;height:16px;border-radius:50%;background:{{ d.a }};border:1.5px solid {{ d.aBorder }}"></span><span style="width:16px;height:16px;background:{{ d.b }};border:1.5px solid {{ d.bBorder }}"></span></div>
+      </sc-for>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;font:400 14px Satoshi,sans-serif;color:#ADA6B2">Badges<span style="padding:4px 10px;border-radius:999px;border:1px solid #E68AF5;color:#F4F0F5;font-size:13px">First week</span><span style="padding:4px 10px;border-radius:999px;border:1px solid #E68AF5;color:#F4F0F5;font-size:13px">No misses</span><span style="padding:4px 10px;border-radius:999px;border:1px dashed #7C7581;font-size:13px">30 for 30</span></div>
+  </div>
+</sc-if>
+<sc-if value="{{ pl.roulette }}" hint-placeholder-val="{{ false }}">
+  <button style-active="transform:scale(0.97)" type="button" onClick="{{ plansBack }}" aria-label="Back" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #36313B;background:transparent;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-arrow-left" style="font-size:20px"></i></button>
+  <h1 style="margin:0;font:800 48px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Date <em>roulette</em></h1>
+  <div style="position:relative;height:168px;border-radius:20px;background:#18161B;border:1px solid #36313B;overflow:hidden;flex:none">
+    <div style="transform:translateY({{ rouletteY }});transition:{{ rouletteTrans }}">
+      <sc-for list="{{ reel }}" as="r" hint-placeholder-count="3"><div style="height:56px;display:flex;align-items:center;justify-content:center;font:800 28px 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em;color:#ADA6B2">{{ r.k }}</div></sc-for>
+    </div>
+    <div style="position:absolute;left:12px;right:12px;top:56px;height:56px;border-top:2px solid #E68AF5;border-bottom:2px solid #E68AF5;pointer-events:none"></div>
+    <div style="position:absolute;inset:0;background:linear-gradient(#18161B,transparent 35%,transparent 65%,#18161B);pointer-events:none"></div>
+  </div>
+  <sc-if value="{{ ro.result }}">
+    <div style="border-radius:20px;background:#211E25;padding:18px;display:flex;flex-direction:column;gap:10px;animation:{{ an.reveal }}">
+      <div style="font:500 12px 'Geist Mono',monospace;color:#ADA6B2">TONIGHT'S PICK</div>
+      <div style="font:800 36px/1 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">{{ roulettePick }}</div>
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ scheduleKit }}" style="align-self:flex-start;height:48px;padding:0 20px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Schedule it</button>
+    </div>
+  </sc-if>
+  <div style="flex:1"></div>
+  <button style-active="transform:scale(0.97)" type="button" onClick="{{ spinRoulette }}" style="flex:none;height:56px;border-radius:999px;background:#211E25;color:#F4F0F5;border:1px solid #36313B;font:700 16px Satoshi,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-shuffle" style="font-size:20px"></i>{{ rouletteBtn }}</button>
+</sc-if>
+<sc-if value="{{ pl.watch }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:center;gap:12px">
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ plansBack }}" aria-label="Back" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #36313B;background:transparent;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-arrow-left" style="font-size:20px"></i></button>
+    <div style="font:800 22px 'Cabinet Grotesk',sans-serif">Watch party</div>
+  </div>
+  <div style="position:relative;aspect-ratio:16/10;border-radius:12px;background:repeating-linear-gradient(135deg,#18161B 0 8px,#1C1A20 8px 16px);border:1px solid #36313B;display:flex;align-items:center;justify-content:center;font:500 12px 'Geist Mono',monospace;color:#7C7581;flex:none">
+    YOUTUBE PLAYER
+    <sc-if value="{{ wt.synced }}"><div style="position:absolute;left:10px;top:10px;padding:4px 10px;border-radius:999px;background:#0F0E11;color:#E68AF5;font:500 12px 'Geist Mono',monospace;display:flex;gap:6px;align-items:center"><span style="width:6px;height:6px;border-radius:50%;background:#E68AF5"></span>SYNCED · 0.2 S</div></sc-if>
+    <sc-if value="{{ wt.synced }}"><div style="position:absolute;right:10px;bottom:-26px;width:72px;height:72px;border-radius:50%;background:#2C2830;border:2px solid #8FD9C8;display:flex;align-items:center;justify-content:center;font:500 10px 'Geist Mono',monospace;color:#ADA6B2;text-align:center">THEO<br>CAM</div></sc-if>
+    <div style="position:absolute;inset:0;pointer-events:none;overflow:hidden">
+      <sc-for list="{{ floats }}" as="f" hint-placeholder-count="0"><span style="position:absolute;bottom:10px;left:{{ f.x }}%;font-size:28px;animation:{{ an.float }}">{{ f.e }}</span></sc-for>
+    </div>
+  </div>
+  <sc-if value="{{ wt.waiting }}">
+    <div style="border-radius:20px;background:#18161B;border:1px solid #36313B;padding:16px;display:flex;flex-direction:column;gap:12px">
+      <div style="font:500 16px Satoshi,sans-serif">Waiting on Theo. No rush.</div>
+      <div style="font:400 14px Satoshi,sans-serif;color:#ADA6B2">Spirited Away · we'll start you both at 0:00.</div>
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ joinWatch }}" style="align-self:flex-start;height:44px;padding:0 18px;border-radius:999px;background:#211E25;border:1px solid #36313B;color:#F4F0F5;font:500 14px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Simulate Theo joining</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{ wt.synced }}">
+    <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+      <button style-active="transform:scale(0.97)" type="button" aria-label="Pause" style="flex:none;width:48px;height:48px;border-radius:50%;background:#E68AF5;border:none;color:#0F0E11;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-pause" style="font-size:22px"></i></button>
+      <div style="flex:1;height:4px;border-radius:999px;background:#36313B"><div style="width:29%;height:100%;border-radius:999px;background:#F4F0F5"></div></div>
+      <span style="font:500 12px 'Geist Mono',monospace;color:#ADA6B2">36:12 / 2:05:00</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;font:400 14px Satoshi,sans-serif">
+      <div><span style="color:#8FD9C8;font-weight:700">Theo</span> the bath house scene. every time.</div>
+      <div><span style="color:#E68AF5;font-weight:700">You</span> shh it's starting</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <sc-for list="{{ reactions }}" as="r" hint-placeholder-count="4"><button style-active="transform:scale(0.97)" type="button" onClick="{{ r.go }}" style="width:52px;height:52px;border-radius:50%;background:#18161B;border:1px solid #36313B;font-size:22px;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">{{ r.e }}</button></sc-for>
+    </div>
+  </sc-if>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ s.keep }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};overflow-y:auto;scrollbar-width:none;padding:52px 16px 108px;display:flex;flex-direction:column;gap:20px">
+<sc-if value="{{ kp.hub }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end"><div><h1 style="margin:8px 0 0;font:800 48px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Keep</h1><p style="margin:4px 0 0;font:400 16px Satoshi,sans-serif;color:#ADA6B2">Things to open later.</p></div><button style-active="transform:scale(0.97)" type="button" style="height:44px;padding:0 16px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 14px Satoshi,sans-serif;cursor:pointer;display:flex;gap:6px;align-items:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-pencil-simple" style="font-size:18px"></i>Write one</button></div>
+  <div style="font:700 18px Satoshi,sans-serif;color:#F4F0F5">Open when, from Theo</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ openLetter }}" style="text-align:left;background:none;border:none;padding:0;color:#F4F0F5;cursor:pointer;display:flex;flex-direction:column;gap:8px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">
+      <div style="width:100%;aspect-ratio:3/2;border-radius:12px;background:#211E25;border:1px solid #36313B;position:relative;overflow:hidden;transform:rotate(-2deg)"><div style="position:absolute;inset:0;background:#2C2830;clip-path:polygon(0 0,100% 0,50% 60%)"></div><div style="position:absolute;left:50%;top:60%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:#E68AF5;color:#0F0E11;display:flex;align-items:center;justify-content:center;font:800 12px 'Cabinet Grotesk',sans-serif">N&amp;T</div></div>
+      <span style="font:700 16px/1.25 Satoshi,sans-serif">Open when you can't sleep</span><span style="font:500 12px 'Geist Mono',monospace;color:#7C7581">SEALED 2 NOV</span>
+    </button>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:28px">
+      <div style="width:100%;aspect-ratio:3/2;border-radius:12px;background:#18161B;border:1px solid #36313B;position:relative;overflow:hidden;transform:rotate(2deg)"><div style="position:absolute;left:0;right:0;top:0;height:60%;background:#211E25;clip-path:polygon(0 100%,100% 100%,50% 0)"></div><div style="position:absolute;left:14%;right:14%;top:24%;bottom:12%;background:#F4F0F5;border-radius:4px;opacity:.9"></div></div>
+      <span style="font:700 16px/1.25 Satoshi,sans-serif">Open when you miss me</span><span style="font:500 12px 'Geist Mono',monospace;color:#7C7581">OPENED 3 DAYS AGO</span>
+    </div>
+  </div>
+  <div style="font:700 18px Satoshi,sans-serif;color:#F4F0F5;margin-top:8px">Time capsules</div>
+  <div style="display:flex;gap:28px;align-items:flex-end;padding:0 8px">
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ openLockedCapsule }}" style="background:none;border:none;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;position:relative;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">
+      <span style="width:22px;height:16px;border-radius:4px 4px 2px 2px;background:#ADA6B2"></span><span style="width:28px;height:36px;border:1.5px solid rgba(244,240,245,.3);border-bottom:none;background:rgba(244,240,245,.03)"></span><span style="width:84px;height:120px;border-radius:30px 30px 18px 18px;border:1.5px solid rgba(244,240,245,.3);background:rgba(244,240,245,.03);display:flex;align-items:center;justify-content:center"><span style="width:40px;height:56px;background:#F4F0F5;opacity:.75;border-radius:3px;transform:rotate(-8deg)"></span></span>
+      <span style="position:absolute;left:58px;top:42px;padding:4px 8px;background:#F4F0F5;color:#0F0E11;border-radius:3px;font:500 11px 'Geist Mono',monospace;transform:rotate(-6deg);white-space:nowrap">14 FEB 2027</span>
+    </button>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ openCapsule }}" style="background:none;border:none;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;position:relative;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">
+      <span style="width:18px;height:14px;border-radius:4px 4px 2px 2px;background:#ADA6B2"></span><span style="width:24px;height:30px;border:1.5px solid rgba(244,240,245,.3);border-bottom:none;background:rgba(244,240,245,.03)"></span><span style="width:68px;height:96px;border-radius:26px 26px 16px 16px;border:1.5px solid #E68AF5;background:rgba(230,138,245,.06);display:flex;align-items:center;justify-content:center"><span style="width:32px;height:44px;background:#F4F0F5;opacity:.75;border-radius:3px;transform:rotate(6deg)"></span></span>
+      <span style="position:absolute;left:46px;top:30px;padding:4px 8px;background:#E68AF5;color:#0F0E11;border-radius:3px;font:500 11px 'Geist Mono',monospace;transform:rotate(5deg);white-space:nowrap">READY</span>
+    </button>
+  </div>
+  <div style="font:700 18px Satoshi,sans-serif;color:#F4F0F5;margin-top:8px">Timeline</div>
+  <div style="display:flex;flex-direction:column;border-left:1.5px solid #36313B;margin-left:6px">
+    <sc-for list="{{ timeline }}" as="t" hint-placeholder-count="4">
+      <div style="position:relative;padding:0 0 18px 20px;animation:{{ t.anim }}"><span style="position:absolute;left:-6px;top:4px;width:10px;height:10px;border-radius:50%;background:#0F0E11;border:1.5px solid #E68AF5"></span><div style="font:500 12px 'Geist Mono',monospace;color:#7C7581">{{ t.d }} · {{ t.k }}</div><div style="font:500 16px Satoshi,sans-serif;margin-top:2px">{{ t.t }}</div></div>
+    </sc-for>
+  </div>
+  <div style="font:700 18px Satoshi,sans-serif;color:#F4F0F5">Memory wall</div>
+  <div style="display:grid;grid-template-columns:2fr 1fr;grid-template-rows:96px 96px;gap:6px">
+    <div style="grid-row:span 2;border-radius:12px;background:repeating-linear-gradient(135deg,#211E25 0 8px,#1C1A20 8px 16px);display:flex;align-items:flex-end;padding:8px;font:500 11px 'Geist Mono',monospace;color:#7C7581">PHOTO: EVENING ON THE COAST</div>
+    <div style="border-radius:12px;background:repeating-linear-gradient(135deg,#211E25 0 8px,#1C1A20 8px 16px);display:flex;align-items:flex-end;padding:8px;font:500 11px 'Geist Mono',monospace;color:#7C7581">PHOTO: RAIN IN LONDON</div>
+    <div style="border-radius:12px;background:repeating-linear-gradient(135deg,#211E25 0 8px,#1C1A20 8px 16px);display:flex;align-items:flex-end;padding:8px;font:500 11px 'Geist Mono',monospace;color:#7C7581">PHOTO: TRAIN WINDOW</div>
+  </div>
+</sc-if>
+<sc-if value="{{ kp.letter }}" hint-placeholder-val="{{ false }}">
+  <button style-active="transform:scale(0.97)" type="button" onClick="{{ keepBack }}" aria-label="Back" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #36313B;background:transparent;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-arrow-left" style="font-size:20px"></i></button>
+  <div><div style="font:500 12px 'Geist Mono',monospace;color:#7C7581">FROM THEO · SEALED 2 NOV</div><h1 style="margin:6px 0 0;font:800 36px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Open when you can't <em>sleep</em></h1></div>
+  <sc-if value="{{ sl.closed }}" hint-placeholder-val="{{ true }}">
+    <div style="position:relative;width:100%;aspect-ratio:3/2;border-radius:16px;background:#211E25;border:1px solid #36313B;overflow:hidden;flex:none;margin-top:12px;perspective:600px">
+      <div style="position:absolute;inset:0;background:#2C2830;clip-path:polygon(0 0,100% 0,50% 60%)"></div>
+      <sc-if value="{{ sl.sealed }}"><button style-active="transform:scale(0.97)" type="button" onClick="{{ breakSeal }}" aria-label="Break the seal" style="position:absolute;left:50%;top:60%;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;background:#E68AF5;border:none;color:#0F0E11;font:800 20px 'Cabinet Grotesk',sans-serif;cursor:grab;box-shadow:0 0 0 6px rgba(230,138,245,.18);transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">N&amp;T</button></sc-if>
+      <sc-if value="{{ sl.breaking }}">
+        <div style="position:absolute;left:50%;top:60%;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;background:#E68AF5;clip-path:polygon(0 0,52% 0,44% 50%,54% 100%,0 100%);animation:{{ an.sealL }}"></div>
+        <div style="position:absolute;left:50%;top:60%;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;background:#E68AF5;clip-path:polygon(52% 0,100% 0,100% 100%,54% 100%,44% 50%);animation:{{ an.sealR }}"></div>
+      </sc-if>
+    </div>
+    <p style="margin:0;text-align:center;font:400 16px Satoshi,sans-serif;color:#ADA6B2">Tap or drag the seal to break it. Theo gets a little note that you did.</p>
+  </sc-if>
+  <sc-if value="{{ sl.opened }}" hint-placeholder-val="{{ false }}">
+    <div style="border-radius:20px;background:#F4F0F5;color:#0F0E11;padding:24px 22px;display:flex;flex-direction:column;gap:14px;transform:rotate(-1deg);animation:{{ an.letter }}">
+      <p style="margin:0;font:400 18px/1.55 Satoshi,sans-serif">If you're reading this it's late and your brain is doing the thing.</p>
+      <p style="margin:0;font:400 18px/1.55 Satoshi,sans-serif">Put the phone down after this. Breathe like we practised. Four in, hold, six out. I'm probably asleep with my mouth open, which is your mental image for tonight.</p>
+      <p style="margin:0;font:800 22px 'Cabinet Grotesk',sans-serif">T.</p>
+    </div>
+    <div style="display:flex;gap:8px"><button style-active="transform:scale(0.97)" type="button" onClick="{{ goChat }}" style="height:48px;padding:0 20px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Reply with a voice note</button><button style-active="transform:scale(0.97)" type="button" onClick="{{ keepBack }}" style="height:48px;padding:0 20px;border-radius:999px;background:transparent;color:#F4F0F5;border:1px solid #36313B;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Keep it</button></div>
+  </sc-if>
+</sc-if>
+<sc-if value="{{ kp.capsule }}" hint-placeholder-val="{{ false }}">
+  <button style-active="transform:scale(0.97)" type="button" onClick="{{ keepBack }}" aria-label="Back" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #36313B;background:transparent;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-arrow-left" style="font-size:20px"></i></button>
+  <h1 style="margin:0;font:800 36px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Valentine's, <em>sealed</em></h1>
+  <sc-if value="{{ cp.locked }}"><p style="margin:-8px 0 0;font:400 16px Satoshi,sans-serif;color:#ADA6B2">Neither of you can open it early. That's the point.</p></sc-if>
+  <div style="display:flex;flex-direction:column;align-items:center;position:relative;padding-top:24px;flex:none">
+    <sc-if value="{{ cp.corked }}" hint-placeholder-val="{{ true }}"><span style="width:34px;height:26px;border-radius:6px 6px 3px 3px;background:#ADA6B2"></span></sc-if>
+    <sc-if value="{{ cp.uncorking }}"><span style="width:34px;height:26px;border-radius:6px 6px 3px 3px;background:#ADA6B2;animation:{{ an.cork }}"></span></sc-if>
+    <sc-if value="{{ cp.open }}"><span style="width:34px;height:26px"></span></sc-if>
+    <span style="width:44px;height:54px;border:1.5px solid rgba(244,240,245,.3);border-bottom:none;background:rgba(244,240,245,.03)"></span>
+    <span style="width:150px;height:210px;border-radius:52px 52px 28px 28px;border:1.5px solid {{ bottleBorder }};background:rgba(244,240,245,.03);display:flex;align-items:center;justify-content:center"><span style="width:70px;height:100px;background:#F4F0F5;opacity:.75;border-radius:4px;transform:rotate(-8deg)"></span></span>
+    <span style="position:absolute;left:calc(50% + 34px);top:96px;padding:6px 10px;background:#F4F0F5;color:#0F0E11;border-radius:3px;font:500 12px 'Geist Mono',monospace;transform:rotate(-6deg);white-space:nowrap">14 FEB 2027</span>
+  </div>
+  <sc-if value="{{ cp.locked }}"><div style="text-align:center;font:500 36px 'Geist Mono',monospace">93d 04h 12m</div></sc-if>
+  <sc-if value="{{ cp.ready }}"><button style-active="transform:scale(0.97)" type="button" onClick="{{ uncork }}" style="height:56px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Uncork it</button></sc-if>
+  <sc-if value="{{ cp.open }}">
+    <div style="border-radius:20px;background:#18161B;border:1px solid #36313B;padding:18px;display:flex;flex-direction:column;gap:12px;animation:{{ an.letter }}">
+      <div style="font:500 12px 'Geist Mono',monospace;color:#7C7581">FROM BOTH OF YOU · 14 FEB 2026</div>
+      <p style="margin:0;font:400 16px/1.5 Satoshi,sans-serif">Prediction: by now we live in the same city. If not, Theo owes Nia one (1) flight and a very good dinner.</p>
+      <div style="display:flex;gap:10px;align-items:center;padding:10px;border-radius:14px;background:#211E25"><span style="width:32px;height:32px;border-radius:50%;background:#E68AF5;color:#0F0E11;display:flex;align-items:center;justify-content:center"><i class="ph ph-play" style="font-size:14px"></i></span><span style="font:500 14px Satoshi,sans-serif">Voice note · 1:08</span></div>
+    </div>
+  </sc-if>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ s.settings }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};overflow-y:auto;scrollbar-width:none;padding:52px 16px 40px;display:flex;flex-direction:column;gap:16px">
+  <div style="display:flex;align-items:center;gap:12px"><button style-active="transform:scale(0.97)" type="button" onClick="{{ goUs }}" aria-label="Back" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #36313B;background:transparent;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-arrow-left" style="font-size:20px"></i></button><h1 style="margin:0;font:800 36px 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Settings</h1></div>
+  <div style="display:flex;gap:14px;align-items:center;padding:4px 0"><div style="width:64px;height:64px;border-radius:50%;background:#211E25;border:2px solid #E68AF5;display:flex;align-items:center;justify-content:center;font:800 26px 'Cabinet Grotesk',sans-serif">N</div><div style="flex:1"><div style="font:700 18px Satoshi,sans-serif">Nia</div><div style="font:400 14px Satoshi,sans-serif;color:#ADA6B2">{{ niaCity }} · Theo calls you "trouble"</div></div><button style-active="transform:scale(0.97)" type="button" style="height:40px;padding:0 14px;border-radius:999px;background:#211E25;border:1px solid #36313B;color:#F4F0F5;font:500 14px Satoshi,sans-serif;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Edit</button></div>
+  <div style="font:700 18px Satoshi,sans-serif;color:#F4F0F5;margin-top:4px">Notifications</div>
+  <div style="border-radius:20px;background:#18161B;border:1px solid #36313B;overflow:hidden">
+    <sc-for list="{{ notifs }}" as="t" hint-placeholder-count="5">
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ t.go }}" style="width:100%;min-height:56px;padding:10px 16px;display:flex;align-items:center;gap:12px;background:none;border:none;border-bottom:1px solid #36313B;color:#F4F0F5;text-align:left;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><span style="flex:1"><span style="display:block;font:500 16px Satoshi,sans-serif">{{ t.label }}</span><sc-if value="{{ t.hasSub }}"><span style="display:block;font:400 13px Satoshi,sans-serif;color:#7C7581">{{ t.sub }}</span></sc-if></span><span style="flex:none;width:48px;height:28px;border-radius:999px;background:{{ t.bg }};padding:3px;transition:background 200ms"><span style="display:block;width:22px;height:22px;border-radius:50%;background:#0F0E11;transform:translateX({{ t.x }});transition:transform 200ms"></span></span></button>
+    </sc-for>
+    <div style="min-height:56px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between"><span style="font:500 16px Satoshi,sans-serif">Quiet hours</span><span style="font:500 14px 'Geist Mono',monospace;color:#ADA6B2">23:00 to 07:00</span></div>
+  </div>
+  <div style="font:700 18px Satoshi,sans-serif;color:#F4F0F5;margin-top:4px">App icon and name</div>
+  <div style="display:flex;gap:12px">
+    <sc-for list="{{ icons }}" as="ic" hint-placeholder-count="3">
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ ic.go }}" style="flex:1;padding:12px 0;border-radius:20px;background:#18161B;border:{{ ic.border }};color:#F4F0F5;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><span style="width:52px;height:52px;border-radius:14px;background:{{ ic.bg }};color:{{ ic.fg }};display:flex;align-items:center;justify-content:center"><i class="ph {{ ic.icon }}" style="font-size:26px"></i></span><span style="font:500 14px Satoshi,sans-serif">{{ ic.label }}</span></button>
+    </sc-for>
+  </div>
+  <div style="font:700 18px Satoshi,sans-serif;color:#F4F0F5;margin-top:4px">After Dark</div>
+  <div style="border-radius:20px;background:#18161B;border:1px solid #36313B;overflow:hidden">
+    <sc-for list="{{ darkSet }}" as="t" hint-placeholder-count="2">
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ t.go }}" style="width:100%;min-height:56px;padding:10px 16px;display:flex;align-items:center;gap:12px;background:none;border:none;border-bottom:1px solid #36313B;color:#F4F0F5;text-align:left;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><span style="flex:1"><span style="display:block;font:500 16px Satoshi,sans-serif">{{ t.label }}</span><span style="display:block;font:400 13px Satoshi,sans-serif;color:#7C7581">{{ t.sub }}</span></span><span style="flex:none;width:48px;height:28px;border-radius:999px;background:{{ t.bg }};padding:3px"><span style="display:block;width:22px;height:22px;border-radius:50%;background:#0F0E11;transform:translateX({{ t.x }});transition:transform 200ms"></span></span></button>
+    </sc-for>
+    <div style="min-height:56px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between"><span style="font:500 16px Satoshi,sans-serif">Your tiers</span><span style="font:400 14px Satoshi,sans-serif;color:#ADA6B2">Flirty, Steamy, Spicy</span></div>
+  </div>
+  <div style="font:700 18px Satoshi,sans-serif;color:#F4F0F5;margin-top:4px">Linking and account</div>
+  <div style="border-radius:20px;background:#18161B;border:1px solid #36313B;overflow:hidden">
+    <div style="min-height:56px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #36313B"><span style="font:500 16px Satoshi,sans-serif">Linked with Theo</span><span style="font:500 13px 'Geist Mono',monospace;color:#ADA6B2">SINCE 3 MAR 2025</span></div>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ goHelp }}" style="width:100%;min-height:56px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;background:none;border:none;border-bottom:1px solid #36313B;color:#F4F0F5;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Help and safety<i class="ph ph-caret-right" style="font-size:18px;color:#7C7581"></i></button>
+    <button style-active="transform:scale(0.97)" type="button" style="width:100%;min-height:56px;padding:10px 16px;display:flex;align-items:center;background:none;border:none;border-bottom:1px solid #36313B;color:#F4F0F5;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Sign out of all devices</button>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ startUnlink }}" style="width:100%;min-height:56px;padding:10px 16px;display:flex;align-items:center;background:none;border:none;border-bottom:1px solid #36313B;color:#FF7A6B;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Unlink from Theo</button>
+    <button style-active="transform:scale(0.97)" type="button" style="width:100%;min-height:56px;padding:10px 16px;display:flex;align-items:center;background:none;border:none;color:#FF7A6B;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Delete my account</button>
+  </div>
+</div>
+<sc-if value="{{ un.any }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ cancelUnlink }}" style="position:absolute;inset:0;background:rgba(15,14,17,.75);z-index:30"></div>
+  <div style="position:absolute;left:0;right:0;bottom:0;z-index:31;border-radius:20px 20px 0 0;background:#18161B;border-top:1px solid #36313B;box-shadow:0 -20px 50px rgba(0,0,0,.4);padding:24px 20px 36px;display:flex;flex-direction:column;gap:16px;animation:{{ an.sheet }}">
+    <div style="width:40px;height:4px;border-radius:999px;background:#36313B;align-self:center;margin-top:-10px"></div>
+    <sc-if value="{{ un.one }}">
+      <div style="font:500 12px 'Geist Mono',monospace;color:#7C7581">STEP 1 OF 2</div>
+      <div style="font:800 28px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Unlink from Theo?</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font:400 16px/1.45 Satoshi,sans-serif">
+        <div style="display:flex;gap:10px"><i class="ph ph-trash" style="font-size:20px;color:#FF7A6B;flex:none"></i>Vault and View once media deleted for both of you within 1 hour.</div>
+        <div style="display:flex;gap:10px"><i class="ph ph-chat-circle" style="font-size:20px;color:#ADA6B2;flex:none"></i>Chat becomes read-only for 30 days, then it's deleted.</div>
+        <div style="display:flex;gap:10px"><i class="ph ph-bell-simple" style="font-size:20px;color:#ADA6B2;flex:none"></i>Theo gets a short, neutral notice.</div>
+      </div>
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ unlinkNext }}" style="height:52px;border-radius:999px;background:transparent;color:#FF7A6B;border:1.5px solid #FF7A6B;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Continue</button>
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ cancelUnlink }}" style="height:52px;border-radius:999px;background:#211E25;color:#F4F0F5;border:1px solid #36313B;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Cancel</button>
+    </sc-if>
+    <sc-if value="{{ un.two }}">
+      <div style="font:500 12px 'Geist Mono',monospace;color:#7C7581">STEP 2 OF 2</div>
+      <div style="font:800 28px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Last check. This can't be undone.</div>
+      <p style="margin:0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">You'll both go back to the link screen.</p>
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ confirmUnlink }}" style="height:52px;border-radius:999px;background:#FF7A6B;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Yes, unlink and wipe</button>
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ cancelUnlink }}" style="height:52px;border-radius:999px;background:#211E25;color:#F4F0F5;border:1px solid #36313B;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Keep us linked</button>
+    </sc-if>
+  </div>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ s.help }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};overflow-y:auto;scrollbar-width:none;padding:52px 16px 40px;display:flex;flex-direction:column;gap:16px">
+  <div style="display:flex;align-items:center;gap:12px"><button style-active="transform:scale(0.97)" type="button" onClick="{{ goSettings }}" aria-label="Back" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #36313B;background:transparent;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-arrow-left" style="font-size:20px"></i></button><h1 style="margin:0;font:800 36px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Help and <em>safety</em></h1></div>
+  <sc-if value="{{ hp.faq }}" hint-placeholder-val="{{ true }}">
+    <div style="border-radius:20px;background:#18161B;border:1px solid #36313B;overflow:hidden">
+      <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="4"><div style="animation:{{ f.anim }};min-height:56px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #36313B;font:500 16px/1.35 Satoshi,sans-serif">{{ f.q }}<i class="ph ph-plus" style="font-size:18px;color:#7C7581;flex:none"></i></div></sc-for>
+    </div>
+    <div style="border-radius:20px;background:#211E25;padding:18px;display:flex;flex-direction:column;gap:10px">
+      <div style="font:800 22px 'Cabinet Grotesk',sans-serif">Something wrong?</div>
+      <p style="margin:0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">Reports are private. Anything involving a possible minor suspends the account straight away.</p>
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ goReport }}" style="align-self:flex-start;height:48px;padding:0 20px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Report a problem</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{ hp.report }}" hint-placeholder-val="{{ false }}">
+    <div style="font:500 14px Satoshi,sans-serif;color:#ADA6B2">What's going on?</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ cats }}" as="c" hint-placeholder-count="4"><button style-active="transform:scale(0.97)" type="button" onClick="{{ c.go }}" style="height:44px;padding:0 16px;border-radius:999px;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.color }};font:500 14px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">{{ c.label }}</button></sc-for></div>
+    <textarea placeholder="Tell us what happened. Only our safety team reads this." style="min-height:140px;border-radius:14px;background:#211E25;border:1px solid #36313B;padding:14px 16px;color:#F4F0F5;font:400 16px/1.5 Satoshi,sans-serif;outline:none;resize:none"></textarea>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ sendReport }}" style="height:56px;border-radius:999px;background:#E68AF5;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Send report</button>
+  </sc-if>
+  <sc-if value="{{ hp.sent }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:12px;padding-top:40px;animation:{{ an.reveal }}"><i class="ph ph-shield-check" style="font-size:52px;color:#E68AF5"></i><div style="font:800 28px/1.05 'Cabinet Grotesk',sans-serif">Got it. We're on it.</div><p style="margin:0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">We reply within 24 hours. Theo isn't told you reported anything.</p></div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ s.darklock }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};padding:60px 28px 40px;display:flex;flex-direction:column;align-items:center">
+  <button style-active="transform:scale(0.97)" type="button" onClick="{{ goUs }}" aria-label="Close" style="align-self:flex-start;width:44px;height:44px;border-radius:50%;border:1px solid #36313B;background:transparent;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-x" style="font-size:20px"></i></button>
+  <i class="ph ph-moon" style="font-size:36px;color:#FF5A3C;margin-top:12px"></i>
+  <h1 style="margin:10px 0 0;font:800 36px 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">After <em>Dark</em></h1>
+  <sc-if value="{{ pin.entry }}" hint-placeholder-val="{{ true }}">
+    <p style="margin:8px 0 0;font:400 16px Satoshi,sans-serif;color:{{ pinColor }};min-height:24px">{{ pinMsg }}</p>
+    <div style="display:flex;gap:18px;margin:24px 0 36px;animation:{{ an.shake }}"><sc-for list="{{ dots }}" as="d" hint-placeholder-count="4"><span style="width:16px;height:16px;border-radius:50%;border:1.5px solid {{ d.border }};background:{{ d.bg }}"></span></sc-for></div>
+    <div style="display:grid;grid-template-columns:repeat(3,76px);gap:16px 26px">
+      <sc-for list="{{ keys }}" as="k" hint-placeholder-count="12">
+        <button type="button" onClick="{{ k.go }}" aria-label="{{ k.aria }}" style="width:76px;height:76px;border-radius:50%;background:#18161B;border:1px solid #36313B;color:#F4F0F5;font:500 28px 'Geist Mono',monospace;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease" style-active="background:#2C2830" style-focus="outline:2px solid #FF5A3C;outline-offset:2px"><sc-if value="{{ k.isNum }}">{{ k.label }}</sc-if><sc-if value="{{ k.isIcon }}"><i class="ph {{ k.icon }}" style="font-size:26px"></i></sc-if></button>
+      </sc-for>
+    </div>
+    <div style="margin-top:20px;font:500 12px 'Geist Mono',monospace;color:#7C7581">DEMO PIN 2611 · AUTO-LOCKS AFTER 2 MIN</div>
+  </sc-if>
+  <sc-if value="{{ pin.locked }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;animation:{{ an.reveal }}">
+      <i class="ph ph-lock-key" style="font-size:48px;color:#FF7A6B"></i>
+      <div style="font:800 28px/1.05 'Cabinet Grotesk',sans-serif">Too many tries.</div>
+      <div style="font:500 48px 'Geist Mono',monospace">04:59</div>
+      <p style="margin:0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">Take a breath. Everything in here is safe.</p>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ s.darkhub }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};overflow-y:auto;scrollbar-width:none;padding:52px 16px 40px;display:flex;flex-direction:column;gap:20px">
+  <div style="display:flex;justify-content:space-between;align-items:center;height:44px">
+    <div style="display:flex;gap:6px;align-items:center;font:500 12px 'Geist Mono',monospace;color:#FF5A3C"><i class="ph ph-moon" style="font-size:16px"></i>PRIVATE · NIA AND THEO</div>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ lockDark }}" style="height:44px;padding:0 16px;border-radius:999px;background:transparent;border:1px solid #36313B;color:#F4F0F5;font:500 14px Satoshi,sans-serif;cursor:pointer;display:flex;gap:6px;align-items:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-lock-simple" style="font-size:18px"></i>Lock</button>
+  </div>
+  <div><h1 style="margin:0;font:800 48px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">After <em>Dark</em></h1><p style="margin:6px 0 0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">Only you two can see this. The lower choice always wins.</p></div>
+  <div style="display:flex;flex-direction:column;padding:4px 6px">
+    <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="4">
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ t.go }}" style="position:relative;z-index:{{ t.z }};margin-top:{{ t.mt }};height:104px;border-radius:20px;background:#211E25;border:1px solid #36313B;color:#F4F0F5;text-align:left;padding:16px 18px 26px;cursor:pointer;transform:rotate({{ t.rot }}deg);box-shadow:0 -8px 20px rgba(0,0,0,.4);overflow:hidden;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">
+        <span style="font:800 28px 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">{{ t.n }}</span>
+        <span style="text-align:right;display:flex;flex-direction:column;gap:2px;align-items:flex-end"><span style="font:500 14px Satoshi,sans-serif;color:#F4F0F5">{{ t.status }}</span><span style="font:400 12px Satoshi,sans-serif;color:#ADA6B2">{{ t.sub }}</span></span>
+        <span style="position:absolute;left:0;right:0;bottom:0;height:16px;background:repeating-linear-gradient(90deg,rgba(255,90,60,.5) 0 2px,#211E25 2px 5px);border-top:1px solid #36313B"></span>
+        <sc-if value="{{ t.locked }}"><span style="position:absolute;inset:0;border-radius:20px;background:repeating-linear-gradient(115deg,rgba(244,240,245,.07) 0 2px,transparent 2px 16px);border:1px solid rgba(244,240,245,.2)"></span></sc-if>
+      </button>
+    </sc-for>
+  </div>
+  <div style="display:grid;grid-template-columns:1.2fr 1fr;grid-template-rows:auto auto;gap:10px">
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ goWheel }}" style="grid-row:span 2;border-radius:20px;background:#FF5A3C;color:#0F0E11;border:none;padding:18px;text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;min-height:200px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-fire" style="font-size:30px"></i><span style="font:800 28px/1 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Dare<br>wheel</span></button>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ goDeck }}" style="border-radius:20px;background:#18161B;border:1px solid #36313B;color:#F4F0F5;padding:14px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:12px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-cards" style="font-size:22px;color:#FF5A3C"></i><span style="font:700 16px Satoshi,sans-serif">Spicy deck</span></button>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ goVault }}" style="border-radius:20px;background:#18161B;border:1px solid #36313B;color:#F4F0F5;padding:14px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:12px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-vault" style="font-size:22px;color:#FF5A3C"></i><span style="font:700 16px Satoshi,sans-serif">Vault · 8</span></button>
+  </div>
+  <button style-active="transform:scale(0.97)" type="button" onClick="{{ goRequest }}" style="border-radius:20px;background:#18161B;border:1px solid #36313B;color:#F4F0F5;padding:14px 16px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-envelope-simple-open" style="font-size:22px;color:#FF5A3C"></i><span style="flex:1;font:700 16px Satoshi,sans-serif">Theo sent you a request</span><span style="width:8px;height:8px;border-radius:50%;background:#FF5A3C"></span></button>
+</div>
+<sc-if value="{{ verifySheet }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeVerify }}" style="position:absolute;inset:0;background:rgba(15,14,17,.75);z-index:30"></div>
+  <div style="position:absolute;left:0;right:0;bottom:0;z-index:31;border-radius:20px 20px 0 0;background:#18161B;border-top:1px solid #36313B;box-shadow:0 -20px 50px rgba(0,0,0,.4);padding:24px 20px 36px;display:flex;flex-direction:column;gap:16px;animation:{{ an.sheet }}">
+    <div style="font:800 28px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Unhinged needs you <em>both</em> verified</div>
+    <div style="display:flex;flex-direction:column;gap:12px;font:500 16px Satoshi,sans-serif">
+      <div style="display:flex;gap:10px;align-items:center"><i class="ph ph-check-circle" style="font-size:22px;color:#FF5A3C"></i>Date of birth, done at signup</div>
+      <div style="display:flex;gap:10px;align-items:center"><i class="ph ph-circle-dashed" style="font-size:22px;color:#ADA6B2"></i>Quick ID and selfie check, about 2 min</div>
+      <div style="display:flex;gap:10px;align-items:center"><span style="width:22px;display:flex;justify-content:center"><span style="width:12px;height:12px;background:#8FD9C8"></span></span>Theo is verified</div>
+    </div>
+    <p style="margin:0;font:400 14px/1.5 Satoshi,sans-serif;color:#7C7581">Checked by our verification partner. We keep the result, not your ID.</p>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ startVerify }}" style="height:56px;border-radius:999px;background:#FF5A3C;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Start verification</button>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ closeVerify }}" style="height:48px;border-radius:999px;background:transparent;color:#F4F0F5;border:none;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Not now</button>
+  </div>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ s.darkwheel }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};padding:52px 16px 32px;display:flex;flex-direction:column;gap:16px">
+  <div style="display:flex;align-items:center;gap:12px"><button style-active="transform:scale(0.97)" type="button" onClick="{{ goDarkHub }}" aria-label="Back" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #36313B;background:transparent;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-arrow-left" style="font-size:20px"></i></button><div style="flex:1;font:800 28px 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Dare wheel</div><span style="padding:6px 12px;border-radius:999px;border:1px solid #36313B;font:500 12px 'Geist Mono',monospace;color:#ADA6B2">FLIRTY · STEAMY</span></div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;position:relative">
+    <div style="position:absolute;top:calc(50% - 168px);left:50%;margin-left:-14px;width:28px;height:28px;background:#FF5A3C;clip-path:polygon(0 0,100% 0,50% 100%);z-index:2"></div>
+    <div style="width:310px;height:310px;border-radius:50%;border:2px solid #36313B;position:relative;transform:{{ wheelDeg }};transition:{{ wheelTrans }};background:conic-gradient(#211E25 0 45deg,#2C2830 45deg 90deg,#211E25 90deg 135deg,#2C2830 135deg 180deg,#211E25 180deg 225deg,#2C2830 225deg 270deg,#211E25 270deg 315deg,#2C2830 315deg 360deg)">
+      <sc-for list="{{ segs }}" as="g" hint-placeholder-count="8"><div style="position:absolute;left:50%;top:50%;width:0;height:0;transform:rotate({{ g.rot }}deg)"><span style="position:absolute;left:-40px;top:-136px;width:80px;text-align:center;font:500 13px 'Geist Mono',monospace;color:#F4F0F5;letter-spacing:.06em">{{ g.label }}</span></div></sc-for>
+      <div style="position:absolute;left:50%;top:50%;width:72px;height:72px;margin:-36px 0 0 -36px;border-radius:50%;background:#FF5A3C;display:flex;align-items:center;justify-content:center;color:#0F0E11"><i class="ph ph-fire" style="font-size:30px"></i></div>
+    </div>
+  </div>
+  <button style-active="transform:scale(0.97)" type="button" onClick="{{ spin }}" style="flex:none;height:56px;border-radius:999px;background:#FF5A3C;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease" style-focus="outline:2px solid #FF5A3C;outline-offset:2px">{{ spinLabel }}</button>
+  <p style="margin:0;text-align:center;font:400 14px Satoshi,sans-serif;color:#7C7581">Every dare has a free Pass. No counters, no guilt.</p>
+</div>
+<sc-if value="{{ wh.mb }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;background:rgba(15,14,17,.8);z-index:30"></div>
+  <div style="position:absolute;left:0;right:0;bottom:0;z-index:31;border-radius:20px 20px 0 0;background:#18161B;border-top:1px solid #36313B;box-shadow:0 -20px 50px rgba(0,0,0,.4);padding:28px 20px 36px;display:flex;flex-direction:column;gap:18px;animation:{{ an.sheet }}">
+    <div style="position:relative;height:200px;display:flex;align-items:flex-end;justify-content:center">
+      <sc-if value="{{ wh.struck }}"><span style="position:absolute;left:calc(50% + 96px);top:4px;width:30px;height:30px;border-radius:50% 0 50% 50%;background:#F2B84B;box-shadow:inset -6px 6px 0 #FF5A3C;animation:{{ an.flame }}"></span></sc-if>
+      <div style="width:250px;height:170px;border-radius:20px;background:#FF5A3C;color:#0F0E11;position:relative;overflow:hidden;padding:18px">
+        <div style="font:500 12px 'Geist Mono',monospace;letter-spacing:.08em">CLINK · AFTER DARK</div>
+        <div style="font:800 40px/1 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em;margin-top:10px">{{ tier }}</div>
+        <div style="position:absolute;left:0;right:0;bottom:0;height:28px;background:repeating-linear-gradient(90deg,#3A1A12 0 2px,#5A2A1E 2px 5px)"></div>
+      </div>
+    </div>
+    <sc-if value="{{ wh.closed }}">
+      <div style="font:500 14px Satoshi,sans-serif;color:#ADA6B2;text-align:center">Swipe across the strip to strike</div>
+      <input type="range" min="0" max="100" value="{{ strike }}" onChange="{{ onStrike }}" aria-label="Swipe to strike the match" style="width:100%;height:44px;accent-color:#FF5A3C">
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ strikeNow }}" style="height:44px;border-radius:999px;background:transparent;border:none;color:#ADA6B2;font:500 14px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Or tap to strike</button>
+    </sc-if>
+    <sc-if value="{{ wh.struck }}">
+      <div style="font:800 28px/1.1 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em;text-align:center;animation:{{ an.reveal }}">{{ dare }}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ doDare }}" style="height:52px;border-radius:999px;background:#FF5A3C;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Do it</button>
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ passDare }}" style="height:52px;border-radius:999px;background:#211E25;color:#F4F0F5;border:1px solid #36313B;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Pass</button>
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ spinAgain }}" style="height:52px;border-radius:999px;background:transparent;color:#F4F0F5;border:1px solid #36313B;font:500 15px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Spin again</button>
+      </div>
+    </sc-if>
+  </div>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ s.darkdeck }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};overflow-y:auto;scrollbar-width:none;padding:52px 16px 32px;display:flex;flex-direction:column;gap:16px">
+  <div style="display:flex;align-items:center;gap:12px"><button style-active="transform:scale(0.97)" type="button" onClick="{{ goDarkHub }}" aria-label="Back" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #36313B;background:transparent;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-arrow-left" style="font-size:20px"></i></button><div style="flex:1;font:500 14px Satoshi,sans-serif;color:#ADA6B2">Steamy deck</div><div style="font:500 14px 'Geist Mono',monospace">{{ cardNo }}/52</div></div>
+  <div style="position:relative;flex:none;margin-top:8px">
+    <div style="position:absolute;inset:8px -6px -8px 6px;border-radius:20px;background:#211E25;transform:rotate(3deg)"></div>
+    <div style="position:relative;border-radius:20px;background:#18161B;border:1px solid #36313B;padding:24px 20px;min-height:220px;display:flex;flex-direction:column;justify-content:space-between;gap:20px">
+      <span style="align-self:flex-start;padding:4px 10px;border-radius:999px;background:#FF5A3C;color:#0F0E11;font:700 12px Satoshi,sans-serif">Steamy</span>
+      <div style="font:800 28px/1.1 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">{{ question }}</div>
+    </div>
+  </div>
+  <sc-if value="{{ dk.card }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;gap:8px;align-items:center;font:400 14px Satoshi,sans-serif;color:#ADA6B2"><span style="width:10px;height:10px;background:#8FD9C8"></span>Theo answered. Yours reveals both.</div>
+    <textarea placeholder="Your answer. Only Theo sees it." style="min-height:110px;border-radius:14px;background:#211E25;border:1px solid #36313B;padding:14px 16px;color:#F4F0F5;font:400 16px/1.5 Satoshi,sans-serif;outline:none;resize:none"></textarea>
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px">
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ answerQ }}" style="height:56px;border-radius:999px;background:#FF5A3C;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Answer</button>
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ passQ }}" style="height:56px;border-radius:999px;background:#211E25;color:#F4F0F5;border:1px solid #36313B;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Pass</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{ dk.reveal }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;animation:{{ an.reveal }}">
+      <div style="border-radius:20px 6px 6px 20px;background:#211E25;padding:14px;display:flex;flex-direction:column;gap:8px"><span style="display:flex;gap:6px;align-items:center;font:500 12px 'Geist Mono',monospace;color:#ADA6B2"><span style="width:10px;height:10px;border-radius:50%;background:#FF5A3C"></span>YOU</span><span style="font:400 16px/1.4 Satoshi,sans-serif">When you say my name like it's a question.</span></div>
+      <div style="border-radius:6px 20px 20px 6px;background:#211E25;padding:14px;display:flex;flex-direction:column;gap:8px"><span style="display:flex;gap:6px;align-items:center;font:500 12px 'Geist Mono',monospace;color:#ADA6B2"><span style="width:10px;height:10px;background:#8FD9C8"></span>THEO</span><span style="font:400 16px/1.4 Satoshi,sans-serif">The hair tie on your wrist thing. Every time.</span></div>
+    </div>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ nextCard }}" style="height:56px;border-radius:999px;background:#FF5A3C;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Next card</button>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ s.darkrequest }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};overflow-y:auto;scrollbar-width:none;padding:52px 16px 32px;display:flex;flex-direction:column;gap:16px">
+  <div style="display:flex;align-items:center;gap:12px"><button style-active="transform:scale(0.97)" type="button" onClick="{{ goDarkHub }}" aria-label="Back" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #36313B;background:transparent;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-arrow-left" style="font-size:20px"></i></button><div style="font:500 14px Satoshi,sans-serif;color:#ADA6B2">Request</div></div>
+  <sc-if value="{{ rq.received }}" hint-placeholder-val="{{ true }}">
+    <h1 style="margin:8px 0 0;font:800 36px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Theo sent you a <em>request</em></h1>
+    <div style="position:relative;aspect-ratio:4/3;border-radius:20px;overflow:hidden;background:radial-gradient(circle at 30% 40%,rgba(255,90,60,.55),transparent 45%),radial-gradient(circle at 70% 70%,rgba(244,240,245,.15),transparent 50%),#211E25;flex:none">
+      <div style="position:absolute;inset:0;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);background:rgba(24,22,27,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px"><i class="ph ph-eye-slash" style="font-size:28px"></i><span style="font:500 16px Satoshi,sans-serif">"something just for me?"</span></div>
+    </div>
+    <p style="margin:0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">No pressure, ever. Not right now is always a fine answer.</p>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ acceptReq }}" style="height:56px;border-radius:999px;background:#FF5A3C;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Accept</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ declineReq }}" style="height:52px;border-radius:999px;background:#211E25;color:#F4F0F5;border:1px solid #36313B;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Not right now</button>
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ laterReq }}" style="height:52px;border-radius:999px;background:transparent;color:#F4F0F5;border:1px solid #36313B;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Later</button>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ rq.note }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:12px;animation:{{ an.reveal }}">
+      <i class="ph ph-moon" style="font-size:40px;color:#FF5A3C"></i>
+      <div style="font:800 36px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">{{ reqTitle }}</div>
+      <p style="margin:0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">{{ reqBody }}</p>
+    </div>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ goDarkHub }}" style="height:52px;border-radius:999px;background:#211E25;color:#F4F0F5;border:1px solid #36313B;font:500 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Back to After Dark</button>
+  </sc-if>
+</div>
+<sc-if value="{{ rq.send }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;background:rgba(15,14,17,.8);z-index:30"></div>
+  <div style="position:absolute;left:0;right:0;bottom:0;z-index:31;border-radius:20px 20px 0 0;background:#18161B;border-top:1px solid #36313B;box-shadow:0 -20px 50px rgba(0,0,0,.4);padding:20px 20px 32px;display:flex;flex-direction:column;gap:14px;animation:{{ an.sheet }}">
+    <div style="display:flex;justify-content:space-between;align-items:center"><div style="font:800 22px 'Cabinet Grotesk',sans-serif">Send to Theo</div><button style-active="transform:scale(0.97)" type="button" onClick="{{ reqReset }}" aria-label="Close" style="width:40px;height:40px;border-radius:50%;background:transparent;border:1px solid #36313B;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-x" style="font-size:18px"></i></button></div>
+    <div style="position:relative;height:190px;border-radius:12px;overflow:hidden;background:#211E25">
+      <div style="position:absolute;inset:-20px;background:radial-gradient(circle at 40% 45%,rgba(255,90,60,.6),transparent 40%),radial-gradient(circle at 65% 70%,rgba(244,240,245,.2),transparent 45%),#211E25;filter:{{ previewBlur }}"></div>
+      <div style="position:absolute;left:10px;bottom:10px;font:500 11px 'Geist Mono',monospace;color:#ADA6B2">YOUR PHOTO · EXIF REMOVED</div>
+      <button style-active="transform:scale(0.97)" type="button" onClick="{{ toggleFace }}" style="position:absolute;right:10px;top:10px;height:36px;padding:0 12px;border-radius:999px;background:#0F0E11;border:1px solid #36313B;color:#F4F0F5;font:500 13px Satoshi,sans-serif;cursor:pointer;display:flex;gap:6px;align-items:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-user-focus" style="font-size:16px"></i>{{ faceLabel }}</button>
+    </div>
+    <div style="display:flex;padding:4px;border-radius:999px;background:#0F0E11;border:1px solid #36313B">
+      <sc-for list="{{ ret }}" as="r" hint-placeholder-count="3"><button style-active="transform:scale(0.97)" type="button" onClick="{{ r.go }}" style="flex:1;height:40px;border-radius:999px;border:none;background:{{ r.bg }};color:{{ r.color }};font:600 14px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">{{ r.label }}</button></sc-for>
+    </div>
+    <sc-if value="{{ isExp }}"><div style="display:flex;gap:8px"><sc-for list="{{ expiries }}" as="x" hint-placeholder-count="2"><button style-active="transform:scale(0.97)" type="button" onClick="{{ x.go }}" style="height:36px;padding:0 14px;border-radius:999px;background:transparent;border:1px solid {{ x.border }};color:{{ x.color }};font:500 13px 'Geist Mono',monospace;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">{{ x.label }}</button></sc-for></div></sc-if>
+    <div style="font:400 14px/1.4 Satoshi,sans-serif;color:#ADA6B2">{{ retNote }}</div>
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ sendMedia }}" style="height:56px;border-radius:999px;background:#FF5A3C;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Send</button>
+  </div>
+  <sc-if value="{{ notice }}">
+    <div style="position:absolute;inset:0;z-index:40;background:rgba(15,14,17,.7);display:flex;align-items:center;justify-content:center;padding:24px">
+      <div style="border-radius:20px;background:#211E25;border:1px solid #36313B;box-shadow:0 20px 50px rgba(0,0,0,.4);padding:24px;display:flex;flex-direction:column;gap:14px;animation:{{ an.reveal }}">
+        <i class="ph ph-device-mobile-camera" style="font-size:32px;color:#FF5A3C"></i>
+        <div style="font:800 28px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">They can still screenshot.</div>
+        <p style="margin:0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">Only send what feels right. We blur, watermark and delete on schedule, but no app can stop a screenshot.</p>
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ gotNotice }}" style="height:52px;border-radius:999px;background:#FF5A3C;color:#0F0E11;border:none;font:700 16px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">Got it</button>
+      </div>
+    </div>
+  </sc-if>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ s.darkvault }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;animation:{{ an.screen }};overflow-y:auto;scrollbar-width:none;padding:52px 16px 32px;display:flex;flex-direction:column;gap:16px">
+  <div style="display:flex;align-items:center;gap:12px"><button style-active="transform:scale(0.97)" type="button" onClick="{{ goDarkHub }}" aria-label="Back" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #36313B;background:transparent;color:#F4F0F5;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease"><i class="ph ph-arrow-left" style="font-size:20px"></i></button><h1 style="margin:0;font:800 36px 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">Vault</h1></div>
+  <p style="margin:-8px 0 0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">Only what you both chose to keep. The sender can unsend any time.</p>
+  <sc-if value="{{ vaultFull }}" hint-placeholder-val="{{ true }}">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+      <sc-for list="{{ vault }}" as="v" hint-placeholder-count="9">
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ v.go }}" aria-label="Tap to reveal" style="animation:{{ v.anim }};position:relative;aspect-ratio:3/4;border-radius:12px;overflow:hidden;border:none;padding:0;background:#18161B;cursor:pointer;color:#F4F0F5;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">
+          <sc-if value="{{ v.kept }}">
+            <span style="position:absolute;inset:-16px;background:{{ v.bg }};filter:{{ v.blur }};transition:filter 200ms"></span>
+            <sc-if value="{{ v.veil }}"><span style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:rgba(15,14,17,.35)"><i class="ph ph-eye-slash" style="font-size:20px"></i><span style="font:500 11px Satoshi,sans-serif">Tap to reveal</span></span></sc-if>
+            <sc-if value="{{ v.on }}"><span style="position:absolute;left:6px;bottom:6px;font:500 10px 'Geist Mono',monospace;color:rgba(244,240,245,.55)">NIA · 21:14</span></sc-if>
+            <span style="position:absolute;right:6px;top:6px;font:500 10px 'Geist Mono',monospace;color:#ADA6B2">{{ v.kind }}</span>
+          </sc-if>
+          <sc-if value="{{ v.removed }}"><span style="position:absolute;inset:0;border:1.5px dashed #36313B;border-radius:12px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;font:500 12px Satoshi,sans-serif;color:#7C7581">Removed by sender</span></sc-if>
+        </button>
+      </sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{ vaultEmpty }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center">
+      <div style="width:120px;height:80px;border-radius:12px;background:#211E25;border:1px solid #36313B;position:relative;overflow:hidden"><span style="position:absolute;left:0;right:0;bottom:0;height:14px;background:repeating-linear-gradient(90deg,rgba(255,90,60,.5) 0 2px,#211E25 2px 5px)"></span></div>
+      <div style="font:800 28px/1.05 'Cabinet Grotesk',sans-serif">Nothing kept. Yet.</div>
+      <p style="margin:0;font:400 16px/1.5 Satoshi,sans-serif;color:#ADA6B2">When you send with Keep in vault, it lands here for both of you.</p>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ showTabs }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;left:0;right:0;bottom:0;height:84px;padding:0 8px 20px;background:#0F0E11;border-top:1px solid #36313B;display:grid;grid-template-columns:repeat(5,1fr);z-index:20">
+  <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+    <button style-active="transform:scale(0.97)" type="button" onClick="{{ t.go }}" style="background:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:{{ t.color }};font:500 12px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">
+      <span style="width:56px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:{{ t.bg }};color:{{ t.iconColor }}"><i class="ph {{ t.icon }}" style="font-size:22px"></i></span>{{ t.label }}
+    </button>
+  </sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:0;right:0;bottom:{{ toastBottom }};display:flex;justify-content:center;z-index:70;pointer-events:none">
+  <div style="max-width:320px;padding:12px 18px;border-radius:999px;background:#2C2830;border:1px solid #36313B;color:#F4F0F5;font:500 14px Satoshi,sans-serif;box-shadow:0 12px 32px rgba(0,0,0,.4);animation:{{ an.toast }}">{{ toast }}</div>
+</div>
+</sc-if>
+
+<div style="position:absolute;inset:0;pointer-events:none;z-index:80;opacity:.05;background-image:{{ grain }}"></div>
+</div>
+
+<aside style="width:260px;display:flex;flex-direction:column;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <div style="font:500 12px 'Geist Mono',monospace;color:#7C7581;letter-spacing:.08em">SCREEN</div>
+    <div style="font:800 28px/1.05 'Cabinet Grotesk',sans-serif;letter-spacing:-0.02em">{{ screenTitle }}</div>
+    <div style="font:500 13px 'Geist Mono',monospace;color:#ADA6B2">{{ route }}</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font:500 12px 'Geist Mono',monospace;color:#7C7581;letter-spacing:.08em">STATES</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      <sc-for list="{{ stateChips }}" as="c" hint-placeholder-count="4">
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ c.go }}" style="padding:7px 12px;border-radius:999px;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.color }};font:500 13px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">{{ c.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font:500 12px 'Geist Mono',monospace;color:#7C7581;letter-spacing:.08em">COUPLE</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      <sc-for list="{{ tzChips }}" as="c" hint-placeholder-count="2">
+        <button style-active="transform:scale(0.97)" type="button" onClick="{{ c.go }}" style="padding:7px 12px;border-radius:999px;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.color }};font:500 13px Satoshi,sans-serif;cursor:pointer;transition:transform 160ms cubic-bezier(0.23,1,0.32,1),background-color 200ms ease,border-color 200ms ease,color 200ms ease">{{ c.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+  <p style="margin:0;font:400 14px/1.5 Satoshi,sans-serif;color:#ADA6B2;text-wrap:pretty">{{ screenNote }}</p>
+</aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;reducedMotion&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Prototype&quot;},&quot;discreet&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Prototype&quot;}}">
+const DARES={Flirty:["Voice note: what you'd do if they were next to you right now.","Selfie in exactly what you're wearing right now.","Your favourite memory of them, in three sentences."],Steamy:["Snap in the outfit they like most on you.","10-second voice note, slow, saying only their name.","Photo of one body part. They guess which."]};
+const QS=["What's something I do without thinking that gets you every time?","Describe our first night back together in five words.","Where's the most unexpected place you've thought about me?"];
+const KITS=['Cook together','Spa night','Movie night','Stargazing','Museum tour','Picnic on video','Book club for two','Breakfast date'];
+const NAV=[['Get started',[['landing','Landing'],['auth','Sign up'],['onboard','Onboarding'],['link','Link your person'],['install','Install guide']]],['App',[['us','Us'],['chat','Chat'],['play','Play'],['game','Game room'],['plans','Plans'],['keep','Keep'],['settings','Settings'],['help','Help and safety']]],['After Dark',[['dark-lock','PIN lock'],['dark-hub','Hub'],['dark-wheel','Dare wheel'],['dark-deck','Spicy deck'],['dark-request','Request and send'],['dark-vault','Vault']]]];
+const ROUTES={landing:'/',auth:'/signup',onboard:'/onboarding',link:'/link',install:'/install',us:'/us',chat:'/chat',play:'/play',game:'/play/know-me/r42',plans:'/plans',keep:'/keep',settings:'/settings',help:'/help','dark-lock':'/dark','dark-hub':'/dark/home','dark-wheel':'/dark/wheel','dark-deck':'/dark/decks/steamy','dark-request':'/dark/request','dark-vault':'/dark/vault'};
+const TITLES={landing:'Landing',auth:'Sign up',onboard:'Onboarding',link:'Link your person',install:'Install guide',us:'Us',chat:'Chat',play:'Play',game:'How well do you know me',plans:'Plans',keep:'Keep',settings:'Settings',help:'Help and safety','dark-lock':'After Dark lock','dark-hub':'After Dark','dark-wheel':'Dare wheel','dark-deck':'Spicy deck','dark-request':'Request and send','dark-vault':'Vault'};
+const NOTES={us:'Tap the Clink button to send. Press and hold it for hold-together. Moon (top right) opens After Dark; in discreet mode long-press the wordmark for 2 s instead.',chat:'Tap the sticker icon for the tray. Failed state shows the offline queue.',play:'Tap How well do you know me to enter a game room. Other live games send an invite.',plans:'Tear the stub on the upcoming date. Try roulette and the watch party room.',keep:'Tap a sealed envelope, then the wax seal. Tap the ready bottle to uncork.','dark-lock':'Demo PIN is 2611. Three wrong tries locks you out.','dark-wheel':'Spin, then drag across the striker to light the match.','dark-request':'Accept opens the send sheet with the one-time screenshot notice.','dark-vault':'Tap any tile to lift the veil. Viewer watermark appears on reveal.',settings:'Unlink runs a two-step confirm. Discreet mode hides the moon on Us.',landing:'Logged-out landing. Scroll inside the phone.'};
+const CHIPS={auth:[['Default',{auth:'default'}],['Error',{auth:'error'}],['Verification sent',{auth:'sent'}],['Under 18',{auth:'blocked'}]],onboard:[['Name',{ob:1}],['Avatar',{ob:2}],['Home city',{ob:3}]],link:[['Code shown',{link:'shown'}],['Copied',{link:'copied'}],['Expired',{link:'expired'}],['Linked',{link:'linked'}]],install:[['Android',{install:'android'}],['iPhone',{install:'iphone'}],['Installed',{install:'done'}]],us:[['Online',{us:'online'}],['Offline',{us:'offline'}],['Asleep',{us:'asleep'}],['Clink received',{incoming:true}],['Hold together',{holding:true}],['No countdowns',{countdown:false}]],chat:[['Conversation',{chat:'full'}],['Loading',{chat:'loading'}],['Empty',{chat:'empty'}],['Typing',{chat:'typing'}],['Offline, failed',{chat:'failed'}],['Sticker tray',{tray:true}]],play:[['Partner online',{play:'online'}],['Partner offline',{play:'offline'}],['Invite pending',{play:'invite'}]],game:[['Question',{game:'q',pick:null}],['Reveal',{game:'reveal',pick:2}],['Results',{game:'results'}]],plans:[['Hub',{plans:'hub',torn:false}],['Date torn off',{plans:'hub',torn:true}],['Roulette',{plans:'roulette',roulette:'idle'}],['Watch: waiting',{plans:'watch',watch:'waiting'}],['Watch: synced',{plans:'watch',watch:'synced'}]],keep:[['Hub',{keep:'hub'}],['Letter sealed',{keep:'letter',seal:'sealed'}],['Letter opened',{keep:'letter',seal:'opened'}],['Capsule locked',{keep:'capsule',capsule:'locked'}],['Capsule ready',{keep:'capsule',capsule:'ready'}],['Capsule opened',{keep:'capsule',capsule:'open'}]],settings:[['Default',{unlink:0}],['Unlink step 1',{unlink:1}],['Unlink step 2',{unlink:2}]],help:[['FAQs',{help:'faq'}],['Report form',{help:'report'}],['Report sent',{help:'sent'}]],'dark-lock':[['Enter PIN',{pinState:'entry',pin:''}],['Wrong PIN',{pinState:'wrong',tries:1,pin:''}],['Locked out',{pinState:'locked',tries:3}]],'dark-hub':[['Hub',{verifySheet:false}],['Age verification',{verifySheet:true}]],'dark-wheel':[['Idle',{wheel:'idle'}],['Matchbook',{wheel:'matchbook',tier:'Steamy',dare:DARES.Steamy[1]}],['Struck',{wheel:'struck',tier:'Steamy',dare:DARES.Steamy[1]}]],'dark-deck':[['Card',{deck:'card'}],['Both answered',{deck:'reveal'}]],'dark-request':[['Received',{req:'received'}],['Send sheet',{req:'send',notice:false}],['Screenshot notice',{req:'send',notice:true}],['Sent',{req:'sent'}],['Not right now',{req:'declined'}],['Later',{req:'later'}]],'dark-vault':[['Blurred grid',{vaultEmpty:false,revealed:{}}],['Revealed item',{vaultEmpty:false,revealed:{0:true}}],['Empty',{vaultEmpty:true}]]};
+const GRAIN="url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
+const FZ='#E68AF5', EM='#FF5A3C';
+
+class Component extends DCLogic {
+  state={screen:'us',auth:'default',ob:1,avatar:1,link:'shown',install:'android',us:'online',incoming:false,holding:false,holdSecs:0,clinking:false,toast:'',mood:null,countdown:true,chat:'full',tray:false,play:'online',game:'q',pick:null,plans:'hub',torn:false,roulette:'idle',rouletteY:0,rIdx:0,watch:'synced',floats:[],keep:'hub',seal:'sealed',capsule:'locked',pin:'',tries:0,pinState:'entry',verifySheet:false,wheel:'idle',wheelDeg:0,strike:0,tier:'Steamy',dare:DARES.Steamy[1],deck:'card',qi:0,req:'received',retention:'once',expiry:'24 h',faceBlur:true,notice:true,revealed:{},vaultEmpty:false,unlink:0,icon:'clink',help:'faq',reportCat:'Image misuse',tz:'same',tg:{clinks:true,chat:true,games:true,dates:true,dark:false,saved:true,discreet:false}};
+  T=[];
+  later(fn,ms){const id=setTimeout(fn,ms);this.T.push(id);return id;}
+  componentWillUnmount(){this.T.forEach(clearTimeout);clearInterval(this.holdI);}
+  go=(screen,p={})=>this.setState({screen,...p});
+  toastMsg=m=>{clearTimeout(this.toastT);this.setState({toast:m});this.toastT=this.later(()=>this.setState({toast:''}),2400);};
+  vib=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+  sendClink=()=>{if(this.state.clinking)return;this.setState({clinking:true});this.vib([30,60,30]);this.later(()=>{this.setState({clinking:false});this.toastMsg(this.state.us==='online'?'Clink sent. Theo felt that.':'Clink sent. Theo gets it as a push.');},950);};
+  pressDown=()=>{this.held=false;clearTimeout(this.pressT);this.pressT=setTimeout(()=>{this.held=true;this.startHold();},550);};
+  pressUp=()=>{clearTimeout(this.pressT);if(!this.held)this.sendClink();this.held=false;};
+  pressCancel=()=>clearTimeout(this.pressT);
+  startHold=()=>{clearInterval(this.holdI);this.setState({holding:true,holdSecs:0});this.holdI=setInterval(()=>this.setState(s=>({holdSecs:s.holdSecs+1})),1000);};
+  stopHold=()=>{clearInterval(this.holdI);const n=this.state.holdSecs;this.setState({holding:false});this.toastMsg(`Held together for ${n} s`);};
+  pinKey=k=>{const st=this.state;if(st.pinState==='locked')return;
+    if(k==='del')return this.setState({pin:st.pin.slice(0,-1),pinState:'entry'});
+    if(k==='pass')return this.toastMsg('Passkey not set on this device. Demo PIN: 2611');
+    const pin=(st.pinState==='wrong'?'':st.pin)+k;
+    if(pin.length<4)return this.setState({pin,pinState:'entry'});
+    if(pin==='2611'){this.setState({pin});this.later(()=>this.go('dark-hub',{pin:'',tries:0,pinState:'entry'}),250);return;}
+    const tries=st.tries+1;this.setState({pin,tries,pinState:tries>=3?'locked':'wrong'});this.later(()=>this.setState({pin:''}),450);};
+  spin=()=>{if(this.state.wheel==='spinning')return;const deg=this.state.wheelDeg+1440+Math.floor(Math.random()*360);this.setState({wheel:'spinning',wheelDeg:deg,strike:0});
+    this.later(()=>{const a=(360-(deg%360))%360;const tier=Math.floor(a/45)%2?'Steamy':'Flirty';const l=DARES[tier];this.setState({wheel:'matchbook',tier,dare:l[Math.floor(Math.random()*l.length)]});},this.props.reducedMotion?400:3300);};
+  spinRoulette=()=>{const idx=Math.floor(Math.random()*8);this.setState({roulette:'reset',rouletteY:0});requestAnimationFrame(()=>requestAnimationFrame(()=>{this.setState({roulette:'spinning',rouletteY:-((24+idx-1)*56),rIdx:idx});this.later(()=>this.setState({roulette:'result'}),this.props.reducedMotion?300:2500);}));};
+  react=e=>{const id=Math.random();this.setState(s=>({floats:[...s.floats,{id,e,x:15+Math.round(Math.random()*60)}]}));this.later(()=>this.setState(s=>({floats:s.floats.filter(f=>f.id!==id)})),1600);};
+  applyChip=p=>{if(p.holding)return this.state.holding?this.stopHold():this.startHold();const st=this.state;const ks=Object.keys(p);if(ks.length===1&&typeof p[ks[0]]==='boolean'&&st[ks[0]]===p[ks[0]])return this.setState({[ks[0]]:!p[ks[0]]});this.setState(p);};
+  tog=k=>this.setState(s=>({tg:{...s.tg,[k]:!s.tg[k]}}));
+
+  renderVals(){
+    const st=this.state,P=this.props,rm=!!P.reducedMotion;
+    const A=f=>rm?'fadeIn 180ms ease both':f;
+    const discreet=!!P.discreet||st.tg.discreet;
+    const sc=st.screen, isDark=sc.startsWith('dark');
+    const EO='cubic-bezier(0.23,1,0.32,1)',EIO='cubic-bezier(0.77,0,0.175,1)',DR='cubic-bezier(0.32,0.72,0,1)',POP='cubic-bezier(0.34,1.4,0.64,1)';
+    const ST=i=>rm?'fadeIn 180ms ease both':`rise 280ms ${EO} ${i*40}ms both`;
+    const an={screen:rm?'fadeIn 160ms ease both':`screenIn 220ms ${EO} both`,glassL:A(`glassL 640ms ${POP} 300ms both`),glassR:A(`glassR 640ms ${POP} 300ms both`),spark:rm?'none':`spark 560ms ${EO} 520ms both`,sparkLate:rm?'none':`spark 560ms ${EO} 640ms both`,sparkBtn:rm?'none':`sparkFar 560ms ${EO} 160ms both`,btnL:st.clinking?A(`glassL 560ms ${POP}`):'none',btnR:st.clinking?A(`glassR 560ms ${POP}`):'none',ripple:rm?'fadeOut 300ms ease both':`ripple 700ms ${EO} both`,slideDown:A(`slideDown 340ms ${DR} both`),pulse:rm?'none':`pulseRing 900ms ${EO} 200ms both`,linkL:A(`linkL 600ms ${EO} 120ms both`),linkR:A(`linkR 600ms ${EO} 120ms both`),flip:A(`flip 420ms ${EIO} 240ms both`),sealL:A(`sealL 480ms ${EO} both`),sealR:A(`sealR 480ms ${EO} both`),letter:A(`letterUp 420ms ${EO} both`),cork:A(`cork 640ms ${EO} both`),sheet:A(`sheetUp 360ms ${DR} both`),flame:A(`flame 300ms ${EO} both`),reveal:A(`fadeUp 260ms ${EO} both`),tear:A(`tear 380ms ${EO} both`),float:rm?'fadeOut 1200ms ease both':`floatUp 1300ms ${EO} both`,shake:st.pinState==='wrong'&&!rm?`shake 360ms ${EIO} both`:'none',toast:A(`toastIn 220ms ${EO} both`),dot:rm?'none':'live 1.6s ease-in-out infinite',typing:rm?'none':'dots 1s ease-in-out infinite',skel:rm?'none':'skel 1.2s ease-in-out infinite'};
+    const s={};Object.keys(ROUTES).forEach(k=>s[k.replace('dark-','dark')]=sc===k);
+    const apart=st.tz==='apart',asleep=st.us==='asleep';
+    const niaTime=asleep?(apart?'21:14':'02:14'):(apart?'16:14':'21:14');
+    const theoTime=asleep?'02:14':'21:14';
+    const night=t=>{const h=+t.slice(0,2);return h>=20||h<6;};
+    const nav=NAV.map(([title,items])=>({title,items:items.map(([id,label])=>{const on=sc===id;return{label,go:()=>this.go(id),bg:on?(id.startsWith('dark')?EM:FZ):'transparent',color:on?'#0F0E11':'#ADA6B2'};})}));
+    const chip=(label,on,go)=>({label,go,bg:on?FZ:'transparent',color:on?'#0F0E11':'#F4F0F5',border:on?FZ:'#36313B'});
+    const stateChips=(CHIPS[sc]||[]).map(([l,p])=>chip(l,Object.entries(p).every(([k,v])=>JSON.stringify(st[k])===JSON.stringify(v)),()=>this.applyChip(p)));
+    const tabsOn=['us','chat','play','plans','keep'].includes(sc);
+    const tabs=[['us','Us','ph-heart'],['chat','Chat','ph-chat-circle'],['play','Play','ph-game-controller'],['plans','Plans','ph-ticket'],['keep','Keep','ph-archive']].map(([id,label,icon])=>{const on=sc===id;return{label,icon,go:()=>this.go(id),color:on?'#F4F0F5':'#7C7581',bg:on?FZ:'transparent',iconColor:on?'#0F0E11':'#ADA6B2'};});
+    const sparks=[0,45,90,135,180,225,270,315].map(a=>({a}));
+    const codeChars='K7Q2MX'.split('').map((ch,i)=>({ch,gap:i===2?'8px':'0'}));
+    const moods=['Cosy','Missing you','Wired','Tired','Flirty','Low'].map((m,i)=>{const on=st.mood===m;return{anim:ST(i),label:m,go:()=>this.setState({mood:m}),border:on?`2px solid ${FZ}`:'1px solid #36313B',color:on?'#F4F0F5':'#ADA6B2'};});
+    const flaps=[['DAYS','08'],['HRS','14'],['MIN','32']].map(([label,d],gi)=>({label,d:d.split('').map((ch,i)=>({ch,anim:gi===2&&i===1?an.flip:'none'}))}));
+    const wave=[8,14,22,12,26,18,10,24,30,16,8,20,28,14,22,10,18,26,12,8,16,24,12,20,10,14,8,12];
+    const games=[['How well do you know me','10 questions','ph-question',true],['Draw and guess','3 rounds · 60 s','ph-pencil-simple-line'],['Trivia duel','6 categories','ph-lightning'],['Would you rather','4 decks','ph-arrows-left-right']].map(([name,meta,icon,know],i)=>{const off=st.play==='offline';const pending=st.play==='invite'&&i===1;return{anim:ST(i),name,meta:off?'Needs you both':meta,icon,mt:i%2?'44px':'0',op:off?.45:1,border:pending?`2px solid ${FZ}`:'1px solid #36313B',pending,go:()=>{if(off)return this.toastMsg("Theo's away. Try a turn-based game.");if(know)return this.go('game',{game:'q',pick:null});this.setState({play:'invite'});this.toastMsg(`${name} invite sent. Waiting on Theo.`);}};});
+    const opts=['Suya from the stand by the junction','Indomie with two eggs','Cereal, standing up','Nothing. He is asleep.'].map((t,i)=>{const rev=st.game==='reveal';const theo=i===1,mine=st.pick===i;return{t,go:()=>st.game==='q'&&this.setState({pick:i,game:'reveal'}),border:rev&&theo?'2px solid #8FD9C8':mine?`2px solid ${FZ}`:'1px solid #36313B',me:rev&&mine,theo:rev&&theo};});
+    const week=['M','T','W','T','F','S','S'].map((d,i)=>({d,a:i<4?FZ:'transparent',b:i<3||i===4?'#8FD9C8':'transparent',aBorder:i<4?FZ:'#7C7581',bBorder:i<3||i===4?'#8FD9C8':'#7C7581',today:i===4?'#F4F0F5':'#7C7581'}));
+    const reel=[];for(let r=0;r<4;r++)KITS.forEach(k=>reel.push({k}));
+    const dots=[0,1,2,3].map(i=>({bg:i<st.pin.length?(st.pinState==='wrong'?'#FF7A6B':EM):'transparent',border:st.pinState==='wrong'?'#FF7A6B':EM}));
+    const keys=['1','2','3','4','5','6','7','8','9','pass','0','del'].map(k=>({label:k,isNum:/\d/.test(k),isIcon:!/\d/.test(k),icon:k==='del'?'ph-backspace':'ph-fingerprint',go:()=>this.pinKey(k),aria:k==='del'?'Delete':k==='pass'?'Use passkey':k}));
+    const segs=[0,1,2,3,4,5,6,7].map(i=>({rot:i*45+22.5,label:i%2?'Steamy':'Flirty'}));
+    const tiers=[['Flirty','Unlocked · 52 cards',true,''],['Steamy','Unlocked · 48 cards',true,''],['Spicy','Waiting on them. No rush.',false,'You opted in on 2 Nov'],['Unhinged','Waiting on you','',"Needs you both age-verified"]].map(([n,status,open,sub],i)=>({n,status,sub,open:!!open,locked:!open,rot:[-2,1.5,-1,2][i],mt:i?'-22px':'0',z:i+1,go:()=>{if(n==='Unhinged')this.setState({verifySheet:true});else if(!open)this.toastMsg('Spicy opens when Theo opts in too.');else this.go('dark-deck',{deck:'card'});}}));
+    const vault=[0,1,2,3,4,5,6,7,8].map(i=>{const removed=i===4;const on=!!st.revealed[i];return{anim:ST(i),removed,kept:!removed,kind:i%3===1?'video 0:12':'photo',blur:on?'blur(0)':'blur(14px)',veil:!on,on,bg:`radial-gradient(circle at ${20+i*7}% ${30+(i*13)%50}%, rgba(255,90,60,.55), transparent 45%), radial-gradient(circle at ${70-i*4}% 75%, rgba(244,240,245,.18), transparent 50%), #211E25`,go:()=>!removed&&this.setState(s=>({revealed:{...s.revealed,[i]:!s.revealed[i]}}))};});
+    const ret=[['once','View once'],['exp','Expires'],['vault','Keep in vault']].map(([k,label])=>({label,go:()=>this.setState({retention:k}),bg:st.retention===k?EM:'transparent',color:st.retention===k?'#0F0E11':'#F4F0F5'}));
+    const expiries=['24 h','7 days'].map(l=>({label:l,go:()=>this.setState({expiry:l}),border:st.expiry===l?EM:'#36313B',color:st.expiry===l?'#F4F0F5':'#ADA6B2'}));
+    const tgl=(k,label,sub)=>({label,sub,go:()=>this.tog(k),bg:st.tg[k]?FZ:'#2C2830',x:st.tg[k]?'20px':'0',hasSub:!!sub});
+    const icons=[['clink','Clink','ph-wine'],['notes','Notes','ph-note-pencil'],['weather','Weather','ph-cloud-sun']].map(([k,label,icon])=>{const on=st.icon===k;return{label,icon,go:()=>this.setState({icon:k}),border:on?`2px solid ${FZ}`:'1px solid #36313B',bg:k==='clink'?FZ:'#2C2830',fg:k==='clink'?'#0F0E11':'#F4F0F5'};});
+    const stepsAndroid=[['1','Tap the three dots in Chrome'],['2','Choose Install app'],['3','Open Clink and allow notifications']],stepsIos=[['1','Open this page in Safari'],['2','Tap Share, then Add to Home Screen'],['3','Open Clink from your home screen and allow notifications']];
+    const cats=['Image misuse','Harassment','Something broke','Something else'].map(c=>({label:c,go:()=>this.setState({reportCat:c}),bg:st.reportCat===c?FZ:'transparent',color:st.reportCat===c?'#0F0E11':'#F4F0F5',border:st.reportCat===c?FZ:'#36313B'}));
+    const tstat={online:'cooking',offline:'away · 40 min',asleep:'asleep'}[st.us];
+    return {
+      s,an,sparks,grain:GRAIN,navGroups:nav,stateChips,screenTitle:TITLES[sc],route:ROUTES[sc],screenNote:NOTES[sc]||'Use the state chips to jump between this screen\'s states.',
+      tzChips:[chip('London · Accra, 0 h',st.tz==='same',()=>this.setState({tz:'same'})),chip('Toronto · Accra, 5 h',apart,()=>this.setState({tz:'apart'}))],
+      statusBg:'transparent',tabs,showTabs:tabsOn,hasToast:!!st.toast,toast:st.toast,toastBottom:tabsOn?'100px':'40px',
+      boardMini:[['0','0'],['8','8px'],['1','0'],['4','8px'],['3','0'],['2','0']].map(([ch,gap])=>({ch,gap})),
+      goAuth:()=>this.go('auth',{auth:'default'}),goLink:()=>this.go('link',{link:'shown'}),goLanding:()=>this.go('landing'),goOnboard:()=>this.go('onboard',{ob:1}),goInstall:()=>this.go('install'),goUs:()=>this.go('us'),goChat:()=>this.go('chat'),goKeep:()=>this.go('keep',{keep:'hub'}),goPlay:()=>this.go('play'),goPlans:()=>this.go('plans',{plans:'hub'}),goSettings:()=>this.go('settings',{unlink:0}),goHelp:()=>this.go('help',{help:'faq'}),goDarkLock:()=>this.go('dark-lock',{pin:'',pinState:'entry',tries:0}),goDarkHub:()=>this.go('dark-hub',{verifySheet:false}),goWheel:()=>this.go('dark-wheel',{wheel:'idle'}),goDeck:()=>this.go('dark-deck',{deck:'card'}),goVault:()=>this.go('dark-vault'),goRequest:()=>this.go('dark-request',{req:'received'}),
+      au:{form:st.auth==='default'||st.auth==='error',error:st.auth==='error',sent:st.auth==='sent',blocked:st.auth==='blocked'},
+      email:st.auth==='error'?'nia@heycom':'nia@hey.com',emailBorder:st.auth==='error'?'#FF7A6B':'#36313B',
+      authContinue:()=>this.setState({auth:'sent'}),
+      ob:st.ob,obs:{one:st.ob===1,two:st.ob===2,three:st.ob===3},obBars:[1,2,3].map(i=>({bg:i<=st.ob?FZ:'#36313B'})),obNext:()=>st.ob<3?this.setState({ob:st.ob+1}):this.go('link',{link:'shown'}),
+      avatarOpts:['ph-moon','ph-plant','ph-cat','ph-coffee','ph-sparkle'].map((icon,i)=>({icon,pick:()=>this.setState({avatar:i}),border:st.avatar===i?`3px solid ${FZ}`:'1px solid #36313B'})),
+      cityQuery:apart?'Toro':'Lond',cityPick:apart?'Toronto, Canada':'London, United Kingdom',cityAlt:apart?'Toronto, Ohio':'Londrina, Brazil',cityAltTime:apart?'16:14':'18:14',
+      lk:{notLinked:st.link!=='linked',linked:st.link==='linked',expired:st.link==='expired',live:st.link==='shown'||st.link==='copied'},codeChars,codeOpacity:st.link==='expired'?.35:1,
+      copyIcon:st.link==='copied'?'ph-check':'ph-copy',copyLabel:st.link==='copied'?'Copied':'Copy code',
+      copyCode:()=>{this.setState({link:'copied'});this.toastMsg('Copied. Send it to your person.');},shareWA:()=>this.toastMsg('Opening WhatsApp…'),newCode:()=>this.setState({link:'shown'}),doLink:()=>this.setState({link:'linked'}),firstClink:()=>{this.go('us',{us:'online'});this.later(this.sendClink,400);},
+      installTabs:[['android','Android'],['iphone','iPhone'],['done','Installed']].map(([k,label])=>({label,go:()=>this.setState({install:k}),bg:st.install===k?'#2C2830':'transparent',color:st.install===k?'#F4F0F5':'#ADA6B2'})),
+      ins:{steps:st.install!=='done',done:st.install==='done'},installSteps:(st.install==='iphone'?stepsIos:stepsAndroid).map(([n,t])=>({n,t})),installShot:st.install==='iphone'?'SAFARI SHARE SHEET SCREENSHOT':'CHROME INSTALL PROMPT SCREENSHOT',installNote:st.install==='iphone'?'Needs iOS 16.4 or later for notifications.':'Works in Chrome, Edge and Samsung Internet.',
+      niaTime,theoTime,niaCity:apart?'Toronto':'London',theoCity:'Accra',niaWeather:apart?'3° · clear':'9° · drizzle',theoWeather:'27° · humid',
+      niaIcon:night(niaTime)?'ph-moon':'ph-sun',theoIcon:night(theoTime)?'ph-moon':'ph-sun',niaClockBg:night(niaTime)?'#0B0A0D':'#18161B',theoClockBg:night(theoTime)?'#0B0A0D':'#211E25',
+      diffLabel:apart?'5 H APART':'SAME HOUR',threadTaut:st.us==='online',threadSag:st.us!=='online',theoRing:st.us==='online'?'#8FD9C8':'#36313B',theoOpacity:st.us==='online'?1:.6,theoLive:st.us==='online',theoStatus:tstat,isAsleep:asleep,
+      showMoon:!discreet,wordDown:()=>{clearTimeout(this.wT);this.wT=setTimeout(()=>discreet&&this.go('dark-lock',{pin:'',pinState:'entry'}),2000);},wordUp:()=>clearTimeout(this.wT),
+      clinking:st.clinking,clinkLabel:st.clinking?'Clink!':'Send a Clink',pressDown:this.pressDown,pressUp:this.pressUp,pressCancel:this.pressCancel,clinkKey:e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();this.sendClink();}},
+      moods,moodSent:!!st.mood,countdown:st.countdown,noCountdown:!st.countdown,flaps,addCountdown:()=>this.setState({countdown:true}),
+      incoming:st.incoming,clinkBack:()=>{this.setState({incoming:false});this.sendClink();},dismissIncoming:()=>this.setState({incoming:false}),
+      holding:st.holding,holdSecs:String(st.holdSecs).padStart(2,'0'),stopHold:this.stopHold,
+      skel:[['flex-start','62%','44px'],['flex-end','48%','44px'],['flex-start','70%','150px'],['flex-end','78%','56px'],['flex-start','55%','44px'],['flex-end','40%','44px']].map(([side,w,hh],i)=>({side,w,h:hh,d:i*90+'ms'})),ch:{loading:st.chat==='loading',full:st.chat!=='empty'&&st.chat!=='loading',empty:st.chat==='empty',typing:st.chat==='typing',failed:st.chat==='failed',read:st.chat!=='failed'},wave:wave.map(h=>({h:h+'px'})),tray:st.tray,toggleTray:()=>this.setState({tray:!st.tray}),retry:()=>{this.setState({chat:'full'});this.toastMsg('Sent.');},
+      stickers:['clink!','miss u','ur cute','night x','lol','omw','same','brb'].map((t,i)=>({t,rot:(i%2?6:-6)+'deg',go:()=>{this.setState({tray:false});this.toastMsg(`Sticker sent: ${t}`);}})),
+      chatSub:st.us==='online'?`Online, ${theoTime} in Accra`:`Last here 40 min ago, ${theoTime} in Accra`,
+      games,play:{off:st.play==='offline',on:st.play!=='offline'},
+      gm:{q:st.game==='q',reveal:st.game==='reveal',results:st.game==='results',playing:st.game!=='results',right:st.pick===1},opts,nextQ:()=>this.setState({game:'results'}),rematch:()=>this.setState({game:'q',pick:null}),
+      pl:{hub:st.plans==='hub',roulette:st.plans==='roulette',watch:st.plans==='watch'},torn:st.torn,notTorn:!st.torn,tearStub:()=>{this.setState({torn:true});this.toastMsg('Torn off. Added to your timeline.');},
+      kits:KITS.slice(0,5).map((k,i)=>({anim:ST(i),k,mins:['90 min','60 min','2 h','45 min','75 min'][i]})),week,goRoulette:()=>this.setState({plans:'roulette',roulette:'idle',rouletteY:0}),goWatch:()=>this.setState({plans:'watch',watch:'waiting'}),plansBack:()=>this.setState({plans:'hub'}),
+      reel,rouletteY:st.rouletteY+'px',rouletteTrans:st.roulette==='spinning'?'transform 2.4s cubic-bezier(0.23,1,0.32,1)':'none',spinRoulette:this.spinRoulette,ro:{result:st.roulette==='result',spinning:st.roulette==='spinning'||st.roulette==='reset',idle:st.roulette==='idle'},rouletteBtn:st.roulette==='result'?'Spin again':'Spin',roulettePick:KITS[st.rIdx],scheduleKit:()=>{this.setState({plans:'hub'});this.toastMsg(`${KITS[st.rIdx]} scheduled. Reminders set in both time zones.`);},
+      wt:{waiting:st.watch==='waiting',synced:st.watch==='synced'},joinWatch:()=>this.setState({watch:'synced'}),floats:st.floats,reactions:['😂','🔥','😭','🥹'].map(e=>({e,go:()=>this.react(e)})),
+      kp:{hub:st.keep==='hub',letter:st.keep==='letter',capsule:st.keep==='capsule'},keepBack:()=>this.setState({keep:'hub'}),openLetter:()=>this.setState({keep:'letter',seal:'sealed'}),openCapsule:r=>this.setState({keep:'capsule',capsule:'ready'}),openLockedCapsule:()=>this.setState({keep:'capsule',capsule:'locked'}),
+      sl:{sealed:st.seal==='sealed',breaking:st.seal==='breaking',opened:st.seal==='opened',closed:st.seal!=='opened'},breakSeal:()=>{if(st.seal!=='sealed')return;this.setState({seal:'breaking'});this.vib(40);this.later(()=>this.setState({seal:'opened'}),rm?200:800);},
+      cp:{locked:st.capsule==='locked',ready:st.capsule==='ready',uncorking:st.capsule==='uncorking',open:st.capsule==='open',corked:st.capsule==='locked'||st.capsule==='ready'},uncork:()=>{this.setState({capsule:'uncorking'});this.later(()=>this.setState({capsule:'open'}),rm?200:900);},
+      timeline:[['3 MAR 2025','Linked. First Clink at 22:07.','auto'],['11 JUN 2025','100 days of Clinks','auto'],['2 AUG 2025','First watch party: Spirited Away','auto'],['14 FEB 2026','Sealed a bottle for next Valentine\'s','manual']].map(([d,t,k],i)=>({anim:ST(i),d,t,k:k==='auto'?'AUTO':'ADDED'})),
+      notifs:[tgl('clinks','Clinks'),tgl('chat','Chat'),tgl('games','Games','Your turn and invites'),tgl('dates','Dates','1 day and 1 hour before'),tgl('dark','After Dark','Always generic text')],
+      darkSet:[tgl('saved','Allow saved spicy media','You both need this on'),tgl('discreet','Discreet mode','Hide the moon. Long-press the wordmark.')],icons,
+      un:{one:st.unlink===1,two:st.unlink===2,any:st.unlink>0},startUnlink:()=>this.setState({unlink:1}),unlinkNext:()=>this.setState({unlink:2}),cancelUnlink:()=>this.setState({unlink:0}),confirmUnlink:()=>{this.go('link',{link:'shown',unlink:0});this.toastMsg('Unlinked. Wipe finishes within 1 hour.');},
+      hp:{faq:st.help==='faq',report:st.help==='report',sent:st.help==='sent'},cats,goReport:()=>this.setState({help:'report'}),sendReport:()=>this.setState({help:'sent'}),
+      faqs:['Can Theo see my date of birth?','What happens to the vault if we unlink?','Does Clink block screenshots?','How do I make Clink look like another app?'].map((q,i)=>({q,anim:ST(i)})),
+      dots,keys,pin:{entry:st.pinState!=='locked',wrong:st.pinState==='wrong',locked:st.pinState==='locked'},pinMsg:st.pinState==='wrong'?`That's not it. ${3-st.tries} ${3-st.tries===1?'try':'tries'} left.`:'Just the two of you. Enter your PIN.',pinColor:st.pinState==='wrong'?'#FF7A6B':'#ADA6B2',
+      tiers,verifySheet:st.verifySheet,closeVerify:()=>this.setState({verifySheet:false}),startVerify:()=>{this.setState({verifySheet:false});this.toastMsg('Opening the ID and selfie check…');},lockDark:()=>this.go('us'),
+      segs,wheelDeg:`rotate(${st.wheelDeg}deg)`,wheelTrans:rm?'none':'transform 3.2s cubic-bezier(0.23,1,0.32,1)',spin:this.spin,wh:{idle:st.wheel==='idle'||st.wheel==='spinning',spinning:st.wheel==='spinning',mb:st.wheel==='matchbook'||st.wheel==='struck',closed:st.wheel==='matchbook',struck:st.wheel==='struck'},spinLabel:st.wheel==='spinning'?'Spinning':'Spin',tier:st.tier,dare:st.dare,strike:st.strike,
+      onStrike:e=>{const v=+e.target.value;if(v>=90){this.setState({wheel:'struck',strike:100});this.vib(60);}else this.setState({strike:v});},strikeNow:()=>{this.setState({wheel:'struck'});this.vib(60);},
+      doDare:()=>this.go('dark-request',{req:'send'}),passDare:()=>{this.setState({wheel:'idle'});this.toastMsg('Passed. No big deal.');},spinAgain:()=>{this.setState({wheel:'idle'});this.later(this.spin,50);},
+      dk:{card:st.deck==='card',reveal:st.deck==='reveal'},question:QS[st.qi%3],answerQ:()=>this.setState({deck:'reveal'}),passQ:()=>{this.setState(s=>({qi:s.qi+1,deck:'card'}));this.toastMsg('Passed. Next card.');},nextCard:()=>this.setState(s=>({qi:s.qi+1,deck:'card'})),cardNo:14+st.qi,
+      rq:{received:st.req==='received',send:st.req==='send',sent:st.req==='sent',declined:st.req==='declined',later:st.req==='later',note:st.req==='sent'||st.req==='declined'||st.req==='later'},
+      acceptReq:()=>this.setState({req:'send'}),declineReq:()=>this.setState({req:'declined'}),laterReq:()=>this.setState({req:'later'}),
+      notice:st.notice&&st.req==='send',gotNotice:()=>this.setState({notice:false}),ret,isExp:st.retention==='exp',expiries,faceBlur:st.faceBlur,faceLabel:st.faceBlur?'Face blur on':'Face blur off',toggleFace:()=>this.setState({faceBlur:!st.faceBlur}),previewBlur:st.faceBlur?'blur(10px)':'blur(4px)',
+      retNote:st.retention==='once'?'Opens once, full screen. Gone within 60 s of closing.':st.retention==='exp'?`Viewable until it expires in ${st.expiry}. Then deleted.`:'Stays in both vaults until you unsend it.',sendMedia:()=>this.setState({req:'sent'}),
+      reqTitle:{sent:'Sent. View once.',declined:'Sent: Not right now.',later:'Saved for later.'}[st.req]||'',reqBody:{sent:"You can unsend it any time. Theo sees a blurred card until they tap.",declined:"That's all Theo sees. New requests pause for 12 h.",later:'Moved to your After Dark inbox. No reminders, ever.'}[st.req]||'',reqReset:()=>this.setState({req:'received'}),
+      vault,vaultEmpty:st.vaultEmpty,vaultFull:!st.vaultEmpty,
+      theoDate:apart?'02:00 Sun':'21:00',bottleBorder:st.capsule==='locked'?'rgba(244,240,245,.3)':FZ,
+    };
+  }
+}
+</script>
+</body>
+</html>
