@@ -106,6 +106,14 @@ export function CapsuleScreen({ capsule }: { capsule: Capsule }) {
                   className="rounded-thumb w-full"
                 />
               )}
+              {content.media?.kind === "video" && (
+                <video
+                  controls
+                  playsInline
+                  src={`/api/media/${content.media.id}/view`}
+                  className="rounded-thumb w-full"
+                />
+              )}
               {content.media?.kind === "audio" && (
                 <div className="rounded-input bg-s2 flex items-center gap-2.5 p-2.5">
                   <span className="bg-accent text-on-accent flex h-8 w-8 items-center justify-center rounded-full">

@@ -20,7 +20,7 @@ export const test = base.extend<{ couple: Couple }>({
       isMobile: p.isMobile,
       userAgent: p.userAgent,
       deviceScaleFactor: p.deviceScaleFactor,
-      permissions: ["clipboard-read", "clipboard-write"],
+      permissions: ["clipboard-read", "clipboard-write", "microphone", "camera"],
     };
     const ctxA = await browser.newContext(opts);
     const ctxB = await browser.newContext(opts);

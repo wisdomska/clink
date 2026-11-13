@@ -23,7 +23,11 @@ export default defineConfig({
     trace: "off",
     screenshot: "only-on-failure",
     locale: "en-GB",
-    launchOptions: localChromium ? { executablePath: localChromium } : {},
+    // Fake camera and microphone so voice notes and video can be recorded in tests.
+    launchOptions: {
+      ...(localChromium ? { executablePath: localChromium } : {}),
+      args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"],
+    },
   },
   projects: [
     { name: "mobile", use: { ...devices["Pixel 7"], browserName: "chromium" } },

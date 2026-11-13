@@ -3,7 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { PencilSimple, Plus, Image as ImageIcon } from "@phosphor-icons/react";
+import { PencilSimple, Plus, Image as ImageIcon, Microphone, Stop, X } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
 import { Display, Lead, Mono } from "@/components/ui/heading";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import { toast } from "@/components/ui/toast";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/media/compress";
 import { uploadMedia } from "@/lib/media/upload";
+import { prepareVideo } from "@/lib/media/video";
+import { VoiceRecorder, type Recording } from "@/lib/media/recorder";
 import { localParts, zonedToUtc } from "@/lib/time";
 import { SealedEnvelope, OpenedEnvelope, Bottle } from "./objects";
 import { useKeep, tagDate } from "./data";
@@ -376,6 +378,8 @@ function CapsuleSheet({
   const [date, setDate] = useState("");
   const [body, setBody] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [voice, setVoice] = useState<Recording | null>(null);
+  const [recorder, setRecorder] = useState<VoiceRecorder | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [tomorrow] = useState(
@@ -413,15 +417,69 @@ function CapsuleSheet({
         placeholder="A prediction, a promise, a list."
         onChange={(e) => setBody(e.target.value)}
       />
-      <label className="press border-line bg-s2 flex h-11 cursor-pointer items-center gap-2 self-start rounded-full border px-4 text-sm font-medium">
-        <ImageIcon size={18} aria-hidden /> {file ? file.name.slice(0, 24) : "Add a photo"}
-        <input
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        />
-      </label>
+      <div className="flex flex-wrap gap-2">
+        {!voice && !recorder && (
+          <label className="press border-line bg-s2 flex h-11 cursor-pointer items-center gap-2 rounded-full border px-4 text-sm font-medium">
+            <ImageIcon size={18} aria-hidden />{" "}
+            {file ? file.name.slice(0, 24) : "Add a photo or video"}
+            <input
+              type="file"
+              accept="image/*,video/*"
+              hidden
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+          </label>
+        )}
+        {!file && !voice && (
+          <button
+            type="button"
+            className="press border-line bg-s2 text-text flex h-11 cursor-pointer items-center gap-2 rounded-full border px-4 text-sm font-medium"
+            onClick={async () => {
+              if (recorder) {
+                const rec = await recorder.stop();
+                setRecorder(null);
+                if (rec) setVoice(rec);
+                return;
+              }
+              const r = new VoiceRecorder();
+              r.onAutoStop = async () => {
+                const rec = await r.stop();
+                setRecorder(null);
+                if (rec) setVoice(rec);
+              };
+              try {
+                await r.start();
+                setRecorder(r);
+              } catch {
+                toast("Clink needs your microphone for that.");
+              }
+            }}
+          >
+            {recorder ? (
+              <>
+                <Stop size={18} weight="fill" className="text-danger" aria-hidden /> Stop recording
+              </>
+            ) : (
+              <>
+                <Microphone size={18} aria-hidden /> Record a voice note
+              </>
+            )}
+          </button>
+        )}
+        {(file || voice) && (
+          <button
+            type="button"
+            aria-label="Remove attachment"
+            className="press border-line bg-s2 text-text flex h-11 cursor-pointer items-center gap-2 rounded-full border px-4 text-sm font-medium"
+            onClick={() => {
+              setFile(null);
+              setVoice(null);
+            }}
+          >
+            {voice && `Voice note, ${Math.round(voice.durationS)} s`} <X size={16} aria-hidden />
+          </button>
+        )}
+      </div>
       <p className="text-faint m-0 text-sm">
         Neither of you can open it before{" "}
         {date
@@ -435,16 +493,34 @@ function CapsuleSheet({
       </p>
       <FieldError>{error}</FieldError>
       <Button
-        disabled={busy || !title.trim() || !date || (!body.trim() && !file)}
+        disabled={busy || !!recorder || !title.trim() || !date || (!body.trim() && !file && !voice)}
         onClick={async () => {
           setBusy(true);
           setError(null);
           try {
             let mediaId: string | undefined;
-            if (file) {
+            if (file?.type.startsWith("video/")) {
+              const v = await prepareVideo(file);
+              mediaId = (
+                await uploadMedia(v.blob, {
+                  kind: "video",
+                  durationS: v.durationS,
+                  width: v.width,
+                  height: v.height,
+                })
+              ).id;
+            } else if (file) {
               const img = await compressImage(file);
               mediaId = (
                 await uploadMedia(img.blob, { kind: "image", width: img.width, height: img.height })
+              ).id;
+            } else if (voice) {
+              mediaId = (
+                await uploadMedia(voice.blob, {
+                  kind: "audio",
+                  durationS: voice.durationS,
+                  waveform: voice.waveform,
+                })
               ).id;
             }
             const unlockAt = zonedToUtc(date, "09:00", me.timezone).toISOString();
