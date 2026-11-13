@@ -5,6 +5,7 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 import { useCouple } from "@/features/couple/context";
 import type { MediaInfo, Message, Reaction } from "./types";
 import { useQueue, type QueuedPayload } from "./queue";
+import { subscribeAuthed } from "@/lib/realtime";
 
 const PAGE = 40;
 type Pages = InfiniteData<Message[], string | null>;
@@ -48,13 +49,8 @@ export function useMessages() {
         });
         if (payload.eventType === "INSERT") useQueue.getState().remove(row.client_id);
       })
-      .subscribe((status) => {
-        // Close the gap between the first fetch and the subscription going live.
-        if (status === "SUBSCRIBED") void qc.invalidateQueries({ queryKey: key, refetchType: "active" });
-      });
-    return () => {
-      void sb.removeChannel(ch);
-    };
+    // Close the gap between the first fetch and the subscription going live.
+    return subscribeAuthed(ch, (status) => status === "SUBSCRIBED" && void qc.invalidateQueries({ queryKey: key, refetchType: "active" }));
   }, [coupleId, key, qc]);
 
   const messages = useMemo(() => (q.data?.pages.flat() ?? []).slice().reverse(), [q.data]);
@@ -88,10 +84,7 @@ export function useReactions() {
       .on("postgres_changes", { event: "*", schema: "public", table: "reactions", filter: `couple_id=eq.${coupleId}` }, () =>
         qc.invalidateQueries({ queryKey: ["reactions", coupleId] }),
       )
-      .subscribe();
-    return () => {
-      void sb.removeChannel(ch);
-    };
+    return subscribeAuthed(ch, (st) => st === "SUBSCRIBED" && void qc.invalidateQueries({ queryKey: ["reactions", coupleId] }));
   }, [coupleId, qc]);
   const byMessage = useMemo(() => {
     const m = new Map<string, Reaction[]>();

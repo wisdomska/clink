@@ -18,6 +18,7 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${port}`,
     trace: "off",
+    screenshot: "only-on-failure",
     locale: "en-GB",
     launchOptions: localChromium ? { executablePath: localChromium } : {},
   },

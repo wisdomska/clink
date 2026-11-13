@@ -49,7 +49,7 @@ test.describe("Flow 10.1: sign up, link and first Clink", () => {
     const a1 = await makeUser("Ama");
     const b1 = await makeUser("Kwesi");
     const c1 = await makeUser("Kofi");
-    const { a, b } = await twoPartners(browser);
+    const { a, b, ctxA, ctxB } = await twoPartners(browser);
     const ctxC = await browser.newContext();
     const c = await ctxC.newPage();
     await signIn(a, a1, "/link");
@@ -61,5 +61,6 @@ test.describe("Flow 10.1: sign up, link and first Clink", () => {
     expect(reuse.status()).toBe(404);
     const again = await a.request.post("/api/invites");
     expect(again.status()).toBe(409);
+    await Promise.all([ctxA.close(), ctxB.close(), ctxC.close()]);
   });
 });

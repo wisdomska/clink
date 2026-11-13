@@ -11,6 +11,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { GAME_META, startGame } from "./meta";
+import { subscribeAuthed } from "@/lib/realtime";
 import type { GameType } from "./engines/types";
 
 const LIVE: Array<{ type: GameType; Icon: typeof Question }> = [
@@ -35,10 +36,7 @@ export function useGames() {
     const ch = sb
       .channel(`games:${coupleId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "games", filter: `couple_id=eq.${coupleId}` }, () => qc.invalidateQueries({ queryKey: ["games", coupleId] }))
-      .subscribe();
-    return () => {
-      void sb.removeChannel(ch);
-    };
+    return subscribeAuthed(ch, (status) => status === "SUBSCRIBED" && void qc.invalidateQueries({ queryKey: ["games", coupleId] }));
   }, [coupleId, qc]);
   return q;
 }
@@ -101,8 +99,8 @@ export function Lobby() {
               </div>
             </div>
             <div className="flex h-1.5 gap-0.5 overflow-hidden rounded-full" aria-hidden>
-              <span style={{ flex: Math.max(mine, 1), background: "var(--partner-a)" }} />
-              <span style={{ flex: Math.max(theirs, 1), background: "var(--partner-b)" }} />
+              <span style={{ flex: Math.max(mine, 1), background: `var(--partner-${me.role})` }} />
+              <span style={{ flex: Math.max(theirs, 1), background: `var(--partner-${partner.role})` }} />
             </div>
             <div className="text-sm text-muted">{lead}</div>
           </section>

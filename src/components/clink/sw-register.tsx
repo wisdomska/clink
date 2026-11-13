@@ -7,8 +7,15 @@ export function ServiceWorker() {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
   useEffect(() => {
     if (!("serviceWorker" in navigator) || process.env.NODE_ENV !== "production") return;
+    // Only reload when a new worker replaces an existing one (an update the user accepted).
+    // The very first install also fires controllerchange (clientsClaim) and must not reload.
     let reloading = false;
+    let hadController = Boolean(navigator.serviceWorker.controller);
     navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!hadController) {
+        hadController = true;
+        return;
+      }
       if (reloading) return;
       reloading = true;
       window.location.reload();

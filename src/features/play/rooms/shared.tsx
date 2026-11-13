@@ -8,6 +8,7 @@ import { IconButton, Button } from "@/components/ui/button";
 import { useCouple } from "@/features/couple/context";
 import { toast } from "@/components/ui/toast";
 import { GAME_META } from "../meta";
+import { subscribeAuthed } from "@/lib/realtime";
 import type { GameType } from "../engines/types";
 
 export interface GameRow {
@@ -39,10 +40,7 @@ export function useGame(id: string) {
     const ch = sb
       .channel(`game:${id}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "games", filter: `id=eq.${id}` }, (p) => qc.setQueryData(["game", id], p.new))
-      .subscribe((s) => s === "SUBSCRIBED" && void qc.invalidateQueries({ queryKey: ["game", id] }));
-    return () => {
-      void sb.removeChannel(ch);
-    };
+    return subscribeAuthed(ch, (s) => s === "SUBSCRIBED" && void qc.invalidateQueries({ queryKey: ["game", id] }));
   }, [id, qc]);
   return q;
 }

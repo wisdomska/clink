@@ -19,6 +19,21 @@ export const test = base.extend<{ couple: Couple }>({
     const ctxB = await browser.newContext(opts);
     const a = await ctxA.newPage();
     const b = await ctxB.newPage();
+    for (const page of [a, b]) {
+      // Every navigation waits until React has hydrated, so clicks are never lost.
+      const goto = page.goto.bind(page);
+      page.goto = async (url, o) => {
+        const r = await goto(url, o);
+        await page.waitForFunction(() => document.documentElement.dataset.hydrated === "true", null, { timeout: 15000 });
+        return r;
+      };
+      const reload = page.reload.bind(page);
+      page.reload = async (o) => {
+        const r = await reload(o);
+        await page.waitForFunction(() => document.documentElement.dataset.hydrated === "true", null, { timeout: 15000 });
+        return r;
+      };
+    }
     const nia = await makeUser("Nia");
     const theo = await makeUser("Theo", { city: "Accra", timezone: "Africa/Accra" });
     await signIn(a, nia, "/link");

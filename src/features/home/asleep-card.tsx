@@ -26,7 +26,7 @@ export function AsleepCard({ now }: { now: Date }) {
           <Microphone size={18} aria-hidden />
           Voice note
         </Link>
-        <Link href="/keep/letters/new" className={pill}>
+        <Link href="/keep?write=letter" className={pill}>
           <EnvelopeSimple size={18} aria-hidden />
           Open When letter
         </Link>

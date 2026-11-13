@@ -8,6 +8,7 @@ import { FieldError } from "@/components/ui/field";
 import { Sparks } from "@/components/clink/sparks";
 import { toast } from "@/components/ui/toast";
 import { supabaseBrowser } from "@/lib/supabase/client";
+import { subscribeAuthed } from "@/lib/realtime";
 
 type Invite = { code: string; expires_at: string };
 
@@ -84,11 +85,8 @@ export function LinkScreen({
       }
     };
     const sb = supabaseBrowser();
-    const ch = userId
-      ? sb
-          .channel(`linking:${userId}`)
-          .on("postgres_changes", { event: "INSERT", schema: "public", table: "couple_members", filter: `user_id=eq.${userId}` }, () => void check())
-          .subscribe()
+    const unsub = userId
+      ? subscribeAuthed(sb.channel(`linking:${userId}`).on("postgres_changes", { event: "INSERT", schema: "public", table: "couple_members", filter: `user_id=eq.${userId}` }, () => void check()))
       : null;
     const t = setInterval(check, 4000);
     window.addEventListener("focus", check);
@@ -98,7 +96,7 @@ export function LinkScreen({
       clearInterval(t);
       window.removeEventListener("focus", check);
       document.removeEventListener("visibilitychange", check);
-      if (ch) void sb.removeChannel(ch);
+      unsub?.();
     };
   }, [linked, router, userId]);
 
