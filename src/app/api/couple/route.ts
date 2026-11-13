@@ -4,13 +4,9 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 
 const schema = z.object({
   started_on: z.iso.date().nullable().optional(),
-  ritual_time: z
-    .string()
-    .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
-    .optional(),
 });
 
-/** ACC-06 relationship start date (drives the day counter and timeline) and ritual time. */
+/** ACC-06 relationship start date (drives the day counter and timeline). Ritual time: ./ritual-time. */
 export const PATCH = handler(async (req) => {
   const { db, coupleId } = await requireCouple();
   const body = await parseJson(req, schema);

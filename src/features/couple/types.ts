@@ -22,6 +22,7 @@ export interface CoupleContextValue {
   startedOn: string | null;
   linkedAt: string;
   ritualTime: string;
+  ritualProposal: { time: string; byMe: boolean } | null;
   darkVisible: boolean;
   discreet: boolean;
   isAdmin: boolean;

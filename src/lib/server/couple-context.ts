@@ -33,7 +33,9 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
     admin.from("profiles").select(cols).in("id", [user.id, couple.partnerId]),
     admin
       .from("couples")
-      .select("id, started_on, linked_at, ritual_time, dark_opened_at")
+      .select(
+        "id, started_on, linked_at, ritual_time, ritual_time_proposed, ritual_time_proposed_by, dark_opened_at",
+      )
       .eq("id", couple.coupleId)
       .single(),
     admin
@@ -70,6 +72,9 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
     startedOn: c?.started_on ?? null,
     linkedAt: c!.linked_at,
     ritualTime: c?.ritual_time?.slice(0, 5) ?? "21:00",
+    ritualProposal: c?.ritual_time_proposed
+      ? { time: c.ritual_time_proposed.slice(0, 5), byMe: c.ritual_time_proposed_by === user.id }
+      : null,
     darkVisible: darkBoth,
     discreet: meRow.discreet_mode,
     isAdmin: meRow.is_admin,

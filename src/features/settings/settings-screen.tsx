@@ -21,6 +21,7 @@ import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/cn";
 import { enablePush } from "@/lib/pwa";
 import { PasskeyRows } from "./passkeys";
+import { RitualTimeRows } from "./ritual-time";
 import { IdentityPicker } from "@/components/clink/identity-picker";
 import { asIdentity } from "@/lib/app-identity";
 
@@ -282,6 +283,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
             className="mono rounded-input border-line bg-s2 text-text h-10 border px-3 text-sm"
           />
         </div>
+        <RitualTimeRows />
         <PasskeyRows />
         <Row href="/help">
           Help and safety
