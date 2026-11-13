@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+# Reject any AI attribution. The only author of this project is wisdomska(senya).
+if grep -qiE 'co-authored-by|claude|anthropic|generated with|noreply@anthropic' "$1"; then
+  echo "commit-msg: AI attribution or co-author trailer is not allowed in this repository." >&2
+  exit 1
+fi
