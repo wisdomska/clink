@@ -5,9 +5,6 @@ import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   CaretRight,
-  Wine,
-  NotePencil,
-  CloudSun,
   Trash,
   ChatCircle,
   BellSimple,
@@ -24,12 +21,8 @@ import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/cn";
 import { enablePush } from "@/lib/pwa";
 import { PasskeyRows } from "./passkeys";
-
-const ICONS = [
-  { key: "clink", label: "Clink", Icon: Wine },
-  { key: "notes", label: "Notes", Icon: NotePencil },
-  { key: "weather", label: "Weather", Icon: CloudSun },
-] as const;
+import { IdentityPicker } from "@/components/clink/identity-picker";
+import { asIdentity } from "@/lib/app-identity";
 
 async function patchSettings(body: Record<string, unknown>) {
   const r = await fetch("/api/me/settings", {
@@ -89,7 +82,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
     ...settings.notify,
   });
   const [quiet, setQuiet] = useState({ start: settings.quietStart, end: settings.quietEnd });
-  const [icon, setIcon] = useState(settings.appIcon);
+  const [icon, setIcon] = useState(asIdentity(settings.appIcon));
   const [discreet, setDiscreet] = useState(ctx.discreet);
   const [saved, setSaved] = useState(settings.allowSavedSpicyMine);
   const [savedBoth, setSavedBoth] = useState(settings.allowSavedSpicyBoth);
@@ -205,38 +198,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
       </div>
 
       <h2 className="m-0 mt-1 text-lg font-bold">App icon and name</h2>
-      <div className="flex gap-3" role="radiogroup" aria-label="App icon and name">
-        {ICONS.map(({ key, label, Icon }) => (
-          <button
-            key={key}
-            type="button"
-            role="radio"
-            aria-checked={icon === key}
-            onClick={async () => {
-              setIcon(key);
-              await patchSettings({ app_icon: key });
-              toast(
-                key === "clink"
-                  ? "Back to Clink."
-                  : `Shows as ${label}. Reinstall from the browser to update the home screen.`,
-              );
-            }}
-            className="press rounded-card bg-s1 text-text flex flex-1 cursor-pointer flex-col items-center gap-2 py-3"
-            style={{ border: icon === key ? "2px solid var(--accent)" : "1px solid var(--line)" }}
-          >
-            <span
-              className="rounded-input flex h-[52px] w-[52px] items-center justify-center"
-              style={{
-                background: key === "clink" ? "var(--accent)" : "var(--surface-3)",
-                color: key === "clink" ? "var(--on-accent)" : "var(--text)",
-              }}
-            >
-              <Icon size={26} aria-hidden />
-            </span>
-            <span className="text-sm font-medium">{label}</span>
-          </button>
-        ))}
-      </div>
+      <IdentityPicker value={icon} onChange={setIcon} />
 
       <h2 className="m-0 mt-1 text-lg font-bold">After Dark</h2>
       <div className="rounded-card border-line bg-s1 overflow-hidden border">

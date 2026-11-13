@@ -16,6 +16,8 @@ import { Segmented } from "@/components/ui/segmented";
 import { isStandalone, platform, enablePush } from "@/lib/pwa";
 import { useClientValue } from "@/lib/hooks";
 import { toast } from "@/components/ui/toast";
+import { IdentityPicker } from "@/components/clink/identity-picker";
+import type { Identity } from "@/lib/app-identity";
 
 type Tab = "android" | "iphone" | "done";
 interface BeforeInstallPromptEvent extends Event {
@@ -36,13 +38,14 @@ const STEPS: Record<"android" | "iphone", Array<[string, string]>> = {
   ],
 };
 
-export function InstallGuide() {
+export function InstallGuide({ identity = "clink" }: { identity?: Identity }) {
   const router = useRouter();
   const detected = useClientValue<Tab>(
     () => (isStandalone() ? "done" : platform() === "ios" ? "iphone" : "android"),
     "android",
   );
   const [picked, setTab] = useState<Tab | null>(null);
+  const [icon, setIcon] = useState<Identity>(identity);
   const tab = picked ?? detected;
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const initialPush = useClientValue<NotificationPermission | "unsupported">(
@@ -82,6 +85,17 @@ export function InstallGuide() {
         Put Clink on your <em>home screen</em>
       </Display>
       <Lead className="mt-2 mb-5">So Clinks arrive like texts. Takes 20 seconds.</Lead>
+      {tab !== "done" && (
+        <section aria-labelledby="looks" className="mb-5">
+          <h2 id="looks" className="m-0 mb-1 text-base font-bold">
+            How it shows on your phone
+          </h2>
+          <p className="text-muted m-0 mb-3 text-sm">
+            Pick a quieter name and icon if you like. Notifications stay generic either way.
+          </p>
+          <IdentityPicker value={icon} onChange={setIcon} installed={false} />
+        </section>
+      )}
       <Segmented
         label="Your device"
         value={tab}
