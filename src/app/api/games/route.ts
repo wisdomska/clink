@@ -10,7 +10,14 @@ const schema = z.object({
   subject: z.enum(["me", "partner"]).optional(),
 });
 
-const NAMES: Record<string, string> = { know_me: "How well do you know me", draw_guess: "Draw and guess", trivia: "Trivia duel", wyr: "Would you rather", word: "Word game", story: "Story builder" };
+const NAMES: Record<string, string> = {
+  know_me: "How well do you know me",
+  draw_guess: "Draw and guess",
+  trivia: "Trivia duel",
+  wyr: "Would you rather",
+  word: "Word game",
+  story: "Story builder",
+};
 
 /** PLAY-01: start a game. Live games begin as an invite; turn-based games start at once. */
 export const POST = handler(async (req) => {
@@ -21,10 +28,18 @@ export const POST = handler(async (req) => {
   const live = LIVE.includes(body.type);
   if (live) {
     // One open invite per game type: re-inviting refreshes it.
-    await admin.from("games").update({ status: "abandoned" }).eq("couple_id", coupleId).eq("type", body.type).eq("status", "invited");
+    await admin
+      .from("games")
+      .update({ status: "abandoned" })
+      .eq("couple_id", coupleId)
+      .eq("type", body.type)
+      .eq("status", "invited");
   }
   const p = await playersFor(coupleId, user.id);
-  const r = await initGame(body.type, p, { deck: body.deck, subject: body.subject === "me" ? user.id : body.subject === "partner" ? partnerId : undefined });
+  const r = await initGame(body.type, p, {
+    deck: body.deck,
+    subject: body.subject === "me" ? user.id : body.subject === "partner" ? partnerId : undefined,
+  });
   const { data: game, error } = await admin
     .from("games")
     .insert({
@@ -40,7 +55,15 @@ export const POST = handler(async (req) => {
     .single();
   if (error || !game) throw error;
   await admin.from("game_secrets").insert({ game_id: game.id, data: asJson(r.secrets) });
-  const { data: me } = await admin.from("profiles").select("display_name").eq("id", user.id).single();
-  await notify(partnerId, "games", { body: `${me?.display_name ?? "Your person"} wants to play ${NAMES[body.type]}`, url: `/play/${body.type}/${game.id}`, tag: `game-${game.id}` });
+  const { data: me } = await admin
+    .from("profiles")
+    .select("display_name")
+    .eq("id", user.id)
+    .single();
+  await notify(partnerId, "games", {
+    body: `${me?.display_name ?? "Your person"} wants to play ${NAMES[body.type]}`,
+    url: `/play/${body.type}/${game.id}`,
+    tag: `game-${game.id}`,
+  });
   return ok({ id: game.id }, { status: 201 });
 });

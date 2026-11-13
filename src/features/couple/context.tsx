@@ -1,5 +1,13 @@
 "use client";
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import type { CoupleContextValue, PartnerPresence, PresenceStatus } from "./types";
@@ -27,11 +35,21 @@ export function useCouple(): CoupleRuntime {
 
 const HEARTBEAT_MS = 30_000;
 
-export function CoupleProvider({ value, children }: { value: CoupleContextValue; children: React.ReactNode }) {
+export function CoupleProvider({
+  value,
+  children,
+}: {
+  value: CoupleContextValue;
+  children: React.ReactNode;
+}) {
   const channelRef = useRef<RealtimeChannel | null>(null);
   const handlers = useRef(new Map<string, Set<Handler>>());
   const [connected, setConnected] = useState(false);
-  const [presence, setPresence] = useState<PartnerPresence>({ online: false, status: "free", lastSeen: null });
+  const [presence, setPresence] = useState<PartnerPresence>({
+    online: false,
+    status: "free",
+    lastSeen: null,
+  });
   const [myStatus, setMyStatusState] = useState<PresenceStatus>("free");
   const statusRef = useRef<PresenceStatus>("free");
 
@@ -52,14 +70,23 @@ export function CoupleProvider({ value, children }: { value: CoupleContextValue;
           statusRef.current = mine.status as PresenceStatus;
           setMyStatusState(mine.status as PresenceStatus);
         }
-        if (theirs) setPresence((p) => ({ ...p, status: theirs.status as PresenceStatus, lastSeen: theirs.last_seen_at }));
+        if (theirs)
+          setPresence((p) => ({
+            ...p,
+            status: theirs.status as PresenceStatus,
+            lastSeen: theirs.last_seen_at,
+          }));
       });
 
     (async () => {
       await sb.realtime.setAuth();
       if (disposed) return;
       const ch = sb.channel(`couple:${value.coupleId}`, {
-        config: { private: true, broadcast: { self: false, ack: false }, presence: { key: value.me.id } },
+        config: {
+          private: true,
+          broadcast: { self: false, ack: false },
+          presence: { key: value.me.id },
+        },
       });
       ch.on("broadcast", { event: "*" }, ({ event, payload }) => {
         handlers.current.get(event)?.forEach((fn) => fn(payload ?? {}));
@@ -81,7 +108,13 @@ export function CoupleProvider({ value, children }: { value: CoupleContextValue;
         await track();
         heartbeat = setInterval(() => {
           void track();
-          sb.from("presence").upsert({ user_id: value.me.id, status: statusRef.current, last_seen_at: new Date().toISOString() }).then(() => undefined);
+          sb.from("presence")
+            .upsert({
+              user_id: value.me.id,
+              status: statusRef.current,
+              last_seen_at: new Date().toISOString(),
+            })
+            .then(() => undefined);
         }, HEARTBEAT_MS);
       });
       channelRef.current = ch;
@@ -89,7 +122,13 @@ export function CoupleProvider({ value, children }: { value: CoupleContextValue;
 
     const onHide = () => {
       if (document.visibilityState === "hidden") {
-        sb.from("presence").upsert({ user_id: value.me.id, status: statusRef.current, last_seen_at: new Date().toISOString() }).then(() => undefined);
+        sb.from("presence")
+          .upsert({
+            user_id: value.me.id,
+            status: statusRef.current,
+            last_seen_at: new Date().toISOString(),
+          })
+          .then(() => undefined);
       }
     };
     document.addEventListener("visibilitychange", onHide);
@@ -120,7 +159,10 @@ export function CoupleProvider({ value, children }: { value: CoupleContextValue;
       statusRef.current = s;
       setMyStatusState(s);
       void channelRef.current?.track({ status: s, at: new Date().toISOString() });
-      supabaseBrowser().from("presence").upsert({ user_id: value.me.id, status: s, last_seen_at: new Date().toISOString() }).then(() => undefined);
+      supabaseBrowser()
+        .from("presence")
+        .upsert({ user_id: value.me.id, status: s, last_seen_at: new Date().toISOString() })
+        .then(() => undefined);
     },
     [value.me.id],
   );

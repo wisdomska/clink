@@ -31,13 +31,20 @@ export const useQueue = create<QueueState>()(
       items: [],
       failed: {},
       add: (p) => set((s) => ({ items: [...s.items.filter((i) => i.clientId !== p.clientId), p] })),
-      remove: (id) => set((s) => ({ items: s.items.filter((i) => i.clientId !== id), failed: { ...s.failed, [id]: false } })),
+      remove: (id) =>
+        set((s) => ({
+          items: s.items.filter((i) => i.clientId !== id),
+          failed: { ...s.failed, [id]: false },
+        })),
       setFailed: (id, v) => set((s) => ({ failed: { ...s.failed, [id]: v } })),
     }),
     {
       name: "clink_outbox",
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ items: s.items.filter((i) => i.type === "text" || i.type === "sticker"), failed: {} }),
+      partialize: (s) => ({
+        items: s.items.filter((i) => i.type === "text" || i.type === "sticker"),
+        failed: {},
+      }),
     },
   ),
 );

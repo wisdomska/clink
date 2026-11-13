@@ -1,7 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { serverEnv } from "@/lib/env";
-import { expireMedia, retryWipes, dateReminders, capsuleUnlock, accountDeletion, exportCleanup } from "@/lib/server/jobs";
+import {
+  expireMedia,
+  retryWipes,
+  dateReminders,
+  capsuleUnlock,
+  accountDeletion,
+  exportCleanup,
+} from "@/lib/server/jobs";
 
 export const maxDuration = 60;
 
@@ -36,5 +43,8 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ job: strin
   } else {
     return NextResponse.json({ error: "unknown_job" }, { status: 404 });
   }
-  return NextResponse.json({ job, ms: Date.now() - started, results }, { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json(
+    { job, ms: Date.now() - started, results },
+    { headers: { "Cache-Control": "no-store" } },
+  );
 }

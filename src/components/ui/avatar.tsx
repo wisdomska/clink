@@ -35,7 +35,10 @@ export function Avatar({
   const ringColor = side === "me" ? "var(--partner-a)" : dim ? "var(--line)" : "var(--partner-b)";
   return (
     <div
-      className={cn("display relative flex flex-none items-center justify-center rounded-full", className)}
+      className={cn(
+        "display relative flex flex-none items-center justify-center rounded-full",
+        className,
+      )}
       style={{
         width: size,
         height: size,

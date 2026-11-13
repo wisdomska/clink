@@ -7,7 +7,10 @@ import { supabaseBrowser } from "@/lib/supabase/client";
  * Joining earlier subscribes as anon, and RLS then silently filters every
  * postgres_changes event. Returns a cleanup function.
  */
-export function subscribeAuthed(ch: RealtimeChannel, onStatus?: (s: `${REALTIME_SUBSCRIBE_STATES}`) => void): () => void {
+export function subscribeAuthed(
+  ch: RealtimeChannel,
+  onStatus?: (s: `${REALTIME_SUBSCRIBE_STATES}`) => void,
+): () => void {
   const sb = supabaseBrowser();
   let cancelled = false;
   void sb.realtime.setAuth().then(() => {

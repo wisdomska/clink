@@ -18,7 +18,10 @@ export const EVENTS = {
 
 export type EventName = keyof typeof EVENTS;
 
-export function sanitizeEvent(name: string, props: Record<string, unknown> = {}): { name: EventName; props: Record<string, string | number | boolean> } | null {
+export function sanitizeEvent(
+  name: string,
+  props: Record<string, unknown> = {},
+): { name: EventName; props: Record<string, string | number | boolean> } | null {
   if (!(name in EVENTS)) return null;
   const allowed = EVENTS[name as EventName] as readonly string[];
   const clean: Record<string, string | number | boolean> = {};

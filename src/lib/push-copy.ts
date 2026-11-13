@@ -19,7 +19,12 @@ export const DISCREET_TEXT = "New moment in Clink";
  * After Dark never carries content, names of dares or the word "nude".
  * Everything else is discreet unless the user opted into detailed text.
  */
-export function pushText(category: PushCategory, detailed: string, prefs: PushPrefs, appName = "Clink"): { title: string; body: string } {
+export function pushText(
+  category: PushCategory,
+  detailed: string,
+  prefs: PushPrefs,
+  appName = "Clink",
+): { title: string; body: string } {
   if (category === "dark") return { title: appName, body: DARK_TEXT };
   if (!prefs.detailed) return { title: appName, body: DISCREET_TEXT };
   return { title: appName, body: detailed };

@@ -1,7 +1,10 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 
-const schema = z.object({ lat: z.coerce.number().min(-90).max(90), lon: z.coerce.number().min(-180).max(180) });
+const schema = z.object({
+  lat: z.coerce.number().min(-90).max(90),
+  lon: z.coerce.number().min(-180).max(180),
+});
 
 const LABELS: Array<[number[], string]> = [
   [[0], "clear"],
@@ -26,8 +29,12 @@ export async function GET(req: NextRequest) {
     const code = Number(data.current?.weather_code ?? 0);
     let label = LABELS.find(([codes]) => codes.includes(code))?.[1] ?? "clear";
     const temp = Math.round(Number(data.current?.temperature_2m ?? 0));
-    if (label === "clear" && temp >= 26 && Number(data.current?.relative_humidity_2m ?? 0) >= 65) label = "humid";
-    return Response.json({ temp, label }, { headers: { "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600" } });
+    if (label === "clear" && temp >= 26 && Number(data.current?.relative_humidity_2m ?? 0) >= 65)
+      label = "humid";
+    return Response.json(
+      { temp, label },
+      { headers: { "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600" } },
+    );
   } catch {
     return Response.json({ temp: null, label: null }, { status: 200 });
   }

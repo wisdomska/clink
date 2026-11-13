@@ -57,21 +57,39 @@ export function UsScreen() {
   return (
     <div className="screen an-screen">
       <div className="flex h-11 flex-none items-center justify-between lg:hidden">
-        <h1 onPointerDown={wordDown} onPointerUp={wordUp} onPointerLeave={wordUp} className="display m-0 text-[30px] select-none">
+        <h1
+          onPointerDown={wordDown}
+          onPointerUp={wordUp}
+          onPointerLeave={wordUp}
+          className="display m-0 text-[30px] select-none"
+        >
           clink
         </h1>
         <div className="flex gap-2">
           {darkVisible && !discreet && (
-            <Link href="/dark" aria-label="After Dark" className="press flex h-11 w-11 items-center justify-center rounded-full border border-line bg-s1 text-text hover:text-text">
+            <Link
+              href="/dark"
+              aria-label="After Dark"
+              className="press border-line bg-s1 text-text hover:text-text flex h-11 w-11 items-center justify-center rounded-full border"
+            >
               <Moon size={20} />
             </Link>
           )}
-          <Link href="/settings" aria-label="Settings" className="press flex h-11 w-11 items-center justify-center rounded-full border border-line bg-s1 text-text hover:text-text">
+          <Link
+            href="/settings"
+            aria-label="Settings"
+            className="press border-line bg-s1 text-text hover:text-text flex h-11 w-11 items-center justify-center rounded-full border"
+          >
             <GearSix size={20} />
           </Link>
         </div>
       </div>
-      <h1 onPointerDown={wordDown} onPointerUp={wordUp} onPointerLeave={wordUp} className="display m-0 hidden text-[48px] leading-[1.05] select-none lg:block">
+      <h1
+        onPointerDown={wordDown}
+        onPointerUp={wordUp}
+        onPointerLeave={wordUp}
+        className="display m-0 hidden text-[48px] leading-[1.05] select-none lg:block"
+      >
         Us
       </h1>
       {/* Phones: one column in the prototype order. Desktop: the Clink side and the day side. */}

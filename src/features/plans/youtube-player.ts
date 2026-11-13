@@ -45,6 +45,9 @@ export function loadYouTube(): Promise<YTNamespace> {
 export const DRIFT_LIMIT = 0.5; // seconds (spec: watch party drift under 500 ms)
 
 /** Where the leader's playhead should be now, given a state message. Pure, unit-tested. */
-export function expectedPosition(msg: { playing: boolean; position: number; sentAt: number }, now: number): number {
+export function expectedPosition(
+  msg: { playing: boolean; position: number; sentAt: number },
+  now: number,
+): number {
   return msg.position + (msg.playing ? Math.max(0, now - msg.sentAt) / 1000 : 0);
 }

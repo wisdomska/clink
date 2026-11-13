@@ -12,11 +12,12 @@ export function AsleepCard({ now }: { now: Date }) {
   if (presence.status !== "sleeping" && !(late && !presence.online)) return null;
   const h12 = hour % 12 === 0 ? 12 : hour % 12;
   const time = `${h12}:${String(minute).padStart(2, "0")} ${hour < 12 ? "am" : "pm"}`;
-  const pill = "press flex h-11 items-center gap-1.5 rounded-full border border-line bg-s2 px-4 text-sm font-medium text-text hover:text-text";
+  const pill =
+    "press flex h-11 items-center gap-1.5 rounded-full border border-line bg-s2 px-4 text-sm font-medium text-text hover:text-text";
   return (
-    <div className="an-reveal flex flex-none flex-col gap-3 rounded-card border border-line bg-s1 p-4">
+    <div className="an-reveal rounded-card border-line bg-s1 flex flex-none flex-col gap-3 border p-4">
       <div className="flex items-start gap-2.5">
-        <MoonStars size={24} className="flex-none text-accent" aria-hidden />
+        <MoonStars size={24} className="text-accent flex-none" aria-hidden />
         <p className="m-0 text-base leading-[1.45] font-medium">
           It&apos;s {time} for {partner.name}. Leave something for the morning?
         </p>

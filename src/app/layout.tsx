@@ -13,11 +13,18 @@ export async function generateMetadata(): Promise<Metadata> {
   const name = IDENTITIES[id].name;
   return {
     metadataBase: new URL(siteUrl()),
-    title: { default: id === "clink" ? "Clink: do things together, from apart" : name, template: `%s · ${name}` },
-    description: "Games, dates, dares and letters for two people in two places. An 18+ app for long-distance couples.",
+    title: {
+      default: id === "clink" ? "Clink: do things together, from apart" : name,
+      template: `%s · ${name}`,
+    },
+    description:
+      "Games, dates, dares and letters for two people in two places. An 18+ app for long-distance couples.",
     applicationName: name,
     manifest: "/manifest.webmanifest",
-    icons: { icon: [{ url: "/favicon.png", type: "image/png" }], apple: `/icons/${id}-apple-180.png` },
+    icons: {
+      icon: [{ url: "/favicon.png", type: "image/png" }],
+      apple: `/icons/${id}-apple-180.png`,
+    },
     appleWebApp: { capable: true, title: name, statusBarStyle: "black-translucent" },
     formatDetection: { telephone: false },
     robots: { index: false, follow: false },
@@ -34,7 +41,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${cabinet.variable} ${satoshi.variable} ${geistMono.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${cabinet.variable} ${satoshi.variable} ${geistMono.variable}`}
+      suppressHydrationWarning
+    >
       <body>
         {children}
         <Toaster />

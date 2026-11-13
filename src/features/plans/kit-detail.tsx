@@ -12,10 +12,22 @@ import { toast } from "@/components/ui/toast";
 import { zonedToUtc, wallTime, localParts } from "@/lib/time";
 import { useKits, useUpcomingDates } from "./data";
 
-export function ScheduleSheet({ kitId, title, open, onOpenChange }: { kitId: string; title: string; open: boolean; onOpenChange: (v: boolean) => void }) {
+export function ScheduleSheet({
+  kitId,
+  title,
+  open,
+  onOpenChange,
+}: {
+  kitId: string;
+  title: string;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const { me, partner, coupleId } = useCouple();
   const qc = useQueryClient();
-  const [date, setDate] = useState(localParts(new Date(Date.now() + 86400000), me.timezone).dateKey);
+  const [date, setDate] = useState(
+    () => localParts(new Date(Date.now() + 86400000), me.timezone).dateKey,
+  );
   const [time, setTime] = useState("21:00");
   const [error, setError] = useState<string | null>(null);
   const instant = date && time ? zonedToUtc(date, time, me.timezone) : null;
@@ -28,21 +40,33 @@ export function ScheduleSheet({ kitId, title, open, onOpenChange }: { kitId: str
       <div className="grid grid-cols-[1.4fr_1fr] gap-2">
         <div>
           <Label htmlFor="sd">Date</Label>
-          <Input id="sd" type="date" min={localParts(new Date(), me.timezone).dateKey} value={date} onChange={(e) => setDate(e.target.value)} />
+          <Input
+            id="sd"
+            type="date"
+            min={localParts(new Date(), me.timezone).dateKey}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
         </div>
         <div>
           <Label htmlFor="st">Your time</Label>
           <Input id="st" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
         </div>
       </div>
-      {instant && <Mono className="text-sm text-muted">THAT&apos;S {theirs.toUpperCase()}</Mono>}
-      <p className="m-0 text-sm text-faint">You both get reminders 1 day and 1 hour before, in your own time.</p>
+      {instant && <Mono className="text-muted text-sm">THAT&apos;S {theirs.toUpperCase()}</Mono>}
+      <p className="text-faint m-0 text-sm">
+        You both get reminders 1 day and 1 hour before, in your own time.
+      </p>
       <FieldError>{error}</FieldError>
       <Button
         onClick={async () => {
           setError(null);
           if (!instant) return;
-          const r = await fetch("/api/dates", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kitId, startAt: instant.toISOString() }) });
+          const r = await fetch("/api/dates", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ kitId, startAt: instant.toISOString() }),
+          });
           const d = await r.json();
           if (!r.ok) return setError(d.message);
           onOpenChange(false);
@@ -66,31 +90,40 @@ export function KitDetail({ id }: { id: string }) {
   const done = dates.find((d) => d.kit_id === id && d.status === "completed");
   const [open, setOpen] = useState(false);
   const [checked, setChecked] = useState<number[]>([]);
-  if (!kit) return <div className="screen an-skel h-64 rounded-card bg-s2" />;
+  const [now] = useState(() => Date.now());
+  if (!kit) return <div className="screen an-skel rounded-card bg-s2 h-64" />;
   const steps = kit.steps as string[];
   const prompts = kit.prompts as string[];
-  const inProgress = booked && new Date(booked.start_at).getTime() <= Date.now();
+  const inProgress = booked && new Date(booked.start_at).getTime() <= now;
   return (
     <div className="screen an-screen flex max-w-[760px] flex-col gap-5">
       <IconButton label="Back" onClick={() => router.push("/plans")}>
         <ArrowLeft size={20} />
       </IconButton>
       <div>
-        <Mono className="text-muted">{kit.minutes >= 120 && kit.minutes % 60 === 0 ? `${kit.minutes / 60} H` : `${kit.minutes} MIN`} · ADMIT 2</Mono>
+        <Mono className="text-muted">
+          {kit.minutes >= 120 && kit.minutes % 60 === 0
+            ? `${kit.minutes / 60} H`
+            : `${kit.minutes} MIN`}{" "}
+          · ADMIT 2
+        </Mono>
         <Display size={48} className="mt-1">
           {kit.title}
         </Display>
         <Lead className="mt-2">{kit.blurb}</Lead>
       </div>
       {done && !booked ? (
-        <div className="flex items-center gap-2 text-base font-medium text-accent">
+        <div className="text-accent flex items-center gap-2 text-base font-medium">
           <CheckCircle size={22} aria-hidden /> You did this one. It&apos;s on your timeline.
         </div>
       ) : booked ? (
-        <div className="flex flex-col gap-1 rounded-card bg-s2 p-4">
-          <div className="text-sm font-medium text-muted">{inProgress ? "Happening now" : "Booked"}</div>
+        <div className="rounded-card bg-s2 flex flex-col gap-1 p-4">
+          <div className="text-muted text-sm font-medium">
+            {inProgress ? "Happening now" : "Booked"}
+          </div>
           <div className="mono text-lg">
-            {wallTime(new Date(booked.start_at), me.timezone, true)} {me.city} / {wallTime(new Date(booked.start_at), partner.timezone, true)} {partner.city}
+            {wallTime(new Date(booked.start_at), me.timezone, true)} {me.city} /{" "}
+            {wallTime(new Date(booked.start_at), partner.timezone, true)} {partner.city}
           </div>
         </div>
       ) : null}
@@ -107,12 +140,25 @@ export function KitDetail({ id }: { id: string }) {
                   type="button"
                   aria-pressed={on}
                   onClick={() => setChecked(on ? checked.filter((x) => x !== i) : [...checked, i])}
-                  className="press flex w-full cursor-pointer items-start gap-3 rounded-input border border-line bg-s1 p-3.5 text-left text-base text-text"
+                  className="press rounded-input border-line bg-s1 text-text flex w-full cursor-pointer items-start gap-3 border p-3.5 text-left text-base"
                 >
-                  <span className="mono flex h-7 w-7 flex-none items-center justify-center rounded-full border border-line text-sm" style={{ background: on ? "var(--accent)" : "transparent", color: on ? "var(--on-accent)" : "var(--accent)" }}>
+                  <span
+                    className="mono border-line flex h-7 w-7 flex-none items-center justify-center rounded-full border text-sm"
+                    style={{
+                      background: on ? "var(--accent)" : "transparent",
+                      color: on ? "var(--on-accent)" : "var(--accent)",
+                    }}
+                  >
                     {i + 1}
                   </span>
-                  <span style={{ textDecoration: on ? "line-through" : "none", color: on ? "var(--text-muted)" : "var(--text)" }}>{s}</span>
+                  <span
+                    style={{
+                      textDecoration: on ? "line-through" : "none",
+                      color: on ? "var(--text-muted)" : "var(--text)",
+                    }}
+                  >
+                    {s}
+                  </span>
                 </button>
               </li>
             );
@@ -125,14 +171,23 @@ export function KitDetail({ id }: { id: string }) {
         </h2>
         <div className="flex flex-col gap-2">
           {prompts.map((p, i) => (
-            <p key={i} className="display m-0 rounded-card bg-s2 p-4 text-[20px] leading-[1.2] tracking-normal" style={{ transform: `rotate(${i % 2 ? 0.6 : -0.6}deg)` }}>
+            <p
+              key={i}
+              className="display rounded-card bg-s2 m-0 p-4 text-[20px] leading-[1.2] tracking-normal"
+              style={{ transform: `rotate(${i % 2 ? 0.6 : -0.6}deg)` }}
+            >
               {p}
             </p>
           ))}
         </div>
       </section>
       {kit.playlist_url && (
-        <a href={kit.playlist_url} target="_blank" rel="noopener noreferrer" className="press flex h-12 items-center gap-2 self-start rounded-full border border-line bg-s2 px-5 text-sm font-medium text-text hover:text-text">
+        <a
+          href={kit.playlist_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="press border-line bg-s2 text-text hover:text-text flex h-12 items-center gap-2 self-start rounded-full border px-5 text-sm font-medium"
+        >
           <MusicNotes size={18} aria-hidden /> Open the playlist
         </a>
       )}

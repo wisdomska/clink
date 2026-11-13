@@ -8,15 +8,23 @@ test.describe("Play (PLAY-01 to PLAY-08)", () => {
     await b.goto("/play");
     await expect(a.getByText("Theo's here. Live games are open.")).toBeVisible({ timeout: 10000 });
     await expectNoHorizontalScroll(a);
-    await a.getByRole("button", { name: /How well do you know me/ }).first().click();
+    await a
+      .getByRole("button", { name: /How well do you know me/ })
+      .first()
+      .click();
     await expect(a).toHaveURL(/\/play\/know_me\//);
-    await expect(b.getByText("Nia invited you to How well do you know me")).toBeVisible({ timeout: 10000 });
+    await expect(b.getByText("Nia invited you to How well do you know me")).toBeVisible({
+      timeout: 10000,
+    });
     await b.getByText("Nia invited you to How well do you know me").click();
     await expect(b).toHaveURL(/\/play\/know_me\//);
     for (let i = 0; i < 10; i++) {
       await expect(a.getByText(`${String(i + 1).padStart(2, "0")}/10`)).toBeVisible();
       await a.locator("button.press.rounded-full.min-h-14").nth(1).click();
-      await b.locator("button.press.rounded-full.min-h-14").nth(i < 7 ? 1 : 2).click();
+      await b
+        .locator("button.press.rounded-full.min-h-14")
+        .nth(i < 7 ? 1 : 2)
+        .click();
       await a.getByRole("button", { name: "Next" }).click();
       await b.getByRole("button", { name: "Next" }).click();
     }
@@ -25,15 +33,21 @@ test.describe("Play (PLAY-01 to PLAY-08)", () => {
     await expect(b.locator(".mono.text-\\[96px\\]")).toContainText("7");
   });
 
-  test("the server is the referee: out-of-turn moves and peeking are refused", async ({ couple }) => {
+  test("the server is the referee: out-of-turn moves and peeking are refused", async ({
+    couple,
+  }) => {
     const { a, b } = couple;
     await a.goto("/play");
     const w = await a.request.post("/api/games", { data: { type: "word" } });
     const { id } = await w.json();
-    const outOfTurn = await b.request.post(`/api/games/${id}/move`, { data: { move: { pass: true } } });
+    const outOfTurn = await b.request.post(`/api/games/${id}/move`, {
+      data: { move: { pass: true } },
+    });
     expect(outOfTurn.status()).toBe(422);
     expect((await outOfTurn.json()).message).toBe("It's their turn.");
-    const notOnBoard = await a.request.post(`/api/games/${id}/move`, { data: { move: { word: "zzzzzz" } } });
+    const notOnBoard = await a.request.post(`/api/games/${id}/move`, {
+      data: { move: { word: "zzzzzz" } },
+    });
     expect(notOnBoard.status()).toBe(422);
 
     const d = await a.request.post("/api/games", { data: { type: "draw_guess" } });

@@ -140,54 +140,152 @@
 
 /* Prototype animation map (renderVals().an). Reduced-motion fallbacks below. */
 @layer utilities {
-  .an-screen { animation: screenIn 220ms var(--ease-out) both; }
-  .an-glassL { animation: glassL 640ms var(--ease-pop) 300ms both; }
-  .an-glassR { animation: glassR 640ms var(--ease-pop) 300ms both; }
-  .an-btnL { animation: glassL 560ms var(--ease-pop); }
-  .an-btnR { animation: glassR 560ms var(--ease-pop); }
-  .an-spark { opacity: 0; animation: spark 560ms var(--ease-out) 520ms both; }
-  .an-spark-late { opacity: 0; animation: spark 560ms var(--ease-out) 640ms both; }
-  .an-spark-btn { opacity: 0; animation: sparkFar 560ms var(--ease-out) 160ms both; }
-  .an-ripple { animation: ripple 700ms var(--ease-out) both; }
-  .an-slide-down { animation: slideDown 340ms var(--ease-drawer) both; }
-  .an-pulse { animation: pulseRing 900ms var(--ease-out) 200ms both; }
-  .an-linkL { animation: linkL 600ms var(--ease-out) 120ms both; }
-  .an-linkR { animation: linkR 600ms var(--ease-out) 120ms both; }
-  .an-flip { animation: flip 420ms var(--ease-in-out) 240ms both; }
-  .an-flip-now { animation: flip 420ms var(--ease-in-out) both; }
-  .an-sealL { animation: sealL 480ms var(--ease-out) both; }
-  .an-sealR { animation: sealR 480ms var(--ease-out) both; }
-  .an-letter { animation: letterUp 420ms var(--ease-out) both; }
-  .an-cork { animation: cork 640ms var(--ease-out) both; }
-  .an-sheet { animation: sheetUp 360ms var(--ease-drawer) both; }
-  .an-flame { animation: flame 300ms var(--ease-out) both; }
-  .an-reveal { animation: fadeUp 260ms var(--ease-out) both; }
-  .an-tear { animation: tear 380ms var(--ease-out) both; }
-  .an-float { animation: floatUp 1300ms var(--ease-out) both; }
-  .an-shake { animation: shake 360ms var(--ease-in-out) both; }
-  .an-toast { animation: toastIn 220ms var(--ease-out) both; }
-  .an-fade { animation: fadeIn 200ms both; }
-  .an-fade-slow { animation: fadeIn 320ms both; }
-  .an-dot { animation: live 1.6s ease-in-out infinite; }
-  .an-typing { animation: dots 1s ease-in-out infinite; }
-  .an-skel { animation: skel 1.2s ease-in-out infinite; }
+  .an-screen {
+    animation: screenIn 220ms var(--ease-out) both;
+  }
+  .an-glassL {
+    animation: glassL 640ms var(--ease-pop) 300ms both;
+  }
+  .an-glassR {
+    animation: glassR 640ms var(--ease-pop) 300ms both;
+  }
+  .an-btnL {
+    animation: glassL 560ms var(--ease-pop);
+  }
+  .an-btnR {
+    animation: glassR 560ms var(--ease-pop);
+  }
+  .an-spark {
+    opacity: 0;
+    animation: spark 560ms var(--ease-out) 520ms both;
+  }
+  .an-spark-late {
+    opacity: 0;
+    animation: spark 560ms var(--ease-out) 640ms both;
+  }
+  .an-spark-btn {
+    opacity: 0;
+    animation: sparkFar 560ms var(--ease-out) 160ms both;
+  }
+  .an-ripple {
+    animation: ripple 700ms var(--ease-out) both;
+  }
+  .an-slide-down {
+    animation: slideDown 340ms var(--ease-drawer) both;
+  }
+  .an-pulse {
+    animation: pulseRing 900ms var(--ease-out) 200ms both;
+  }
+  .an-linkL {
+    animation: linkL 600ms var(--ease-out) 120ms both;
+  }
+  .an-linkR {
+    animation: linkR 600ms var(--ease-out) 120ms both;
+  }
+  .an-flip {
+    animation: flip 420ms var(--ease-in-out) 240ms both;
+  }
+  .an-flip-now {
+    animation: flip 420ms var(--ease-in-out) both;
+  }
+  .an-sealL {
+    animation: sealL 480ms var(--ease-out) both;
+  }
+  .an-sealR {
+    animation: sealR 480ms var(--ease-out) both;
+  }
+  .an-letter {
+    animation: letterUp 420ms var(--ease-out) both;
+  }
+  .an-cork {
+    animation: cork 640ms var(--ease-out) both;
+  }
+  .an-sheet {
+    animation: sheetUp 360ms var(--ease-drawer) both;
+  }
+  .an-flame {
+    animation: flame 300ms var(--ease-out) both;
+  }
+  .an-reveal {
+    animation: fadeUp 260ms var(--ease-out) both;
+  }
+  .an-tear {
+    animation: tear 380ms var(--ease-out) both;
+  }
+  .an-float {
+    animation: floatUp 1300ms var(--ease-out) both;
+  }
+  .an-shake {
+    animation: shake 360ms var(--ease-in-out) both;
+  }
+  .an-toast {
+    animation: toastIn 220ms var(--ease-out) both;
+  }
+  .an-fade {
+    animation: fadeIn 200ms both;
+  }
+  .an-fade-slow {
+    animation: fadeIn 320ms both;
+  }
+  .an-dot {
+    animation: live 1.6s ease-in-out infinite;
+  }
+  .an-typing {
+    animation: dots 1s ease-in-out infinite;
+  }
+  .an-skel {
+    animation: skel 1.2s ease-in-out infinite;
+  }
   /* Staggered rise: set --i on the element. */
-  .an-rise { animation: rise 280ms var(--ease-out) calc(var(--i, 0) * 40ms) both; }
+  .an-rise {
+    animation: rise 280ms var(--ease-out) calc(var(--i, 0) * 40ms) both;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .an-screen { animation: fadeIn 160ms ease both; }
-  .an-glassL, .an-glassR, .an-btnL, .an-btnR, .an-slide-down, .an-linkL, .an-linkR,
-  .an-flip, .an-flip-now, .an-sealL, .an-sealR, .an-letter, .an-cork, .an-sheet,
-  .an-flame, .an-reveal, .an-tear, .an-toast, .an-rise, .an-shake {
+  .an-screen {
+    animation: fadeIn 160ms ease both;
+  }
+  .an-glassL,
+  .an-glassR,
+  .an-btnL,
+  .an-btnR,
+  .an-slide-down,
+  .an-linkL,
+  .an-linkR,
+  .an-flip,
+  .an-flip-now,
+  .an-sealL,
+  .an-sealR,
+  .an-letter,
+  .an-cork,
+  .an-sheet,
+  .an-flame,
+  .an-reveal,
+  .an-tear,
+  .an-toast,
+  .an-rise,
+  .an-shake {
     animation: fadeIn 180ms ease both;
   }
-  .an-spark, .an-spark-late, .an-spark-btn, .an-pulse, .an-dot, .an-typing, .an-skel {
+  .an-spark,
+  .an-spark-late,
+  .an-spark-btn,
+  .an-pulse,
+  .an-dot,
+  .an-typing,
+  .an-skel {
     animation: none;
   }
-  .an-ripple { animation: fadeOut 300ms ease both; }
-  .an-float { animation: fadeOut 1200ms ease both; }
-  .press:active { transform: none; }
+  .an-ripple {
+    animation: fadeOut 300ms ease both;
+  }
+  .an-float {
+    animation: fadeOut 1200ms ease both;
+  }
+  .press:active {
+    transform: none;
+  }
 }
 
 /*
@@ -195,26 +293,60 @@
  * < 768: bottom bar. 768-1023 portrait: bottom bar. 768-1023 landscape: compact rail.
  * >= 1024: full left rail with labels. Content capped at 1200 px.
  */
-.rail { display: none; }
-.rail-mini { display: none; }
+.rail {
+  display: none;
+}
+.rail-mini {
+  display: none;
+}
 .app-main {
   min-height: 100dvh;
   --chrome-bottom: calc(64px + max(20px, env(safe-area-inset-bottom)));
   padding-bottom: var(--chrome-bottom);
   --toast-bottom: calc(100px + env(safe-area-inset-bottom));
 }
-.app-main.no-tabs { padding-bottom: 0; --toast-bottom: 40px; --chrome-bottom: 0px; }
+.app-main.no-tabs {
+  padding-bottom: 0;
+  --toast-bottom: 40px;
+  --chrome-bottom: 0px;
+}
 @media (min-width: 768px) and (max-width: 1023px) and (orientation: landscape) {
-  .tabbar { display: none; }
-  .rail { display: flex; width: 88px; }
-  .rail .rail-full { display: none; }
-  .rail .rail-mini { display: inline; }
-  .app-main, .app-main.no-tabs { padding-left: 88px; padding-bottom: 0; --toast-bottom: 40px; --chrome-bottom: 0px; }
+  .tabbar {
+    display: none;
+  }
+  .rail {
+    display: flex;
+    width: 88px;
+  }
+  .rail .rail-full {
+    display: none;
+  }
+  .rail .rail-mini {
+    display: inline;
+  }
+  .app-main,
+  .app-main.no-tabs {
+    padding-left: 88px;
+    padding-bottom: 0;
+    --toast-bottom: 40px;
+    --chrome-bottom: 0px;
+  }
 }
 @media (min-width: 1024px) {
-  .tabbar { display: none; }
-  .rail { display: flex; width: var(--rail-w); }
-  .app-main, .app-main.no-tabs { padding-left: var(--rail-w); padding-bottom: 0; --toast-bottom: 40px; --chrome-bottom: 0px; }
+  .tabbar {
+    display: none;
+  }
+  .rail {
+    display: flex;
+    width: var(--rail-w);
+  }
+  .app-main,
+  .app-main.no-tabs {
+    padding-left: var(--rail-w);
+    padding-bottom: 0;
+    --toast-bottom: 40px;
+    --chrome-bottom: 0px;
+  }
 }
 /* Screen container: phone gutter 16 px, content capped. */
 .screen {
@@ -223,8 +355,19 @@
   margin: 0 auto;
   padding: calc(env(safe-area-inset-top) + 4px) 16px 24px;
 }
-@media (min-width: 768px) { .screen { padding: 24px 32px 40px; } }
-@media (min-width: 1024px) { .screen { padding: 32px 48px 48px; } }
+@media (min-width: 768px) {
+  .screen {
+    padding: 24px 32px 40px;
+  }
+}
+@media (min-width: 1024px) {
+  .screen {
+    padding: 32px 48px 48px;
+  }
+}
 
 /* Never allow sideways page scroll on phones. */
-html, body { overflow-x: clip; }
+html,
+body {
+  overflow-x: clip;
+}

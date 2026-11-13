@@ -24,18 +24,25 @@ function Half({ p, now, side }: { p: Person; now: Date; side: "me" | "partner" }
   const right = side === "partner";
   return (
     <div
-      className={right ? "border-l border-line p-4 text-right" : "p-4"}
-      style={{ background: night ? "var(--bg-night)" : right ? "var(--surface-2)" : "var(--surface-1)", transition: "background 600ms ease" }}
+      className={right ? "border-line border-l p-4 text-right" : "p-4"}
+      style={{
+        background: night ? "var(--bg-night)" : right ? "var(--surface-2)" : "var(--surface-1)",
+        transition: "background 600ms ease",
+      }}
     >
-      <div className={`flex items-center gap-1.5 text-sm font-medium text-muted ${right ? "justify-end" : ""}`}>
+      <div
+        className={`text-muted flex items-center gap-1.5 text-sm font-medium ${right ? "justify-end" : ""}`}
+      >
         {!right && <Icon size={16} aria-label={night ? "Night" : "Day"} />}
-        <span className="truncate">{p.city || p.timezone.split("/").pop()?.replace(/_/g, " ")}</span>
+        <span className="truncate">
+          {p.city || p.timezone.split("/").pop()?.replace(/_/g, " ")}
+        </span>
         {right && <Icon size={16} aria-label={night ? "Night" : "Day"} />}
       </div>
       <div className="mono mt-1 text-[36px] leading-[1.2]">
         <time dateTime={now.toISOString()}>{formatClock(now, p.timezone)}</time>
       </div>
-      <div className="text-sm text-faint">{w?.temp != null ? `${w.temp}° · ${w.label}` : " "}</div>
+      <div className="text-faint text-sm">{w?.temp != null ? `${w.temp}° · ${w.label}` : " "}</div>
     </div>
   );
 }
@@ -44,7 +51,10 @@ function Half({ p, now, side }: { p: Person; now: Date; side: "me" | "partner" }
 export function DualClock({ now }: { now: Date }) {
   const { me, partner } = useCouple();
   return (
-    <div className="grid flex-none grid-cols-2 overflow-hidden rounded-card border border-line" aria-label="Your clocks">
+    <div
+      className="rounded-card border-line grid flex-none grid-cols-2 overflow-hidden border"
+      aria-label="Your clocks"
+    >
       <Half p={me} now={now} side="me" />
       <Half p={partner} now={now} side="partner" />
     </div>

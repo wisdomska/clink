@@ -11,7 +11,18 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     data: { user },
   } = await db.auth.getUser();
   const couple = user ? await activeCouple(user.id) : null;
-  const { data: m } = await supabaseAdmin().from("media").select("id, owner_id, kind, retention, couple_id, is_sensitive").eq("id", id).maybeSingle();
+  const { data: m } = await supabaseAdmin()
+    .from("media")
+    .select("id, owner_id, kind, retention, couple_id, is_sensitive")
+    .eq("id", id)
+    .maybeSingle();
   if (!user || !couple || !m || !m.is_sensitive || m.couple_id !== couple.coupleId) notFound();
-  return <SensitiveViewer id={m.id} mine={m.owner_id === user.id} kind={m.kind} retention={m.retention} />;
+  return (
+    <SensitiveViewer
+      id={m.id}
+      mine={m.owner_id === user.id}
+      kind={m.kind}
+      retention={m.retention}
+    />
+  );
 }

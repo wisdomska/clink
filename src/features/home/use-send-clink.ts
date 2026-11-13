@@ -27,7 +27,11 @@ export function useSendClink() {
         .catch(() => toast("That Clink didn't save. It still reached them if they're online."));
       setTimeout(() => {
         setClinking(false);
-        toast(online ? `Clink sent. ${partner.name} felt that.` : `Clink sent. ${partner.name} gets it as a push.`);
+        toast(
+          online
+            ? `Clink sent. ${partner.name} felt that.`
+            : `Clink sent. ${partner.name} gets it as a push.`,
+        );
       }, 950);
     },
     [clinking, send, presence.online, partner.name, qc],

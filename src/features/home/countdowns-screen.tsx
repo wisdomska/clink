@@ -42,15 +42,22 @@ export function CountdownsScreen() {
     if (!title.trim() || !date) return setError("Give it a name and a date.");
     const target = zonedToUtc(date, time, me.timezone);
     if (target <= new Date()) return setError("Pick a moment in the future.");
-    const { error } = await supabaseBrowser().from("countdowns").insert({
-      couple_id: coupleId,
-      created_by: me.id,
-      title: title.trim(),
-      subtitle: subtitle.trim() || null,
-      target_at: target.toISOString(),
-      reveal_note: note.trim() || null,
-    });
-    if (error) return setError(error.message.includes("5 countdowns") ? "You can keep up to 5 countdowns." : "Couldn't save that.");
+    const { error } = await supabaseBrowser()
+      .from("countdowns")
+      .insert({
+        couple_id: coupleId,
+        created_by: me.id,
+        title: title.trim(),
+        subtitle: subtitle.trim() || null,
+        target_at: target.toISOString(),
+        reveal_note: note.trim() || null,
+      });
+    if (error)
+      return setError(
+        error.message.includes("5 countdowns")
+          ? "You can keep up to 5 countdowns."
+          : "Couldn't save that.",
+      );
     setOpen(false);
     setNote("");
     toast("On the board. The flip starts now.");
@@ -80,11 +87,13 @@ export function CountdownsScreen() {
       </div>
       <Lead>Up to 5 at a time. A note can flip over when one hits zero.</Lead>
       {isLoading ? (
-        <div className="an-skel h-40 rounded-card bg-s2" />
+        <div className="an-skel rounded-card bg-s2 h-40" />
       ) : data.length === 0 ? (
-        <div className="flex flex-col items-start gap-4 rounded-card border border-line bg-s1 p-5">
+        <div className="rounded-card border-line bg-s1 flex flex-col items-start gap-4 border p-5">
           <EmptyBoard />
-          <p className="m-0 text-base text-muted">Nothing on the board yet. Add your next visit and we&apos;ll start the flip.</p>
+          <p className="text-muted m-0 text-base">
+            Nothing on the board yet. Add your next visit and we&apos;ll start the flip.
+          </p>
           <Button size="sm" variant="secondary" onClick={() => setOpen(true)}>
             Add a countdown
           </Button>
@@ -94,11 +103,19 @@ export function CountdownsScreen() {
           {[...active, ...reached].map((c, i) => {
             const p = countdownParts(now, new Date(c.target_at!));
             return (
-              <article key={c.id} className="an-rise flex flex-col gap-3.5 rounded-card border border-line bg-s1 p-4" style={{ ["--i" as string]: i }}>
+              <article
+                key={c.id}
+                className="an-rise rounded-card border-line bg-s1 flex flex-col gap-3.5 border p-4"
+                style={{ ["--i" as string]: i }}
+              >
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <h2 className="m-0 text-lg font-bold">{c.title}</h2>
-                    {c.subtitle && <div className="mono mt-0.5 text-xs tracking-[.06em] text-muted uppercase">{c.subtitle}</div>}
+                    {c.subtitle && (
+                      <div className="mono text-muted mt-0.5 text-xs tracking-[.06em] uppercase">
+                        {c.subtitle}
+                      </div>
+                    )}
                   </div>
                   <IconButton label={`Remove ${c.title}`} dim={40} onClick={() => remove(c.id!)}>
                     <Trash size={18} />
@@ -114,12 +131,16 @@ export function CountdownsScreen() {
                 />
                 {p.done ? (
                   c.reveal_note ? (
-                    <p className="an-reveal m-0 rounded-input bg-s2 p-3 text-base leading-normal">{c.reveal_note}</p>
+                    <p className="an-reveal rounded-input bg-s2 m-0 p-3 text-base leading-normal">
+                      {c.reveal_note}
+                    </p>
                   ) : (
-                    <p className="m-0 text-sm text-muted">It&apos;s here.</p>
+                    <p className="text-muted m-0 text-sm">It&apos;s here.</p>
                   )
                 ) : (
-                  <div className="text-sm text-muted">{formatTarget(c.target_at!, me.timezone, me.city || "your")}.</div>
+                  <div className="text-muted text-sm">
+                    {formatTarget(c.target_at!, me.timezone, me.city || "your")}.
+                  </div>
                 )}
               </article>
             );
@@ -132,25 +153,53 @@ export function CountdownsScreen() {
         </Display>
         <div>
           <Label htmlFor="cd-title">Name</Label>
-          <Input id="cd-title" value={title} maxLength={60} onChange={(e) => setTitle(e.target.value)} />
+          <Input
+            id="cd-title"
+            value={title}
+            maxLength={60}
+            onChange={(e) => setTitle(e.target.value)}
+          />
         </div>
         <div>
           <Label htmlFor="cd-sub">Board line (optional)</Label>
-          <Input id="cd-sub" value={subtitle} maxLength={60} placeholder="ACC → LHR · GATE 2" onChange={(e) => setSubtitle(e.target.value)} />
+          <Input
+            id="cd-sub"
+            value={subtitle}
+            maxLength={60}
+            placeholder="ACC → LHR · GATE 2"
+            onChange={(e) => setSubtitle(e.target.value)}
+          />
         </div>
         <div className="grid grid-cols-[1.4fr_1fr] gap-2">
           <div>
             <Label htmlFor="cd-date">Date</Label>
-            <Input id="cd-date" type="date" min={minDate} value={date} onChange={(e) => setDate(e.target.value)} />
+            <Input
+              id="cd-date"
+              type="date"
+              min={minDate}
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
           </div>
           <div>
             <Label htmlFor="cd-time">Your time</Label>
-            <Input id="cd-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+            <Input
+              id="cd-time"
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+            />
           </div>
         </div>
         <div>
           <Label htmlFor="cd-note">Note that flips over at zero (optional)</Label>
-          <Textarea id="cd-note" maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Stays sealed until the board hits zero." />
+          <Textarea
+            id="cd-note"
+            maxLength={500}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Stays sealed until the board hits zero."
+          />
         </div>
         <FieldError>{error}</FieldError>
         <Button onClick={save}>Put it on the board</Button>

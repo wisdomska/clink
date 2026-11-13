@@ -32,6 +32,7 @@ export function badges(days: ChallengeDay[], today: number, length: number): str
   if (firstWeek) out.push("First week");
   const past = Array.from({ length: Math.min(today - 1, length) }, (_, i) => i + 1);
   if (past.length >= 3 && past.every((d) => bothDone(by.get(d)))) out.push("No misses");
-  if (Array.from({ length }, (_, i) => i + 1).every((d) => bothDone(by.get(d)))) out.push(length === 30 ? "30 for 30" : "7 for 7");
+  if (Array.from({ length }, (_, i) => i + 1).every((d) => bothDone(by.get(d))))
+    out.push(length === 30 ? "30 for 30" : "7 for 7");
   return out;
 }

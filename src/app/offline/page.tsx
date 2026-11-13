@@ -9,8 +9,9 @@ export default function Offline() {
       <h1 className="display m-0 text-[36px] leading-[1.05]">
         You&apos;re <em>offline</em>.
       </h1>
-      <p className="m-0 text-base leading-normal text-muted">
-        Anything you send waits here and goes out when you&apos;re back. Private things never load offline.
+      <p className="text-muted m-0 text-base leading-normal">
+        Anything you send waits here and goes out when you&apos;re back. Private things never load
+        offline.
       </p>
     </main>
   );

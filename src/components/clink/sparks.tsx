@@ -8,11 +8,15 @@ export function Sparks({
   length?: number;
   className?: string;
 }) {
-  const anim = variant === "spark" ? "an-spark" : variant === "spark-late" ? "an-spark-late" : "an-spark-btn";
+  const anim =
+    variant === "spark" ? "an-spark" : variant === "spark-late" ? "an-spark-late" : "an-spark-btn";
   return (
     <div aria-hidden className={className} style={{ position: "absolute", width: 0, height: 0 }}>
       {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
-        <div key={a} style={{ position: "absolute", left: 0, top: 0, transform: `rotate(${a}deg)` }}>
+        <div
+          key={a}
+          style={{ position: "absolute", left: 0, top: 0, transform: `rotate(${a}deg)` }}
+        >
           <div
             className={anim}
             style={{

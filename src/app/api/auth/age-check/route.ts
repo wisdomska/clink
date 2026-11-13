@@ -22,7 +22,13 @@ export const POST = handler(async (req: NextRequest) => {
   let device = store.get(DEVICE)?.value;
   if (!device) {
     device = randomUUID();
-    store.set(DEVICE, device, { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 365 });
+    store.set(DEVICE, device, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+    });
   }
   const keys = [sha256(`ip:${ip}`), sha256(`dev:${device}`)];
   const admin = supabaseAdmin();
@@ -38,7 +44,9 @@ export const POST = handler(async (req: NextRequest) => {
   if (!dob) throw deny(422, "bad_date", "That date doesn't exist. Check the day and month.");
   if (!isAdult(dob)) {
     const until = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
-    await admin.from("age_blocks").upsert(keys.map((key_hash) => ({ key_hash, blocked_until: until })));
+    await admin
+      .from("age_blocks")
+      .upsert(keys.map((key_hash) => ({ key_hash, blocked_until: until })));
     return ok({ ok: false, blocked: true });
   }
   const exp = Date.now() + 30 * 60 * 1000;

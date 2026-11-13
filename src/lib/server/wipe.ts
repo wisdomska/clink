@@ -22,7 +22,8 @@ export async function executeWipe(jobId: string): Promise<{ deleted: number; ver
   const paths = (items ?? []).map((m) => m.storage_path);
   let error: string | null = null;
   try {
-    for (let i = 0; i < paths.length; i += 100) await s.remove("sensitive", paths.slice(i, i + 100));
+    for (let i = 0; i < paths.length; i += 100)
+      await s.remove("sensitive", paths.slice(i, i + 100));
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
   }
@@ -33,7 +34,10 @@ export async function executeWipe(jobId: string): Promise<{ deleted: number; ver
   }
   const now = new Date().toISOString();
   if (gone.length) {
-    await admin.from("media").update({ status: "deleted", deleted_at: now, storage_verified_gone_at: now }).in("id", gone);
+    await admin
+      .from("media")
+      .update({ status: "deleted", deleted_at: now, storage_verified_gone_at: now })
+      .in("id", gone);
   }
   await admin.from("deck_answers").delete().eq("couple_id", job.couple_id);
   await admin.from("desire_answers").delete().eq("couple_id", job.couple_id);
@@ -50,25 +54,57 @@ export async function executeWipe(jobId: string): Promise<{ deleted: number; ver
       last_error: verified ? null : (error ?? "some objects still present"),
     })
     .eq("id", jobId);
-  await audit(verified ? "wipe_verified" : "wipe_incomplete", job.requested_by, { couple_id: job.couple_id, objects: gone.length, job: jobId });
+  await audit(verified ? "wipe_verified" : "wipe_incomplete", job.requested_by, {
+    couple_id: job.couple_id,
+    objects: gone.length,
+    job: jobId,
+  });
   return { deleted: gone.length, verified };
 }
 
 /** Ends a couple: read-only chat for 30 days, both back to linking, wipe queued and run now. */
-export async function endCouple(coupleId: string, reason: "unlink" | "block" | "delete_account" | "admin_unlink", by: string | null) {
+export async function endCouple(
+  coupleId: string,
+  reason: "unlink" | "block" | "delete_account" | "admin_unlink",
+  by: string | null,
+) {
   const admin = supabaseAdmin();
   const now = new Date();
-  const readOnly = reason === "delete_account" || reason === "block" ? now : new Date(now.getTime() + 30 * 24 * 3600 * 1000);
-  const { data: members } = await admin.from("couple_members").select("user_id").eq("couple_id", coupleId).is("left_at", null);
-  await admin.from("couples").update({ unlinked_at: now.toISOString(), read_only_until: readOnly.toISOString() }).eq("id", coupleId);
-  await admin.from("couple_members").update({ left_at: now.toISOString() }).eq("couple_id", coupleId).is("left_at", null);
+  const readOnly =
+    reason === "delete_account" || reason === "block"
+      ? now
+      : new Date(now.getTime() + 30 * 24 * 3600 * 1000);
+  const { data: members } = await admin
+    .from("couple_members")
+    .select("user_id")
+    .eq("couple_id", coupleId)
+    .is("left_at", null);
+  await admin
+    .from("couples")
+    .update({ unlinked_at: now.toISOString(), read_only_until: readOnly.toISOString() })
+    .eq("id", coupleId);
+  await admin
+    .from("couple_members")
+    .update({ left_at: now.toISOString() })
+    .eq("couple_id", coupleId)
+    .is("left_at", null);
   // Consent never carries over to a future partner.
   const ids = (members ?? []).map((m) => m.user_id);
   if (ids.length) {
-    await admin.from("dark_settings").update({ opted_tiers: [], opted_in_at: null }).in("user_id", ids);
-    await admin.from("couple_members").update({ allow_saved_spicy: false }).eq("couple_id", coupleId);
+    await admin
+      .from("dark_settings")
+      .update({ opted_tiers: [], opted_in_at: null })
+      .in("user_id", ids);
+    await admin
+      .from("couple_members")
+      .update({ allow_saved_spicy: false })
+      .eq("couple_id", coupleId);
   }
-  const { data: job } = await admin.from("wipe_jobs").insert({ couple_id: coupleId, reason, requested_by: by }).select("id").single();
+  const { data: job } = await admin
+    .from("wipe_jobs")
+    .insert({ couple_id: coupleId, reason, requested_by: by })
+    .select("id")
+    .single();
   await audit("couple_unlinked", by, { couple_id: coupleId, reason });
   if (job) await executeWipe(job.id).catch(() => undefined); // the unlink-wipe cron job retries if this fails
   return ids;

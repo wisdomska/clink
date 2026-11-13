@@ -16,9 +16,20 @@ export function WatchStart() {
   const [error, setError] = useState<string | null>(null);
   const { data: recent = [] } = useQuery({
     queryKey: ["watch", coupleId],
-    queryFn: async () => (await supabaseBrowser().from("watch_sessions").select("id, title, video_id, ended_at, created_at").eq("kind", "watch").order("created_at", { ascending: false }).limit(6)).data ?? [],
+    queryFn: async () =>
+      (
+        await supabaseBrowser()
+          .from("watch_sessions")
+          .select("id, title, video_id, ended_at, created_at")
+          .eq("kind", "watch")
+          .order("created_at", { ascending: false })
+          .limit(6)
+      ).data ?? [],
   });
-  const live = recent.find((r) => !r.ended_at && Date.now() - new Date(r.created_at).getTime() < 6 * 3600 * 1000);
+  const [now] = useState(() => Date.now());
+  const live = recent.find(
+    (r) => !r.ended_at && now - new Date(r.created_at).getTime() < 6 * 3600 * 1000,
+  );
   return (
     <div className="screen an-screen flex max-w-[640px] flex-col gap-5">
       <IconButton label="Back" onClick={() => router.push("/plans")}>
@@ -29,7 +40,11 @@ export function WatchStart() {
       </Display>
       <Lead>Paste a YouTube link. Play, pause and skip stay in step for both of you.</Lead>
       {live && (
-        <button type="button" onClick={() => router.push(`/plans/watch/${live.id}`)} className="press flex cursor-pointer items-center gap-3 rounded-card border-2 border-accent bg-s1 px-4 py-3.5 text-left text-text">
+        <button
+          type="button"
+          onClick={() => router.push(`/plans/watch/${live.id}`)}
+          className="press rounded-card border-accent bg-s1 text-text flex cursor-pointer items-center gap-3 border-2 px-4 py-3.5 text-left"
+        >
           <TelevisionSimple size={24} className="text-accent" aria-hidden />
           <span className="flex-1 text-base font-bold">Rejoin {live.title ?? "the party"}</span>
         </button>
@@ -39,7 +54,11 @@ export function WatchStart() {
         onSubmit={async (e) => {
           e.preventDefault();
           setError(null);
-          const r = await fetch("/api/watch", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
+          const r = await fetch("/api/watch", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url }),
+          });
           const d = await r.json();
           if (!r.ok) return setError(d.message);
           router.push(`/plans/watch/${d.id}`);
@@ -47,7 +66,13 @@ export function WatchStart() {
       >
         <div>
           <Label htmlFor="yt">YouTube link</Label>
-          <Input id="yt" inputMode="url" placeholder="https://youtu.be/..." value={url} onChange={(e) => setUrl(e.target.value)} />
+          <Input
+            id="yt"
+            inputMode="url"
+            placeholder="https://youtu.be/..."
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+          />
         </div>
         <FieldError>{error}</FieldError>
         <Button type="submit" disabled={!url.trim()}>

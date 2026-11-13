@@ -17,13 +17,15 @@ export function LockScreen() {
   const [pin, setPin] = useState("");
   const [wrong, setWrong] = useState(false);
   const [tries, setTries] = useState<number | null>(null);
-  const [lockedUntil, setLockedUntil] = useState<string | null>(null);
-  const [now, setNow] = useState(Date.now());
-  const reduced = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const [lockedOverride, setLockedUntil] = useState<string | null | undefined>(undefined);
+  const lockedUntil =
+    lockedOverride === undefined ? (state?.me.lockedUntil ?? null) : lockedOverride;
+  const [now, setNow] = useState(() => Date.now());
+  const reduced =
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   useEffect(() => {
     if (state?.unlocked) router.replace(next?.startsWith("/dark/") ? next : "/dark/home");
-    if (state?.me.lockedUntil) setLockedUntil(state.me.lockedUntil);
   }, [state, next, router]);
   useEffect(() => {
     if (!lockedUntil) return;
@@ -38,7 +40,11 @@ export function LockScreen() {
   }, [lockedUntil, refetch]);
 
   async function submit(p: string) {
-    const r = await fetch("/api/dark/unlock", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pin: p }) });
+    const r = await fetch("/api/dark/unlock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pin: p }),
+    });
     const d = await r.json();
     if (d.ok) {
       navigator.vibrate?.(20);
@@ -68,12 +74,19 @@ export function LockScreen() {
 
   async function passkey() {
     try {
-      const opts = await darkFetch<Parameters<typeof startAuthentication>[0]["optionsJSON"]>("/api/dark/passkey", { action: "auth-options" });
+      const opts = await darkFetch<Parameters<typeof startAuthentication>[0]["optionsJSON"]>(
+        "/api/dark/passkey",
+        { action: "auth-options" },
+      );
       const response = await startAuthentication({ optionsJSON: opts });
       await darkFetch("/api/dark/passkey", { action: "auth", response });
       router.replace(next?.startsWith("/dark/") ? next : "/dark/home");
     } catch (e) {
-      toast(e instanceof Error && (e as { code?: string }).code === "no_passkey" ? "No passkey here yet. Add one in the hub after unlocking." : "That passkey didn't work. Use your PIN.");
+      toast(
+        e instanceof Error && (e as { code?: string }).code === "no_passkey"
+          ? "No passkey here yet. Add one in the hub after unlocking."
+          : "That passkey didn't work. Use your PIN.",
+      );
     }
   }
 
@@ -86,27 +99,38 @@ export function LockScreen() {
       <IconButton label="Close" className="self-start" onClick={() => router.push("/us")}>
         <X size={20} />
       </IconButton>
-      <Moon size={36} className="mt-3 text-ember" aria-hidden />
+      <Moon size={36} className="text-ember mt-3" aria-hidden />
       <h1 className="display mt-2.5 mb-0 text-[36px]">
         After <em>Dark</em>
       </h1>
       {lockedUntil ? (
-        <div className="an-reveal flex flex-1 flex-col items-center justify-center gap-3 text-center" role="alert">
+        <div
+          className="an-reveal flex flex-1 flex-col items-center justify-center gap-3 text-center"
+          role="alert"
+        >
           <LockKey size={48} className="text-danger" aria-hidden />
           <div className="display text-[28px] leading-[1.05]">Too many tries.</div>
           <div className="mono text-[48px]" role="timer">
             {mm}:{ss}
           </div>
-          <p className="m-0 text-base leading-normal text-muted">Take a breath. Everything in here is safe.</p>
+          <p className="text-muted m-0 text-base leading-normal">
+            Take a breath. Everything in here is safe.
+          </p>
         </div>
       ) : (
         <>
-          <p className="mt-2 mb-0 min-h-6 text-base" style={{ color: wrong ? "var(--danger)" : "var(--text-muted)" }} aria-live="assertive">
-            {wrong ? `That's not it. ${tries} ${tries === 1 ? "try" : "tries"} left.` : "Just the two of you. Enter your PIN."}
+          <p
+            className="mt-2 mb-0 min-h-6 text-base"
+            style={{ color: wrong ? "var(--danger)" : "var(--text-muted)" }}
+            aria-live="assertive"
+          >
+            {wrong
+              ? `That's not it. ${tries} ${tries === 1 ? "try" : "tries"} left.`
+              : "Just the two of you. Enter your PIN."}
           </p>
           <PinDots n={4} filled={pin.length} wrong={wrong} shake={wrong && !reduced} />
           <PinPad onKey={key} passkey={state?.me.passkey ? passkey : undefined} />
-          <div className="mono mt-5 text-xs text-faint">AUTO-LOCKS AFTER 2 MIN</div>
+          <div className="mono text-faint mt-5 text-xs">AUTO-LOCKS AFTER 2 MIN</div>
         </>
       )}
     </main>

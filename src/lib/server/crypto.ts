@@ -3,7 +3,9 @@ import { createHmac, createHash, timingSafeEqual, randomInt } from "node:crypto"
 import { serverEnv } from "@/lib/env";
 
 export function hmac(value: string, purpose: string): string {
-  return createHmac("sha256", `${serverEnv().APP_SECRET}:${purpose}`).update(value).digest("base64url");
+  return createHmac("sha256", `${serverEnv().APP_SECRET}:${purpose}`)
+    .update(value)
+    .digest("base64url");
 }
 
 export function sha256(value: string): string {

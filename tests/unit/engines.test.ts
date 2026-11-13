@@ -1,6 +1,24 @@
 import { describe, it, expect } from "vitest";
-import { knowMeInit, knowMeMove, triviaInit, triviaMove, wyrInit, wyrMove } from "@/features/play/engines/simultaneous";
-import { drawInit, drawMove, normaliseGuess, wordInit, wordMove, traceable, wordPoints, storyInit, storyMove, TURN_SECONDS } from "@/features/play/engines/turns";
+import {
+  knowMeInit,
+  knowMeMove,
+  triviaInit,
+  triviaMove,
+  wyrInit,
+  wyrMove,
+} from "@/features/play/engines/simultaneous";
+import {
+  drawInit,
+  drawMove,
+  normaliseGuess,
+  wordInit,
+  wordMove,
+  traceable,
+  wordPoints,
+  storyInit,
+  storyMove,
+  TURN_SECONDS,
+} from "@/features/play/engines/turns";
 import { MoveError, seeded, shuffle, other } from "@/features/play/engines/types";
 
 const P = { a: "A", b: "B", starter: "A" };
@@ -8,7 +26,10 @@ const q = (i: number) => ({ id: i, text: `Q${i}`, options: ["w", "x", "y", "z"] 
 
 describe("How well do you know me", () => {
   it("seals answers until both are in, then scores matches", () => {
-    let r = knowMeInit(P, Array.from({ length: 10 }, (_, i) => q(i)));
+    let r = knowMeInit(
+      P,
+      Array.from({ length: 10 }, (_, i) => q(i)),
+    );
     expect(r.state.subject).toBe("B");
     for (let i = 0; i < 10; i++) {
       r = { ...r, ...knowMeMove(r.state, r.secrets, "B", { pick: 1 }) };
@@ -21,7 +42,10 @@ describe("How well do you know me", () => {
     expect(r.winnerId).toBe("A");
   });
   it("refuses double answers, outsiders and bad picks", () => {
-    const r = knowMeInit(P, Array.from({ length: 10 }, (_, i) => q(i)));
+    const r = knowMeInit(
+      P,
+      Array.from({ length: 10 }, (_, i) => q(i)),
+    );
     const r2 = knowMeMove(r.state, r.secrets, "A", { pick: 0 });
     expect(() => knowMeMove(r2.state, r2.secrets, "A", { pick: 0 })).toThrow(MoveError);
     expect(() => knowMeMove(r.state, r.secrets, "C", { pick: 0 })).toThrow(MoveError);
@@ -56,7 +80,10 @@ describe("Trivia duel", () => {
 
 describe("Would you rather", () => {
   it("counts matches", () => {
-    let r = wyrInit("Silly", Array.from({ length: 6 }, (_, i) => ({ id: i, a: "a", b: "b" })));
+    let r = wyrInit(
+      "Silly",
+      Array.from({ length: 6 }, (_, i) => ({ id: i, a: "a", b: "b" })),
+    );
     for (let i = 0; i < 6; i++) {
       r = { ...r, ...wyrMove(P, r.state, r.secrets, "A", { pick: "a" }) };
       r = { ...r, ...wyrMove(P, r.state, r.secrets, "B", { pick: i % 2 ? "a" : "b" }) };
@@ -76,7 +103,14 @@ describe("Draw and guess", () => {
     const word = r.secrets.words[0]!;
     expect(drawMove(P, r.state, r.secrets, "B", { guess: "nope" }, t0).correct).toBe(false);
     expect(() => drawMove(P, r.state, r.secrets, "A", { guess: word }, t0)).toThrow(MoveError);
-    const fast = drawMove(P, r.state, r.secrets, "B", { guess: ` ${word.toUpperCase()} ` }, new Date(t0.getTime() + 6000));
+    const fast = drawMove(
+      P,
+      r.state,
+      r.secrets,
+      "B",
+      { guess: ` ${word.toUpperCase()} ` },
+      new Date(t0.getTime() + 6000),
+    );
     expect(fast.correct).toBe(true);
     expect(fast.state.scores.B).toBe(91);
     expect(fast.state.scores.A).toBe(46);
@@ -84,7 +118,16 @@ describe("Draw and guess", () => {
     r = { ...r, ...fast };
     for (let t = 1; t < 6; t++) {
       const later = new Date(new Date(r.state.turnStartedAt).getTime() + (TURN_SECONDS + 3) * 1000);
-      expect(() => drawMove(P, r.state, r.secrets, other(P, r.state.drawer), { timeout: true }, new Date(r.state.turnStartedAt))).toThrow(MoveError);
+      expect(() =>
+        drawMove(
+          P,
+          r.state,
+          r.secrets,
+          other(P, r.state.drawer),
+          { timeout: true },
+          new Date(r.state.turnStartedAt),
+        ),
+      ).toThrow(MoveError);
       r = { ...r, ...drawMove(P, r.state, r.secrets, "A", { timeout: true }, later) };
     }
     expect(r.finished).toBe(true);
@@ -104,7 +147,9 @@ describe("Word board", () => {
     expect(traceable(board, "dog")).toBe(false);
   });
   it("scores by length", () => {
-    expect([2, 3, 4, 5, 6, 7, 8, 10].map((n) => wordPoints("a".repeat(n)))).toEqual([0, 1, 2, 4, 6, 9, 11, 15]);
+    expect([2, 3, 4, 5, 6, 7, 8, 10].map((n) => wordPoints("a".repeat(n)))).toEqual([
+      0, 1, 2, 4, 6, 9, 11, 15,
+    ]);
   });
   it("enforces turns, uniqueness and the dictionary; two passes end it", () => {
     const dict = new Set(["cat", "cats", "care"]);
@@ -113,7 +158,9 @@ describe("Word board", () => {
     r = { ...r, ...wordMove(P, r.state, "A", { word: "cats" }, (w) => dict.has(w)) };
     expect(r.state.scores.A).toBe(2);
     expect(r.notifyTurn).toBe("B");
-    expect(() => wordMove(P, r.state, "B", { word: "cats" }, (w) => dict.has(w))).toThrow(MoveError);
+    expect(() => wordMove(P, r.state, "B", { word: "cats" }, (w) => dict.has(w))).toThrow(
+      MoveError,
+    );
     expect(() => wordMove(P, r.state, "B", { word: "rex" }, () => false)).toThrow(MoveError);
     expect(() => wordMove(P, r.state, "B", { word: "xx" }, () => true)).toThrow(MoveError);
     r = { ...r, ...wordMove(P, r.state, "B", { pass: true }, () => true) };
@@ -128,7 +175,8 @@ describe("Story builder", () => {
     let r = storyInit(P, "Once upon a train...");
     expect(() => storyMove(P, r.state, "B", { line: "Nope" })).toThrow(MoveError);
     expect(() => storyMove(P, r.state, "A", { end: true })).toThrow(MoveError);
-    for (const who of ["A", "B", "A", "B"]) r = { ...r, ...storyMove(P, r.state, who, { line: `${who} line` }) };
+    for (const who of ["A", "B", "A", "B"])
+      r = { ...r, ...storyMove(P, r.state, who, { line: `${who} line` }) };
     expect(r.state.lines.length).toBe(4);
     expect(() => storyMove(P, r.state, "A", { line: "x" })).toThrow(MoveError);
     r = { ...r, ...storyMove(P, r.state, "A", { end: true }) };
@@ -137,7 +185,8 @@ describe("Story builder", () => {
   });
   it("stops at 40 lines", () => {
     let r = storyInit(P, "Go");
-    for (let i = 0; i < 40; i++) r = { ...r, ...storyMove(P, r.state, i % 2 ? "B" : "A", { line: `line ${i}` }) };
+    for (let i = 0; i < 40; i++)
+      r = { ...r, ...storyMove(P, r.state, i % 2 ? "B" : "A", { line: `line ${i}` }) };
     expect(r.finished).toBe(true);
     expect(r.state.ended).toBe(true);
   });

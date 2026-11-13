@@ -24,13 +24,18 @@ export function HoldTogether() {
   const [secs, setSecs] = useState(0);
   const secsRef = useRef(0);
   const together = holding && partnerHolding;
+  // Reset the counter whenever a new hold starts (adjusting state on a prop change).
+  const [prevHolding, setPrevHolding] = useState(holding);
+  if (prevHolding !== holding) {
+    setPrevHolding(holding);
+    if (holding) setSecs(0);
+  }
 
   useEffect(() => {
     if (!holding) return;
     send("clink.hold", { holding: true });
     vibrate(30);
     secsRef.current = 0;
-    setSecs(0);
     const end = () => finish();
     window.addEventListener("pointerup", end);
     window.addEventListener("pointercancel", end);
@@ -79,12 +84,33 @@ export function HoldTogether() {
       role="dialog"
       aria-modal="true"
       aria-labelledby="hold-title"
-      className="an-fade-slow fixed inset-0 z-[32] flex touch-none flex-col items-center justify-center gap-5 bg-app px-6 text-center select-none"
-      style={{ boxShadow: together ? "inset 0 0 140px var(--accent-glow-45)" : "inset 0 0 60px var(--accent-halo)", transition: "box-shadow 320ms ease" }}
+      className="an-fade-slow bg-app fixed inset-0 z-[32] flex touch-none flex-col items-center justify-center gap-5 px-6 text-center select-none"
+      style={{
+        boxShadow: together
+          ? "inset 0 0 140px var(--accent-glow-45)"
+          : "inset 0 0 60px var(--accent-halo)",
+        transition: "box-shadow 320ms ease",
+      }}
     >
       <div className="flex">
-        <Avatar name={me.name} side="me" size={88} ring={3} photoUrl={me.avatarUrl} icon={me.avatarIcon} className="z-[1] -mr-2.5" />
-        <Avatar name={partner.name} side="partner" size={88} ring={3} photoUrl={partner.avatarUrl} icon={partner.avatarIcon} dim={!partnerHolding} />
+        <Avatar
+          name={me.name}
+          side="me"
+          size={88}
+          ring={3}
+          photoUrl={me.avatarUrl}
+          icon={me.avatarIcon}
+          className="z-[1] -mr-2.5"
+        />
+        <Avatar
+          name={partner.name}
+          side="partner"
+          size={88}
+          ring={3}
+          photoUrl={partner.avatarUrl}
+          icon={partner.avatarIcon}
+          dim={!partnerHolding}
+        />
       </div>
       <div id="hold-title" className="display text-[28px]">
         {together ? (
@@ -97,11 +123,13 @@ export function HoldTogether() {
           </>
         )}
       </div>
-      <div className="mono text-[64px] text-accent" aria-live="off">
+      <div className="mono text-accent text-[64px]" aria-live="off">
         {mm}:{ss}
       </div>
-      <div className="text-base text-muted" aria-live="polite">
-        {together ? `${partner.name}'s thumb is on it too. Let go whenever.` : `Waiting for ${partner.name}'s thumb. Ask them to hold too.`}
+      <div className="text-muted text-base" aria-live="polite">
+        {together
+          ? `${partner.name}'s thumb is on it too. Let go whenever.`
+          : `Waiting for ${partner.name}'s thumb. Ask them to hold too.`}
       </div>
       <Button variant="ghost" size="lg" className="mt-5 px-7" onClick={finish}>
         Let go

@@ -24,17 +24,34 @@ export const POST = handler(async (req) => {
   const caller = body.sensitive ? await requireDark({ minRank: 1 }) : await requireCouple();
   if (body.sensitive) {
     // SAF-06: the one-time screenshot notice must have been shown first.
-    const { data: ds } = await supabaseAdmin().from("dark_settings").select("notice_seen_at").eq("user_id", caller.user.id).single();
-    if (!ds?.notice_seen_at) throw deny(428, "notice_required", "They can still screenshot. Only send what feels right.");
+    const { data: ds } = await supabaseAdmin()
+      .from("dark_settings")
+      .select("notice_seen_at")
+      .eq("user_id", caller.user.id)
+      .single();
+    if (!ds?.notice_seen_at)
+      throw deny(428, "notice_required", "They can still screenshot. Only send what feels right.");
   }
   await rateLimit(`upload:${caller.user.id}`, 200, 3600);
   const s = await storage();
   const cap = limits(s.driver)[body.kind];
   const base = body.mime.split(";")[0]!;
-  if (!(MIME[body.kind] as readonly string[]).includes(base)) throw deny(415, "bad_type", "That file type isn't supported.");
-  if (body.size > cap) throw deny(413, "too_big", `That's over the ${Math.round(cap / 1024 / 1024)} MB limit.`);
-  if (body.kind !== "image" && body.durationS !== undefined && body.durationS > MAX_DURATION[body.kind] + 0.5) {
-    throw deny(413, "too_long", body.kind === "video" ? "Videos can be up to 60 seconds." : "Voice notes can be up to 3 minutes.");
+  if (!(MIME[body.kind] as readonly string[]).includes(base))
+    throw deny(415, "bad_type", "That file type isn't supported.");
+  if (body.size > cap)
+    throw deny(413, "too_big", `That's over the ${Math.round(cap / 1024 / 1024)} MB limit.`);
+  if (
+    body.kind !== "image" &&
+    body.durationS !== undefined &&
+    body.durationS > MAX_DURATION[body.kind] + 0.5
+  ) {
+    throw deny(
+      413,
+      "too_long",
+      body.kind === "video"
+        ? "Videos can be up to 60 seconds."
+        : "Voice notes can be up to 3 minutes.",
+    );
   }
 
   let retention: Retention = body.sensitive ? (body.retention ?? "once") : "keep";

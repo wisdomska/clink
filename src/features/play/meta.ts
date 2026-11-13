@@ -9,8 +9,15 @@ export const GAME_META: Record<GameType, { name: string; meta: string; mode: "li
   story: { name: "Story builder", meta: "Any time", mode: "turn" },
 };
 
-export async function startGame(type: GameType, extra: Record<string, unknown> = {}): Promise<string> {
-  const r = await fetch("/api/games", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type, ...extra }) });
+export async function startGame(
+  type: GameType,
+  extra: Record<string, unknown> = {},
+): Promise<string> {
+  const r = await fetch("/api/games", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type, ...extra }),
+  });
   const d = await r.json();
   if (!r.ok) throw new Error(d.message ?? "Couldn't start that game.");
   return d.id as string;

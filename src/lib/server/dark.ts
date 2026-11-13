@@ -49,22 +49,32 @@ export interface DarkCaller extends CoupleCaller {
  * a live PIN/passkey session (refreshed on activity), and the couple's
  * effective tier (lower choice wins, Unhinged needs both age-verified).
  */
-export async function requireDark(opts: { minRank?: number; refresh?: boolean } = {}): Promise<DarkCaller> {
+export async function requireDark(
+  opts: { minRank?: number; refresh?: boolean } = {},
+): Promise<DarkCaller> {
   const caller = await requireCouple();
-  if (!(await hasDarkSession(caller.user.id))) throw deny(401, "dark_locked", "After Dark is locked.");
+  if (!(await hasDarkSession(caller.user.id)))
+    throw deny(401, "dark_locked", "After Dark is locked.");
   if (opts.refresh !== false) await setDarkSession(caller.user.id);
   const rank = await effectiveRank(caller.coupleId);
-  if ((opts.minRank ?? 0) > rank) throw deny(403, "tier_locked", "That tier isn't open for you both.");
+  if ((opts.minRank ?? 0) > rank)
+    throw deny(403, "tier_locked", "That tier isn't open for you both.");
   return { ...caller, rank };
 }
 
 export async function effectiveRank(coupleId: string): Promise<number> {
-  const { data, error } = await supabaseAdmin().rpc("svc_effective_tier_rank", { p_couple: coupleId });
+  const { data, error } = await supabaseAdmin().rpc("svc_effective_tier_rank", {
+    p_couple: coupleId,
+  });
   if (error) throw error;
   return Number(data ?? 0);
 }
 
 export async function bothAllowSaved(coupleId: string): Promise<boolean> {
-  const { data } = await supabaseAdmin().from("couple_members").select("allow_saved_spicy").eq("couple_id", coupleId).is("left_at", null);
+  const { data } = await supabaseAdmin()
+    .from("couple_members")
+    .select("allow_saved_spicy")
+    .eq("couple_id", coupleId)
+    .is("left_at", null);
   return (data ?? []).length === 2 && (data ?? []).every((m) => m.allow_saved_spicy);
 }

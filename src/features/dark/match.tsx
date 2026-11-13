@@ -22,7 +22,10 @@ export function DesireMatch() {
   const qc = useQueryClient();
   const { partner } = useCouple();
   const [tab, setTab] = useState<"answer" | "matches">("answer");
-  const { data } = useQuery({ queryKey: ["match"], queryFn: () => darkFetch<MatchData>("/api/dark/match") });
+  const { data } = useQuery({
+    queryKey: ["match"],
+    queryFn: () => darkFetch<MatchData>("/api/dark/match"),
+  });
   const [local, setLocal] = useState<Record<string, string>>({});
   const mine = useMemo(() => ({ ...(data?.mine ?? {}), ...local }), [data, local]);
   const answered = Object.keys(mine).length;
@@ -42,7 +45,10 @@ export function DesireMatch() {
       <Display size={36}>
         Desire <em>match</em>
       </Display>
-      <Lead>Yes, no or maybe, privately. You only ever see the things you both said yes to, or yes and maybe. Nobody sees a no.</Lead>
+      <Lead>
+        Yes, no or maybe, privately. You only ever see the things you both said yes to, or yes and
+        maybe. Nobody sees a no.
+      </Lead>
       <Segmented
         label="View"
         tone="accent"
@@ -56,10 +62,15 @@ export function DesireMatch() {
       {tab === "answer" ? (
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
           {(data?.items ?? []).map((it) => (
-            <li key={it.id} className="flex flex-col gap-2.5 rounded-card border border-line bg-s1 p-4">
+            <li
+              key={it.id}
+              className="rounded-card border-line bg-s1 flex flex-col gap-2.5 border p-4"
+            >
               <div className="flex items-start justify-between gap-3">
                 <span className="text-base font-medium">{it.text}</span>
-                <span className="mono flex-none text-[11px] text-faint">{it.tier.toUpperCase()}</span>
+                <span className="mono text-faint flex-none text-[11px]">
+                  {it.tier.toUpperCase()}
+                </span>
               </div>
               <div className="grid grid-cols-3 gap-1.5" role="radiogroup" aria-label={it.text}>
                 {(["yes", "maybe", "no"] as const).map((a) => (
@@ -70,7 +81,11 @@ export function DesireMatch() {
                     aria-checked={mine[it.id] === a}
                     onClick={() => pick(it.id, a)}
                     className="press h-11 cursor-pointer rounded-full border text-sm font-medium capitalize"
-                    style={{ borderColor: mine[it.id] === a ? "var(--accent-dark)" : "var(--line)", background: mine[it.id] === a ? "var(--accent-dark)" : "transparent", color: mine[it.id] === a ? "var(--on-accent)" : "var(--text)" }}
+                    style={{
+                      borderColor: mine[it.id] === a ? "var(--accent-dark)" : "var(--line)",
+                      background: mine[it.id] === a ? "var(--accent-dark)" : "transparent",
+                      color: mine[it.id] === a ? "var(--on-accent)" : "var(--text)",
+                    }}
                   >
                     {a}
                   </button>
@@ -82,20 +97,36 @@ export function DesireMatch() {
       ) : data?.matches.length ? (
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
           {data.matches.map((m) => (
-            <li key={m.item_id} className="an-reveal flex items-center gap-3 rounded-card bg-s2 p-4">
-              <Heart size={22} weight={m.kind === "yes" ? "fill" : "regular"} className="flex-none text-ember" aria-label={m.kind === "yes" ? "You both said yes" : "Yes and maybe"} />
+            <li
+              key={m.item_id}
+              className="an-reveal rounded-card bg-s2 flex items-center gap-3 p-4"
+            >
+              <Heart
+                size={22}
+                weight={m.kind === "yes" ? "fill" : "regular"}
+                className="text-ember flex-none"
+                aria-label={m.kind === "yes" ? "You both said yes" : "Yes and maybe"}
+              />
               <span className="flex-1 text-base">{m.text}</span>
-              <span className="mono text-[11px] text-muted">{m.kind === "yes" ? "BOTH YES" : "YES + MAYBE"}</span>
+              <span className="mono text-muted text-[11px]">
+                {m.kind === "yes" ? "BOTH YES" : "YES + MAYBE"}
+              </span>
             </li>
           ))}
         </ul>
       ) : (
-        <div className="flex flex-col gap-3 rounded-card border border-dashed border-line p-5">
+        <div className="rounded-card border-line flex flex-col gap-3 border border-dashed p-5">
           <div className="display text-[22px] tracking-normal">No matches yet.</div>
-          <p className="m-0 text-sm text-muted">
-            {partner.name} has answered {data?.partnerAnswered ?? 0} of {total}. Matches show up the moment you both land on one.
+          <p className="text-muted m-0 text-sm">
+            {partner.name} has answered {data?.partnerAnswered ?? 0} of {total}. Matches show up the
+            moment you both land on one.
           </p>
-          <Button variant="secondary" size="md" className="self-start" onClick={() => setTab("answer")}>
+          <Button
+            variant="secondary"
+            size="md"
+            className="self-start"
+            onClick={() => setTab("answer")}
+          >
             Keep answering
           </Button>
         </div>

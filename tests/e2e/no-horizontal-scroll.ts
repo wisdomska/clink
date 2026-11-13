@@ -6,5 +6,7 @@ export async function expectNoHorizontalScroll(page: Page) {
     scroll: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
     client: document.documentElement.clientWidth,
   }));
-  expect(scroll, `page is ${scroll}px wide in a ${client}px viewport`).toBeLessThanOrEqual(client + 1);
+  expect(scroll, `page is ${scroll}px wide in a ${client}px viewport`).toBeLessThanOrEqual(
+    client + 1,
+  );
 }

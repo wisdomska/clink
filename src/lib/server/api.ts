@@ -17,7 +17,8 @@ export class ApiError extends Error {
   }
 }
 
-export const deny = (status: number, code: string, message: string) => new ApiError(status, code, message);
+export const deny = (status: number, code: string, message: string) =>
+  new ApiError(status, code, message);
 
 export function ok<T>(data: T, init?: ResponseInit) {
   return NextResponse.json(data, {
@@ -57,7 +58,11 @@ export async function parseJson<S extends z.ZodType>(req: Request, schema: S): P
   const parsed = schema.safeParse(raw);
   if (!parsed.success) {
     const first = parsed.error.issues[0];
-    throw deny(422, "invalid", first ? `${first.path.join(".") || "input"}: ${first.message}` : "Invalid input.");
+    throw deny(
+      422,
+      "invalid",
+      first ? `${first.path.join(".") || "input"}: ${first.message}` : "Invalid input.",
+    );
   }
   return parsed.data;
 }
@@ -138,7 +143,12 @@ export async function rateLimit(key: string, max: number, windowSeconds: number)
   if (!data) throw deny(429, "rate_limited", "Slow down a little and try again soon.");
 }
 
-export async function audit(event: string, userId: string | null, meta: Record<string, Json> = {}, actorId?: string) {
+export async function audit(
+  event: string,
+  userId: string | null,
+  meta: Record<string, Json> = {},
+  actorId?: string,
+) {
   await supabaseAdmin()
     .from("audit_events")
     .insert({ event, user_id: userId, actor_id: actorId ?? userId, meta });

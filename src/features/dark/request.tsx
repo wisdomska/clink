@@ -24,7 +24,10 @@ export function RequestScreen() {
   const qc = useQueryClient();
   const { partner } = useCouple();
   const { data: s } = useDarkState();
-  const { data } = useQuery({ queryKey: ["requests"], queryFn: () => darkFetch<Req>("/api/dark/requests") });
+  const { data } = useQuery({
+    queryKey: ["requests"],
+    queryFn: () => darkFetch<Req>("/api/dark/requests"),
+  });
   const [note, setNote] = useState("");
   const [result, setResult] = useState<null | "sent" | "declined" | "later">(null);
   const [sendFor, setSendFor] = useState<string | null>(null);
@@ -41,7 +44,11 @@ export function RequestScreen() {
     void refresh();
   }
 
-  const titles = { sent: "Sent. View once.", declined: "Sent: Not right now.", later: "Saved for later." };
+  const titles = {
+    sent: "Sent. View once.",
+    declined: "Sent: Not right now.",
+    later: "Saved for later.",
+  };
   const bodies = {
     sent: "You can unsend it any time. They see a blurred card until they tap.",
     declined: `That's all ${partner.name} sees. New requests pause for 12 h.`,
@@ -54,14 +61,14 @@ export function RequestScreen() {
         <IconButton label="Back" onClick={() => router.push("/dark/home")}>
           <ArrowLeft size={20} />
         </IconButton>
-        <div className="text-sm font-medium text-muted">Request</div>
+        <div className="text-muted text-sm font-medium">Request</div>
       </div>
       {result ? (
         <>
           <div className="an-reveal flex flex-1 flex-col justify-center gap-3">
             <Moon size={40} className="text-ember" aria-hidden />
             <div className="display text-[36px] leading-[1.05]">{titles[result]}</div>
-            <p className="m-0 text-base leading-normal text-muted">{bodies[result]}</p>
+            <p className="text-muted m-0 text-base leading-normal">{bodies[result]}</p>
           </div>
           <Button variant="secondary" size="lg" onClick={() => router.push("/dark/home")}>
             Back to After Dark
@@ -72,13 +79,30 @@ export function RequestScreen() {
           <h1 className="display mt-2 mb-0 text-[36px] leading-[1.05]">
             {partner.name} sent you a <em>request</em>
           </h1>
-          <div className="relative aspect-[4/3] flex-none overflow-hidden rounded-card" style={{ background: "radial-gradient(circle at 30% 40%,rgba(255,90,60,.55),transparent 45%),radial-gradient(circle at 70% 70%,rgba(244,240,245,.15),transparent 50%),#211E25" }}>
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2" style={{ backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)", background: "rgba(24,22,27,.35)" }}>
+          <div
+            className="rounded-card relative aspect-[4/3] flex-none overflow-hidden"
+            style={{
+              background:
+                "radial-gradient(circle at 30% 40%,rgba(255,90,60,.55),transparent 45%),radial-gradient(circle at 70% 70%,rgba(244,240,245,.15),transparent 50%),#211E25",
+            }}
+          >
+            <div
+              className="absolute inset-0 flex flex-col items-center justify-center gap-2"
+              style={{
+                backdropFilter: "blur(18px)",
+                WebkitBackdropFilter: "blur(18px)",
+                background: "rgba(24,22,27,.35)",
+              }}
+            >
               <EyeSlash size={28} aria-hidden />
-              <span className="px-6 text-center text-base font-medium">&quot;{received.note || "something just for me?"}&quot;</span>
+              <span className="px-6 text-center text-base font-medium">
+                &quot;{received.note || "something just for me?"}&quot;
+              </span>
             </div>
           </div>
-          <p className="m-0 text-base leading-normal text-muted">No pressure, ever. Not right now is always a fine answer.</p>
+          <p className="text-muted m-0 text-base leading-normal">
+            No pressure, ever. Not right now is always a fine answer.
+          </p>
           <div className="flex flex-col gap-2">
             <Button onClick={() => respond(received.id, "accept")}>Accept</Button>
             <div className="grid grid-cols-2 gap-2">
@@ -93,7 +117,9 @@ export function RequestScreen() {
         </>
       ) : accepted ? (
         <div className="flex flex-col gap-3">
-          <div className="display text-[28px] leading-[1.05]">You said yes to {partner.name}&apos;s request.</div>
+          <div className="display text-[28px] leading-[1.05]">
+            You said yes to {partner.name}&apos;s request.
+          </div>
           <Button onClick={() => setSendFor(accepted.id)}>Send something</Button>
         </div>
       ) : (
@@ -103,18 +129,37 @@ export function RequestScreen() {
           </h1>
           {!unhinged ? (
             <>
-              <p className="m-0 text-base leading-normal text-muted">Requests open with Unhinged, once you&apos;ve both opted in and both verified you&apos;re 18+.</p>
-              <Button variant="secondary" size="lg" onClick={() => (s?.me.verified ? router.push("/dark/consent") : setVerifyOpen(true))}>
+              <p className="text-muted m-0 text-base leading-normal">
+                Requests open with Unhinged, once you&apos;ve both opted in and both verified
+                you&apos;re 18+.
+              </p>
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={() =>
+                  s?.me.verified ? router.push("/dark/consent") : setVerifyOpen(true)
+                }
+              >
                 {s?.me.verified ? "Check your tiers" : "Verify I'm 18+"}
               </Button>
             </>
           ) : data?.sent && (data.sent.status === "pending" || data.sent.status === "later") ? (
-            <p className="m-0 text-base text-muted">Your request is with {partner.name}. No rush, and no reminders.</p>
+            <p className="text-muted m-0 text-base">
+              Your request is with {partner.name}. No rush, and no reminders.
+            </p>
           ) : data?.sent?.cooldown ? (
-            <p className="m-0 text-base text-muted">Not right now. Requests pause for a little while.</p>
+            <p className="text-muted m-0 text-base">
+              Not right now. Requests pause for a little while.
+            </p>
           ) : (
             <>
-              <Input aria-label="A short note (optional)" placeholder="something just for me?" value={note} maxLength={120} onChange={(e) => setNote(e.target.value)} />
+              <Input
+                aria-label="A short note (optional)"
+                placeholder="something just for me?"
+                value={note}
+                maxLength={120}
+                onChange={(e) => setNote(e.target.value)}
+              />
               <Button
                 onClick={async () => {
                   try {
@@ -131,11 +176,23 @@ export function RequestScreen() {
               </Button>
             </>
           )}
-          {data?.sent?.status === "not_right_now" && <p className="m-0 text-sm text-faint">Your last request: Not right now.</p>}
+          {data?.sent?.status === "not_right_now" && (
+            <p className="text-faint m-0 text-sm">Your last request: Not right now.</p>
+          )}
         </div>
       )}
-      <SendSheet open={Boolean(sendFor)} requestId={sendFor ?? undefined} onClose={() => setSendFor(null)} onSent={() => setResult("sent")} />
-      <VerifySheet open={verifyOpen} onOpenChange={setVerifyOpen} meVerified={Boolean(s?.me.verified)} partnerVerified={Boolean(s?.partner.verified)} />
+      <SendSheet
+        open={Boolean(sendFor)}
+        requestId={sendFor ?? undefined}
+        onClose={() => setSendFor(null)}
+        onSent={() => setResult("sent")}
+      />
+      <VerifySheet
+        open={verifyOpen}
+        onOpenChange={setVerifyOpen}
+        meVerified={Boolean(s?.me.verified)}
+        partnerVerified={Boolean(s?.partner.verified)}
+      />
     </main>
   );
 }

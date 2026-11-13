@@ -14,8 +14,17 @@ export const GET = handler(async () => {
 });
 
 const schema = z.discriminatedUnion("action", [
-  z.object({ action: z.literal("flag"), key: z.string().regex(/^[a-z0-9_]{2,40}$/), enabled: z.boolean(), description: z.string().max(200).optional() }),
-  z.object({ action: z.literal("announce"), kind: z.enum(["announcement", "maintenance"]), body: z.string().trim().min(1).max(280) }),
+  z.object({
+    action: z.literal("flag"),
+    key: z.string().regex(/^[a-z0-9_]{2,40}$/),
+    enabled: z.boolean(),
+    description: z.string().max(200).optional(),
+  }),
+  z.object({
+    action: z.literal("announce"),
+    kind: z.enum(["announcement", "maintenance"]),
+    body: z.string().trim().min(1).max(280),
+  }),
   z.object({ action: z.literal("retire"), id: z.uuid() }),
 ]);
 
@@ -25,13 +34,24 @@ export const POST = handler(async (req) => {
   const body = await parseJson(req, schema);
   const admin = supabaseAdmin();
   if (body.action === "flag") {
-    await admin.from("feature_flags").upsert({ key: body.key, enabled: body.enabled, description: body.description ?? null, updated_at: new Date().toISOString() });
+    await admin.from("feature_flags").upsert({
+      key: body.key,
+      enabled: body.enabled,
+      description: body.description ?? null,
+      updated_at: new Date().toISOString(),
+    });
   } else if (body.action === "announce") {
-    if (body.kind === "maintenance") await admin.from("announcements").update({ active: false }).eq("kind", "maintenance");
-    await admin.from("announcements").insert({ kind: body.kind, body: body.body, created_by: a.user.id });
+    if (body.kind === "maintenance")
+      await admin.from("announcements").update({ active: false }).eq("kind", "maintenance");
+    await admin
+      .from("announcements")
+      .insert({ kind: body.kind, body: body.body, created_by: a.user.id });
   } else {
     await admin.from("announcements").update({ active: false }).eq("id", body.id);
   }
-  await adminAudit(a.user.id, `settings_${body.action}`, { ...("key" in body ? { key: body.key, enabled: body.enabled } : {}), ...("kind" in body ? { kind: body.kind } : {}) });
+  await adminAudit(a.user.id, `settings_${body.action}`, {
+    ...("key" in body ? { key: body.key, enabled: body.enabled } : {}),
+    ...("kind" in body ? { kind: body.kind } : {}),
+  });
   return ok({ ok: true });
 });

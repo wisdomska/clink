@@ -21,13 +21,24 @@ interface R {
   attachments: Array<string | null>;
 }
 
-const LABEL: Record<string, string> = { image_misuse: "Image misuse", harassment: "Harassment", minor_safety: "Possible minor", broken: "Something broke", other: "Something else" };
+const LABEL: Record<string, string> = {
+  image_misuse: "Image misuse",
+  harassment: "Harassment",
+  minor_safety: "Possible minor",
+  broken: "Something broke",
+  other: "Something else",
+};
 
 /** Reports queue: triage, assign, resolve, escalate. Only reporter-attached screenshots are visible. */
 export function AdminReports() {
   const qc = useQueryClient();
-  const [status, setStatus] = useState<"open" | "triage" | "assigned" | "escalated" | "resolved" | "all">("open");
-  const { data } = useQuery({ queryKey: ["admin-reports", status], queryFn: () => adminFetch<{ reports: R[] }>(`/api/admin/reports?status=${status}`) });
+  const [status, setStatus] = useState<
+    "open" | "triage" | "assigned" | "escalated" | "resolved" | "all"
+  >("open");
+  const { data } = useQuery({
+    queryKey: ["admin-reports", status],
+    queryFn: () => adminFetch<{ reports: R[] }>(`/api/admin/reports?status=${status}`),
+  });
   async function update(id: string, body: Record<string, unknown>) {
     await adminFetch(`/api/admin/reports/${id}`, { method: "PATCH", body });
     toast("Updated.");
@@ -37,37 +48,101 @@ export function AdminReports() {
     <div className="an-screen flex flex-col gap-5">
       <Display size={36}>Reports</Display>
       <div className="max-w-[720px]">
-        <Segmented label="Status" value={status} onChange={setStatus} options={["open", "triage", "assigned", "escalated", "resolved", "all"].map((v) => ({ value: v as typeof status, label: v[0]!.toUpperCase() + v.slice(1) }))} />
+        <Segmented
+          label="Status"
+          value={status}
+          onChange={setStatus}
+          options={["open", "triage", "assigned", "escalated", "resolved", "all"].map((v) => ({
+            value: v as typeof status,
+            label: v[0]!.toUpperCase() + v.slice(1),
+          }))}
+        />
       </div>
       <div className="flex flex-col gap-3">
         {(data?.reports ?? []).length === 0 && <p className="text-muted">Nothing here.</p>}
         {(data?.reports ?? []).map((r) => (
-          <article key={r.id} className="flex flex-col gap-3 rounded-card border bg-s1 p-4" style={{ borderColor: r.category === "minor_safety" ? "var(--danger)" : r.priority === "urgent" ? "var(--warning)" : "var(--line)" }}>
+          <article
+            key={r.id}
+            className="rounded-card bg-s1 flex flex-col gap-3 border p-4"
+            style={{
+              borderColor:
+                r.category === "minor_safety"
+                  ? "var(--danger)"
+                  : r.priority === "urgent"
+                    ? "var(--warning)"
+                    : "var(--line)",
+            }}
+          >
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-bold">{LABEL[r.category]}</span>
-              {r.from_after_dark && <span className="mono rounded-full border border-line px-2 text-[11px] text-ember">AFTER DARK</span>}
-              {r.priority === "urgent" && <span className="mono rounded-full border border-warning px-2 text-[11px] text-warning">URGENT</span>}
-              <span className="mono ml-auto text-xs text-faint">{new Date(r.created_at).toLocaleString("en-GB")}</span>
+              {r.from_after_dark && (
+                <span className="mono border-line text-ember rounded-full border px-2 text-[11px]">
+                  AFTER DARK
+                </span>
+              )}
+              {r.priority === "urgent" && (
+                <span className="mono border-warning text-warning rounded-full border px-2 text-[11px]">
+                  URGENT
+                </span>
+              )}
+              <span className="mono text-faint ml-auto text-xs">
+                {new Date(r.created_at).toLocaleString("en-GB")}
+              </span>
             </div>
-            {r.category === "minor_safety" && <p className="m-0 text-sm text-danger">Zero tolerance: the reported account was suspended automatically. Preserve evidence and follow the legal escalation path in the safety runbook.</p>}
-            <p className="m-0 text-sm whitespace-pre-wrap text-muted">{r.details || "No details given."}</p>
+            {r.category === "minor_safety" && (
+              <p className="text-danger m-0 text-sm">
+                Zero tolerance: the reported account was suspended automatically. Preserve evidence
+                and follow the legal escalation path in the safety runbook.
+              </p>
+            )}
+            <p className="text-muted m-0 text-sm whitespace-pre-wrap">
+              {r.details || "No details given."}
+            </p>
             {r.attachments.filter(Boolean).length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {r.attachments.filter(Boolean).map((u, i) => (
-                  <a key={i} href={u!} target="_blank" rel="noopener noreferrer" className="block h-24 w-24 overflow-hidden rounded-thumb border border-line">
+                  <a
+                    key={i}
+                    href={u!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-thumb border-line block h-24 w-24 overflow-hidden border"
+                  >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={u!} alt={`Attachment ${i + 1}`} className="h-full w-full object-cover" />
+                    <img
+                      src={u!}
+                      alt={`Attachment ${i + 1}`}
+                      className="h-full w-full object-cover"
+                    />
                   </a>
                 ))}
               </div>
             )}
             <div className="flex flex-wrap gap-1.5">
-              <Button size="xs" variant="ghost" onClick={() => update(r.id, { status: "triage" })}>Triage</Button>
-              <Button size="xs" variant="ghost" onClick={() => update(r.id, { assignToMe: true })}>Assign to me</Button>
-              <Button size="xs" variant="ghost" onClick={() => update(r.id, { status: "escalated" })}>Escalate</Button>
-              <Button size="xs" onClick={() => { const resolution = window.prompt("Resolution note"); if (resolution !== null) void update(r.id, { status: "resolved", resolution }); }}>Resolve</Button>
+              <Button size="xs" variant="ghost" onClick={() => update(r.id, { status: "triage" })}>
+                Triage
+              </Button>
+              <Button size="xs" variant="ghost" onClick={() => update(r.id, { assignToMe: true })}>
+                Assign to me
+              </Button>
+              <Button
+                size="xs"
+                variant="ghost"
+                onClick={() => update(r.id, { status: "escalated" })}
+              >
+                Escalate
+              </Button>
+              <Button
+                size="xs"
+                onClick={() => {
+                  const resolution = window.prompt("Resolution note");
+                  if (resolution !== null) void update(r.id, { status: "resolved", resolution });
+                }}
+              >
+                Resolve
+              </Button>
             </div>
-            {r.resolution && <p className="m-0 text-xs text-faint">Resolution: {r.resolution}</p>}
+            {r.resolution && <p className="text-faint m-0 text-xs">Resolution: {r.resolution}</p>}
           </article>
         ))}
       </div>

@@ -9,7 +9,12 @@ export const POST = handler(async (req) => {
   const { declaration } = await parseJson(req, z.object({ declaration: z.string().max(400) }));
   const r = await ageVerifier().start(user.id, { declaration });
   await audit("age_verification", user.id, { status: r.status });
-  if (r.status === "failed") throw deny(403, r.reason ?? "failed", r.reason === "under_18" ? "Unhinged is for adults only." : "That didn't verify.");
+  if (r.status === "failed")
+    throw deny(
+      403,
+      r.reason ?? "failed",
+      r.reason === "under_18" ? "Unhinged is for adults only." : "That didn't verify.",
+    );
   return ok(r);
 });
 

@@ -25,13 +25,13 @@ export function Toggle({
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={cn(
-        "press flex min-h-14 w-full cursor-pointer items-center gap-3 bg-transparent px-4 py-2.5 text-left text-text disabled:opacity-50",
-        !last && "border-b border-line",
+        "press text-text flex min-h-14 w-full cursor-pointer items-center gap-3 bg-transparent px-4 py-2.5 text-left disabled:opacity-50",
+        !last && "border-line border-b",
       )}
     >
       <span className="flex-1">
         <span className="block text-base font-medium">{label}</span>
-        {sub && <span className="block text-[13px] text-faint">{sub}</span>}
+        {sub && <span className="text-faint block text-[13px]">{sub}</span>}
       </span>
       <span
         aria-hidden
@@ -39,7 +39,7 @@ export function Toggle({
         style={{ background: checked ? "var(--accent)" : "var(--surface-3)" }}
       >
         <span
-          className="block h-[22px] w-[22px] rounded-full bg-app transition-transform duration-200"
+          className="bg-app block h-[22px] w-[22px] rounded-full transition-transform duration-200"
           style={{ transform: `translateX(${checked ? 20 : 0}px)` }}
         />
       </span>

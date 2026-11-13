@@ -28,14 +28,21 @@ export function Deck({ tier }: { tier: string }) {
   const [answer, setAnswer] = useState("");
   const [seenReveal, setSeenReveal] = useState<string | null>(null);
   const key = ["deck", tier];
-  const { data, isLoading } = useQuery({ queryKey: key, queryFn: () => darkFetch<DeckData>(`/api/dark/decks/${tier}`) });
+  const { data, isLoading } = useQuery({
+    queryKey: key,
+    queryFn: () => darkFetch<DeckData>(`/api/dark/decks/${tier}`),
+  });
   useCoupleEvent("dark.deck", () => qc.invalidateQueries({ queryKey: key }));
   const reveal = data?.reveal && data.reveal.cardId !== seenReveal ? data.reveal : null;
   const open = TIERS.slice(0, s?.rank ?? 0);
 
   async function submit(pass: boolean) {
     if (!data?.card) return;
-    const r = await darkFetch<{ revealed: boolean }>(`/api/dark/decks/${tier}`, { cardId: data.card.id, answer: pass ? undefined : answer, pass });
+    const r = await darkFetch<{ revealed: boolean }>(`/api/dark/decks/${tier}`, {
+      cardId: data.card.id,
+      answer: pass ? undefined : answer,
+      pass,
+    });
     setAnswer("");
     send("dark.deck", {});
     if (pass) toast("Passed. Next card.");
@@ -49,7 +56,7 @@ export function Deck({ tier }: { tier: string }) {
         <IconButton label="Back" onClick={() => router.push("/dark/home")}>
           <ArrowLeft size={20} />
         </IconButton>
-        <div className="flex-1 text-sm font-medium text-muted">{tier} deck</div>
+        <div className="text-muted flex-1 text-sm font-medium">{tier} deck</div>
         {data && (
           <div className="mono text-sm">
             {data.position}/{data.total}
@@ -59,26 +66,38 @@ export function Deck({ tier }: { tier: string }) {
       {open.length > 1 && (
         <div className="no-scrollbar flex gap-2 overflow-x-auto" role="tablist" aria-label="Decks">
           {open.map((t) => (
-            <button key={t} type="button" role="tab" aria-selected={t === tier} onClick={() => router.replace(`/dark/decks/${t}`)} className="press h-9 flex-none cursor-pointer rounded-full border px-3.5 text-sm font-medium" style={{ borderColor: t === tier ? "var(--accent-dark)" : "var(--line)", background: t === tier ? "var(--accent-dark)" : "transparent", color: t === tier ? "var(--on-accent)" : "var(--text)" }}>
+            <button
+              key={t}
+              type="button"
+              role="tab"
+              aria-selected={t === tier}
+              onClick={() => router.replace(`/dark/decks/${t}`)}
+              className="press h-9 flex-none cursor-pointer rounded-full border px-3.5 text-sm font-medium"
+              style={{
+                borderColor: t === tier ? "var(--accent-dark)" : "var(--line)",
+                background: t === tier ? "var(--accent-dark)" : "transparent",
+                color: t === tier ? "var(--on-accent)" : "var(--text)",
+              }}
+            >
               {t}
             </button>
           ))}
         </div>
       )}
       {isLoading ? (
-        <div className="an-skel mt-2 h-[220px] rounded-card bg-s2" />
+        <div className="an-skel rounded-card bg-s2 mt-2 h-[220px]" />
       ) : reveal ? (
         <>
           <Card tier={tier} text={reveal.text} />
           <div className="an-reveal grid grid-cols-2 gap-1.5">
-            <div className="flex flex-col gap-2 rounded-[20px_6px_6px_20px] bg-s2 p-3.5">
-              <span className="mono flex items-center gap-1.5 text-xs text-muted">
-                <span className="h-2.5 w-2.5 rounded-full bg-ember" aria-hidden /> YOU
+            <div className="bg-s2 flex flex-col gap-2 rounded-[20px_6px_6px_20px] p-3.5">
+              <span className="mono text-muted flex items-center gap-1.5 text-xs">
+                <span className="bg-ember h-2.5 w-2.5 rounded-full" aria-hidden /> YOU
               </span>
               <span className="text-base leading-[1.4]">{reveal.mine}</span>
             </div>
-            <div className="flex flex-col gap-2 rounded-[6px_20px_20px_6px] bg-s2 p-3.5">
-              <span className="mono flex items-center gap-1.5 text-xs text-muted uppercase">
+            <div className="bg-s2 flex flex-col gap-2 rounded-[6px_20px_20px_6px] p-3.5">
+              <span className="mono text-muted flex items-center gap-1.5 text-xs uppercase">
                 <PartnerMark who="b" /> {partner.name}
               </span>
               <span className="text-base leading-[1.4]">{reveal.theirs}</span>
@@ -89,11 +108,19 @@ export function Deck({ tier }: { tier: string }) {
       ) : data?.card ? (
         <>
           <Card tier={tier} text={data.card.text} />
-          <div className="flex items-center gap-2 text-sm text-muted">
+          <div className="text-muted flex items-center gap-2 text-sm">
             <PartnerMark who="b" />
-            {data.card.partnerAnswered ? `${partner.name} answered. Yours reveals both.` : `Answer first and ${partner.name} sees it only once they answer too.`}
+            {data.card.partnerAnswered
+              ? `${partner.name} answered. Yours reveals both.`
+              : `Answer first and ${partner.name} sees it only once they answer too.`}
           </div>
-          <Textarea aria-label="Your answer" placeholder={`Your answer. Only ${partner.name} sees it.`} value={answer} maxLength={1000} onChange={(e) => setAnswer(e.target.value)} />
+          <Textarea
+            aria-label="Your answer"
+            placeholder={`Your answer. Only ${partner.name} sees it.`}
+            value={answer}
+            maxLength={1000}
+            onChange={(e) => setAnswer(e.target.value)}
+          />
           <div className="grid grid-cols-[2fr_1fr] gap-2">
             <Button disabled={!answer.trim()} onClick={() => submit(false)}>
               Answer
@@ -106,7 +133,9 @@ export function Deck({ tier }: { tier: string }) {
       ) : (
         <div className="mt-6 flex flex-col gap-3">
           <div className="display text-[28px] leading-[1.05]">That&apos;s the whole deck.</div>
-          <p className="m-0 text-base text-muted">New cards land with each content drop. Try another tier, or the wheel.</p>
+          <p className="text-muted m-0 text-base">
+            New cards land with each content drop. Try another tier, or the wheel.
+          </p>
         </div>
       )}
     </main>
@@ -116,9 +145,15 @@ export function Deck({ tier }: { tier: string }) {
 function Card({ tier, text }: { tier: string; text: string }) {
   return (
     <div className="relative mt-2 flex-none">
-      <div aria-hidden className="absolute rounded-card bg-s2" style={{ inset: "8px -6px -8px 6px", transform: "rotate(3deg)" }} />
-      <div className="relative flex min-h-[220px] flex-col justify-between gap-5 rounded-card border border-line bg-s1 px-5 py-6">
-        <span className="self-start rounded-full bg-ember px-2.5 py-1 text-xs font-bold text-on-accent">{tier}</span>
+      <div
+        aria-hidden
+        className="rounded-card bg-s2 absolute"
+        style={{ inset: "8px -6px -8px 6px", transform: "rotate(3deg)" }}
+      />
+      <div className="rounded-card border-line bg-s1 relative flex min-h-[220px] flex-col justify-between gap-5 border px-5 py-6">
+        <span className="bg-ember text-on-accent self-start rounded-full px-2.5 py-1 text-xs font-bold">
+          {tier}
+        </span>
         <div className="display text-[28px] leading-[1.1]">{text}</div>
       </div>
     </div>

@@ -11,12 +11,32 @@ export const GET = handler(async (req: NextRequest) => {
   const admin = supabaseAdmin();
   const { data: authUsers } = await admin.auth.admin.listUsers({ page: page + 1, perPage: 200 });
   let users = authUsers?.users ?? [];
-  const { data: profiles } = await admin.from("profiles").select("id, display_name, home_city, created_at, suspended_at, suspended_reason, deleted_at, is_admin").in("id", users.map((u) => u.id));
+  const { data: profiles } = await admin
+    .from("profiles")
+    .select(
+      "id, display_name, home_city, created_at, suspended_at, suspended_reason, deleted_at, is_admin",
+    )
+    .in(
+      "id",
+      users.map((u) => u.id),
+    );
   const byId = new Map((profiles ?? []).map((p) => [p.id, p]));
-  if (q) users = users.filter((u) => (u.email ?? "").toLowerCase().includes(q) || (byId.get(u.id)?.display_name ?? "").toLowerCase().includes(q));
+  if (q)
+    users = users.filter(
+      (u) =>
+        (u.email ?? "").toLowerCase().includes(q) ||
+        (byId.get(u.id)?.display_name ?? "").toLowerCase().includes(q),
+    );
   const ids = users.map((u) => u.id);
-  const { data: members } = await admin.from("couple_members").select("user_id, couple_id, couples!inner(linked_at, unlinked_at)").in("user_id", ids).is("left_at", null);
-  const { data: priv } = await admin.from("user_private").select("user_id, age_verified_at").in("user_id", ids);
+  const { data: members } = await admin
+    .from("couple_members")
+    .select("user_id, couple_id, couples!inner(linked_at, unlinked_at)")
+    .in("user_id", ids)
+    .is("left_at", null);
+  const { data: priv } = await admin
+    .from("user_private")
+    .select("user_id, age_verified_at")
+    .in("user_id", ids);
   return ok({
     users: users.slice(0, 100).map((u) => {
       const p = byId.get(u.id);

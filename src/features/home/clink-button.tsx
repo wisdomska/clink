@@ -37,7 +37,10 @@ export function ClinkButton({ streak }: { streak: number | null }) {
       <div className="relative h-[188px] w-[188px]">
         {clinking && (
           <>
-            <div aria-hidden className="an-ripple absolute inset-0 rounded-full border-2 border-accent" />
+            <div
+              aria-hidden
+              className="an-ripple border-accent absolute inset-0 rounded-full border-2"
+            />
             <Sparks variant="spark-btn" length={12} className="top-1/2 left-1/2" />
           </>
         )}
@@ -54,26 +57,36 @@ export function ClinkButton({ streak }: { streak: number | null }) {
             }
           }}
           aria-label="Send a Clink. Hold to glow together."
-          className="press absolute inset-0 flex cursor-pointer touch-none items-center justify-center rounded-full border-0 bg-accent select-none focus-visible:outline-offset-4 active:scale-[.96]"
+          className="press bg-accent absolute inset-0 flex cursor-pointer touch-none items-center justify-center rounded-full border-0 select-none focus-visible:outline-offset-4 active:scale-[.96]"
         >
           <Wine
             aria-hidden
             size={72}
             className={clinking ? "an-btnL" : ""}
-            style={{ color: "var(--on-accent)", marginRight: -14, transformOrigin: "50% 90%", transform: "rotate(-14deg)" }}
+            style={{
+              color: "var(--on-accent)",
+              marginRight: -14,
+              transformOrigin: "50% 90%",
+              transform: "rotate(-14deg)",
+            }}
           />
           <Wine
             aria-hidden
             size={72}
             className={clinking ? "an-btnR" : ""}
-            style={{ color: "var(--on-accent)", marginLeft: -14, transformOrigin: "50% 90%", transform: "rotate(14deg)" }}
+            style={{
+              color: "var(--on-accent)",
+              marginLeft: -14,
+              transformOrigin: "50% 90%",
+              transform: "rotate(14deg)",
+            }}
           />
         </button>
       </div>
       <div className="display text-[22px]" aria-live="polite">
         {clinking ? "Clink!" : "Send a Clink"}
       </div>
-      <div className="text-sm text-muted">
+      <div className="text-muted text-sm">
         {streak && streak > 0 ? `${streak}-day streak. ` : ""}Hold to glow together.
       </div>
     </div>

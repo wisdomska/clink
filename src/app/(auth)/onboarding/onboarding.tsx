@@ -1,7 +1,16 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Check, MagnifyingGlass, Moon, Plant, Cat, Coffee, Sparkle } from "@phosphor-icons/react";
+import {
+  Camera,
+  Check,
+  MagnifyingGlass,
+  Moon,
+  Plant,
+  Cat,
+  Coffee,
+  Sparkle,
+} from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input, FieldError, Hint } from "@/components/ui/field";
 import { Display, Lead, Mono } from "@/components/ui/heading";
@@ -68,14 +77,13 @@ export function Onboarding({
   }, []);
 
   useEffect(() => {
-    if (query.trim().length < 2) {
-      setResults([]);
-      return;
-    }
+    if (query.trim().length < 2) return;
     const ctrl = new AbortController();
     const t = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/cities?q=${encodeURIComponent(query.trim())}`, { signal: ctrl.signal });
+        const res = await fetch(`/api/cities?q=${encodeURIComponent(query.trim())}`, {
+          signal: ctrl.signal,
+        });
         const data = await res.json();
         setResults(data.cities ?? []);
       } catch {
@@ -154,12 +162,23 @@ export function Onboarding({
   return (
     <div className="an-screen flex flex-1 flex-col">
       <div className="flex h-11 flex-none items-center gap-3">
-        <div className="flex flex-1 gap-1.5" role="progressbar" aria-valuemin={1} aria-valuemax={3} aria-valuenow={step} aria-label="Setup progress">
+        <div
+          className="flex flex-1 gap-1.5"
+          role="progressbar"
+          aria-valuemin={1}
+          aria-valuemax={3}
+          aria-valuenow={step}
+          aria-label="Setup progress"
+        >
           {[1, 2, 3].map((i) => (
-            <span key={i} className="h-1 flex-1 rounded-full" style={{ background: i <= step ? "var(--accent)" : "var(--line)" }} />
+            <span
+              key={i}
+              className="h-1 flex-1 rounded-full"
+              style={{ background: i <= step ? "var(--accent)" : "var(--line)" }}
+            />
           ))}
         </div>
-        <Button variant="text" size="sm" className="px-3 text-muted" onClick={skip}>
+        <Button variant="text" size="sm" className="text-muted px-3" onClick={skip}>
           Skip
         </Button>
       </div>
@@ -179,7 +198,7 @@ export function Onboarding({
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && advance()}
-            className="h-14 border-2 border-accent text-lg font-medium"
+            className="border-accent h-14 border-2 text-lg font-medium"
           />
         </div>
       )}
@@ -194,7 +213,7 @@ export function Onboarding({
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="press flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 overflow-hidden rounded-full border-[1.5px] border-dashed border-faint bg-transparent text-sm font-medium text-muted"
+              className="press border-faint text-muted flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 overflow-hidden rounded-full border-[1.5px] border-dashed bg-transparent text-sm font-medium"
               style={photo ? { border: "3px solid var(--accent)", padding: 0 } : undefined}
             >
               {photo ? (
@@ -225,8 +244,11 @@ export function Onboarding({
                   setIcon(key);
                   setPhoto(null);
                 }}
-                className="press flex aspect-square cursor-pointer items-center justify-center rounded-full bg-s2 text-text"
-                style={{ border: !photo && icon === key ? "3px solid var(--accent)" : "1px solid var(--line)" }}
+                className="press bg-s2 text-text flex aspect-square cursor-pointer items-center justify-center rounded-full"
+                style={{
+                  border:
+                    !photo && icon === key ? "3px solid var(--accent)" : "1px solid var(--line)",
+                }}
               >
                 <Icon size={34} aria-hidden />
               </button>
@@ -240,8 +262,10 @@ export function Onboarding({
           <Display size={36} className="mt-3">
             Where&apos;s <em>home</em>?
           </Display>
-          <Lead className="mt-2 mb-6">For your clock and quiet hours. Never a precise location.</Lead>
-          <div className="flex h-[52px] items-center gap-2.5 rounded-input border border-line bg-s2 px-4 focus-within:border-accent">
+          <Lead className="mt-2 mb-6">
+            For your clock and quiet hours. Never a precise location.
+          </Lead>
+          <div className="rounded-input border-line bg-s2 focus-within:border-accent flex h-[52px] items-center gap-2.5 border px-4">
             <MagnifyingGlass size={20} className="text-muted" aria-hidden />
             <input
               aria-label="Search for your city"
@@ -249,11 +273,15 @@ export function Onboarding({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Start typing a city"
-              className="h-full min-w-0 flex-1 bg-transparent text-base text-text outline-none"
+              className="text-text h-full min-w-0 flex-1 bg-transparent text-base outline-none"
             />
           </div>
-          {results.length > 0 && (
-            <ul role="listbox" aria-label="Cities" className="m-0 mt-2 list-none overflow-hidden rounded-card border border-line bg-s1 p-0">
+          {query.trim().length >= 2 && results.length > 0 && (
+            <ul
+              role="listbox"
+              aria-label="Cities"
+              className="rounded-card border-line bg-s1 m-0 mt-2 list-none overflow-hidden border p-0"
+            >
               {results.map((c, i) => {
                 const on = city?.city === c.city && city.country === c.country;
                 return (
@@ -263,7 +291,7 @@ export function Onboarding({
                       onClick={() => setCity(c)}
                       className={cn(
                         "flex w-full cursor-pointer items-center justify-between bg-transparent px-4 py-3.5 text-left",
-                        i < results.length - 1 && "border-b border-line",
+                        i < results.length - 1 && "border-line border-b",
                         on ? "text-text" : "text-muted",
                       )}
                     >
@@ -271,7 +299,9 @@ export function Onboarding({
                         {c.city}, {c.country}
                       </span>
                       <span className="flex items-center gap-2.5">
-                        <span className="mono text-sm text-muted">{formatClock(now, c.timezone)}</span>
+                        <span className="mono text-muted text-sm">
+                          {formatClock(now, c.timezone)}
+                        </span>
                         {on && <Check size={20} className="text-accent" aria-hidden />}
                       </span>
                     </button>
@@ -280,7 +310,7 @@ export function Onboarding({
               })}
             </ul>
           )}
-          {!results.length && city && (
+          {(query.trim().length < 2 || !results.length) && city && (
             <Hint>
               {city.city}, {city.country} · {formatClock(now, city.timezone)}
             </Hint>
@@ -290,7 +320,11 @@ export function Onboarding({
 
       <FieldError>{error}</FieldError>
       <div className="min-h-6 flex-1" />
-      <Button className="flex-none" disabled={busy || (step === 3 && !city && query.length > 0)} onClick={advance}>
+      <Button
+        className="flex-none"
+        disabled={busy || (step === 3 && !city && query.length > 0)}
+        onClick={advance}
+      >
         Continue
       </Button>
     </div>
@@ -335,9 +369,33 @@ function DobStep({ onDone }: { onDone: () => void }) {
       </Display>
       <Lead className="mt-2 mb-6">Clink is 18+. Your partner never sees this.</Lead>
       <div className="grid grid-cols-[1fr_1fr_1.6fr] gap-2">
-        <Input aria-label="Day" inputMode="numeric" placeholder="DD" mono className="text-center" value={day} onChange={(e) => setDay(e.target.value.replace(/\D/g, "").slice(0, 2))} />
-        <Input aria-label="Month" inputMode="numeric" placeholder="MM" mono className="text-center" value={month} onChange={(e) => setMonth(e.target.value.replace(/\D/g, "").slice(0, 2))} />
-        <Input aria-label="Year" inputMode="numeric" placeholder="YYYY" mono className="text-center" value={year} onChange={(e) => setYear(e.target.value.replace(/\D/g, "").slice(0, 4))} />
+        <Input
+          aria-label="Day"
+          inputMode="numeric"
+          placeholder="DD"
+          mono
+          className="text-center"
+          value={day}
+          onChange={(e) => setDay(e.target.value.replace(/\D/g, "").slice(0, 2))}
+        />
+        <Input
+          aria-label="Month"
+          inputMode="numeric"
+          placeholder="MM"
+          mono
+          className="text-center"
+          value={month}
+          onChange={(e) => setMonth(e.target.value.replace(/\D/g, "").slice(0, 2))}
+        />
+        <Input
+          aria-label="Year"
+          inputMode="numeric"
+          placeholder="YYYY"
+          mono
+          className="text-center"
+          value={year}
+          onChange={(e) => setYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
+        />
       </div>
       <FieldError>{error}</FieldError>
       <div className="min-h-6 flex-1" />

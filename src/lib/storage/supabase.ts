@@ -9,7 +9,11 @@ export function supabaseAdapter(): StorageAdapter {
     async presignUpload(bucket, path, mime) {
       const { data, error } = await s().from(bucket).createSignedUploadUrl(path);
       if (error || !data) throw error ?? new Error("upload url failed");
-      return { url: data.signedUrl, method: "PUT", headers: { "Content-Type": mime, "x-upsert": "false" } };
+      return {
+        url: data.signedUrl,
+        method: "PUT",
+        headers: { "Content-Type": mime, "x-upsert": "false" },
+      };
     },
     async presignRead(bucket, path, ttl) {
       const { data, error } = await s().from(bucket).createSignedUrl(path, ttl);
@@ -22,7 +26,9 @@ export function supabaseAdapter(): StorageAdapter {
       return Buffer.from(await data.arrayBuffer());
     },
     async write(bucket, path, body, mime) {
-      const { error } = await s().from(bucket).upload(path, body, { contentType: mime, upsert: true });
+      const { error } = await s()
+        .from(bucket)
+        .upload(path, body, { contentType: mime, upsert: true });
       if (error) throw error;
     },
     async size(bucket, path) {

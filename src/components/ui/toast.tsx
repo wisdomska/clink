@@ -35,7 +35,7 @@ export function Toaster() {
       {message && (
         <div
           key={id}
-          className="an-toast max-w-[320px] rounded-full border border-line bg-s3 px-[18px] py-3 text-center text-sm font-medium text-text"
+          className="an-toast border-line bg-s3 text-text max-w-[320px] rounded-full border px-[18px] py-3 text-center text-sm font-medium"
           style={{ boxShadow: "var(--shadow-toast)" }}
         >
           {message}

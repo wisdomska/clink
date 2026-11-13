@@ -1,12 +1,24 @@
 import { z } from "zod";
-import { handler, ok, parseJson, requireUser, activeCouple, rateLimit, clientIp, audit } from "@/lib/server/api";
+import {
+  handler,
+  ok,
+  parseJson,
+  requireUser,
+  activeCouple,
+  rateLimit,
+  clientIp,
+  audit,
+} from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { track } from "@/lib/server/analytics";
 
 const schema = z.object({
   category: z.enum(["image_misuse", "harassment", "minor_safety", "broken", "other"]),
   details: z.string().trim().max(4000).optional(),
-  attachmentPaths: z.array(z.string().regex(/^reports\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.webp$/)).max(5).default([]),
+  attachmentPaths: z
+    .array(z.string().regex(/^reports\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.webp$/))
+    .max(5)
+    .default([]),
   fromAfterDark: z.boolean().default(false),
 });
 
@@ -42,7 +54,13 @@ export const POST = handler(async (req) => {
     .single();
   if (error) throw error;
   if (body.category === "minor_safety" && reported) {
-    await admin.from("profiles").update({ suspended_at: new Date().toISOString(), suspended_reason: "SAF-10 possible minor report, pending review" }).eq("id", reported);
+    await admin
+      .from("profiles")
+      .update({
+        suspended_at: new Date().toISOString(),
+        suspended_reason: "SAF-10 possible minor report, pending review",
+      })
+      .eq("id", reported);
     await admin.auth.admin.signOut(reported, "global").catch(() => undefined);
     await audit("saf10_suspension", reported, { report_id: report.id }, user.id);
   }

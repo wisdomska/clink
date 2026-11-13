@@ -22,7 +22,10 @@ export const POST = handler(async (req) => {
   const admin = supabaseAdmin();
   let answered: string | null = null;
   if (body.kind === "back" || body.kind === "tap") {
-    const { data } = await admin.rpc("svc_answer_latest_clink", { p_couple: coupleId, p_answerer: user.id });
+    const { data } = await admin.rpc("svc_answer_latest_clink", {
+      p_couple: coupleId,
+      p_answerer: user.id,
+    });
     answered = (data as string | null) ?? null;
   }
   const { data: row, error } = await admin
@@ -48,8 +51,16 @@ export const POST = handler(async (req) => {
   });
 
   if (!body.partnerOnline && body.kind !== "hold") {
-    const { data: me } = await admin.from("profiles").select("display_name").eq("id", user.id).single();
-    await notify(partnerId, "clinks", { body: `${me?.display_name ?? "Your person"} sent a Clink`, url: "/us?clink=1", tag: "clink" });
+    const { data: me } = await admin
+      .from("profiles")
+      .select("display_name")
+      .eq("id", user.id)
+      .single();
+    await notify(partnerId, "clinks", {
+      body: `${me?.display_name ?? "Your person"} sent a Clink`,
+      url: "/us?clink=1",
+      tag: "clink",
+    });
   }
   await track(answered ? "clink_answered" : "clink_sent", user.id, { kind: body.kind }, coupleId);
   return ok({ id: row.id, answered: Boolean(answered) });

@@ -33,7 +33,10 @@ export async function enablePush(): Promise<"granted" | "denied" | "unsupported"
   const reg = await navigator.serviceWorker.ready;
   const sub =
     (await reg.pushManager.getSubscription()) ??
-    (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(key) }));
+    (await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(key),
+    }));
   const json = sub.toJSON();
   await fetch("/api/push/subscribe", {
     method: "POST",

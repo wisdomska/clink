@@ -10,7 +10,9 @@ export const GET = handler(async () => {
   const d = await requireDark({ minRank: 1 });
   const { data } = await supabaseAdmin()
     .from("media")
-    .select("id, owner_id, kind, retention, expires_at, created_at, deleted_at, closed_at, duration_s")
+    .select(
+      "id, owner_id, kind, retention, expires_at, created_at, deleted_at, closed_at, duration_s",
+    )
     .eq("couple_id", d.coupleId)
     .eq("is_sensitive", true)
     .neq("status", "pending")
@@ -18,7 +20,13 @@ export const GET = handler(async () => {
     .limit(90);
   const now = Date.now();
   const items = (data ?? [])
-    .filter((m) => m.retention === "vault" || (!m.deleted_at && (!m.expires_at || new Date(m.expires_at).getTime() > now) && !m.closed_at))
+    .filter(
+      (m) =>
+        m.retention === "vault" ||
+        (!m.deleted_at &&
+          (!m.expires_at || new Date(m.expires_at).getTime() > now) &&
+          !m.closed_at),
+    )
     .map((m) => ({
       id: m.id,
       mine: m.owner_id === d.user.id,

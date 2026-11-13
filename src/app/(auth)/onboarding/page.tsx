@@ -6,7 +6,11 @@ import { Onboarding } from "./onboarding";
 
 export const metadata: Metadata = { title: "Set up" };
 
-export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ next?: string; edit?: string }> }) {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string; edit?: string }>;
+}) {
   const db = await supabaseServer();
   const {
     data: { user },
@@ -17,11 +21,19 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
   const editing = Boolean(edit) && step !== "dob";
   if (!editing && step === "link") redirect(next?.startsWith("/link") ? next : "/link");
   if (!editing && step === "app") redirect("/us");
-  const { data: profile } = await db.from("profiles").select("display_name, avatar_icon, home_city, timezone").eq("id", user.id).single();
+  const { data: profile } = await db
+    .from("profiles")
+    .select("display_name, avatar_icon, home_city, timezone")
+    .eq("id", user.id)
+    .single();
   return (
     <Onboarding
       needsDob={step === "dob"}
-      initialName={profile?.display_name ?? (user.user_metadata?.full_name as string | undefined)?.split(" ")[0] ?? ""}
+      initialName={
+        profile?.display_name ??
+        (user.user_metadata?.full_name as string | undefined)?.split(" ")[0] ??
+        ""
+      }
       initialIcon={profile?.avatar_icon ?? "moon"}
       next={next ?? null}
       editing={editing}

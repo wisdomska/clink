@@ -20,11 +20,24 @@ export async function GET() {
     icons: [
       { src: `/icons/${id}-192.png`, sizes: "192x192", type: "image/png", purpose: "any" },
       { src: `/icons/${id}-512.png`, sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: `/icons/${id}-maskable-192.png`, sizes: "192x192", type: "image/png", purpose: "maskable" },
-      { src: `/icons/${id}-maskable-512.png`, sizes: "512x512", type: "image/png", purpose: "maskable" },
+      {
+        src: `/icons/${id}-maskable-192.png`,
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
+      },
+      {
+        src: `/icons/${id}-maskable-512.png`,
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
     ],
   };
   return new Response(JSON.stringify(manifest), {
-    headers: { "Content-Type": "application/manifest+json", "Cache-Control": "private, max-age=0, must-revalidate" },
+    headers: {
+      "Content-Type": "application/manifest+json",
+      "Cache-Control": "private, max-age=0, must-revalidate",
+    },
   });
 }

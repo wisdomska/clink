@@ -31,9 +31,19 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
     "id, display_name, avatar_kind, avatar_icon, avatar_path, home_city, country, timezone, latitude, longitude, partner_nickname, phone, discreet_mode, app_icon, notify, quiet_start, quiet_end, suspended_at, is_admin";
   const [{ data: people }, { data: c }, { data: members }, { data: dark }] = await Promise.all([
     admin.from("profiles").select(cols).in("id", [user.id, couple.partnerId]),
-    admin.from("couples").select("id, started_on, linked_at, ritual_time, dark_opened_at").eq("id", couple.coupleId).single(),
-    admin.from("couple_members").select("user_id, role, allow_saved_spicy").eq("couple_id", couple.coupleId),
-    admin.from("dark_settings").select("user_id, opted_in_at").in("user_id", [user.id, couple.partnerId]),
+    admin
+      .from("couples")
+      .select("id, started_on, linked_at, ritual_time, dark_opened_at")
+      .eq("id", couple.coupleId)
+      .single(),
+    admin
+      .from("couple_members")
+      .select("user_id, role, allow_saved_spicy")
+      .eq("couple_id", couple.coupleId),
+    admin
+      .from("dark_settings")
+      .select("user_id, opted_in_at")
+      .in("user_id", [user.id, couple.partnerId]),
   ]);
   const meRow = people!.find((p) => p.id === user.id)!;
   const pRow = people!.find((p) => p.id === couple.partnerId)!;

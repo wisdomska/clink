@@ -14,15 +14,25 @@ export async function requireAdmin(opts: { rate?: number } = {}) {
     data: { user },
   } = await db.auth.getUser();
   if (!user) throw deny(404, "not_found", "Not found.");
-  const { data: p } = await supabaseAdmin().from("profiles").select("is_admin, display_name").eq("id", user.id).single();
+  const { data: p } = await supabaseAdmin()
+    .from("profiles")
+    .select("is_admin, display_name")
+    .eq("id", user.id)
+    .single();
   if (!p?.is_admin) throw deny(404, "not_found", "Not found.");
   const { data: aal } = await db.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (aal?.currentLevel !== "aal2") throw deny(401, "mfa_required", "Two-factor verification required.");
+  if (aal?.currentLevel !== "aal2")
+    throw deny(401, "mfa_required", "Two-factor verification required.");
   await rateLimit(`admin:${user.id}`, opts.rate ?? 600, 3600);
   return { user, name: p.display_name ?? user.email ?? "admin" };
 }
 
-export async function adminAudit(adminId: string, event: string, meta: Record<string, Json> = {}, subjectUserId: string | null = null) {
+export async function adminAudit(
+  adminId: string,
+  event: string,
+  meta: Record<string, Json> = {},
+  subjectUserId: string | null = null,
+) {
   await audit(`admin.${event}`, subjectUserId, meta, adminId);
 }
 

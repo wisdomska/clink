@@ -8,7 +8,8 @@ export const POST = handler(async (req) => {
   const { user } = await requireUser();
   await rateLimit(`report-att:${user.id}`, 10, 3600);
   const raw = Buffer.from(await req.arrayBuffer());
-  if (!raw.length || raw.length > 8 * 1024 * 1024) throw deny(413, "too_big", "That image is too big.");
+  if (!raw.length || raw.length > 8 * 1024 * 1024)
+    throw deny(413, "too_big", "That image is too big.");
   const clean = await stripImage(raw, 1600).catch(() => {
     throw deny(415, "bad_image", "That isn't an image we can read.");
   });

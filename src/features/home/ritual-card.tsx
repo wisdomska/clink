@@ -23,7 +23,9 @@ export function RitualCard() {
     queryKey: ["ritual", coupleId, day],
     queryFn: async () => {
       const sb = supabaseBrowser();
-      const { count } = await sb.from("ritual_prompts").select("id", { count: "exact", head: true });
+      const { count } = await sb
+        .from("ritual_prompts")
+        .select("id", { count: "exact", head: true });
       const n = count || 1;
       const dayNo = Math.floor(Date.parse(`${day}T00:00:00Z`) / 86400000);
       const promptId = (dayNo % n) + 1;
@@ -35,7 +37,9 @@ export function RitualCard() {
       return { prompt, answers: answers ?? [], partnerDone: Boolean(partnerDone) };
     },
   });
-  useCoupleEvent("ritual.answered", () => qc.invalidateQueries({ queryKey: ["ritual", coupleId, day] }));
+  useCoupleEvent("ritual.answered", () =>
+    qc.invalidateQueries({ queryKey: ["ritual", coupleId, day] }),
+  );
 
   const mine = data?.answers.find((a) => a.user_id === me.id);
   const theirs = data?.answers.find((a) => a.user_id === partner.id);
@@ -46,7 +50,13 @@ export function RitualCard() {
 
   async function submit() {
     if (!data?.prompt || !text.trim()) return;
-    const { error } = await supabaseBrowser().from("ritual_answers").insert({ couple_id: coupleId, day, user_id: me.id, prompt_id: data.prompt.id, answer: text.trim() });
+    const { error } = await supabaseBrowser().from("ritual_answers").insert({
+      couple_id: coupleId,
+      day,
+      user_id: me.id,
+      prompt_id: data.prompt.id,
+      answer: text.trim(),
+    });
     if (error) return toast("Couldn't save that. Try again.");
     setOpen(false);
     send("ritual.answered", {});
@@ -54,21 +64,25 @@ export function RitualCard() {
   }
 
   return (
-    <section aria-labelledby="ritual-h" className="flex flex-none flex-col gap-3 rounded-card bg-s2 px-4 py-5" style={{ transform: "rotate(-1deg)" }}>
-      <div className="text-sm font-medium text-muted">Today&apos;s ritual, {when}</div>
+    <section
+      aria-labelledby="ritual-h"
+      className="rounded-card bg-s2 flex flex-none flex-col gap-3 px-4 py-5"
+      style={{ transform: "rotate(-1deg)" }}
+    >
+      <div className="text-muted text-sm font-medium">Today&apos;s ritual, {when}</div>
       <h2 id="ritual-h" className="display m-0 text-[22px] leading-[1.15]">
         {data?.prompt?.text ?? " "}
       </h2>
       {mine && theirs ? (
         <div className="an-reveal grid grid-cols-2 gap-1.5">
-          <div className="flex flex-col gap-2 rounded-[20px_6px_6px_20px] bg-s1 p-3.5">
-            <span className="mono flex items-center gap-1.5 text-xs text-muted">
+          <div className="bg-s1 flex flex-col gap-2 rounded-[20px_6px_6px_20px] p-3.5">
+            <span className="mono text-muted flex items-center gap-1.5 text-xs">
               <PartnerMark who="a" /> YOU
             </span>
             <span className="text-base leading-[1.4]">{mine.answer}</span>
           </div>
-          <div className="flex flex-col gap-2 rounded-[6px_20px_20px_6px] bg-s1 p-3.5">
-            <span className="mono flex items-center gap-1.5 text-xs text-muted uppercase">
+          <div className="bg-s1 flex flex-col gap-2 rounded-[6px_20px_20px_6px] p-3.5">
+            <span className="mono text-muted flex items-center gap-1.5 text-xs uppercase">
               <PartnerMark who="b" /> {partner.name}
             </span>
             <span className="text-base leading-[1.4]">{theirs.answer}</span>
@@ -76,9 +90,13 @@ export function RitualCard() {
         </div>
       ) : (
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-sm text-muted">
+          <div className="text-muted flex items-center gap-2 text-sm">
             <PartnerMark who="b" />
-            {mine ? `Yours is in. Waiting on ${partner.name}.` : data?.partnerDone ? `${partner.name} answered. Both reveal together.` : "Both reveal together."}
+            {mine
+              ? `Yours is in. Waiting on ${partner.name}.`
+              : data?.partnerDone
+                ? `${partner.name} answered. Both reveal together.`
+                : "Both reveal together."}
           </div>
           {!mine && (
             <Button size="sm" className="flex-none px-[18px]" onClick={() => setOpen(true)}>
@@ -91,7 +109,13 @@ export function RitualCard() {
         <Display as="h2" size={22} className="leading-[1.15]">
           {data?.prompt?.text}
         </Display>
-        <Textarea autoFocus value={text} maxLength={500} onChange={(e) => setText(e.target.value)} placeholder={`Only ${partner.name} sees this, once they answer too.`} />
+        <Textarea
+          autoFocus
+          value={text}
+          maxLength={500}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={`Only ${partner.name} sees this, once they answer too.`}
+        />
         <Button onClick={submit} disabled={!text.trim()}>
           Seal my answer
         </Button>

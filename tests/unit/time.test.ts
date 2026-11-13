@@ -1,5 +1,16 @@
 import { describe, it, expect } from "vitest";
-import { formatClock, isNight, diffLabel, inWindow, isQuietHours, countdownParts, zonedToUtc, zoneOffsetMinutes, localParts, wallTime } from "@/lib/time";
+import {
+  formatClock,
+  isNight,
+  diffLabel,
+  inWindow,
+  isQuietHours,
+  countdownParts,
+  zonedToUtc,
+  zoneOffsetMinutes,
+  localParts,
+  wallTime,
+} from "@/lib/time";
 
 const at = (iso: string) => new Date(iso);
 
@@ -26,7 +37,9 @@ describe("time zone maths", () => {
   });
 
   it("handles DST: London is 1 h from Accra in summer", () => {
-    expect(diffLabel(at("2026-07-01T12:00:00Z"), "Europe/London", "Africa/Accra")).toBe("1 H APART");
+    expect(diffLabel(at("2026-07-01T12:00:00Z"), "Europe/London", "Africa/Accra")).toBe(
+      "1 H APART",
+    );
     expect(zoneOffsetMinutes(at("2026-07-01T12:00:00Z"), "Europe/London")).toBe(60);
     expect(zoneOffsetMinutes(at("2026-12-01T12:00:00Z"), "Europe/London")).toBe(0);
   });
@@ -39,18 +52,36 @@ describe("time zone maths", () => {
     expect(inWindow(13, 30, "13:00", "14:00")).toBe(true);
     expect(inWindow(10, 0, "09:00", "09:00")).toBe(false);
     expect(isQuietHours(at("2026-11-13T23:30:00Z"), "Africa/Accra", "23:00", "07:00")).toBe(true);
-    expect(isQuietHours(at("2026-11-13T23:30:00Z"), "America/Toronto", "23:00", "07:00")).toBe(false);
+    expect(isQuietHours(at("2026-11-13T23:30:00Z"), "America/Toronto", "23:00", "07:00")).toBe(
+      false,
+    );
   });
 
   it("counts down in days, hours and minutes and stops at zero", () => {
-    expect(countdownParts(at("2026-11-13T21:28:00Z"), at("2026-11-22T06:40:00Z"))).toEqual({ days: 8, hours: 9, minutes: 12, done: false });
-    expect(countdownParts(at("2026-11-23T00:00:00Z"), at("2026-11-22T06:40:00Z"))).toEqual({ days: 0, hours: 0, minutes: 0, done: true });
+    expect(countdownParts(at("2026-11-13T21:28:00Z"), at("2026-11-22T06:40:00Z"))).toEqual({
+      days: 8,
+      hours: 9,
+      minutes: 12,
+      done: false,
+    });
+    expect(countdownParts(at("2026-11-23T00:00:00Z"), at("2026-11-22T06:40:00Z"))).toEqual({
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      done: true,
+    });
   });
 
   it("converts a wall time in a zone to UTC, including across DST", () => {
-    expect(zonedToUtc("2026-11-22", "06:40", "Europe/London").toISOString()).toBe("2026-11-22T06:40:00.000Z");
-    expect(zonedToUtc("2026-07-01", "21:00", "Europe/London").toISOString()).toBe("2026-07-01T20:00:00.000Z");
-    expect(zonedToUtc("2026-11-16", "21:00", "America/Toronto").toISOString()).toBe("2026-11-17T02:00:00.000Z");
+    expect(zonedToUtc("2026-11-22", "06:40", "Europe/London").toISOString()).toBe(
+      "2026-11-22T06:40:00.000Z",
+    );
+    expect(zonedToUtc("2026-07-01", "21:00", "Europe/London").toISOString()).toBe(
+      "2026-07-01T20:00:00.000Z",
+    );
+    expect(zonedToUtc("2026-11-16", "21:00", "America/Toronto").toISOString()).toBe(
+      "2026-11-17T02:00:00.000Z",
+    );
   });
 
   it("reads local parts and wall times", () => {

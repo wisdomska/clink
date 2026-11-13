@@ -11,7 +11,14 @@ declare global {
 declare const self: ServiceWorkerGlobalScope;
 
 // Sensitive and private routes are never cached (spec 14.1 Client).
-const NEVER_CACHE = [/^\/api\/media\//, /^\/api\/dark\//, /^\/dark(\/|$)/, /^\/admin(\/|$)/, /^\/api\/admin\//, /^\/auth\//];
+const NEVER_CACHE = [
+  /^\/api\/media\//,
+  /^\/api\/dark\//,
+  /^\/dark(\/|$)/,
+  /^\/admin(\/|$)/,
+  /^\/api\/admin\//,
+  /^\/auth\//,
+];
 
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
@@ -25,7 +32,8 @@ const serwist = new Serwist({
     },
     {
       // Storage URLs (signed) are never cached either.
-      matcher: ({ url }) => /supabase\.co|r2\.cloudflarestorage\.com|127\.0\.0\.1:54321/.test(url.host),
+      matcher: ({ url }) =>
+        /supabase\.co|r2\.cloudflarestorage\.com|127\.0\.0\.1:54321/.test(url.host),
       handler: new NetworkOnly(),
     },
     ...defaultCache,
@@ -43,7 +51,14 @@ self.addEventListener("message", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  let data: { title?: string; body?: string; url?: string; tag?: string; silent?: boolean; icon?: string } = {};
+  let data: {
+    title?: string;
+    body?: string;
+    url?: string;
+    tag?: string;
+    silent?: boolean;
+    icon?: string;
+  } = {};
   try {
     data = event.data?.json() ?? {};
   } catch {

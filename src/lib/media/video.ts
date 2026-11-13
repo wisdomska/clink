@@ -8,8 +8,17 @@ export interface PreparedVideo {
 }
 
 function pickMime(): string {
-  const options = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4;codecs=avc1,mp4a", "video/mp4"];
-  return options.find((m) => typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(m)) ?? "video/webm";
+  const options = [
+    "video/webm;codecs=vp9,opus",
+    "video/webm;codecs=vp8,opus",
+    "video/webm",
+    "video/mp4;codecs=avc1,mp4a",
+    "video/mp4",
+  ];
+  return (
+    options.find((m) => typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(m)) ??
+    "video/webm"
+  );
 }
 
 /**
@@ -17,7 +26,10 @@ function pickMime(): string {
  * This caps resolution and bitrate (free-tier storage) and drops container
  * metadata such as GPS location (SAF-03). Max 60 s.
  */
-export async function prepareVideo(file: File, onProgress?: (p: number) => void): Promise<PreparedVideo> {
+export async function prepareVideo(
+  file: File,
+  onProgress?: (p: number) => void,
+): Promise<PreparedVideo> {
   const url = URL.createObjectURL(file);
   try {
     const video = document.createElement("video");
@@ -29,7 +41,8 @@ export async function prepareVideo(file: File, onProgress?: (p: number) => void)
       video.onerror = () => rej(new Error("That video can't be read."));
     });
     const durationS = video.duration;
-    if (!Number.isFinite(durationS) || durationS > 60.5) throw new Error("Videos can be up to 60 seconds.");
+    if (!Number.isFinite(durationS) || durationS > 60.5)
+      throw new Error("Videos can be up to 60 seconds.");
     const scale = Math.min(1, 720 / Math.min(video.videoWidth, video.videoHeight));
     const width = Math.round((video.videoWidth * scale) / 2) * 2;
     const height = Math.round((video.videoHeight * scale) / 2) * 2;
@@ -46,7 +59,11 @@ export async function prepareVideo(file: File, onProgress?: (p: number) => void)
     dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
     video.muted = false;
     const mime = pickMime();
-    const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 2_000_000, audioBitsPerSecond: 96_000 });
+    const rec = new MediaRecorder(stream, {
+      mimeType: mime,
+      videoBitsPerSecond: 2_000_000,
+      audioBitsPerSecond: 96_000,
+    });
     const chunks: Blob[] = [];
     rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
     const finished = new Promise<void>((res) => (rec.onstop = () => res()));

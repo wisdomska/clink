@@ -13,14 +13,25 @@ export function contiguousRank(tiers: readonly string[]): number {
 }
 
 /** The lower choice always wins; Unhinged also needs both verified. */
-export function effectiveRank(mine: readonly string[], theirs: readonly string[], bothVerified: boolean): number {
+export function effectiveRank(
+  mine: readonly string[],
+  theirs: readonly string[],
+  bothVerified: boolean,
+): number {
   const r = Math.min(contiguousRank(mine), contiguousRank(theirs));
   return r === 4 && !bothVerified ? 3 : r;
 }
 
-export type TierStatus = "open" | "waiting_on_them" | "waiting_on_you" | "waiting_on_both" | "needs_verification";
+export type TierStatus =
+  "open" | "waiting_on_them" | "waiting_on_you" | "waiting_on_both" | "needs_verification";
 
-export function tierStatus(tier: Tier, mine: readonly string[], theirs: readonly string[], meVerified: boolean, themVerified: boolean): TierStatus {
+export function tierStatus(
+  tier: Tier,
+  mine: readonly string[],
+  theirs: readonly string[],
+  meVerified: boolean,
+  themVerified: boolean,
+): TierStatus {
   const rank = TIERS.indexOf(tier) + 1;
   const iIn = contiguousRank(mine) >= rank;
   const theyIn = contiguousRank(theirs) >= rank;

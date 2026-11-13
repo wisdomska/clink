@@ -15,7 +15,13 @@ export const POST = handler(async (req) => {
   const { error } = await supabaseAdmin()
     .from("push_subscriptions")
     .upsert(
-      { user_id: user.id, endpoint: body.endpoint, p256dh: body.keys.p256dh, auth: body.keys.auth, ua: req.headers.get("user-agent")?.slice(0, 200) ?? null },
+      {
+        user_id: user.id,
+        endpoint: body.endpoint,
+        p256dh: body.keys.p256dh,
+        auth: body.keys.auth,
+        ua: req.headers.get("user-agent")?.slice(0, 200) ?? null,
+      },
       { onConflict: "endpoint" },
     );
   if (error) throw error;
@@ -25,6 +31,10 @@ export const POST = handler(async (req) => {
 export const DELETE = handler(async (req) => {
   const { user } = await requireUser();
   const { endpoint } = await parseJson(req, z.object({ endpoint: z.url() }));
-  await supabaseAdmin().from("push_subscriptions").delete().eq("user_id", user.id).eq("endpoint", endpoint);
+  await supabaseAdmin()
+    .from("push_subscriptions")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("endpoint", endpoint);
   return ok({ ok: true });
 });

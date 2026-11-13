@@ -7,7 +7,11 @@ import { requireAdmin } from "@/lib/server/admin";
 export const GET = handler(async (req: NextRequest) => {
   await requireAdmin();
   const p = req.nextUrl.searchParams;
-  let q = supabaseAdmin().from("audit_events").select("id, user_id, actor_id, event, meta, created_at").order("created_at", { ascending: false }).limit(200);
+  let q = supabaseAdmin()
+    .from("audit_events")
+    .select("id, user_id, actor_id, event, meta, created_at")
+    .order("created_at", { ascending: false })
+    .limit(200);
   if (p.get("event")) q = q.ilike("event", `${p.get("event")}%`);
   if (p.get("user")) q = q.or(`user_id.eq.${p.get("user")},actor_id.eq.${p.get("user")}`);
   if (p.get("from")) q = q.gte("created_at", p.get("from")!);

@@ -1,7 +1,15 @@
 import { forwardRef, type ButtonHTMLAttributes } from "react";
 import { cn } from "./cn";
 
-type Variant = "primary" | "secondary" | "ghost" | "outline" | "text" | "accent-text" | "danger" | "danger-outline";
+type Variant =
+  | "primary"
+  | "secondary"
+  | "ghost"
+  | "outline"
+  | "text"
+  | "accent-text"
+  | "danger"
+  | "danger-outline";
 type Size = "xl" | "lg" | "md" | "sm" | "xs";
 
 const variants: Record<Variant, string> = {
@@ -70,9 +78,9 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       style={{ width: dim, height: dim, ...style }}
       className={cn(
         "press flex flex-none cursor-pointer items-center justify-center rounded-full",
-        tone === "outline" && "border border-line bg-transparent text-text",
-        tone === "surface" && "border border-line bg-s1 text-text",
-        tone === "accent" && "border-0 bg-accent text-on-accent",
+        tone === "outline" && "border-line text-text border bg-transparent",
+        tone === "surface" && "border-line bg-s1 text-text border",
+        tone === "accent" && "bg-accent text-on-accent border-0",
         className,
       )}
       {...rest}

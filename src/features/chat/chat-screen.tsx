@@ -2,7 +2,22 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Phone, VideoCamera, Plus, Sticker, Microphone, PaperPlaneRight, X, Coffee, Wine, ArrowBendUpLeft, Copy, Trash, WhatsappLogo, Stop } from "@phosphor-icons/react";
+import {
+  Phone,
+  VideoCamera,
+  Plus,
+  Sticker,
+  Microphone,
+  PaperPlaneRight,
+  X,
+  Coffee,
+  Wine,
+  ArrowBendUpLeft,
+  Copy,
+  Trash,
+  WhatsappLogo,
+  Stop,
+} from "@phosphor-icons/react";
 import Link from "next/link";
 import { useCouple, useCoupleEvent } from "@/features/couple/context";
 import { supabaseBrowser } from "@/lib/supabase/client";
@@ -25,18 +40,35 @@ import type { Message, UiMessage } from "./types";
 const REACTIONS = ["❤️", "😂", "😭", "🔥", "🥹", "👀"];
 
 function dayLabel(d: Date, tz: string) {
-  const fmt = (x: Date) => new Intl.DateTimeFormat("en-GB", { timeZone: tz, day: "numeric", month: "short", year: "numeric" }).format(x);
+  const fmt = (x: Date) =>
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: tz,
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(x);
   const today = fmt(new Date());
   const yest = fmt(new Date(Date.now() - 86400000));
   const day = fmt(d);
-  const prefix = day === today ? "Today" : day === yest ? "Yesterday" : new Intl.DateTimeFormat("en-GB", { timeZone: tz, weekday: "short", day: "numeric", month: "short" }).format(d);
+  const prefix =
+    day === today
+      ? "Today"
+      : day === yest
+        ? "Yesterday"
+        : new Intl.DateTimeFormat("en-GB", {
+            timeZone: tz,
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+          }).format(d);
   return `${prefix} ${formatClock(d, tz)}`;
 }
 
 export function ChatScreen() {
   const { me, partner, presence, coupleId, send, discreet } = useCouple();
   const params = useSearchParams();
-  const { messages, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, upsertLocal } = useMessages();
+  const { messages, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, upsertLocal } =
+    useMessages();
   const reactions = useReactions();
   const queue = useQueue();
   const [text, setText] = useState("");
@@ -65,7 +97,11 @@ export function ChatScreen() {
       const sb = supabaseBrowser();
       const [{ data: all }, { data: recent }] = await Promise.all([
         sb.from("stickers").select("id, label, sort").order("sort"),
-        sb.from("sticker_recents").select("sticker_id, used_at").order("used_at", { ascending: false }).limit(8),
+        sb
+          .from("sticker_recents")
+          .select("sticker_id, used_at")
+          .order("used_at", { ascending: false })
+          .limit(8),
       ]);
       (all ?? []).forEach((s) => STICKER_LABEL.set(s.id, s.label));
       return { all: all ?? [], recent: (recent ?? []).map((r) => r.sticker_id) };
@@ -118,7 +154,10 @@ export function ChatScreen() {
     supabaseBrowser()
       .from("messages")
       .update({ read_at: new Date().toISOString(), delivered_at: new Date().toISOString() })
-      .in("id", unread.map((m) => m.id))
+      .in(
+        "id",
+        unread.map((m) => m.id),
+      )
       .then(() => undefined);
   }, [messages, partner.id]);
 
@@ -151,12 +190,18 @@ export function ChatScreen() {
     stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
     if (el.scrollTop < 120 && hasNextPage && !isFetchingNextPage) {
       const before = el.scrollHeight;
-      void fetchNextPage().then(() => requestAnimationFrame(() => (el.scrollTop = el.scrollHeight - before + el.scrollTop)));
+      void fetchNextPage().then(() =>
+        requestAnimationFrame(() => (el.scrollTop = el.scrollHeight - before + el.scrollTop)),
+      );
     }
   }
 
   async function enqueue(p: Omit<QueuedPayload, "clientId" | "createdAt">) {
-    const item: QueuedPayload = { ...p, clientId: newClientId(), createdAt: new Date().toISOString() };
+    const item: QueuedPayload = {
+      ...p,
+      clientId: newClientId(),
+      createdAt: new Date().toISOString(),
+    };
     if (replyTo) item.replyTo = replyTo.id.startsWith("local-") ? undefined : replyTo.id;
     setReplyTo(null);
     stickToBottom.current = true;
@@ -189,7 +234,8 @@ export function ChatScreen() {
 
   async function sendFiles(files: FileList) {
     const list = Array.from(files).slice(0, MAX_PER_SEND);
-    if (files.length > MAX_PER_SEND) toast(`Up to ${MAX_PER_SEND} at a time. Sending the first ${MAX_PER_SEND}.`);
+    if (files.length > MAX_PER_SEND)
+      toast(`Up to ${MAX_PER_SEND} at a time. Sending the first ${MAX_PER_SEND}.`);
     const clientId = newClientId();
     const local: UiMessage = {
       id: `local-${clientId}`,
@@ -206,7 +252,11 @@ export function ChatScreen() {
       read_at: null,
       removed_at: null,
       local: "sending",
-      localMedia: list.map((f) => ({ url: URL.createObjectURL(f), kind: f.type.startsWith("video") ? "video" : "image", progress: 0 })),
+      localMedia: list.map((f) => ({
+        url: URL.createObjectURL(f),
+        kind: f.type.startsWith("video") ? "video" : "image",
+        progress: 0,
+      })),
     };
     const reply = replyTo?.id;
     setReplyTo(null);
@@ -224,15 +274,26 @@ export function ChatScreen() {
       for (const [i, f] of list.entries()) {
         if (f.type.startsWith("video")) {
           const v = await prepareVideo(f, (p) => setProgress(i, p * 0.5));
-          const r = await uploadMedia(v.blob, { kind: "video", durationS: v.durationS, width: v.width, height: v.height }, (p) => setProgress(i, 0.5 + p * 0.5));
+          const r = await uploadMedia(
+            v.blob,
+            { kind: "video", durationS: v.durationS, width: v.width, height: v.height },
+            (p) => setProgress(i, 0.5 + p * 0.5),
+          );
           ids.push(r.id);
         } else {
           const img = await compressImage(f);
-          const r = await uploadMedia(img.blob, { kind: "image", width: img.width, height: img.height }, (p) => setProgress(i, p));
+          const r = await uploadMedia(
+            img.blob,
+            { kind: "image", width: img.width, height: img.height },
+            (p) => setProgress(i, p),
+          );
           ids.push(r.id);
         }
       }
-      const m = await sendQueued({ clientId, type: "media", mediaIds: ids, replyTo: reply, createdAt: local.sent_at }, presence.online);
+      const m = await sendQueued(
+        { clientId, type: "media", mediaIds: ids, replyTo: reply, createdAt: local.sent_at },
+        presence.online,
+      );
       if (m) upsertLocal(m);
       setPendingMedia((p) => {
         const n = { ...p };
@@ -263,7 +324,6 @@ export function ChatScreen() {
     if (!recording) return;
     const t = setInterval(() => setRecSecs(Math.floor(recorder.current?.elapsed() ?? 0)), 250);
     return () => clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recording]);
 
   async function stopRecording(sendIt: boolean) {
@@ -278,7 +338,11 @@ export function ChatScreen() {
     const rec: Recording | null = await r.stop();
     if (!rec) return toast("Hold a little longer to record.");
     try {
-      const up = await uploadMedia(rec.blob, { kind: "audio", durationS: rec.durationS, waveform: rec.waveform });
+      const up = await uploadMedia(rec.blob, {
+        kind: "audio",
+        durationS: rec.durationS,
+        waveform: rec.waveform,
+      });
       await enqueue({ type: "voice", mediaIds: [up.id] });
     } catch (e) {
       toast(e instanceof Error ? e.message : "That voice note didn't send.");
@@ -290,7 +354,13 @@ export function ChatScreen() {
     const mine = reactions.get(m.id)?.find((r) => r.user_id === me.id);
     const sb = supabaseBrowser();
     if (mine?.emoji === emoji) await sb.from("reactions").delete().eq("id", mine.id);
-    else await sb.from("reactions").upsert({ message_id: m.id, couple_id: coupleId, user_id: me.id, emoji, voice_media_id: null }, { onConflict: "message_id,user_id" });
+    else
+      await sb
+        .from("reactions")
+        .upsert(
+          { message_id: m.id, couple_id: coupleId, user_id: me.id, emoji, voice_media_id: null },
+          { onConflict: "message_id,user_id" },
+        );
   }
 
   async function voiceReaction(m: UiMessage) {
@@ -305,30 +375,60 @@ export function ChatScreen() {
     setTimeout(async () => {
       const rec = await r.stop();
       if (!rec) return;
-      const up = await uploadMedia(rec.blob, { kind: "audio", durationS: rec.durationS, waveform: rec.waveform });
-      await supabaseBrowser().from("reactions").upsert({ message_id: m.id, couple_id: coupleId, user_id: me.id, emoji: null, voice_media_id: up.id }, { onConflict: "message_id,user_id" });
+      const up = await uploadMedia(rec.blob, {
+        kind: "audio",
+        durationS: rec.durationS,
+        waveform: rec.waveform,
+      });
+      await supabaseBrowser().from("reactions").upsert(
+        {
+          message_id: m.id,
+          couple_id: coupleId,
+          user_id: me.id,
+          emoji: null,
+          voice_media_id: up.id,
+        },
+        { onConflict: "message_id,user_id" },
+      );
       toast("Voice reaction sent.");
     }, 5000);
   }
 
   async function unsend(m: UiMessage) {
     setActionFor(null);
-    await supabaseBrowser().from("messages").update({ removed_at: new Date().toISOString() }).eq("id", m.id);
+    await supabaseBrowser()
+      .from("messages")
+      .update({ removed_at: new Date().toISOString() })
+      .eq("id", m.id);
     await Promise.all(m.media_ids.map((id) => fetch(`/api/media/${id}`, { method: "DELETE" })));
   }
 
-  const lastMine = [...all].reverse().find((m) => m.sender_id === me.id && !m.local && m.type !== "clink");
-  const sub = presence.online ? `Online, ${formatClock(new Date(), partner.timezone)} in ${partner.city}` : `Away, ${formatClock(new Date(), partner.timezone)} in ${partner.city}`;
+  const lastMine = [...all]
+    .reverse()
+    .find((m) => m.sender_id === me.id && !m.local && m.type !== "clink");
+  const sub = presence.online
+    ? `Online, ${formatClock(new Date(), partner.timezone)} in ${partner.city}`
+    : `Away, ${formatClock(new Date(), partner.timezone)} in ${partner.city}`;
   const digits = partner.phone?.replace(/[^\d+]/g, "") ?? "";
 
   return (
     <div className="an-screen flex h-[calc(100dvh-var(--chrome-bottom))] flex-col lg:flex-row">
-      <section className="flex min-h-0 min-w-0 flex-1 flex-col" aria-label={`Chat with ${partner.name}`}>
-        <header className="flex flex-none items-center gap-3 border-b border-line px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-3">
-          <Avatar name={partner.name} side="partner" size={44} photoUrl={partner.avatarUrl} icon={partner.avatarIcon} dim={!presence.online} />
+      <section
+        className="flex min-h-0 min-w-0 flex-1 flex-col"
+        aria-label={`Chat with ${partner.name}`}
+      >
+        <header className="border-line flex flex-none items-center gap-3 border-b px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-3">
+          <Avatar
+            name={partner.name}
+            side="partner"
+            size={44}
+            photoUrl={partner.avatarUrl}
+            icon={partner.avatarIcon}
+            dim={!presence.online}
+          />
           <div className="min-w-0 flex-1">
             <h1 className="m-0 text-lg font-bold">{partner.name}</h1>
-            <div className="truncate text-[13px] text-muted">{sub}</div>
+            <div className="text-muted truncate text-[13px]">{sub}</div>
           </div>
           <IconButton label="Call" tone="surface" onClick={() => setCallSheet(true)}>
             <Phone size={20} />
@@ -346,7 +446,7 @@ export function ChatScreen() {
           onClick={() => blurred && setBlurred(false)}
           aria-live="polite"
         >
-          {isFetchingNextPage && <div className="an-skel mx-auto h-4 w-24 rounded-full bg-s2" />}
+          {isFetchingNextPage && <div className="an-skel bg-s2 mx-auto h-4 w-24 rounded-full" />}
           {isLoading ? (
             <div className="flex flex-col gap-2.5" aria-label="Loading messages">
               {[
@@ -357,7 +457,16 @@ export function ChatScreen() {
                 ["flex-start", "55%", 44],
                 ["flex-end", "40%", 44],
               ].map(([side, w, h], i) => (
-                <div key={i} className="an-skel rounded-card bg-s2" style={{ alignSelf: side as string, width: w as string, height: h as number, animationDelay: `${i * 90}ms` }} />
+                <div
+                  key={i}
+                  className="an-skel rounded-card bg-s2"
+                  style={{
+                    alignSelf: side as string,
+                    width: w as string,
+                    height: h as number,
+                    animationDelay: `${i * 90}ms`,
+                  }}
+                />
               ))}
             </div>
           ) : all.length === 0 ? (
@@ -367,14 +476,17 @@ export function ChatScreen() {
                   <Coffee size={44} className="text-text" />
                   <Coffee size={44} className="text-accent" style={{ transform: "scaleX(-1)" }} />
                 </div>
-                <div className="mt-0.5 h-0.5 w-40 rounded-sm bg-line" />
+                <div className="bg-line mt-0.5 h-0.5 w-40 rounded-sm" />
               </div>
               <div className="display text-[28px] leading-[1.05]">
                 Say something.
                 <br />
                 Or just send a <em>Clink</em>.
               </div>
-              <Link href="/us" className="press flex h-11 items-center gap-1.5 rounded-full border border-line bg-s2 px-[18px] text-sm font-medium text-text hover:text-text">
+              <Link
+                href="/us"
+                className="press border-line bg-s2 text-text hover:text-text flex h-11 items-center gap-1.5 rounded-full border px-[18px] text-sm font-medium"
+              >
                 <Wine size={18} aria-hidden />
                 Send a Clink
               </Link>
@@ -382,10 +494,16 @@ export function ChatScreen() {
           ) : (
             all.map((m, i) => {
               const prev = all[i - 1];
-              const gap = !prev || new Date(m.sent_at).getTime() - new Date(prev.sent_at).getTime() > 30 * 60 * 1000;
+              const gap =
+                !prev ||
+                new Date(m.sent_at).getTime() - new Date(prev.sent_at).getTime() > 30 * 60 * 1000;
               return (
                 <div key={m.id} className="contents">
-                  {gap && <div className="mono self-center py-1 text-xs text-faint">{dayLabel(new Date(m.sent_at), me.timezone)}</div>}
+                  {gap && (
+                    <div className="mono text-faint self-center py-1 text-xs">
+                      {dayLabel(new Date(m.sent_at), me.timezone)}
+                    </div>
+                  )}
                   <Bubble
                     m={m}
                     mine={m.sender_id === me.id}
@@ -398,8 +516,12 @@ export function ChatScreen() {
                     onRetry={() => void flush()}
                   />
                   {lastMine?.id === m.id && (
-                    <div className="mono self-end text-xs text-faint">
-                      {m.read_at ? `Read ${formatClock(new Date(m.read_at), me.timezone)}` : m.delivered_at ? "Delivered" : "Sent"}
+                    <div className="mono text-faint self-end text-xs">
+                      {m.read_at
+                        ? `Read ${formatClock(new Date(m.read_at), me.timezone)}`
+                        : m.delivered_at
+                          ? "Delivered"
+                          : "Sent"}
                     </div>
                   )}
                 </div>
@@ -407,30 +529,46 @@ export function ChatScreen() {
             })
           )}
           {typing && (
-            <div className="flex gap-1 self-start rounded-[20px_20px_20px_6px] border border-line bg-s1 px-4 py-3.5" aria-label={`${partner.name} is typing`}>
+            <div
+              className="border-line bg-s1 flex gap-1 self-start rounded-[20px_20px_20px_6px] border px-4 py-3.5"
+              aria-label={`${partner.name} is typing`}
+            >
               {[0, 0.2, 0.4].map((d) => (
-                <span key={d} className="an-typing h-[7px] w-[7px] rounded-full bg-muted" style={{ animationDelay: `${d}s` }} />
+                <span
+                  key={d}
+                  className="an-typing bg-muted h-[7px] w-[7px] rounded-full"
+                  style={{ animationDelay: `${d}s` }}
+                />
               ))}
             </div>
           )}
           {blurred && (
-            <div className="sticky bottom-1/2 self-center rounded-full bg-s3 px-4 py-2 text-sm font-medium" style={{ filter: "none" }}>
+            <div
+              className="bg-s3 sticky bottom-1/2 self-center rounded-full px-4 py-2 text-sm font-medium"
+              style={{ filter: "none" }}
+            >
               Tap to show the chat
             </div>
           )}
         </div>
 
         {tray && (
-          <div className="an-sheet flex-none border-t border-line bg-s1 px-4 py-3">
-            <div className="mono mb-2.5 text-xs text-faint">{stickers?.recent.length ? "RECENT · CLINK STARTER PACK" : "CLINK STARTER PACK"}</div>
+          <div className="an-sheet border-line bg-s1 flex-none border-t px-4 py-3">
+            <div className="mono text-faint mb-2.5 text-xs">
+              {stickers?.recent.length ? "RECENT · CLINK STARTER PACK" : "CLINK STARTER PACK"}
+            </div>
             <div className="no-scrollbar grid max-h-[230px] grid-cols-4 gap-2.5 overflow-y-auto sm:grid-cols-6 lg:grid-cols-8">
-              {[...(stickers?.recent ?? []), ...(stickers?.all.map((s) => s.id).filter((id) => !stickers.recent.includes(id)) ?? [])].map((id, i) => (
+              {[
+                ...(stickers?.recent ?? []),
+                ...(stickers?.all.map((s) => s.id).filter((id) => !stickers.recent.includes(id)) ??
+                  []),
+              ].map((id, i) => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => sendSticker(id)}
                   aria-label={`Send sticker ${STICKER_LABEL.get(id)}`}
-                  className="press display aspect-square cursor-pointer rounded-full border border-line bg-s2 text-[15px] tracking-normal text-text"
+                  className="press display border-line bg-s2 text-text aspect-square cursor-pointer rounded-full border text-[15px] tracking-normal"
                   style={{ transform: `rotate(${i % 2 ? 6 : -6}deg)` }}
                 >
                   {STICKER_LABEL.get(id)}
@@ -441,10 +579,11 @@ export function ChatScreen() {
         )}
 
         {replyTo && (
-          <div className="flex flex-none items-center gap-2 border-t border-line bg-s1 px-4 py-2 text-sm">
+          <div className="border-line bg-s1 flex flex-none items-center gap-2 border-t px-4 py-2 text-sm">
             <ArrowBendUpLeft size={16} className="text-accent" aria-hidden />
-            <span className="flex-1 truncate text-muted">
-              Replying to {replyTo.sender_id === me.id ? "yourself" : partner.name}: {replyTo.body ?? replyTo.type}
+            <span className="text-muted flex-1 truncate">
+              Replying to {replyTo.sender_id === me.id ? "yourself" : partner.name}:{" "}
+              {replyTo.body ?? replyTo.type}
             </span>
             <IconButton label="Cancel reply" dim={36} onClick={() => setReplyTo(null)}>
               <X size={16} />
@@ -461,15 +600,22 @@ export function ChatScreen() {
         >
           {recording ? (
             <>
-              <IconButton label="Cancel recording" tone="surface" onClick={() => stopRecording(false)}>
+              <IconButton
+                label="Cancel recording"
+                tone="surface"
+                onClick={() => stopRecording(false)}
+              >
                 <X size={20} />
               </IconButton>
-              <div className="flex h-11 flex-1 items-center gap-2.5 rounded-input border border-accent bg-s2 px-3.5" role="status">
-                <span className="an-dot h-2.5 w-2.5 rounded-full bg-accent" aria-hidden />
+              <div
+                className="rounded-input border-accent bg-s2 flex h-11 flex-1 items-center gap-2.5 border px-3.5"
+                role="status"
+              >
+                <span className="an-dot bg-accent h-2.5 w-2.5 rounded-full" aria-hidden />
                 <span className="mono text-sm">
                   {Math.floor(recSecs / 60)}:{String(recSecs % 60).padStart(2, "0")}
                 </span>
-                <span className="text-sm text-muted">Release to send, up to 3:00</span>
+                <span className="text-muted text-sm">Release to send, up to 3:00</span>
               </div>
               <IconButton label="Stop and send" tone="accent" onClick={() => stopRecording(true)}>
                 <Stop size={20} weight="fill" />
@@ -477,25 +623,40 @@ export function ChatScreen() {
             </>
           ) : (
             <>
-              <IconButton label="Add photos or videos" tone="outline" className="bg-s2" onClick={() => fileRef.current?.click()}>
+              <IconButton
+                label="Add photos or videos"
+                tone="outline"
+                className="bg-s2"
+                onClick={() => fileRef.current?.click()}
+              >
                 <Plus size={20} />
               </IconButton>
-              <input ref={fileRef} type="file" accept="image/*,video/*" multiple hidden onChange={(e) => e.target.files?.length && sendFiles(e.target.files)} />
-              <div className="flex h-11 min-w-0 flex-1 items-center gap-1.5 rounded-input border border-line bg-s2 pr-1.5 pl-3.5 focus-within:border-accent">
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                hidden
+                onChange={(e) => e.target.files?.length && sendFiles(e.target.files)}
+              />
+              <div className="rounded-input border-line bg-s2 focus-within:border-accent flex h-11 min-w-0 flex-1 items-center gap-1.5 border pr-1.5 pl-3.5">
                 <input
                   aria-label={`Message ${partner.name}`}
                   placeholder={`Message ${partner.name}`}
                   value={text}
                   maxLength={4000}
                   onChange={(e) => onType(e.target.value)}
-                  className="min-w-0 flex-1 bg-transparent text-base text-text outline-none"
+                  className="text-text min-w-0 flex-1 bg-transparent text-base outline-none"
                 />
                 <button
                   type="button"
                   onClick={() => setTray(!tray)}
                   aria-label="Stickers"
                   aria-expanded={tray}
-                  className={cn("flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent", tray ? "text-accent" : "text-muted")}
+                  className={cn(
+                    "flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent",
+                    tray ? "text-accent" : "text-muted",
+                  )}
                 >
                   <Sticker size={22} />
                 </button>
@@ -516,7 +677,12 @@ export function ChatScreen() {
                     fingerDown.current = true;
                     const up = () => {
                       fingerDown.current = false;
-                      if (recorder.current && heldSince.current && Date.now() - heldSince.current > 400) void stopRecording(true);
+                      if (
+                        recorder.current &&
+                        heldSince.current &&
+                        Date.now() - heldSince.current > 400
+                      )
+                        void stopRecording(true);
                       heldSince.current = 0;
                     };
                     window.addEventListener("pointerup", up, { once: true });
@@ -524,7 +690,9 @@ export function ChatScreen() {
                       if (fingerDown.current) heldSince.current = Date.now();
                     });
                   }}
-                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && !recording && startRecording()}
+                  onKeyDown={(e) =>
+                    (e.key === "Enter" || e.key === " ") && !recording && startRecording()
+                  }
                 >
                   <Microphone size={20} />
                 </IconButton>
@@ -537,18 +705,33 @@ export function ChatScreen() {
       {/* Desktop second panel: what you've shared lately. */}
       <SharedPanel />
 
-      <Sheet open={Boolean(actionFor)} onOpenChange={(v) => !v && setActionFor(null)} title="Message actions" handle>
+      <Sheet
+        open={Boolean(actionFor)}
+        onOpenChange={(v) => !v && setActionFor(null)}
+        title="Message actions"
+        handle
+      >
         {actionFor && (
           <>
             <div className="flex justify-between gap-2" role="group" aria-label="React">
               {REACTIONS.map((e) => (
-                <button key={e} type="button" onClick={() => react(actionFor, e)} aria-label={`React ${e}`} className="press flex h-[52px] w-[52px] cursor-pointer items-center justify-center rounded-full border border-line bg-s2 text-[22px]">
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => react(actionFor, e)}
+                  aria-label={`React ${e}`}
+                  className="press border-line bg-s2 flex h-[52px] w-[52px] cursor-pointer items-center justify-center rounded-full border text-[22px]"
+                >
                   {e}
                 </button>
               ))}
             </div>
-            <div className="overflow-hidden rounded-card border border-line bg-s2">
-              <SheetAction icon={<Microphone size={20} />} label="Voice reaction (5 s)" onClick={() => voiceReaction(actionFor)} />
+            <div className="rounded-card border-line bg-s2 overflow-hidden border">
+              <SheetAction
+                icon={<Microphone size={20} />}
+                label="Voice reaction (5 s)"
+                onClick={() => voiceReaction(actionFor)}
+              />
               <SheetAction
                 icon={<ArrowBendUpLeft size={20} />}
                 label="Reply"
@@ -569,7 +752,13 @@ export function ChatScreen() {
                 />
               )}
               {actionFor.sender_id === me.id && !actionFor.removed_at && (
-                <SheetAction icon={<Trash size={20} />} label="Unsend" danger onClick={() => unsend(actionFor)} last />
+                <SheetAction
+                  icon={<Trash size={20} />}
+                  label="Unsend"
+                  danger
+                  onClick={() => unsend(actionFor)}
+                  last
+                />
               )}
             </div>
           </>
@@ -580,19 +769,33 @@ export function ChatScreen() {
         <div className="display text-[28px]">Call {partner.name}</div>
         {digits ? (
           <div className="flex flex-col gap-2">
-            <a href={`https://wa.me/${digits.replace("+", "")}`} target="_blank" rel="noopener noreferrer" className="press flex h-[52px] items-center justify-center gap-2 rounded-full bg-accent font-bold text-on-accent hover:text-on-accent">
+            <a
+              href={`https://wa.me/${digits.replace("+", "")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="press bg-accent text-on-accent hover:text-on-accent flex h-[52px] items-center justify-center gap-2 rounded-full font-bold"
+            >
               <WhatsappLogo size={20} aria-hidden /> WhatsApp
             </a>
-            <a href={`facetime:${digits}`} className="press flex h-[52px] items-center justify-center gap-2 rounded-full border border-line bg-s2 font-medium text-text hover:text-text">
+            <a
+              href={`facetime:${digits}`}
+              className="press border-line bg-s2 text-text hover:text-text flex h-[52px] items-center justify-center gap-2 rounded-full border font-medium"
+            >
               <VideoCamera size={20} aria-hidden /> FaceTime
             </a>
-            <a href={`tel:${digits}`} className="press flex h-[52px] items-center justify-center gap-2 rounded-full border border-line bg-transparent font-medium text-text hover:text-text">
+            <a
+              href={`tel:${digits}`}
+              className="press border-line text-text hover:text-text flex h-[52px] items-center justify-center gap-2 rounded-full border bg-transparent font-medium"
+            >
               <Phone size={20} aria-hidden /> Phone
             </a>
           </div>
         ) : (
           <>
-            <p className="m-0 text-base text-muted">{partner.name} hasn&apos;t saved a number yet. They can add one in Settings, under Profile.</p>
+            <p className="text-muted m-0 text-base">
+              {partner.name} hasn&apos;t saved a number yet. They can add one in Settings, under
+              Profile.
+            </p>
             <Button variant="secondary" size="lg" onClick={() => setCallSheet(false)}>
               Okay
             </Button>
@@ -603,9 +806,29 @@ export function ChatScreen() {
   );
 }
 
-function SheetAction({ icon, label, onClick, danger, last }: { icon: React.ReactNode; label: string; onClick: () => void; danger?: boolean; last?: boolean }) {
+function SheetAction({
+  icon,
+  label,
+  onClick,
+  danger,
+  last,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  danger?: boolean;
+  last?: boolean;
+}) {
   return (
-    <button type="button" onClick={onClick} className={cn("flex min-h-14 w-full cursor-pointer items-center gap-3 bg-transparent px-4 text-left text-base font-medium", danger ? "text-danger" : "text-text", !last && "border-b border-line")}>
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex min-h-14 w-full cursor-pointer items-center gap-3 bg-transparent px-4 text-left text-base font-medium",
+        danger ? "text-danger" : "text-text",
+        !last && "border-line border-b",
+      )}
+    >
       {icon}
       {label}
     </button>
@@ -617,28 +840,55 @@ function SharedPanel() {
   const { data } = useQuery({
     queryKey: ["shared-media", coupleId],
     queryFn: async () => {
-      const { data } = await supabaseBrowser().from("media").select("id, kind").eq("status", "ready").in("kind", ["image", "video"]).not("storage_path", "like", "avatars/%").order("created_at", { ascending: false }).limit(12);
+      const { data } = await supabaseBrowser()
+        .from("media")
+        .select("id, kind")
+        .eq("status", "ready")
+        .in("kind", ["image", "video"])
+        .not("storage_path", "like", "avatars/%")
+        .order("created_at", { ascending: false })
+        .limit(12);
       return data ?? [];
     },
   });
   return (
-    <aside className="hidden w-[320px] flex-none flex-col gap-3 overflow-y-auto border-l border-line p-5 xl:flex" aria-label="Shared lately">
+    <aside
+      className="border-line hidden w-[320px] flex-none flex-col gap-3 overflow-y-auto border-l p-5 xl:flex"
+      aria-label="Shared lately"
+    >
       <h2 className="m-0 text-lg font-bold">Shared lately</h2>
       {data && data.length ? (
         <div className="grid grid-cols-3 gap-1.5">
           {data.map((m) => (
-            <Link key={m.id} href={`/chat/media/${m.id}`} className="stripe block aspect-square overflow-hidden rounded-thumb" aria-label="Open shared media">
+            <Link
+              key={m.id}
+              href={`/chat/media/${m.id}`}
+              className="stripe rounded-thumb block aspect-square overflow-hidden"
+              aria-label="Open shared media"
+            >
               {m.kind === "video" ? (
-                <video src={`/api/media/${m.id}/view`} muted preload="metadata" className="h-full w-full object-cover" />
+                <video
+                  src={`/api/media/${m.id}/view`}
+                  muted
+                  preload="metadata"
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={`/api/media/${m.id}/view`} alt="" loading="lazy" className="h-full w-full object-cover" />
+                <img
+                  src={`/api/media/${m.id}/view`}
+                  alt=""
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
               )}
             </Link>
           ))}
         </div>
       ) : (
-        <p className="m-0 text-sm text-muted">Photos and videos you send each other show up here.</p>
+        <p className="text-muted m-0 text-sm">
+          Photos and videos you send each other show up here.
+        </p>
       )}
       <Link href="/keep" className="mt-2 text-sm font-medium">
         Favourites live on the memory wall

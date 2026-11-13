@@ -1,11 +1,19 @@
 /** Time-zone maths for dual clocks, quiet hours and reminders. Pure and unit-tested. */
 
 export function formatClock(d: Date, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone }).format(d);
+  return new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZone,
+  }).format(d);
 }
 
 /** Local hour (0-23) and minute in a zone. */
-export function localParts(d: Date, timeZone: string): { hour: number; minute: number; weekday: number; dateKey: string } {
+export function localParts(
+  d: Date,
+  timeZone: string,
+): { hour: number; minute: number; weekday: number; dateKey: string } {
   const f = new Intl.DateTimeFormat("en-GB", {
     timeZone,
     hourCycle: "h23",
@@ -45,7 +53,14 @@ export function zoneOffsetMinutes(d: Date, timeZone: string): number {
     second: "2-digit",
   });
   const p = Object.fromEntries(f.formatToParts(d).map((x) => [x.type, x.value]));
-  const asUtc = Date.UTC(Number(p.year), Number(p.month) - 1, Number(p.day), Number(p.hour) % 24, Number(p.minute), Number(p.second));
+  const asUtc = Date.UTC(
+    Number(p.year),
+    Number(p.month) - 1,
+    Number(p.day),
+    Number(p.hour) % 24,
+    Number(p.minute),
+    Number(p.second),
+  );
   return Math.round((asUtc - Math.floor(d.getTime() / 1000) * 1000) / 60000);
 }
 
@@ -76,11 +91,19 @@ export function isQuietHours(d: Date, timeZone: string, start: string, end: stri
 }
 
 /** Days / hours / minutes until target, never negative. */
-export function countdownParts(now: Date, target: Date): { days: number; hours: number; minutes: number; done: boolean } {
+export function countdownParts(
+  now: Date,
+  target: Date,
+): { days: number; hours: number; minutes: number; done: boolean } {
   const ms = target.getTime() - now.getTime();
   if (ms <= 0) return { days: 0, hours: 0, minutes: 0, done: true };
   const total = Math.floor(ms / 60000);
-  return { days: Math.floor(total / 1440), hours: Math.floor((total % 1440) / 60), minutes: total % 60, done: false };
+  return {
+    days: Math.floor(total / 1440),
+    hours: Math.floor((total % 1440) / 60),
+    minutes: total % 60,
+    done: false,
+  };
 }
 
 /** "21:00 London / 02:00 Sun Accra" style: wall time of an instant in a zone. */

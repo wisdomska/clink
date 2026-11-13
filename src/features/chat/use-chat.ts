@@ -1,6 +1,11 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useInfiniteQuery, useQuery, useQueryClient, type InfiniteData } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useCouple } from "@/features/couple/context";
 import type { MediaInfo, Message, Reaction } from "./types";
@@ -19,7 +24,12 @@ export function useMessages() {
     queryKey: key,
     initialPageParam: null as string | null,
     queryFn: async ({ pageParam }) => {
-      let req = supabaseBrowser().from("messages").select("*").eq("couple_id", coupleId).order("sent_at", { ascending: false }).limit(PAGE);
+      let req = supabaseBrowser()
+        .from("messages")
+        .select("*")
+        .eq("couple_id", coupleId)
+        .order("sent_at", { ascending: false })
+        .limit(PAGE);
       if (pageParam) req = req.lt("sent_at", pageParam);
       const { data, error } = await req;
       if (error) throw error;
@@ -34,23 +44,35 @@ export function useMessages() {
     const sb = supabaseBrowser();
     const ch = sb
       .channel(`messages:${coupleId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: `couple_id=eq.${coupleId}` }, (payload) => {
-        const row = payload.new as Message;
-        qc.setQueryData<Pages>(key, (old) => {
-          if (!old) return old;
-          const pages = old.pages.map((p) => p.filter((m) => m.id !== row.id));
-          if (payload.eventType === "DELETE") return { ...old, pages };
-          const first = pages[0] ?? [];
-          const exists = old.pages.some((p) => p.some((m) => m.id === row.id));
-          if (exists) {
-            return { ...old, pages: old.pages.map((p) => p.map((m) => (m.id === row.id ? row : m))) };
-          }
-          return { ...old, pages: [[row, ...first], ...pages.slice(1)] };
-        });
-        if (payload.eventType === "INSERT") useQueue.getState().remove(row.client_id);
-      })
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "messages", filter: `couple_id=eq.${coupleId}` },
+        (payload) => {
+          const row = payload.new as Message;
+          qc.setQueryData<Pages>(key, (old) => {
+            if (!old) return old;
+            const pages = old.pages.map((p) => p.filter((m) => m.id !== row.id));
+            if (payload.eventType === "DELETE") return { ...old, pages };
+            const first = pages[0] ?? [];
+            const exists = old.pages.some((p) => p.some((m) => m.id === row.id));
+            if (exists) {
+              return {
+                ...old,
+                pages: old.pages.map((p) => p.map((m) => (m.id === row.id ? row : m))),
+              };
+            }
+            return { ...old, pages: [[row, ...first], ...pages.slice(1)] };
+          });
+          if (payload.eventType === "INSERT") useQueue.getState().remove(row.client_id);
+        },
+      );
     // Close the gap between the first fetch and the subscription going live.
-    return subscribeAuthed(ch, (status) => status === "SUBSCRIBED" && void qc.invalidateQueries({ queryKey: key, refetchType: "active" }));
+    return subscribeAuthed(
+      ch,
+      (status) =>
+        status === "SUBSCRIBED" &&
+        void qc.invalidateQueries({ queryKey: key, refetchType: "active" }),
+    );
   }, [coupleId, key, qc]);
 
   const messages = useMemo(() => (q.data?.pages.flat() ?? []).slice().reverse(), [q.data]);
@@ -73,7 +95,10 @@ export function useReactions() {
     queryKey: ["reactions", coupleId],
     queryFn: async () => {
       const since = new Date(Date.now() - 60 * 24 * 3600 * 1000).toISOString();
-      const { data } = await supabaseBrowser().from("reactions").select("*").gt("created_at", since);
+      const { data } = await supabaseBrowser()
+        .from("reactions")
+        .select("*")
+        .gt("created_at", since);
       return data ?? [];
     },
   });
@@ -81,10 +106,16 @@ export function useReactions() {
     const sb = supabaseBrowser();
     const ch = sb
       .channel(`reactions:${coupleId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "reactions", filter: `couple_id=eq.${coupleId}` }, () =>
-        qc.invalidateQueries({ queryKey: ["reactions", coupleId] }),
-      )
-    return subscribeAuthed(ch, (st) => st === "SUBSCRIBED" && void qc.invalidateQueries({ queryKey: ["reactions", coupleId] }));
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "reactions", filter: `couple_id=eq.${coupleId}` },
+        () => qc.invalidateQueries({ queryKey: ["reactions", coupleId] }),
+      );
+    return subscribeAuthed(
+      ch,
+      (st) =>
+        st === "SUBSCRIBED" && void qc.invalidateQueries({ queryKey: ["reactions", coupleId] }),
+    );
   }, [coupleId, qc]);
   const byMessage = useMemo(() => {
     const m = new Map<string, Reaction[]>();
@@ -102,7 +133,10 @@ export function useMediaInfo(ids: string[]) {
     enabled: sorted.length > 0,
     staleTime: 60_000,
     queryFn: async () => {
-      const { data } = await supabaseBrowser().from("media").select("id, kind, mime, duration_s, width, height, waveform, status, is_favourite").in("id", sorted);
+      const { data } = await supabaseBrowser()
+        .from("media")
+        .select("id, kind, mime, duration_s, width, height, waveform, status, is_favourite")
+        .in("id", sorted);
       const map = new Map<string, MediaInfo>();
       for (const m of data ?? []) map.set(m.id, m as MediaInfo);
       return map;
@@ -111,7 +145,10 @@ export function useMediaInfo(ids: string[]) {
 }
 
 /** Sends one queued payload; marks it failed on network errors. */
-export async function sendQueued(p: QueuedPayload, partnerOnline: boolean): Promise<Message | null> {
+export async function sendQueued(
+  p: QueuedPayload,
+  partnerOnline: boolean,
+): Promise<Message | null> {
   const { setFailed, remove } = useQueue.getState();
   try {
     const res = await fetch("/api/messages", {

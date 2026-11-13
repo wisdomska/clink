@@ -10,6 +10,10 @@ export default async function SettingsPage() {
   const {
     data: { user },
   } = await db.auth.getUser();
-  const { data: dark } = await supabaseAdmin().from("dark_settings").select("pin_hash, opted_tiers, opted_in_at").eq("user_id", user!.id).maybeSingle();
+  const { data: dark } = await supabaseAdmin()
+    .from("dark_settings")
+    .select("pin_hash, opted_tiers, opted_in_at")
+    .eq("user_id", user!.id)
+    .maybeSingle();
   return <SettingsScreen darkSetUp={Boolean(dark?.pin_hash)} myTiers={dark?.opted_tiers ?? []} />;
 }

@@ -6,7 +6,12 @@ import { sha256 } from "@/lib/server/crypto";
  * Cookieless, server-side capture to PostHog (EU). Ids are hashed; properties
  * are whitelisted; After Dark events carry tier/outcome only. No-op without a key.
  */
-export async function track(name: string, userId: string | null, props: Record<string, unknown> = {}, coupleId?: string | null) {
+export async function track(
+  name: string,
+  userId: string | null,
+  props: Record<string, unknown> = {},
+  coupleId?: string | null,
+) {
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
   if (!key) return;
   const ev = sanitizeEvent(name, props);

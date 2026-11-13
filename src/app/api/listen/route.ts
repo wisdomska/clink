@@ -12,13 +12,28 @@ export const POST = handler(async (req) => {
   if (!vid) throw deny(422, "bad_link", "Paste a YouTube link.");
   let title: string | null = null;
   try {
-    const r = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${vid}&format=json`, { signal: AbortSignal.timeout(3000) });
+    const r = await fetch(
+      `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${vid}&format=json`,
+      { signal: AbortSignal.timeout(3000) },
+    );
     if (r.ok) title = ((await r.json()).title as string).slice(0, 200);
   } catch {
     /* optional */
   }
   const admin = supabaseAdmin();
-  const { data: last } = await admin.from("listen_queue").select("position").eq("couple_id", coupleId).order("position", { ascending: false }).limit(1).maybeSingle();
-  await admin.from("listen_queue").insert({ couple_id: coupleId, video_id: vid, title, added_by: user.id, position: (last?.position ?? 0) + 1 });
+  const { data: last } = await admin
+    .from("listen_queue")
+    .select("position")
+    .eq("couple_id", coupleId)
+    .order("position", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  await admin.from("listen_queue").insert({
+    couple_id: coupleId,
+    video_id: vid,
+    title,
+    added_by: user.id,
+    position: (last?.position ?? 0) + 1,
+  });
   return ok({ ok: true }, { status: 201 });
 });

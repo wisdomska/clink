@@ -14,11 +14,34 @@ export const POST = handler(async (req) => {
   await rateLimit(`nreq:${d.user.id}`, 10, 3600);
   const { note } = await parseJson(req, z.object({ note: z.string().trim().max(120).optional() }));
   const admin = supabaseAdmin();
-  const { data: last } = await admin.from("nude_requests").select("status, cooldown_until").eq("couple_id", d.coupleId).eq("requester_id", d.user.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
-  if (last?.cooldown_until && new Date(last.cooldown_until) > new Date()) throw deny(429, "cooldown", "Not right now. Requests are paused for a while.");
-  const { data: open } = await admin.from("nude_requests").select("id").eq("couple_id", d.coupleId).eq("requester_id", d.user.id).in("status", ["pending", "later"]).limit(1);
+  const { data: last } = await admin
+    .from("nude_requests")
+    .select("status, cooldown_until")
+    .eq("couple_id", d.coupleId)
+    .eq("requester_id", d.user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (last?.cooldown_until && new Date(last.cooldown_until) > new Date())
+    throw deny(429, "cooldown", "Not right now. Requests are paused for a while.");
+  const { data: open } = await admin
+    .from("nude_requests")
+    .select("id")
+    .eq("couple_id", d.coupleId)
+    .eq("requester_id", d.user.id)
+    .in("status", ["pending", "later"])
+    .limit(1);
   if (open?.length) throw deny(409, "pending", "Your last request is still with them. No rush.");
-  const { data: r } = await admin.from("nude_requests").insert({ couple_id: d.coupleId, requester_id: d.user.id, recipient_id: d.partnerId, note: note ?? null }).select("id").single();
+  const { data: r } = await admin
+    .from("nude_requests")
+    .insert({
+      couple_id: d.coupleId,
+      requester_id: d.user.id,
+      recipient_id: d.partnerId,
+      note: note ?? null,
+    })
+    .select("id")
+    .single();
   await notify(d.partnerId, "dark", { body: "" });
   return ok({ id: r!.id }, { status: 201 });
 });
@@ -28,8 +51,32 @@ export const GET = handler(async () => {
   const d = await requireDark({ minRank: 1 });
   const admin = supabaseAdmin();
   const [{ data: inbox }, { data: sent }] = await Promise.all([
-    admin.from("nude_requests").select("id, note, status, created_at").eq("couple_id", d.coupleId).eq("recipient_id", d.user.id).in("status", ["pending", "later", "accepted"]).order("created_at", { ascending: false }).limit(10),
-    admin.from("nude_requests").select("id, status, created_at, cooldown_until").eq("couple_id", d.coupleId).eq("requester_id", d.user.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    admin
+      .from("nude_requests")
+      .select("id, note, status, created_at")
+      .eq("couple_id", d.coupleId)
+      .eq("recipient_id", d.user.id)
+      .in("status", ["pending", "later", "accepted"])
+      .order("created_at", { ascending: false })
+      .limit(10),
+    admin
+      .from("nude_requests")
+      .select("id, status, created_at, cooldown_until")
+      .eq("couple_id", d.coupleId)
+      .eq("requester_id", d.user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
-  return ok({ rank: d.rank, inbox: inbox ?? [], sent: sent ? { id: sent.id, status: sent.status === "declined" ? "not_right_now" : sent.status, cooldown: Boolean(sent.cooldown_until && new Date(sent.cooldown_until) > new Date()) } : null });
+  return ok({
+    rank: d.rank,
+    inbox: inbox ?? [],
+    sent: sent
+      ? {
+          id: sent.id,
+          status: sent.status === "declined" ? "not_right_now" : sent.status,
+          cooldown: Boolean(sent.cooldown_until && new Date(sent.cooldown_until) > new Date()),
+        }
+      : null,
+  });
 });

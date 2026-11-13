@@ -6,7 +6,11 @@ import { HelpScreen } from "@/features/help/help-screen";
 
 export const metadata: Metadata = { title: "Help and safety" };
 
-export default async function HelpPage({ searchParams }: { searchParams: Promise<{ report?: string; from?: string }> }) {
+export default async function HelpPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ report?: string; from?: string }>;
+}) {
   const db = await supabaseServer();
   const {
     data: { user },
@@ -14,8 +18,23 @@ export default async function HelpPage({ searchParams }: { searchParams: Promise
   let partner: string | null = null;
   if (user) {
     const c = await activeCouple(user.id);
-    if (c) partner = (await supabaseAdmin().from("profiles").select("display_name").eq("id", c.partnerId).single()).data?.display_name ?? null;
+    if (c)
+      partner =
+        (
+          await supabaseAdmin()
+            .from("profiles")
+            .select("display_name")
+            .eq("id", c.partnerId)
+            .single()
+        ).data?.display_name ?? null;
   }
   const sp = await searchParams;
-  return <HelpScreen signedIn={Boolean(user)} partner={partner} startReport={Boolean(sp.report)} fromDark={sp.from === "dark"} />;
+  return (
+    <HelpScreen
+      signedIn={Boolean(user)}
+      partner={partner}
+      startReport={Boolean(sp.report)}
+      fromDark={sp.from === "dark"}
+    />
+  );
 }

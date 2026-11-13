@@ -13,7 +13,10 @@ export interface TestUser {
 }
 
 /** Creates a confirmed, onboarded 18+ user directly through the admin API. */
-export async function makeUser(name: string, opts: { city?: string; timezone?: string; onboarded?: boolean } = {}): Promise<TestUser> {
+export async function makeUser(
+  name: string,
+  opts: { city?: string; timezone?: string; onboarded?: boolean } = {},
+): Promise<TestUser> {
   const email = `${name.toLowerCase()}-${randomUUID().slice(0, 8)}@clink.test`;
   const { data, error } = await admin.auth.admin.createUser({ email, email_confirm: true });
   if (error || !data.user) throw error ?? new Error("createUser failed");
@@ -38,10 +41,15 @@ export async function makeUser(name: string, opts: { city?: string; timezone?: s
 
 /** Signs a browser context in through a real magic link (token hash). */
 export async function signIn(page: Page, user: TestUser, next = "/us") {
-  const { data, error } = await admin.auth.admin.generateLink({ type: "magiclink", email: user.email });
+  const { data, error } = await admin.auth.admin.generateLink({
+    type: "magiclink",
+    email: user.email,
+  });
   if (error) throw error;
   const hash = data.properties.hashed_token;
-  await page.goto(`/auth/callback?token_hash=${hash}&type=magiclink&next=${encodeURIComponent(next)}`);
+  await page.goto(
+    `/auth/callback?token_hash=${hash}&type=magiclink&next=${encodeURIComponent(next)}`,
+  );
 }
 
 /** Links two users as a couple through the real invite + accept API. */

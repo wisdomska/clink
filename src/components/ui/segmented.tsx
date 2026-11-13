@@ -18,7 +18,10 @@ export function Segmented<T extends string>({
     <div
       role="radiogroup"
       aria-label={label}
-      className={cn("flex flex-none rounded-full border border-line p-1", tone === "surface" ? "bg-s1" : "bg-app")}
+      className={cn(
+        "border-line flex flex-none rounded-full border p-1",
+        tone === "surface" ? "bg-s1" : "bg-app",
+      )}
     >
       {options.map((o) => {
         const on = o.value === value;
@@ -32,7 +35,11 @@ export function Segmented<T extends string>({
             className={cn(
               "press h-10 flex-1 cursor-pointer rounded-full border-0 text-sm",
               tone === "surface" ? "font-medium" : "font-semibold",
-              on ? (tone === "surface" ? "bg-s3 text-text" : "bg-accent text-on-accent") : "bg-transparent text-muted",
+              on
+                ? tone === "surface"
+                  ? "bg-s3 text-text"
+                  : "bg-accent text-on-accent"
+                : "text-muted bg-transparent",
               !on && tone === "accent" && "text-text",
             )}
           >

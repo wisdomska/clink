@@ -39,13 +39,18 @@ export function Sheet({
           onEscapeKeyDown={(e) => !dismissable && e.preventDefault()}
           onPointerDownOutside={(e) => !dismissable && e.preventDefault()}
           className={cn(
-            "an-sheet fixed inset-x-0 bottom-0 z-[61] flex max-h-[92dvh] flex-col gap-4 overflow-y-auto rounded-t-[20px] border-t border-line bg-s1 px-5 pt-6 pb-[calc(36px+env(safe-area-inset-bottom))] outline-none",
-            "md:inset-x-auto md:bottom-auto md:top-1/2 md:left-1/2 md:w-[440px] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-[20px] md:border md:pb-8",
+            "an-sheet border-line bg-s1 fixed inset-x-0 bottom-0 z-[61] flex max-h-[92dvh] flex-col gap-4 overflow-y-auto rounded-t-[20px] border-t px-5 pt-6 pb-[calc(36px+env(safe-area-inset-bottom))] outline-none",
+            "md:inset-x-auto md:top-1/2 md:bottom-auto md:left-1/2 md:w-[440px] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-[20px] md:border md:pb-8",
             className,
           )}
           style={{ boxShadow: "var(--shadow-sheet)" }}
         >
-          {handle && <div aria-hidden className="-mt-2.5 h-1 w-10 self-center rounded-full bg-line md:hidden" />}
+          {handle && (
+            <div
+              aria-hidden
+              className="bg-line -mt-2.5 h-1 w-10 self-center rounded-full md:hidden"
+            />
+          )}
           <Dialog.Title className="sr-only">{title}</Dialog.Title>
           {description ? (
             <Dialog.Description className="sr-only">{description}</Dialog.Description>

@@ -19,4 +19,3 @@ export function supabaseAdmin() {
   }
   return admin;
 }
-

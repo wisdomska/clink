@@ -15,7 +15,7 @@ function Flap({ ch, size }: { ch: string; size: "lg" | "md" }) {
   return (
     <div
       key={gen}
-      className={`flap mono flex items-center justify-center rounded-flap border border-line ${dims} ${gen > 0 ? "an-flip-now" : ""}`}
+      className={`flap mono rounded-flap border-line flex items-center justify-center border ${dims} ${gen > 0 ? "an-flip-now" : ""}`}
       style={{ transformOrigin: "50% 50%" }}
     >
       {ch}
@@ -23,9 +23,20 @@ function Flap({ ch, size }: { ch: string; size: "lg" | "md" }) {
   );
 }
 
-export function SplitFlap({ groups, size = "lg" }: { groups: Array<{ value: string; label: string }>; size?: "lg" | "md" }) {
+export function SplitFlap({
+  groups,
+  size = "lg",
+}: {
+  groups: Array<{ value: string; label: string }>;
+  size?: "lg" | "md";
+}) {
   return (
-    <div className="flex gap-3.5" style={{ perspective: 400 }} role="timer" aria-label={groups.map((g) => `${Number(g.value)} ${g.label.toLowerCase()}`).join(", ")}>
+    <div
+      className="flex gap-3.5"
+      style={{ perspective: 400 }}
+      role="timer"
+      aria-label={groups.map((g) => `${Number(g.value)} ${g.label.toLowerCase()}`).join(", ")}
+    >
       {groups.map((g) => (
         <div key={g.label} className="flex flex-col gap-1.5" aria-hidden>
           <div className="flex gap-[3px]">
@@ -33,7 +44,7 @@ export function SplitFlap({ groups, size = "lg" }: { groups: Array<{ value: stri
               <Flap key={i} ch={c} size={size} />
             ))}
           </div>
-          <div className="mono text-xs text-faint">{g.label}</div>
+          <div className="mono text-faint text-xs">{g.label}</div>
         </div>
       ))}
     </div>
@@ -44,7 +55,11 @@ export function EmptyBoard() {
   return (
     <div className="flex gap-[3px] opacity-50" aria-hidden>
       {[0, 1, 2, 3, 4, 5].map((i) => (
-        <div key={i} className="mono flex h-[50px] w-9 items-center justify-center rounded-flap border border-dashed border-line text-[26px] text-faint" style={{ marginRight: i === 1 || i === 3 ? 8 : 0 }}>
+        <div
+          key={i}
+          className="mono rounded-flap border-line text-faint flex h-[50px] w-9 items-center justify-center border border-dashed text-[26px]"
+          style={{ marginRight: i === 1 || i === 3 ? 8 : 0 }}
+        >
           -
         </div>
       ))}

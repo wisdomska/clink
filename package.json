@@ -86,5 +86,14 @@
     "tsx": "^4.23.15",
     "typescript": "5.9.3",
     "vitest": "^5.1.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --max-warnings=0 --no-warn-ignored",
+      "prettier --write"
+    ],
+    "*.{css,json,md,mjs,mts}": [
+      "prettier --write"
+    ]
   }
 }

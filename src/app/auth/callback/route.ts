@@ -39,7 +39,9 @@ export async function GET(req: NextRequest) {
   if (age) {
     const [dob, exp] = age.split("|");
     if (dob && Number(exp) > Date.now()) {
-      await supabaseAdmin().from("user_private").upsert({ user_id: user.id, dob }, { onConflict: "user_id", ignoreDuplicates: true });
+      await supabaseAdmin()
+        .from("user_private")
+        .upsert({ user_id: user.id, dob }, { onConflict: "user_id", ignoreDuplicates: true });
     }
     store.delete("clink_age");
   }

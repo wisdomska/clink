@@ -2,11 +2,19 @@ import { test, expect } from "@playwright/test";
 import { makeUser, signIn, twoPartners, admin } from "./helpers";
 
 test.describe("Flow 10.1: sign up, link and first Clink", () => {
-  test("partner B links with A's code, both see the linked moment, A's Clink reaches B", async ({ browser }, info) => {
+  test("partner B links with A's code, both see the linked moment, A's Clink reaches B", async ({
+    browser,
+  }, info) => {
     const nia = await makeUser("Nia");
     const theo = await makeUser("Theo", { city: "Accra", timezone: "Africa/Accra" });
     const ctxOpts = info.project.use;
-    const { a, b, ctxA, ctxB } = await twoPartners(browser, { viewport: ctxOpts.viewport, hasTouch: ctxOpts.hasTouch, isMobile: ctxOpts.isMobile, userAgent: ctxOpts.userAgent, deviceScaleFactor: ctxOpts.deviceScaleFactor });
+    const { a, b, ctxA, ctxB } = await twoPartners(browser, {
+      viewport: ctxOpts.viewport,
+      hasTouch: ctxOpts.hasTouch,
+      isMobile: ctxOpts.isMobile,
+      userAgent: ctxOpts.userAgent,
+      deviceScaleFactor: ctxOpts.deviceScaleFactor,
+    });
 
     await signIn(a, nia, "/link");
     await expect(a).toHaveURL(/\/link/);
@@ -39,13 +47,19 @@ test.describe("Flow 10.1: sign up, link and first Clink", () => {
 
     // Persisted, and the answer counts for the streak.
     await expect
-      .poll(async () => (await admin.from("clinks").select("id, answered_at").not("answered_at", "is", null)).data?.length ?? 0)
+      .poll(
+        async () =>
+          (await admin.from("clinks").select("id, answered_at").not("answered_at", "is", null)).data
+            ?.length ?? 0,
+      )
       .toBeGreaterThan(0);
     await ctxA.close();
     await ctxB.close();
   });
 
-  test("a used code cannot be reused and an account links to one partner only", async ({ browser }) => {
+  test("a used code cannot be reused and an account links to one partner only", async ({
+    browser,
+  }) => {
     const a1 = await makeUser("Ama");
     const b1 = await makeUser("Kwesi");
     const c1 = await makeUser("Kofi");

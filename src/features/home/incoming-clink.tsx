@@ -31,28 +31,42 @@ export function IncomingClink() {
 
   // Arrived from a push notification.
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("clink") === "1") setIncoming({ kind: "tap", at: Date.now() });
+    if (new URLSearchParams(window.location.search).get("clink") === "1")
+      setIncoming({ kind: "tap", at: Date.now() });
   }, [setIncoming]);
 
   return (
     <>
       {incoming && (
         <>
-          <div aria-hidden onClick={() => setIncoming(null)} className="an-fade fixed inset-0 z-30" style={{ background: "var(--scrim-soft)" }} />
+          <div
+            aria-hidden
+            onClick={() => setIncoming(null)}
+            className="an-fade fixed inset-0 z-30"
+            style={{ background: "var(--scrim-soft)" }}
+          />
           <div
             role="alertdialog"
             aria-labelledby="incoming-title"
-            className="an-slide-down fixed top-[calc(env(safe-area-inset-top)+8px)] right-3 left-3 z-[31] mx-auto flex max-w-[420px] flex-col gap-4 rounded-card border border-line bg-s1 p-5 lg:left-[calc(var(--rail-w)+12px)]"
+            className="an-slide-down rounded-card border-line bg-s1 fixed top-[calc(env(safe-area-inset-top)+8px)] right-3 left-3 z-[31] mx-auto flex max-w-[420px] flex-col gap-4 border p-5 lg:left-[calc(var(--rail-w)+12px)]"
             style={{ boxShadow: "var(--shadow-float)" }}
           >
             <div className="flex items-center gap-3.5">
-              <Avatar name={partner.name} side="partner" photoUrl={partner.avatarUrl} icon={partner.avatarIcon} className="an-pulse" />
+              <Avatar
+                name={partner.name}
+                side="partner"
+                photoUrl={partner.avatarUrl}
+                icon={partner.avatarIcon}
+                className="an-pulse"
+              />
               <div>
                 <div id="incoming-title" className="display text-[22px]">
                   {partner.name} {incoming.kind === "back" ? "clinked back" : "sent a Clink"}
                 </div>
-                <div className="text-sm text-muted">
-                  {incoming.kind === "back" ? "Streak safe for today." : "Answer within 10 min to keep the streak."}
+                <div className="text-muted text-sm">
+                  {incoming.kind === "back"
+                    ? "Streak safe for today."
+                    : "Answer within 10 min to keep the streak."}
                 </div>
               </div>
             </div>
@@ -71,7 +85,12 @@ export function IncomingClink() {
                   Clink back
                 </Button>
               )}
-              <Button size="lg" variant="ghost" className={incoming.kind === "back" ? "flex-1" : ""} onClick={() => setIncoming(null)}>
+              <Button
+                size="lg"
+                variant="ghost"
+                className={incoming.kind === "back" ? "flex-1" : ""}
+                onClick={() => setIncoming(null)}
+              >
                 {incoming.kind === "back" ? "Nice" : "Later"}
               </Button>
             </div>

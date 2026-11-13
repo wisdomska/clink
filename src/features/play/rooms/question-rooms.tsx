@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCouple } from "@/features/couple/context";
 import { Button } from "@/components/ui/button";
@@ -11,14 +11,33 @@ import { startGame } from "../meta";
 
 const fill = (t: string, name: string) => t.replaceAll("{name}", name);
 
-function Option({ text, onClick, mine, theirs, highlight, disabled }: { text: string; onClick?: () => void; mine?: boolean; theirs?: boolean; highlight?: "mine" | "theirs" | "both"; disabled?: boolean }) {
-  const border = highlight === "theirs" || highlight === "both" ? "2px solid var(--partner-b)" : highlight === "mine" ? "2px solid var(--accent)" : "1px solid var(--line)";
+function Option({
+  text,
+  onClick,
+  mine,
+  theirs,
+  highlight,
+  disabled,
+}: {
+  text: string;
+  onClick?: () => void;
+  mine?: boolean;
+  theirs?: boolean;
+  highlight?: "mine" | "theirs" | "both";
+  disabled?: boolean;
+}) {
+  const border =
+    highlight === "theirs" || highlight === "both"
+      ? "2px solid var(--partner-b)"
+      : highlight === "mine"
+        ? "2px solid var(--accent)"
+        : "1px solid var(--line)";
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="press flex min-h-14 cursor-pointer items-center gap-2.5 rounded-full bg-s1 px-[18px] py-3 text-left text-base font-medium text-text disabled:cursor-default"
+      className="press bg-s1 text-text flex min-h-14 cursor-pointer items-center gap-2.5 rounded-full px-[18px] py-3 text-left text-base font-medium disabled:cursor-default"
       style={{ border }}
     >
       <span className="flex-1">{text}</span>
@@ -37,29 +56,48 @@ export function KnowMeRoom({ game }: { game: GameRow }) {
   const subjectName = iAmSubject ? "you" : partner.name;
   // Show the latest reveal until the player taps Next.
   const [seen, setSeen] = useState(s.reveals.length);
-  const [pick, setPick] = useState<number | null>(null);
+  const [pickAt, setPickAt] = useState<{ index: number; value: number } | null>(null);
+  const pick = pickAt?.index === s.index ? pickAt.value : null;
   const showing = seen < s.reveals.length ? seen : null;
   const qIndex = showing ?? s.index;
   const q = s.questions[qIndex]!;
   const reveal = showing !== null ? s.reveals[showing]! : null;
   const waitingOnThem = showing === null && s.submitted.includes(me.id);
 
-  useEffect(() => setPick(null), [s.index]);
-
   if (game.status === "finished" && showing === null) {
     return (
       <div className="an-reveal flex flex-1 flex-col">
         <div className="flex flex-1 flex-col justify-center gap-3">
-          <div className="mono text-xs text-faint">ROUND OVER</div>
-          <div className="mono text-[96px] leading-none text-accent">
+          <div className="mono text-faint text-xs">ROUND OVER</div>
+          <div className="mono text-accent text-[96px] leading-none">
             {s.score}
             <span className="text-faint">/10</span>
           </div>
           <div className="display text-[28px] leading-[1.05]">
             {iAmSubject ? (
-              <>{partner.name} knows you {s.score >= 8 ? <em>suspiciously</em> : s.score >= 5 ? <em>pretty</em> : <em>a little</em>} well.</>
+              <>
+                {partner.name} knows you{" "}
+                {s.score >= 8 ? (
+                  <em>suspiciously</em>
+                ) : s.score >= 5 ? (
+                  <em>pretty</em>
+                ) : (
+                  <em>a little</em>
+                )}{" "}
+                well.
+              </>
             ) : (
-              <>You know {partner.name} {s.score >= 8 ? <em>suspiciously</em> : s.score >= 5 ? <em>pretty</em> : <em>a little</em>} well.</>
+              <>
+                You know {partner.name}{" "}
+                {s.score >= 8 ? (
+                  <em>suspiciously</em>
+                ) : s.score >= 5 ? (
+                  <em>pretty</em>
+                ) : (
+                  <em>a little</em>
+                )}{" "}
+                well.
+              </>
             )}
           </div>
           <ResultBars type="know_me" current={s.score} />
@@ -67,11 +105,14 @@ export function KnowMeRoom({ game }: { game: GameRow }) {
         <div className="flex flex-col gap-2">
           <Button
             onClick={async () => {
-              const id = await startGame("know_me", { subject: s.guesser === me.id ? "me" : "partner" }).catch((e: Error) => toast(e.message));
+              const id = await startGame("know_me", {
+                subject: s.guesser === me.id ? "me" : "partner",
+              }).catch((e: Error) => toast(e.message));
               if (id) router.push(`/play/know_me/${id}`);
             }}
           >
-            Rematch, {s.guesser === me.id ? partner.name : "you"} guess{s.guesser === me.id ? "es" : ""}
+            Rematch, {s.guesser === me.id ? partner.name : "you"} guess
+            {s.guesser === me.id ? "es" : ""}
           </Button>
           <Button variant="ghost" size="lg" onClick={() => router.push("/play")}>
             Back to the lobby
@@ -83,8 +124,12 @@ export function KnowMeRoom({ game }: { game: GameRow }) {
 
   return (
     <>
-      <RoomHeader type="know_me" counter={`${String(qIndex + 1).padStart(2, "0")}/10`} progress={(qIndex + (reveal ? 1 : 0)) / 10} />
-      <div className="flex flex-wrap gap-4 text-sm font-medium text-muted">
+      <RoomHeader
+        type="know_me"
+        counter={`${String(qIndex + 1).padStart(2, "0")}/10`}
+        progress={(qIndex + (reveal ? 1 : 0)) / 10}
+      />
+      <div className="text-muted flex flex-wrap gap-4 text-sm font-medium">
         <span className="flex items-center gap-1.5">
           <PartnerMark who="a" />
           {iAmSubject ? "You answer about yourself" : "You guess"}
@@ -94,7 +139,9 @@ export function KnowMeRoom({ game }: { game: GameRow }) {
           {iAmSubject ? `${partner.name} guesses` : `${partner.name} answers honestly`}
         </span>
       </div>
-      <h2 className="display mt-3 mb-2 text-[36px] leading-[1.05]">{fill(q.text, iAmSubject ? "you" : partner.name)}</h2>
+      <h2 className="display mt-3 mb-2 text-[36px] leading-[1.05]">
+        {fill(q.text, iAmSubject ? "you" : partner.name)}
+      </h2>
       <div className="flex flex-col gap-2">
         {q.options.map((o, i) => {
           const theirsMark = reveal ? reveal.answer === i : false;
@@ -106,23 +153,41 @@ export function KnowMeRoom({ game }: { game: GameRow }) {
               disabled={Boolean(reveal) || waitingOnThem}
               mine={Boolean(reveal) && (iAmSubject ? reveal!.answer === i : mineMark)}
               theirs={Boolean(reveal) && (iAmSubject ? mineMark : theirsMark)}
-              highlight={reveal ? (theirsMark ? "theirs" : mineMark ? "mine" : undefined) : pick === i ? "mine" : undefined}
+              highlight={
+                reveal
+                  ? theirsMark
+                    ? "theirs"
+                    : mineMark
+                      ? "mine"
+                      : undefined
+                  : pick === i
+                    ? "mine"
+                    : undefined
+              }
               onClick={async () => {
-                setPick(i);
+                setPickAt({ index: s.index, value: i });
                 await sendMove(game.id, { pick: i });
               }}
             />
           );
         })}
       </div>
-      {waitingOnThem && <div className="an-reveal text-sm text-muted">Locked in. Waiting on {partner.name}.</div>}
+      {waitingOnThem && (
+        <div className="an-reveal text-muted text-sm">Locked in. Waiting on {partner.name}.</div>
+      )}
       {reveal && (
-        <div className="an-reveal flex items-center justify-between gap-3 rounded-card bg-s2 p-4">
+        <div className="an-reveal rounded-card bg-s2 flex items-center justify-between gap-3 p-4">
           <div>
             <div className="display text-[22px] tracking-normal">
-              {reveal.answer === reveal.guess ? "Got it." : `Close. It was ${q.options[reveal.answer]}.`}
+              {reveal.answer === reveal.guess
+                ? "Got it."
+                : `Close. It was ${q.options[reveal.answer]}.`}
             </div>
-            <div className="text-sm text-muted">{reveal.answer === reveal.guess ? `${subjectName === "you" ? "They" : "You"} really know ${subjectName === "you" ? "you" : "them"}.` : "Noted for next time."}</div>
+            <div className="text-muted text-sm">
+              {reveal.answer === reveal.guess
+                ? `${subjectName === "you" ? "They" : "You"} really know ${subjectName === "you" ? "you" : "them"}.`
+                : "Noted for next time."}
+            </div>
           </div>
           <Button size="md" className="flex-none" onClick={() => setSeen((n) => n + 1)}>
             Next
@@ -151,26 +216,53 @@ export function TriviaRoom({ game }: { game: GameRow }) {
     return (
       <div className="an-reveal flex flex-1 flex-col">
         <div className="flex flex-1 flex-col justify-center gap-3">
-          <div className="mono text-xs text-faint">DUEL OVER</div>
+          <div className="mono text-faint text-xs">DUEL OVER</div>
           <div className="mono text-[72px] leading-none">
             <span className="text-accent">{my}</span>
             <span className="text-faint"> : </span>
             <span style={{ color: "var(--partner-b)" }}>{their}</span>
           </div>
-          <div className="display text-[28px] leading-[1.05]">{my === their ? <>A <em>draw</em>. Rematch?</> : my > their ? <>You <em>win</em> this one.</> : <>{partner.name} <em>wins</em>. For now.</>}</div>
+          <div className="display text-[28px] leading-[1.05]">
+            {my === their ? (
+              <>
+                A <em>draw</em>. Rematch?
+              </>
+            ) : my > their ? (
+              <>
+                You <em>win</em> this one.
+              </>
+            ) : (
+              <>
+                {partner.name} <em>wins</em>. For now.
+              </>
+            )}
+          </div>
         </div>
         <div className="flex flex-col gap-2">
-          <Button onClick={async () => { const id = await startGame("trivia").catch(() => null); if (id) router.push(`/play/trivia/${id}`); }}>Rematch</Button>
-          <Button variant="ghost" size="lg" onClick={() => router.push("/play")}>Back to the lobby</Button>
+          <Button
+            onClick={async () => {
+              const id = await startGame("trivia").catch(() => null);
+              if (id) router.push(`/play/trivia/${id}`);
+            }}
+          >
+            Rematch
+          </Button>
+          <Button variant="ghost" size="lg" onClick={() => router.push("/play")}>
+            Back to the lobby
+          </Button>
         </div>
       </div>
     );
   }
   return (
     <>
-      <RoomHeader type="trivia" counter={`${String(qIndex + 1).padStart(2, "0")}/10`} progress={(qIndex + (reveal ? 1 : 0)) / 10} />
-      <div className="flex items-center justify-between text-sm font-medium text-muted">
-        <span className="rounded-full border border-line px-3 py-1 text-xs">{q.category}</span>
+      <RoomHeader
+        type="trivia"
+        counter={`${String(qIndex + 1).padStart(2, "0")}/10`}
+        progress={(qIndex + (reveal ? 1 : 0)) / 10}
+      />
+      <div className="text-muted flex items-center justify-between text-sm font-medium">
+        <span className="border-line rounded-full border px-3 py-1 text-xs">{q.category}</span>
         <span className="mono">
           you {my} · {partner.name.toLowerCase()} {their}
         </span>
@@ -189,11 +281,17 @@ export function TriviaRoom({ game }: { game: GameRow }) {
           />
         ))}
       </div>
-      {waiting && <div className="text-sm text-muted">Locked in. Waiting on {partner.name}.</div>}
+      {waiting && <div className="text-muted text-sm">Locked in. Waiting on {partner.name}.</div>}
       {reveal && (
-        <div className="an-reveal flex items-center justify-between gap-3 rounded-card bg-s2 p-4">
+        <div className="an-reveal rounded-card bg-s2 flex items-center justify-between gap-3 p-4">
           <div className="display text-[22px] tracking-normal">
-            {reveal.picks[me.id] === reveal.correct ? (reveal.picks[partner.id] === reveal.correct ? "You both got it." : "You got it.") : reveal.picks[partner.id] === reveal.correct ? `${partner.name} got it.` : "Neither of you. Ouch."}
+            {reveal.picks[me.id] === reveal.correct
+              ? reveal.picks[partner.id] === reveal.correct
+                ? "You both got it."
+                : "You got it."
+              : reveal.picks[partner.id] === reveal.correct
+                ? `${partner.name} got it.`
+                : "Neither of you. Ouch."}
           </div>
           <Button size="md" className="flex-none" onClick={() => setSeen((n) => n + 1)}>
             Next
@@ -220,12 +318,26 @@ export function WyrRoom({ game }: { game: GameRow }) {
     return (
       <div className="an-reveal flex flex-1 flex-col">
         <div className="flex flex-1 flex-col justify-center gap-3">
-          <div className="mono text-xs text-faint">{s.deck.toUpperCase()} DECK</div>
-          <div className="mono text-[96px] leading-none text-accent">
+          <div className="mono text-faint text-xs">{s.deck.toUpperCase()} DECK</div>
+          <div className="mono text-accent text-[96px] leading-none">
             {s.matches}
             <span className="text-faint">/{s.cards.length}</span>
           </div>
-          <div className="display text-[28px] leading-[1.05]">{s.matches >= s.cards.length * 0.7 ? <>Same <em>brain</em>, two cities.</> : s.matches >= s.cards.length * 0.4 ? <>Enough in common. Enough to <em>argue</em> about.</> : <>Opposites. <em>Fun</em>.</>}</div>
+          <div className="display text-[28px] leading-[1.05]">
+            {s.matches >= s.cards.length * 0.7 ? (
+              <>
+                Same <em>brain</em>, two cities.
+              </>
+            ) : s.matches >= s.cards.length * 0.4 ? (
+              <>
+                Enough in common. Enough to <em>argue</em> about.
+              </>
+            ) : (
+              <>
+                Opposites. <em>Fun</em>.
+              </>
+            )}
+          </div>
         </div>
         <div className="flex flex-col gap-2">
           <Button onClick={() => router.push("/play")}>Another deck</Button>
@@ -235,7 +347,11 @@ export function WyrRoom({ game }: { game: GameRow }) {
   }
   return (
     <>
-      <RoomHeader type="wyr" counter={`${String(idx + 1).padStart(2, "0")}/${s.cards.length}`} progress={(idx + (reveal ? 1 : 0)) / s.cards.length} />
+      <RoomHeader
+        type="wyr"
+        counter={`${String(idx + 1).padStart(2, "0")}/${s.cards.length}`}
+        progress={(idx + (reveal ? 1 : 0)) / s.cards.length}
+      />
       <h2 className="display mt-3 text-[30px] leading-[1.1]">Would you rather</h2>
       <div className="grid gap-2.5 sm:grid-cols-2">
         {(["a", "b"] as const).map((k) => {
@@ -247,10 +363,21 @@ export function WyrRoom({ game }: { game: GameRow }) {
               type="button"
               disabled={Boolean(reveal) || waiting}
               onClick={() => sendMove(game.id, { pick: k })}
-              className="press flex min-h-[120px] cursor-pointer flex-col justify-between gap-3 rounded-card bg-s1 p-4 text-left text-text disabled:cursor-default"
-              style={{ border: mine && theirs ? "2px solid var(--accent)" : theirs ? "2px solid var(--partner-b)" : mine ? "2px solid var(--accent)" : "1px solid var(--line)" }}
+              className="press rounded-card bg-s1 text-text flex min-h-[120px] cursor-pointer flex-col justify-between gap-3 p-4 text-left disabled:cursor-default"
+              style={{
+                border:
+                  mine && theirs
+                    ? "2px solid var(--accent)"
+                    : theirs
+                      ? "2px solid var(--partner-b)"
+                      : mine
+                        ? "2px solid var(--accent)"
+                        : "1px solid var(--line)",
+              }}
             >
-              <span className="display text-[22px] leading-[1.15] tracking-normal">{k === "a" ? card.a : card.b}</span>
+              <span className="display text-[22px] leading-[1.15] tracking-normal">
+                {k === "a" ? card.a : card.b}
+              </span>
               <span className="flex gap-2">
                 {mine && <PartnerMark who="a" size={12} />}
                 {theirs && <PartnerMark who="b" size={12} />}
@@ -259,10 +386,12 @@ export function WyrRoom({ game }: { game: GameRow }) {
           );
         })}
       </div>
-      {waiting && <div className="text-sm text-muted">Picked. Waiting on {partner.name}.</div>}
+      {waiting && <div className="text-muted text-sm">Picked. Waiting on {partner.name}.</div>}
       {reveal && (
-        <div className="an-reveal flex items-center justify-between gap-3 rounded-card bg-s2 p-4">
-          <div className="display text-[22px] tracking-normal">{reveal[me.id] === reveal[partner.id] ? "A match." : "Agree to disagree."}</div>
+        <div className="an-reveal rounded-card bg-s2 flex items-center justify-between gap-3 p-4">
+          <div className="display text-[22px] tracking-normal">
+            {reveal[me.id] === reveal[partner.id] ? "A match." : "Agree to disagree."}
+          </div>
           <Button size="md" onClick={() => setSeen((n) => n + 1)}>
             Next
           </Button>

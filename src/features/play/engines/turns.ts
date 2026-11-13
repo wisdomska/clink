@@ -20,18 +20,34 @@ export interface DrawSecrets {
   words: string[];
 }
 
-export function drawInit(p: Players, words: string[], now = new Date(), rand: () => number = Math.random): EngineResult<DrawState, DrawSecrets> {
+export function drawInit(
+  p: Players,
+  words: string[],
+  now = new Date(),
+  rand: () => number = Math.random,
+): EngineResult<DrawState, DrawSecrets> {
   const picks = shuffle(words, rand).slice(0, DRAW_ROUNDS * 2);
   if (picks.length < DRAW_ROUNDS * 2) throw new MoveError("Not enough words.");
   return {
-    state: { turn: 0, drawer: p.starter, turnStartedAt: now.toISOString(), lengths: picks.map((w) => w.length), results: [], scores: { [p.a]: 0, [p.b]: 0 } },
+    state: {
+      turn: 0,
+      drawer: p.starter,
+      turnStartedAt: now.toISOString(),
+      lengths: picks.map((w) => w.length),
+      results: [],
+      scores: { [p.a]: 0, [p.b]: 0 },
+    },
     secrets: { words: picks },
     turn: p.starter,
   };
 }
 
 export function normaliseGuess(g: string): string {
-  return g.trim().toLowerCase().replace(/[^a-z ]/g, "").replace(/\s+/g, " ");
+  return g
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z ]/g, "")
+    .replace(/\s+/g, " ");
 }
 
 export function drawMove(
@@ -69,7 +85,14 @@ export function drawMove(
   const sa = scores[p.a] ?? 0;
   const sb = scores[p.b] ?? 0;
   return {
-    state: { ...s, results, scores, turn: done ? s.turn : s.turn + 1, drawer: done ? s.drawer : nextDrawer, turnStartedAt: now.toISOString() },
+    state: {
+      ...s,
+      results,
+      scores,
+      turn: done ? s.turn : s.turn + 1,
+      drawer: done ? s.drawer : nextDrawer,
+      turnStartedAt: now.toISOString(),
+    },
     secrets: x,
     correct: guessed,
     finished: done,
@@ -86,8 +109,22 @@ export function drawMove(
  * 8 turns each, or both pass in a row. Survives days; push on your turn.
  * ------------------------------------------------------------------------- */
 const DICE = [
-  "AAEEGN", "ABBJOO", "ACHOPS", "AFFKPS", "AOOTTW", "CIMOTU", "DEILRX", "DELRVY",
-  "DISTTY", "EEGHNW", "EEINSU", "EHRTVW", "EIOSST", "ELRTTY", "HIMNQU", "HLNNRZ",
+  "AAEEGN",
+  "ABBJOO",
+  "ACHOPS",
+  "AFFKPS",
+  "AOOTTW",
+  "CIMOTU",
+  "DEILRX",
+  "DELRVY",
+  "DISTTY",
+  "EEGHNW",
+  "EEINSU",
+  "EHRTVW",
+  "EIOSST",
+  "ELRTTY",
+  "HIMNQU",
+  "HLNNRZ",
 ];
 export const WORD_TURNS_EACH = 8;
 
@@ -98,12 +135,20 @@ export interface WordState {
   scores: Record<string, number>;
 }
 
-export function wordInit(p: Players, rand: () => number = Math.random): EngineResult<WordState, Record<string, never>> {
+export function wordInit(
+  p: Players,
+  rand: () => number = Math.random,
+): EngineResult<WordState, Record<string, never>> {
   const board = shuffle(DICE, rand).map((d) => {
     const f = d[Math.floor(rand() * 6)]!;
     return f === "Q" ? "QU" : f;
   });
-  return { state: { board, turn: p.starter, plays: [], scores: { [p.a]: 0, [p.b]: 0 } }, secrets: {}, turn: p.starter, notifyTurn: null };
+  return {
+    state: { board, turn: p.starter, plays: [], scores: { [p.a]: 0, [p.b]: 0 } },
+    secrets: {},
+    turn: p.starter,
+    notifyTurn: null,
+  };
 }
 
 export function wordPoints(word: string): number {
@@ -195,15 +240,35 @@ export interface StoryState {
   ended: boolean;
 }
 
-export function storyInit(p: Players, opening: string): EngineResult<StoryState, Record<string, never>> {
-  return { state: { starter: opening, lines: [], turn: p.starter, ended: false }, secrets: {}, turn: p.starter };
+export function storyInit(
+  p: Players,
+  opening: string,
+): EngineResult<StoryState, Record<string, never>> {
+  return {
+    state: { starter: opening, lines: [], turn: p.starter, ended: false },
+    secrets: {},
+    turn: p.starter,
+  };
 }
 
-export function storyMove(p: Players, s: StoryState, userId: string, move: { line?: string; end?: boolean }, now = new Date()): EngineResult<StoryState, Record<string, never>> {
+export function storyMove(
+  p: Players,
+  s: StoryState,
+  userId: string,
+  move: { line?: string; end?: boolean },
+  now = new Date(),
+): EngineResult<StoryState, Record<string, never>> {
   if (s.ended || s.lines.length >= STORY_MAX_LINES) throw new MoveError("This story is finished.");
   if (move.end) {
     if (s.lines.length < 4) throw new MoveError("Give it at least four lines first.");
-    return { state: { ...s, ended: true }, secrets: {}, finished: true, winnerId: null, isDraw: true, turn: null };
+    return {
+      state: { ...s, ended: true },
+      secrets: {},
+      finished: true,
+      winnerId: null,
+      isDraw: true,
+      turn: null,
+    };
   }
   if (userId !== s.turn) throw new MoveError("It's their line.");
   const text = (move.line ?? "").trim().replace(/\s+/g, " ");
@@ -211,5 +276,13 @@ export function storyMove(p: Players, s: StoryState, userId: string, move: { lin
   const lines = [...s.lines, { by: userId, text, at: now.toISOString() }];
   const done = lines.length >= STORY_MAX_LINES;
   const next = other(p, userId);
-  return { state: { ...s, lines, turn: next, ended: done }, secrets: {}, finished: done, winnerId: null, isDraw: done, turn: done ? null : next, notifyTurn: done ? null : next };
+  return {
+    state: { ...s, lines, turn: next, ended: done },
+    secrets: {},
+    finished: done,
+    winnerId: null,
+    isDraw: done,
+    turn: done ? null : next,
+    notifyTurn: done ? null : next,
+  };
 }

@@ -6,7 +6,8 @@ import { isVerified } from "@/lib/server/verified";
 /** POST /api/invites: caller not linked, verified, max 5 codes a day. Reuses a live code. */
 export const POST = handler(async (req) => {
   const { user } = await requireUser();
-  if (!isVerified(user)) throw deny(403, "unverified", "Confirm your email first, then you can link.");
+  if (!isVerified(user))
+    throw deny(403, "unverified", "Confirm your email first, then you can link.");
   if (await activeCouple(user.id)) throw deny(409, "already_linked", "You're already linked.");
   const admin = supabaseAdmin();
   const fresh = new URL(req.url).searchParams.get("fresh") === "1";
@@ -23,11 +24,20 @@ export const POST = handler(async (req) => {
     if (live) return ok(live);
   }
   const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-  const { count } = await admin.from("invites").select("id", { count: "exact", head: true }).eq("inviter_id", user.id).gt("created_at", since);
-  if ((count ?? 0) >= 5) throw deny(429, "too_many_codes", "That's 5 codes today. Try again tomorrow.");
+  const { count } = await admin
+    .from("invites")
+    .select("id", { count: "exact", head: true })
+    .eq("inviter_id", user.id)
+    .gt("created_at", since);
+  if ((count ?? 0) >= 5)
+    throw deny(429, "too_many_codes", "That's 5 codes today. Try again tomorrow.");
   await rateLimit(`invite:${user.id}`, 10, 3600);
   // Retire older live codes so only one works at a time.
-  await admin.from("invites").update({ expires_at: new Date().toISOString() }).eq("inviter_id", user.id).is("used_at", null);
+  await admin
+    .from("invites")
+    .update({ expires_at: new Date().toISOString() })
+    .eq("inviter_id", user.id)
+    .is("used_at", null);
   for (let attempt = 0; attempt < 5; attempt++) {
     const { data, error } = await admin
       .from("invites")

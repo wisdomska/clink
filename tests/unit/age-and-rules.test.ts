@@ -49,8 +49,13 @@ describe("push copy (spec 13.4)", () => {
 describe("analytics never carry content (spec 16)", () => {
   it("drops unknown events and properties", () => {
     expect(sanitizeEvent("message_text", { text: "hi" })).toBeNull();
-    expect(sanitizeEvent("message_sent", { type: "text", body: "secret" })).toEqual({ name: "message_sent", props: { type: "text" } });
-    expect(sanitizeEvent("dare_outcome", { tier: "Spicy", outcome: "passed", dare: "x" })?.props).toEqual({ tier: "Spicy", outcome: "passed" });
+    expect(sanitizeEvent("message_sent", { type: "text", body: "secret" })).toEqual({
+      name: "message_sent",
+      props: { type: "text" },
+    });
+    expect(
+      sanitizeEvent("dare_outcome", { tier: "Spicy", outcome: "passed", dare: "x" })?.props,
+    ).toEqual({ tier: "Spicy", outcome: "passed" });
     expect(sanitizeEvent("message_sent", { type: "a".repeat(40) })?.props).toEqual({});
   });
 });

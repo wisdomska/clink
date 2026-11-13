@@ -16,7 +16,9 @@ function buildCsp(nonce: string, path: string) {
   const storage = "https://*.r2.cloudflarestorage.com";
   const isPrivate = path.startsWith("/dark") || path.startsWith("/admin");
   // After Dark and admin load no third-party scripts, frames or analytics.
-  const analytics = isPrivate ? "" : " https://eu.i.posthog.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io";
+  const analytics = isPrivate
+    ? ""
+    : " https://eu.i.posthog.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io";
   const frames = isPrivate ? "'none'" : "https://www.youtube-nocookie.com https://www.youtube.com";
   const ytScripts = isPrivate ? "" : " https://www.youtube.com https://s.ytimg.com";
   const ytImg = isPrivate ? "" : " https://i.ytimg.com";
@@ -99,7 +101,8 @@ function withCsp(res: NextResponse, csp: string, from: NextResponse) {
 export const config = {
   matcher: [
     {
-      source: "/((?!api|_next/static|_next/image|favicon.ico|icons/|sw.js|swe-worker|manifest.webmanifest|robots.txt|sitemap.xml|opengraph-image).*)",
+      source:
+        "/((?!api|_next/static|_next/image|favicon.ico|icons/|sw.js|swe-worker|manifest.webmanifest|robots.txt|sitemap.xml|opengraph-image).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

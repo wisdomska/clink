@@ -4,7 +4,10 @@ export const VOICE_MAX_S = 180;
 
 function pickAudioMime(): string {
   const options = ["audio/webm;codecs=opus", "audio/mp4", "audio/ogg;codecs=opus", "audio/webm"];
-  return options.find((m) => typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(m)) ?? "";
+  return (
+    options.find((m) => typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(m)) ??
+    ""
+  );
 }
 
 /** Downsample an audio blob into N peak bars (0-100) for the waveform. */
@@ -18,7 +21,8 @@ export async function peaks(blob: Blob, bars = 28): Promise<number[]> {
     const out: number[] = [];
     for (let i = 0; i < bars; i++) {
       let max = 0;
-      for (let j = i * step; j < Math.min(data.length, (i + 1) * step); j += 16) max = Math.max(max, Math.abs(data[j]!));
+      for (let j = i * step; j < Math.min(data.length, (i + 1) * step); j += 16)
+        max = Math.max(max, Math.abs(data[j]!));
       out.push(max);
     }
     const top = Math.max(...out, 0.01);
@@ -44,9 +48,14 @@ export class VoiceRecorder {
   onAutoStop?: () => void;
 
   async start() {
-    this.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+    this.stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true },
+    });
     const mime = pickAudioMime();
-    this.rec = new MediaRecorder(this.stream, mime ? { mimeType: mime, audioBitsPerSecond: 48_000 } : undefined);
+    this.rec = new MediaRecorder(
+      this.stream,
+      mime ? { mimeType: mime, audioBitsPerSecond: 48_000 } : undefined,
+    );
     this.chunks = [];
     this.rec.ondataavailable = (e) => e.data.size && this.chunks.push(e.data);
     this.rec.start(250);

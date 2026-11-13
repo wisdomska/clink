@@ -18,16 +18,21 @@ export default async function DarkLayout({ children }: { children: React.ReactNo
   const path = (await headers()).get("x-pathname") ?? "/dark";
   const ctx = await loadCoupleContext(path);
   const pathname = path.split("?")[0]!;
-  const { data: mine } = await supabaseAdmin().from("dark_settings").select("pin_hash").eq("user_id", ctx.me.id).maybeSingle();
+  const { data: mine } = await supabaseAdmin()
+    .from("dark_settings")
+    .select("pin_hash")
+    .eq("user_id", ctx.me.id)
+    .maybeSingle();
   const setUp = Boolean(mine?.pin_hash);
   if (!setUp && pathname !== "/dark/setup") redirect("/dark/setup");
   const unlocked = setUp && (await hasDarkSession(ctx.me.id));
   const open = ["/dark", "/dark/setup"];
-  if (setUp && !unlocked && !open.includes(pathname)) redirect(`/dark?next=${encodeURIComponent(path)}`);
+  if (setUp && !unlocked && !open.includes(pathname))
+    redirect(`/dark?next=${encodeURIComponent(path)}`);
   return (
     <QueryProvider>
       <CoupleProvider value={ctx}>
-        <div data-mode="dark" className="min-h-dvh bg-app">
+        <div data-mode="dark" className="bg-app min-h-dvh">
           {unlocked && <DarkIdle />}
           {children}
         </div>

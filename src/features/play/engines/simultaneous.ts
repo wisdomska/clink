@@ -22,19 +22,37 @@ export interface KnowMeSecrets {
   pending: Record<string, number>;
 }
 
-export function knowMeInit(p: Players, questions: KnowMeQuestion[], subject = p.starter === p.a ? p.b : p.a): EngineResult<KnowMeState, KnowMeSecrets> {
+export function knowMeInit(
+  p: Players,
+  questions: KnowMeQuestion[],
+  subject = p.starter === p.a ? p.b : p.a,
+): EngineResult<KnowMeState, KnowMeSecrets> {
   if (questions.length < 10) throw new MoveError("Not enough questions.");
   return {
-    state: { subject, guesser: other(p, subject), questions: questions.slice(0, 10), index: 0, submitted: [], reveals: [], score: 0 },
+    state: {
+      subject,
+      guesser: other(p, subject),
+      questions: questions.slice(0, 10),
+      index: 0,
+      submitted: [],
+      reveals: [],
+      score: 0,
+    },
     secrets: { pending: {} },
     turn: null,
   };
 }
 
-export function knowMeMove(s: KnowMeState, x: KnowMeSecrets, userId: string, move: { pick: number }): EngineResult<KnowMeState, KnowMeSecrets> {
+export function knowMeMove(
+  s: KnowMeState,
+  x: KnowMeSecrets,
+  userId: string,
+  move: { pick: number },
+): EngineResult<KnowMeState, KnowMeSecrets> {
   if (s.reveals.length >= s.questions.length) throw new MoveError("This round is over.");
   if (userId !== s.subject && userId !== s.guesser) throw new MoveError("Not your game.");
-  if (!Number.isInteger(move.pick) || move.pick < 0 || move.pick > 3) throw new MoveError("Pick one of the four.");
+  if (!Number.isInteger(move.pick) || move.pick < 0 || move.pick > 3)
+    throw new MoveError("Pick one of the four.");
   if (s.submitted.includes(userId)) throw new MoveError("Already answered.");
   const pending = { ...x.pending, [userId]: move.pick };
   const submitted = [...s.submitted, userId];
@@ -75,20 +93,36 @@ export interface TriviaSecrets {
   pending: Record<string, number>;
 }
 
-export function triviaInit(p: Players, questions: Array<TriviaQuestion & { answer: number }>): EngineResult<TriviaState, TriviaSecrets> {
+export function triviaInit(
+  p: Players,
+  questions: Array<TriviaQuestion & { answer: number }>,
+): EngineResult<TriviaState, TriviaSecrets> {
   if (questions.length < 10) throw new MoveError("Not enough questions.");
   const qs = questions.slice(0, 10);
   return {
-    state: { questions: qs.map(({ answer: _a, ...q }) => q), index: 0, submitted: [], reveals: [], scores: { [p.a]: 0, [p.b]: 0 } },
+    state: {
+      questions: qs.map(({ answer: _a, ...q }) => q),
+      index: 0,
+      submitted: [],
+      reveals: [],
+      scores: { [p.a]: 0, [p.b]: 0 },
+    },
     secrets: { answers: qs.map((q) => q.answer), pending: {} },
     turn: null,
   };
 }
 
-export function triviaMove(p: Players, s: TriviaState, x: TriviaSecrets, userId: string, move: { pick: number }): EngineResult<TriviaState, TriviaSecrets> {
+export function triviaMove(
+  p: Players,
+  s: TriviaState,
+  x: TriviaSecrets,
+  userId: string,
+  move: { pick: number },
+): EngineResult<TriviaState, TriviaSecrets> {
   if (s.reveals.length >= s.questions.length) throw new MoveError("This duel is over.");
   if (userId !== p.a && userId !== p.b) throw new MoveError("Not your game.");
-  if (!Number.isInteger(move.pick) || move.pick < 0 || move.pick > 3) throw new MoveError("Pick one of the four.");
+  if (!Number.isInteger(move.pick) || move.pick < 0 || move.pick > 3)
+    throw new MoveError("Pick one of the four.");
   if (s.submitted.includes(userId)) throw new MoveError("Already answered.");
   const pending = { ...x.pending, [userId]: move.pick };
   const submitted = [...s.submitted, userId];
@@ -132,10 +166,20 @@ export interface WyrSecrets {
 
 export function wyrInit(deck: string, cards: WyrCard[]): EngineResult<WyrState, WyrSecrets> {
   if (cards.length < 5) throw new MoveError("Not enough cards.");
-  return { state: { deck, cards: cards.slice(0, 10), index: 0, submitted: [], reveals: [], matches: 0 }, secrets: { pending: {} }, turn: null };
+  return {
+    state: { deck, cards: cards.slice(0, 10), index: 0, submitted: [], reveals: [], matches: 0 },
+    secrets: { pending: {} },
+    turn: null,
+  };
 }
 
-export function wyrMove(p: Players, s: WyrState, x: WyrSecrets, userId: string, move: { pick: "a" | "b" }): EngineResult<WyrState, WyrSecrets> {
+export function wyrMove(
+  p: Players,
+  s: WyrState,
+  x: WyrSecrets,
+  userId: string,
+  move: { pick: "a" | "b" },
+): EngineResult<WyrState, WyrSecrets> {
   if (s.reveals.length >= s.cards.length) throw new MoveError("That deck is done.");
   if (userId !== p.a && userId !== p.b) throw new MoveError("Not your game.");
   if (move.pick !== "a" && move.pick !== "b") throw new MoveError("Pick one.");

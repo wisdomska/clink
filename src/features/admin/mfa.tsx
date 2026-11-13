@@ -27,8 +27,12 @@ export function AdminMfa() {
         setMode("verify");
         return;
       }
-      for (const f of data?.all ?? []) if (f.status === "unverified") await sb.auth.mfa.unenroll({ factorId: f.id });
-      const { data: en, error } = await sb.auth.mfa.enroll({ factorType: "totp", friendlyName: `Clink admin ${new Date().toISOString().slice(0, 10)}` });
+      for (const f of data?.all ?? [])
+        if (f.status === "unverified") await sb.auth.mfa.unenroll({ factorId: f.id });
+      const { data: en, error } = await sb.auth.mfa.enroll({
+        factorType: "totp",
+        friendlyName: `Clink admin ${new Date().toISOString().slice(0, 10)}`,
+      });
       if (error || !en) return setError(error?.message ?? "Couldn't start enrolment.");
       setFactorId(en.id);
       setQr(en.totp.qr_code);
@@ -60,12 +64,22 @@ export function AdminMfa() {
           </>
         )}
       </Display>
-      <Lead>{mode === "enrol" ? "Admin access needs an authenticator app (1Password, Google Authenticator, Authy). Scan this, then enter the 6-digit code." : "Enter the 6-digit code from your authenticator app."}</Lead>
+      <Lead>
+        {mode === "enrol"
+          ? "Admin access needs an authenticator app (1Password, Google Authenticator, Authy). Scan this, then enter the 6-digit code."
+          : "Enter the 6-digit code from your authenticator app."}
+      </Lead>
       {mode === "enrol" && qr && (
         <div className="flex flex-col items-start gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={qr} alt="QR code for your authenticator app" width={200} height={200} className="rounded-thumb bg-text p-2" />
-          <div className="mono text-xs break-all text-muted">Or enter this key: {secret}</div>
+          <img
+            src={qr}
+            alt="QR code for your authenticator app"
+            width={200}
+            height={200}
+            className="rounded-thumb bg-text p-2"
+          />
+          <div className="mono text-muted text-xs break-all">Or enter this key: {secret}</div>
         </div>
       )}
       {mode !== "loading" && (
@@ -76,14 +90,22 @@ export function AdminMfa() {
             void verify();
           }}
         >
-          <Input aria-label="6-digit code" inputMode="numeric" autoComplete="one-time-code" mono value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} className="text-center text-2xl tracking-[.4em]" />
+          <Input
+            aria-label="6-digit code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            mono
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            className="text-center text-2xl tracking-[.4em]"
+          />
           <FieldError>{error}</FieldError>
           <Button type="submit" disabled={code.length !== 6}>
             Verify
           </Button>
         </form>
       )}
-      {mode === "loading" && <div className="an-skel h-40 rounded-card bg-s2" />}
+      {mode === "loading" && <div className="an-skel rounded-card bg-s2 h-40" />}
     </div>
   );
 }

@@ -12,11 +12,26 @@ export const GET = handler(async () => {
   const d = await requireDark({ minRank: 1 });
   const admin = supabaseAdmin();
   const tiers = tiersUpTo(d.rank);
-  const { data: items } = await admin.from("desire_items").select("id, text, tier, sort").in("tier", tiers).eq("enabled", true).order("sort");
+  const { data: items } = await admin
+    .from("desire_items")
+    .select("id, text, tier, sort")
+    .in("tier", tiers)
+    .eq("enabled", true)
+    .order("sort");
   const ids = (items ?? []).map((i) => i.id);
   const [{ data: mine }, { count: partnerCount }, { data: matches }] = await Promise.all([
-    admin.from("desire_answers").select("item_id, answer").eq("couple_id", d.coupleId).eq("user_id", d.user.id).in("item_id", ids),
-    admin.from("desire_answers").select("item_id", { count: "exact", head: true }).eq("couple_id", d.coupleId).eq("user_id", d.partnerId).in("item_id", ids),
+    admin
+      .from("desire_answers")
+      .select("item_id, answer")
+      .eq("couple_id", d.coupleId)
+      .eq("user_id", d.user.id)
+      .in("item_id", ids),
+    admin
+      .from("desire_answers")
+      .select("item_id", { count: "exact", head: true })
+      .eq("couple_id", d.coupleId)
+      .eq("user_id", d.partnerId)
+      .in("item_id", ids),
     admin.rpc("svc_desire_matches", { p_couple: d.coupleId }),
   ]);
   return ok({
@@ -29,10 +44,23 @@ export const GET = handler(async () => {
 
 export const POST = handler(async (req) => {
   const d = await requireDark({ minRank: 1 });
-  const { itemId, answer } = await parseJson(req, z.object({ itemId: z.uuid(), answer: z.enum(["yes", "no", "maybe"]) }));
+  const { itemId, answer } = await parseJson(
+    req,
+    z.object({ itemId: z.uuid(), answer: z.enum(["yes", "no", "maybe"]) }),
+  );
   const admin = supabaseAdmin();
-  const { data: item } = await admin.from("desire_items").select("tier").eq("id", itemId).maybeSingle();
-  if (!item || !tiersUpTo(d.rank).includes(item.tier as never)) throw deny(403, "tier_locked", "That tier isn't open for you both.");
-  await admin.from("desire_answers").upsert({ item_id: itemId, couple_id: d.coupleId, user_id: d.user.id, answer }, { onConflict: "item_id,couple_id,user_id" });
+  const { data: item } = await admin
+    .from("desire_items")
+    .select("tier")
+    .eq("id", itemId)
+    .maybeSingle();
+  if (!item || !tiersUpTo(d.rank).includes(item.tier as never))
+    throw deny(403, "tier_locked", "That tier isn't open for you both.");
+  await admin
+    .from("desire_answers")
+    .upsert(
+      { item_id: itemId, couple_id: d.coupleId, user_id: d.user.id, answer },
+      { onConflict: "item_id,couple_id,user_id" },
+    );
   return ok({ ok: true });
 });

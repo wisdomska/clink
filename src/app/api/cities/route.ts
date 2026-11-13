@@ -19,7 +19,9 @@ export async function GET(req: NextRequest) {
   const q = (req.nextUrl.searchParams.get("q") ?? "").trim().toLowerCase();
   if (q.length < 2) return ok({ cities: [] });
   const seen = new Set<string>();
-  const cities = ALL.filter((c) => c.city_ascii.toLowerCase().startsWith(q) || c.city.toLowerCase().startsWith(q))
+  const cities = ALL.filter(
+    (c) => c.city_ascii.toLowerCase().startsWith(q) || c.city.toLowerCase().startsWith(q),
+  )
     .sort((a, b) => b.pop - a.pop)
     .filter((c) => {
       const k = `${c.city}|${c.country}`;

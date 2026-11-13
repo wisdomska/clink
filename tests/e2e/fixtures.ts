@@ -14,7 +14,14 @@ export interface Couple {
 export const test = base.extend<{ couple: Couple }>({
   couple: async ({ browser }, use, info) => {
     const p = info.project.use;
-    const opts = { viewport: p.viewport, hasTouch: p.hasTouch, isMobile: p.isMobile, userAgent: p.userAgent, deviceScaleFactor: p.deviceScaleFactor, permissions: ["clipboard-read", "clipboard-write"] };
+    const opts = {
+      viewport: p.viewport,
+      hasTouch: p.hasTouch,
+      isMobile: p.isMobile,
+      userAgent: p.userAgent,
+      deviceScaleFactor: p.deviceScaleFactor,
+      permissions: ["clipboard-read", "clipboard-write"],
+    };
     const ctxA = await browser.newContext(opts);
     const ctxB = await browser.newContext(opts);
     const a = await ctxA.newPage();
@@ -24,13 +31,21 @@ export const test = base.extend<{ couple: Couple }>({
       const goto = page.goto.bind(page);
       page.goto = async (url, o) => {
         const r = await goto(url, o);
-        await page.waitForFunction(() => document.documentElement.dataset.hydrated === "true", null, { timeout: 15000 });
+        await page.waitForFunction(
+          () => document.documentElement.dataset.hydrated === "true",
+          null,
+          { timeout: 15000 },
+        );
         return r;
       };
       const reload = page.reload.bind(page);
       page.reload = async (o) => {
         const r = await reload(o);
-        await page.waitForFunction(() => document.documentElement.dataset.hydrated === "true", null, { timeout: 15000 });
+        await page.waitForFunction(
+          () => document.documentElement.dataset.hydrated === "true",
+          null,
+          { timeout: 15000 },
+        );
         return r;
       };
     }

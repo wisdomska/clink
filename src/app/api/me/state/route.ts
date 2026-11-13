@@ -6,6 +6,10 @@ export const GET = handler(async () => {
   const { user } = await requireUser();
   const couple = await activeCouple(user.id);
   if (!couple) return ok({ linked: false });
-  const { data } = await supabaseAdmin().from("profiles").select("display_name").eq("id", couple.partnerId).single();
+  const { data } = await supabaseAdmin()
+    .from("profiles")
+    .select("display_name")
+    .eq("id", couple.partnerId)
+    .single();
   return ok({ linked: true, coupleId: couple.coupleId, partner: data?.display_name ?? "" });
 });

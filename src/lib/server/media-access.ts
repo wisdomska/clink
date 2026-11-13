@@ -17,13 +17,20 @@ export async function loadReadableMedia(id: string, userId: string): Promise<Med
     .eq("user_id", userId)
     .maybeSingle();
   if (!member) throw deny(404, "not_found", "Not found.");
-  const c = member.couples as unknown as { unlinked_at: string | null; read_only_until: string | null };
+  const c = member.couples as unknown as {
+    unlinked_at: string | null;
+    read_only_until: string | null;
+  };
   // Sensitive media is never readable once a couple has unlinked (SAF-05).
-  if (c.unlinked_at && (m.is_sensitive || !c.read_only_until || new Date(c.read_only_until) < new Date())) {
+  if (
+    c.unlinked_at &&
+    (m.is_sensitive || !c.read_only_until || new Date(c.read_only_until) < new Date())
+  ) {
     throw deny(410, "gone", "This is no longer available.");
   }
   if (m.deleted_at || m.status === "deleted") throw deny(410, "removed", "Removed by sender");
   if (m.status !== "ready") throw deny(409, "not_ready", "Still uploading.");
-  if (m.expires_at && new Date(m.expires_at) <= new Date()) throw deny(410, "expired", "This has expired.");
+  if (m.expires_at && new Date(m.expires_at) <= new Date())
+    throw deny(410, "expired", "This has expired.");
   return m;
 }

@@ -20,7 +20,10 @@ interface Stroke {
 const COLORS = ["#F4F0F5", "#E68AF5", "#8FD9C8", "#F2B84B"];
 
 function pathFromStroke(pts: Pt[], w: number): string {
-  const outline = getStroke(pts.map(([x, y, p]) => [x * w, y * w, p]), { size: 6, thinning: 0.6, smoothing: 0.5, streamline: 0.4 });
+  const outline = getStroke(
+    pts.map(([x, y, p]) => [x * w, y * w, p]),
+    { size: 6, thinning: 0.6, smoothing: 0.5, streamline: 0.4 },
+  );
   if (!outline.length) return "";
   const d = outline.reduce<(string | number)[]>(
     (acc, [x0, y0], i, arr) => {
@@ -50,13 +53,19 @@ export function DrawRoom({ game }: { game: GameRow }) {
   const outbox = useRef<{ id: string; color: string; pts: Pt[] } | null>(null);
   const turnKey = `${s.turn}-${s.turnStartedAt}`;
 
-  // Fresh canvas and word every turn.
-  useEffect(() => {
+  // Fresh canvas and word every turn (adjusting state when the turn changes).
+  const [seenTurn, setSeenTurn] = useState(turnKey);
+  if (seenTurn !== turnKey) {
+    setSeenTurn(turnKey);
     setStrokes([]);
     setWord(null);
     setGuess("");
+  }
+  useEffect(() => {
     if (s.drawer === me.id && game.status === "active") {
-      void fetch(`/api/games/${game.id}/secret`).then(async (r) => r.ok && setWord((await r.json()).word));
+      void fetch(`/api/games/${game.id}/secret`).then(
+        async (r) => r.ok && setWord((await r.json()).word),
+      );
     }
   }, [turnKey, s.drawer, me.id, game.id, game.status]);
 
@@ -72,7 +81,10 @@ export function DrawRoom({ game }: { game: GameRow }) {
   useEffect(() => {
     if (game.status !== "active") return;
     const tick = () => {
-      const l = Math.max(0, TURN_SECONDS - Math.floor((Date.now() - new Date(s.turnStartedAt).getTime()) / 1000));
+      const l = Math.max(
+        0,
+        TURN_SECONDS - Math.floor((Date.now() - new Date(s.turnStartedAt).getTime()) / 1000),
+      );
       setLeft(l);
       return l;
     };
@@ -152,25 +164,49 @@ export function DrawRoom({ game }: { game: GameRow }) {
     return (
       <div className="an-reveal flex flex-1 flex-col">
         <div className="flex flex-1 flex-col justify-center gap-3">
-          <div className="mono text-xs text-faint">GAME OVER</div>
+          <div className="mono text-faint text-xs">GAME OVER</div>
           <div className="mono text-[72px] leading-none">
             <span className="text-accent">{myScore}</span>
             <span className="text-faint"> : </span>
             <span style={{ color: "var(--partner-b)" }}>{theirScore}</span>
           </div>
-          <div className="display text-[28px] leading-[1.05]">{myScore === theirScore ? <>Level. <em>Rematch</em>?</> : myScore > theirScore ? <>Artist and <em>mind reader</em>.</> : <>{partner.name} takes the <em>easel</em>.</>}</div>
-          <ul className="m-0 mt-2 flex list-none flex-col gap-1 p-0 text-sm text-muted">
+          <div className="display text-[28px] leading-[1.05]">
+            {myScore === theirScore ? (
+              <>
+                Level. <em>Rematch</em>?
+              </>
+            ) : myScore > theirScore ? (
+              <>
+                Artist and <em>mind reader</em>.
+              </>
+            ) : (
+              <>
+                {partner.name} takes the <em>easel</em>.
+              </>
+            )}
+          </div>
+          <ul className="text-muted m-0 mt-2 flex list-none flex-col gap-1 p-0 text-sm">
             {s.results.map((r, i) => (
               <li key={i}>
-                {r.drawer === me.id ? "You drew" : `${partner.name} drew`} <span className="text-text">{r.word}</span>
+                {r.drawer === me.id ? "You drew" : `${partner.name} drew`}{" "}
+                <span className="text-text">{r.word}</span>
                 {r.guessed ? `, guessed in ${r.seconds} s` : ", nobody got it"}
               </li>
             ))}
           </ul>
         </div>
         <div className="flex flex-col gap-2">
-          <Button onClick={async () => { const id = await startGame("draw_guess").catch(() => null); if (id) router.push(`/play/draw_guess/${id}`); }}>Rematch</Button>
-          <Button variant="ghost" size="lg" onClick={() => router.push("/play")}>Back to the lobby</Button>
+          <Button
+            onClick={async () => {
+              const id = await startGame("draw_guess").catch(() => null);
+              if (id) router.push(`/play/draw_guess/${id}`);
+            }}
+          >
+            Rematch
+          </Button>
+          <Button variant="ghost" size="lg" onClick={() => router.push("/play")}>
+            Back to the lobby
+          </Button>
         </div>
       </div>
     );
@@ -178,8 +214,12 @@ export function DrawRoom({ game }: { game: GameRow }) {
 
   return (
     <>
-      <RoomHeader type="draw_guess" counter={`${String(left).padStart(2, "0")} s`} progress={left / TURN_SECONDS} />
-      <div className="flex items-center justify-between text-sm font-medium text-muted">
+      <RoomHeader
+        type="draw_guess"
+        counter={`${String(left).padStart(2, "0")} s`}
+        progress={left / TURN_SECONDS}
+      />
+      <div className="text-muted flex items-center justify-between text-sm font-medium">
         <span>
           Round {round} of {DRAW_ROUNDS} · {drawing ? "you draw" : `${partner.name} draws`}
         </span>
@@ -188,8 +228,9 @@ export function DrawRoom({ game }: { game: GameRow }) {
         </span>
       </div>
       {last && s.turn > 0 && (
-        <div className="text-sm text-muted">
-          Last one was <span className="text-text">{last.word}</span>. {last.guessed ? `Got in ${last.seconds} s.` : "Nobody got it."}
+        <div className="text-muted text-sm">
+          Last one was <span className="text-text">{last.word}</span>.{" "}
+          {last.guessed ? `Got in ${last.seconds} s.` : "Nobody got it."}
         </div>
       )}
       <div className="flex items-center justify-between gap-2">
@@ -198,14 +239,28 @@ export function DrawRoom({ game }: { game: GameRow }) {
             Draw: <em>{word ?? "..."}</em>
           </div>
         ) : (
-          <div className="mono text-[28px] tracking-[.3em]" aria-label={`${s.lengths[s.turn]} letters`}>
+          <div
+            className="mono text-[28px] tracking-[.3em]"
+            aria-label={`${s.lengths[s.turn]} letters`}
+          >
             {"_".repeat(s.lengths[s.turn] ?? 4)}
           </div>
         )}
         {drawing && (
           <div className="flex items-center gap-1.5">
             {COLORS.map((c) => (
-              <button key={c} type="button" aria-label={`Colour ${c}`} aria-pressed={color === c} onClick={() => setColor(c)} className="h-8 w-8 cursor-pointer rounded-full" style={{ background: c, border: color === c ? "3px solid var(--text)" : "1px solid var(--line)" }} />
+              <button
+                key={c}
+                type="button"
+                aria-label={`Colour ${c}`}
+                aria-pressed={color === c}
+                onClick={() => setColor(c)}
+                className="h-8 w-8 cursor-pointer rounded-full"
+                style={{
+                  background: c,
+                  border: color === c ? "3px solid var(--text)" : "1px solid var(--line)",
+                }}
+              />
             ))}
             <IconButton
               label="Clear canvas"
@@ -222,7 +277,7 @@ export function DrawRoom({ game }: { game: GameRow }) {
       </div>
       <div
         ref={boxRef}
-        className="relative aspect-square w-full max-w-[560px] flex-none touch-none self-center overflow-hidden rounded-card border border-line bg-s1"
+        className="rounded-card border-line bg-s1 relative aspect-square w-full max-w-[560px] flex-none touch-none self-center overflow-hidden border"
         onPointerDown={down}
         onPointerMove={move}
         onPointerUp={up}
@@ -230,12 +285,21 @@ export function DrawRoom({ game }: { game: GameRow }) {
         role="img"
         aria-label={drawing ? `Canvas. Draw ${word ?? ""}` : `${partner.name}'s drawing`}
       >
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0">
+        <svg
+          width={size}
+          height={size}
+          viewBox={`0 0 ${size} ${size}`}
+          className="absolute inset-0"
+        >
           {strokes.map((st) => (
             <path key={st.id} d={pathFromStroke(st.pts, size)} fill={st.color} />
           ))}
         </svg>
-        {!strokes.length && <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-faint">{drawing ? "Draw with your finger" : "Watch the canvas"}</div>}
+        {!strokes.length && (
+          <div className="text-faint pointer-events-none absolute inset-0 flex items-center justify-center text-sm">
+            {drawing ? "Draw with your finger" : "Watch the canvas"}
+          </div>
+        )}
       </div>
       {!drawing && (
         <form
@@ -254,7 +318,7 @@ export function DrawRoom({ game }: { game: GameRow }) {
             value={guess}
             autoComplete="off"
             onChange={(e) => setGuess(e.target.value)}
-            className="h-[52px] min-w-0 flex-1 rounded-input border border-line bg-s2 px-4 text-base text-text outline-none focus:border-accent"
+            className="rounded-input border-line bg-s2 text-text focus:border-accent h-[52px] min-w-0 flex-1 border px-4 text-base outline-none"
           />
           <IconButton label="Guess" tone="accent" type="submit" dim={52}>
             <PaperPlaneRight size={20} weight="fill" />

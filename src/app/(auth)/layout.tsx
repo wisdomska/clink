@@ -3,8 +3,8 @@ import { HeroGlasses } from "@/components/clink/hero-glasses";
 /** Auth, onboarding, link and install: one column on phones, art panel beside it from 1024 px. */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-dvh bg-app lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-      <aside aria-hidden className="hidden items-center p-10 lg:flex lg:bg-page">
+    <div className="bg-app min-h-dvh lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <aside aria-hidden className="lg:bg-page hidden items-center p-10 lg:flex">
         <div className="w-full">
           <HeroGlasses />
           <p className="display mt-8 text-[36px] leading-[1.05]">

@@ -6,12 +6,22 @@ import { useCouple } from "@/features/couple/context";
 import { Button, IconButton } from "@/components/ui/button";
 import { PartnerMark } from "@/components/ui/heading";
 import { toast } from "@/components/ui/toast";
-import { WORD_TURNS_EACH, STORY_MAX_LINES, wordPoints, type WordState, type StoryState } from "../engines/turns";
+import {
+  WORD_TURNS_EACH,
+  STORY_MAX_LINES,
+  wordPoints,
+  type WordState,
+  type StoryState,
+} from "../engines/turns";
 import { RoomHeader, sendMove, type GameRow } from "./shared";
 import { startGame } from "../meta";
 
 function adjacent(a: number, b: number) {
-  return Math.abs(Math.floor(a / 4) - Math.floor(b / 4)) <= 1 && Math.abs((a % 4) - (b % 4)) <= 1 && a !== b;
+  return (
+    Math.abs(Math.floor(a / 4) - Math.floor(b / 4)) <= 1 &&
+    Math.abs((a % 4) - (b % 4)) <= 1 &&
+    a !== b
+  );
 }
 
 /* PLAY-06 Word board */
@@ -22,7 +32,10 @@ export function WordRoom({ game }: { game: GameRow }) {
   const [path, setPath] = useState<number[]>([]);
   const [busy, setBusy] = useState(false);
   const myTurn = s.turn === me.id && game.status === "active";
-  const word = path.map((i) => s.board[i]).join("").toLowerCase();
+  const word = path
+    .map((i) => s.board[i])
+    .join("")
+    .toLowerCase();
   const my = s.scores[me.id] ?? 0;
   const their = s.scores[partner.id] ?? 0;
 
@@ -35,7 +48,11 @@ export function WordRoom({ game }: { game: GameRow }) {
 
   return (
     <>
-      <RoomHeader type="word" counter={`${Math.min(s.plays.length + 1, WORD_TURNS_EACH * 2)}/${WORD_TURNS_EACH * 2}`} progress={s.plays.length / (WORD_TURNS_EACH * 2)} />
+      <RoomHeader
+        type="word"
+        counter={`${Math.min(s.plays.length + 1, WORD_TURNS_EACH * 2)}/${WORD_TURNS_EACH * 2}`}
+        progress={s.plays.length / (WORD_TURNS_EACH * 2)}
+      />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <PartnerMark who={me.role} size={12} />
@@ -43,11 +60,15 @@ export function WordRoom({ game }: { game: GameRow }) {
           <span className="mono text-[28px]">{my}</span>
         </div>
         {game.status === "finished" ? (
-          <span className="mono text-xs text-faint">FINAL</span>
+          <span className="mono text-faint text-xs">FINAL</span>
         ) : myTurn ? (
-          <span className="rounded-full bg-accent px-3 py-1.5 text-[13px] font-bold text-on-accent">Your turn</span>
+          <span className="bg-accent text-on-accent rounded-full px-3 py-1.5 text-[13px] font-bold">
+            Your turn
+          </span>
         ) : (
-          <span className="rounded-full border border-line px-3 py-1.5 text-[13px] font-medium text-muted">Their turn</span>
+          <span className="border-line text-muted rounded-full border px-3 py-1.5 text-[13px] font-medium">
+            Their turn
+          </span>
         )}
         <div className="flex items-center gap-2">
           <span className="mono text-[28px]">{their}</span>
@@ -55,20 +76,38 @@ export function WordRoom({ game }: { game: GameRow }) {
           <PartnerMark who={partner.role} size={12} />
         </div>
       </div>
-      <div className="grid w-full max-w-[400px] grid-cols-4 gap-2 self-center" role="grid" aria-label="Letter board">
+      <div
+        className="grid w-full max-w-[400px] grid-cols-4 gap-2 self-center"
+        role="grid"
+        aria-label="Letter board"
+      >
         {s.board.map((t, i) => {
           const on = path.includes(i);
-          const canTap = myTurn && !on && (path.length === 0 || adjacent(path[path.length - 1]!, i));
+          const canTap =
+            myTurn && !on && (path.length === 0 || adjacent(path[path.length - 1]!, i));
           return (
             <button
               key={i}
               type="button"
               disabled={!myTurn}
-              onClick={() => (on && path[path.length - 1] === i ? setPath(path.slice(0, -1)) : canTap ? setPath([...path, i]) : undefined)}
+              onClick={() =>
+                on && path[path.length - 1] === i
+                  ? setPath(path.slice(0, -1))
+                  : canTap
+                    ? setPath([...path, i])
+                    : undefined
+              }
               aria-pressed={on}
               aria-label={`${t}${on ? `, letter ${path.indexOf(i) + 1}` : ""}`}
-              className="flap mono flex aspect-square cursor-pointer items-center justify-center rounded-flap text-[30px] disabled:cursor-default"
-              style={{ border: on ? "2px solid var(--accent)" : "1px solid var(--line)", color: on ? "var(--accent)" : canTap || !myTurn ? "var(--text)" : "var(--text-faint)" }}
+              className="flap mono rounded-flap flex aspect-square cursor-pointer items-center justify-center text-[30px] disabled:cursor-default"
+              style={{
+                border: on ? "2px solid var(--accent)" : "1px solid var(--line)",
+                color: on
+                  ? "var(--accent)"
+                  : canTap || !myTurn
+                    ? "var(--text)"
+                    : "var(--text-faint)",
+              }}
             >
               {t === "QU" ? "Qu" : t}
             </button>
@@ -77,11 +116,20 @@ export function WordRoom({ game }: { game: GameRow }) {
       </div>
       {myTurn && (
         <div className="flex items-center gap-2">
-          <div className="mono flex h-[52px] flex-1 items-center rounded-input border border-line bg-s2 px-4 text-xl uppercase" aria-live="polite">
-            {word || <span className="text-sm text-faint normal-case">Tap touching letters</span>}
-            {word.length >= 3 && <span className="ml-auto text-sm text-muted normal-case">+{wordPoints(word)}</span>}
+          <div
+            className="mono rounded-input border-line bg-s2 flex h-[52px] flex-1 items-center border px-4 text-xl uppercase"
+            aria-live="polite"
+          >
+            {word || <span className="text-faint text-sm normal-case">Tap touching letters</span>}
+            {word.length >= 3 && (
+              <span className="text-muted ml-auto text-sm normal-case">+{wordPoints(word)}</span>
+            )}
           </div>
-          <IconButton label="Remove last letter" dim={52} onClick={() => setPath(path.slice(0, -1))}>
+          <IconButton
+            label="Remove last letter"
+            dim={52}
+            onClick={() => setPath(path.slice(0, -1))}
+          >
             <Backspace size={20} />
           </IconButton>
         </div>
@@ -96,21 +144,47 @@ export function WordRoom({ game }: { game: GameRow }) {
           </Button>
         </div>
       )}
-      {!myTurn && game.status === "active" && <p className="m-0 text-center text-sm text-muted">We&apos;ll ping you when it&apos;s your turn. It can wait days.</p>}
+      {!myTurn && game.status === "active" && (
+        <p className="text-muted m-0 text-center text-sm">
+          We&apos;ll ping you when it&apos;s your turn. It can wait days.
+        </p>
+      )}
       <div className="flex flex-col gap-1.5">
-        {[...s.plays].reverse().slice(0, 12).map((p, i) => (
-          <div key={i} className="flex items-center gap-2 text-sm">
-            <PartnerMark who={p.by === me.id ? me.role : partner.role} />
-            <span className="flex-1 text-muted">{p.by === me.id ? "You" : partner.name}</span>
-            <span className="mono">{p.word ? p.word.toUpperCase() : "pass"}</span>
-            <span className="mono w-8 text-right text-muted">+{p.points}</span>
-          </div>
-        ))}
+        {[...s.plays]
+          .reverse()
+          .slice(0, 12)
+          .map((p, i) => (
+            <div key={i} className="flex items-center gap-2 text-sm">
+              <PartnerMark who={p.by === me.id ? me.role : partner.role} />
+              <span className="text-muted flex-1">{p.by === me.id ? "You" : partner.name}</span>
+              <span className="mono">{p.word ? p.word.toUpperCase() : "pass"}</span>
+              <span className="mono text-muted w-8 text-right">+{p.points}</span>
+            </div>
+          ))}
       </div>
       {game.status === "finished" && (
         <div className="flex flex-col gap-2">
-          <div className="display text-[28px]">{my === their ? "A draw." : my > their ? <>You <em>win</em>.</> : <>{partner.name} <em>wins</em>.</>}</div>
-          <Button onClick={async () => { const id = await startGame("word").catch(() => null); if (id) router.push(`/play/word/${id}`); }}>New board</Button>
+          <div className="display text-[28px]">
+            {my === their ? (
+              "A draw."
+            ) : my > their ? (
+              <>
+                You <em>win</em>.
+              </>
+            ) : (
+              <>
+                {partner.name} <em>wins</em>.
+              </>
+            )}
+          </div>
+          <Button
+            onClick={async () => {
+              const id = await startGame("word").catch(() => null);
+              if (id) router.push(`/play/word/${id}`);
+            }}
+          >
+            New board
+          </Button>
         </div>
       )}
     </>
@@ -134,7 +208,8 @@ export function StoryRoom({ game }: { game: GameRow }) {
     const ctx = canvas.getContext("2d")!;
     await document.fonts.ready;
     const body = getComputedStyle(document.body).fontFamily;
-    const display = getComputedStyle(document.documentElement).getPropertyValue("--font-cabinet") || "sans-serif";
+    const display =
+      getComputedStyle(document.documentElement).getPropertyValue("--font-cabinet") || "sans-serif";
     ctx.font = `400 36px ${body}`;
     const wrap = (t: string) => {
       const words = t.split(" ");
@@ -168,7 +243,8 @@ export function StoryRoom({ game }: { game: GameRow }) {
     const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/png"));
     if (!blob) return;
     const file = new File([blob], "our-story.png", { type: "image/png" });
-    if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file] }).catch(() => undefined);
+    if (navigator.canShare?.({ files: [file] }))
+      await navigator.share({ files: [file] }).catch(() => undefined);
     else {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
@@ -180,11 +256,26 @@ export function StoryRoom({ game }: { game: GameRow }) {
 
   return (
     <>
-      <RoomHeader type="story" counter={`${s.lines.length}/${STORY_MAX_LINES}`} progress={s.lines.length / STORY_MAX_LINES} />
-      <div className="flex flex-col gap-3 rounded-card bg-s2 p-5" style={{ transform: "rotate(-0.5deg)" }}>
+      <RoomHeader
+        type="story"
+        counter={`${s.lines.length}/${STORY_MAX_LINES}`}
+        progress={s.lines.length / STORY_MAX_LINES}
+      />
+      <div
+        className="rounded-card bg-s2 flex flex-col gap-3 p-5"
+        style={{ transform: "rotate(-0.5deg)" }}
+      >
         {all.map((l, i) => (
-          <p key={i} className="m-0 flex gap-2.5 text-[17px] leading-[1.5]" style={{ color: l.by === "" ? "var(--text-muted)" : "var(--text)" }}>
-            {l.by && <span className="mt-2"><PartnerMark who={l.by === me.id ? me.role : partner.role} /></span>}
+          <p
+            key={i}
+            className="m-0 flex gap-2.5 text-[17px] leading-[1.5]"
+            style={{ color: l.by === "" ? "var(--text-muted)" : "var(--text)" }}
+          >
+            {l.by && (
+              <span className="mt-2">
+                <PartnerMark who={l.by === me.id ? me.role : partner.role} />
+              </span>
+            )}
             <span>{l.text}</span>
           </p>
         ))}
@@ -197,12 +288,23 @@ export function StoryRoom({ game }: { game: GameRow }) {
             if (await sendMove(game.id, { line })) setLine("");
           }}
         >
-          <input aria-label="Your line" placeholder="Your line. Keep it going." value={line} maxLength={160} onChange={(e) => setLine(e.target.value)} className="h-[52px] rounded-input border border-line bg-s2 px-4 text-base text-text outline-none focus:border-accent" />
+          <input
+            aria-label="Your line"
+            placeholder="Your line. Keep it going."
+            value={line}
+            maxLength={160}
+            onChange={(e) => setLine(e.target.value)}
+            className="rounded-input border-line bg-s2 text-text focus:border-accent h-[52px] border px-4 text-base outline-none"
+          />
           <div className="grid grid-cols-[2fr_1fr] gap-2">
             <Button type="submit" disabled={line.trim().length < 2}>
               Add my line
             </Button>
-            <Button variant="secondary" disabled={s.lines.length < 4} onClick={() => sendMove(game.id, { end: true })}>
+            <Button
+              variant="secondary"
+              disabled={s.lines.length < 4}
+              onClick={() => sendMove(game.id, { end: true })}
+            >
               The end
             </Button>
           </div>
@@ -215,15 +317,28 @@ export function StoryRoom({ game }: { game: GameRow }) {
           <Button onClick={exportCard}>
             <DownloadSimple size={20} aria-hidden /> Save as an image
           </Button>
-          <Button variant="ghost" size="lg" onClick={async () => { const id = await startGame("story").catch(() => null); if (id) router.push(`/play/story/${id}`); }}>
+          <Button
+            variant="ghost"
+            size="lg"
+            onClick={async () => {
+              const id = await startGame("story").catch(() => null);
+              if (id) router.push(`/play/story/${id}`);
+            }}
+          >
             Start another
           </Button>
         </div>
       ) : (
-        <p className="m-0 text-center text-sm text-muted">{partner.name}&apos;s line. We&apos;ll ping you.</p>
+        <p className="text-muted m-0 text-center text-sm">
+          {partner.name}&apos;s line. We&apos;ll ping you.
+        </p>
       )}
       {!s.ended && (
-        <button type="button" onClick={() => exportCard().catch(() => toast("Couldn't make the image."))} className="cursor-pointer self-center bg-transparent text-sm font-medium text-accent">
+        <button
+          type="button"
+          onClick={() => exportCard().catch(() => toast("Couldn't make the image."))}
+          className="text-accent cursor-pointer self-center bg-transparent text-sm font-medium"
+        >
           Save the story so far as an image
         </button>
       )}

@@ -7,14 +7,17 @@ const IDLE_MS = 2 * 60 * 1000;
 /** DARK-01: auto-lock after 2 minutes idle. Activity slides the server session every 30 s. */
 export function DarkIdle() {
   const router = useRouter();
-  const last = useRef(Date.now());
+  const last = useRef(0);
   const lastPing = useRef(0);
   useEffect(() => {
+    last.current = Date.now();
     const touch = () => {
       last.current = Date.now();
       if (Date.now() - lastPing.current > 30_000) {
         lastPing.current = Date.now();
-        void fetch("/api/dark/ping", { method: "POST" }).then((r) => r.status === 401 && router.replace("/dark"));
+        void fetch("/api/dark/ping", { method: "POST" }).then(
+          (r) => r.status === 401 && router.replace("/dark"),
+        );
       }
     };
     const lock = () => {

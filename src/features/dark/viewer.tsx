@@ -13,7 +13,17 @@ import { formatClock } from "@/lib/time";
  * that is revoked on close; tab switch or app blur hides the media and is logged
  * (SAF-07). View once is consumed when closed. Never claims to block screenshots.
  */
-export function SensitiveViewer({ id, mine, kind, retention }: { id: string; mine: boolean; kind: string; retention: string }) {
+export function SensitiveViewer({
+  id,
+  mine,
+  kind,
+  retention,
+}: {
+  id: string;
+  mine: boolean;
+  kind: string;
+  retention: string;
+}) {
   const router = useRouter();
   const qc = useQueryClient();
   const { me } = useCouple();
@@ -39,7 +49,8 @@ export function SensitiveViewer({ id, mine, kind, retention }: { id: string; min
     if (urlRef.current) URL.revokeObjectURL(urlRef.current);
     urlRef.current = null;
     setUrl(null);
-    if (retention === "once" && !mine && revealed) void fetch(`/api/media/${id}/viewed`, { method: "POST" });
+    if (retention === "once" && !mine && revealed)
+      void fetch(`/api/media/${id}/viewed`, { method: "POST" });
     void qc.invalidateQueries({ queryKey: ["vault"] });
     router.replace("/dark/vault");
   }
@@ -48,7 +59,11 @@ export function SensitiveViewer({ id, mine, kind, retention }: { id: string; min
     const hide = (event: "blur" | "hidden") => {
       if (!urlRef.current) return;
       setHidden(true);
-      void fetch("/api/dark/events", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mediaId: id, event }) });
+      void fetch("/api/dark/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mediaId: id, event }),
+      });
     };
     const onBlur = () => hide("blur");
     const onVis = () => document.visibilityState === "hidden" && hide("hidden");
@@ -62,12 +77,19 @@ export function SensitiveViewer({ id, mine, kind, retention }: { id: string; min
   }, [id]);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-app" role="dialog" aria-modal="true" aria-label="Private media">
+    <div
+      className="bg-app fixed inset-0 z-50 flex flex-col"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Private media"
+    >
       <div className="flex flex-none items-center gap-2 px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-2">
         <IconButton label="Close" onClick={close}>
           <X size={20} />
         </IconButton>
-        <div className="mono flex-1 text-xs text-faint">{retention === "once" ? "VIEW ONCE" : retention === "vault" ? "KEPT IN VAULT" : "EXPIRES"}</div>
+        <div className="mono text-faint flex-1 text-xs">
+          {retention === "once" ? "VIEW ONCE" : retention === "vault" ? "KEPT IN VAULT" : "EXPIRES"}
+        </div>
         {mine && (
           <Button
             variant="danger-outline"
@@ -82,31 +104,67 @@ export function SensitiveViewer({ id, mine, kind, retention }: { id: string; min
           </Button>
         )}
       </div>
-      <div className="relative flex min-h-0 flex-1 items-center justify-center p-4" onContextMenu={(e) => e.preventDefault()}>
+      <div
+        className="relative flex min-h-0 flex-1 items-center justify-center p-4"
+        onContextMenu={(e) => e.preventDefault()}
+      >
         {error ? (
-          <p className="text-center text-base text-muted">{error}</p>
+          <p className="text-muted text-center text-base">{error}</p>
         ) : !revealed ? (
-          <button type="button" onClick={reveal} className="flex h-full max-h-[70dvh] w-full max-w-[420px] cursor-pointer flex-col items-center justify-center gap-2 rounded-card border-0 text-text" style={{ background: "radial-gradient(circle at 30% 40%,rgba(255,90,60,.55),transparent 45%),radial-gradient(circle at 70% 70%,rgba(244,240,245,.15),transparent 50%),#211E25" }}>
+          <button
+            type="button"
+            onClick={reveal}
+            className="rounded-card text-text flex h-full max-h-[70dvh] w-full max-w-[420px] cursor-pointer flex-col items-center justify-center gap-2 border-0"
+            style={{
+              background:
+                "radial-gradient(circle at 30% 40%,rgba(255,90,60,.55),transparent 45%),radial-gradient(circle at 70% 70%,rgba(244,240,245,.15),transparent 50%),#211E25",
+            }}
+          >
             <EyeSlash size={28} aria-hidden />
             <span className="text-base font-medium">Tap to reveal</span>
-            {retention === "once" && !mine && <span className="text-sm text-muted">Opens once. Gone when you close it.</span>}
+            {retention === "once" && !mine && (
+              <span className="text-muted text-sm">Opens once. Gone when you close it.</span>
+            )}
           </button>
         ) : (
           url && (
-            <div className="an-fade relative max-h-full max-w-full select-none" style={{ filter: hidden ? "blur(28px)" : "none", transition: "filter 200ms" }}>
+            <div
+              className="an-fade relative max-h-full max-w-full select-none"
+              style={{ filter: hidden ? "blur(28px)" : "none", transition: "filter 200ms" }}
+            >
               {kind === "video" ? (
-                <video src={url} autoPlay playsInline controls controlsList="nodownload noplaybackrate" disablePictureInPicture className="max-h-[78dvh] max-w-full rounded-thumb" />
+                <video
+                  src={url}
+                  autoPlay
+                  playsInline
+                  controls
+                  controlsList="nodownload noplaybackrate"
+                  disablePictureInPicture
+                  className="rounded-thumb max-h-[78dvh] max-w-full"
+                />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={url} alt="Private photo" draggable={false} className="max-h-[78dvh] max-w-full rounded-thumb" />
+                <img
+                  src={url}
+                  alt="Private photo"
+                  draggable={false}
+                  className="rounded-thumb max-h-[78dvh] max-w-full"
+                />
               )}
               {kind === "video" && (
-                <div aria-hidden className="mono pointer-events-none absolute bottom-3 left-3 text-[11px] text-[rgba(244,240,245,.55)]">
+                <div
+                  aria-hidden
+                  className="mono pointer-events-none absolute bottom-3 left-3 text-[11px] text-[rgba(244,240,245,.55)]"
+                >
                   {me.name.toUpperCase()} · {formatClock(new Date(), me.timezone)}
                 </div>
               )}
               {hidden && (
-                <button type="button" onClick={() => setHidden(false)} className="absolute inset-0 flex cursor-pointer items-center justify-center bg-transparent text-base font-medium text-text">
+                <button
+                  type="button"
+                  onClick={() => setHidden(false)}
+                  className="text-text absolute inset-0 flex cursor-pointer items-center justify-center bg-transparent text-base font-medium"
+                >
                   Hidden while you were away. Tap to show.
                 </button>
               )}
@@ -114,7 +172,9 @@ export function SensitiveViewer({ id, mine, kind, retention }: { id: string; min
           )
         )}
       </div>
-      <p className="m-0 px-6 pb-[calc(env(safe-area-inset-bottom)+16px)] text-center text-xs text-faint">They can still screenshot. Only send what feels right.</p>
+      <p className="text-faint m-0 px-6 pb-[calc(env(safe-area-inset-bottom)+16px)] text-center text-xs">
+        They can still screenshot. Only send what feels right.
+      </p>
     </div>
   );
 }

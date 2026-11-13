@@ -6,7 +6,18 @@ import type { Database, Json } from "@/types/database";
 
 const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 const schema = z.object({
-  notify: z.object({ clinks: z.boolean(), chat: z.boolean(), games: z.boolean(), dates: z.boolean(), keepsakes: z.boolean(), dark: z.boolean(), detailed: z.boolean() }).partial().optional(),
+  notify: z
+    .object({
+      clinks: z.boolean(),
+      chat: z.boolean(),
+      games: z.boolean(),
+      dates: z.boolean(),
+      keepsakes: z.boolean(),
+      dark: z.boolean(),
+      detailed: z.boolean(),
+    })
+    .partial()
+    .optional(),
   quiet_start: time.optional(),
   quiet_end: time.optional(),
   app_icon: z.enum(["clink", "notes", "weather"]).optional(),
@@ -29,7 +40,12 @@ export const PATCH = handler(async (req) => {
   const { error } = await db.from("profiles").update(patch).eq("id", user.id);
   if (error) throw error;
   if (body.app_icon) {
-    (await cookies()).set(IDENTITY_COOKIE, body.app_icon, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", secure: true });
+    (await cookies()).set(IDENTITY_COOKIE, body.app_icon, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: "lax",
+      secure: true,
+    });
   }
   return ok({ ok: true });
 });

@@ -27,15 +27,19 @@ const ctaSecondary =
 
 export default function Landing() {
   return (
-    <div className="an-screen min-h-dvh bg-app pt-[max(env(safe-area-inset-top),4px)] pb-8">
+    <div className="an-screen bg-app min-h-dvh pt-[max(env(safe-area-inset-top),4px)] pb-8">
       <InstalledRedirect />
       <header className="mx-auto flex h-12 max-w-[1200px] items-center justify-between px-4 md:h-[72px] md:px-8">
-        <Link href="/" className="display text-[28px] text-text hover:text-text" aria-label="Clink home">
+        <Link
+          href="/"
+          className="display text-text hover:text-text text-[28px]"
+          aria-label="Clink home"
+        >
           clink
         </Link>
         <Link
           href="/login"
-          className="press flex h-11 items-center rounded-full border border-line bg-transparent px-[18px] text-sm font-medium text-text hover:text-text"
+          className="press border-line text-text hover:text-text flex h-11 items-center rounded-full border bg-transparent px-[18px] text-sm font-medium"
         >
           Log in
         </Link>
@@ -48,10 +52,11 @@ export default function Landing() {
             <h1 className="display mt-7 mb-0 text-[48px] leading-[1.05] md:text-[64px] lg:mt-0">
               Do things <em>together</em>, from apart.
             </h1>
-            <p className="mt-3 mb-0 max-w-[46ch] text-base leading-normal text-muted text-pretty md:text-lg">
-              Games, dates, dares and letters for two people in two places. One account links to exactly one person.
+            <p className="text-muted mt-3 mb-0 max-w-[46ch] text-base leading-normal text-pretty md:text-lg">
+              Games, dates, dares and letters for two people in two places. One account links to
+              exactly one person.
             </p>
-            <div className="mt-6 flex flex-col gap-2 sm:max-w-[420px] lg:flex-row lg:max-w-none">
+            <div className="mt-6 flex flex-col gap-2 sm:max-w-[420px] lg:max-w-none lg:flex-row">
               <Link href="/signup" className={cta}>
                 Start with your person <ArrowRight size={20} aria-hidden />
               </Link>
@@ -66,7 +71,10 @@ export default function Landing() {
         </section>
 
         {/* Four objects. Mobile keeps the prototype's alternating rows; desktop becomes an offset 2x2. */}
-        <section aria-labelledby="table" className="mt-14 flex flex-col gap-10 px-4 md:px-8 lg:mt-28">
+        <section
+          aria-labelledby="table"
+          className="mt-14 flex flex-col gap-10 px-4 md:px-8 lg:mt-28"
+        >
           <h2 id="table" className="display m-0 text-[28px] leading-[1.1] md:text-[36px]">
             Four things on the table.
           </h2>
@@ -74,14 +82,18 @@ export default function Landing() {
             <div className="grid grid-cols-[112px_1fr] items-center gap-5 lg:grid-cols-[140px_1fr]">
               <MiniMatchbook />
               <div>
-                <h3 className="display m-0 text-[22px] leading-[1.1]">Dares, one match at a time.</h3>
-                <p className="mt-1.5 mb-0 text-base leading-normal text-muted">Spin, strike, reveal. Pass is always free.</p>
+                <h3 className="display m-0 text-[22px] leading-[1.1]">
+                  Dares, one match at a time.
+                </h3>
+                <p className="text-muted mt-1.5 mb-0 text-base leading-normal">
+                  Spin, strike, reveal. Pass is always free.
+                </p>
               </div>
             </div>
             <div className="grid grid-cols-[1fr_156px] items-center gap-4 lg:mt-24">
               <div>
                 <h3 className="display m-0 text-[22px] leading-[1.1]">Date nights with a stub.</h3>
-                <p className="mt-1.5 mb-0 text-base leading-normal text-muted">
+                <p className="text-muted mt-1.5 mb-0 text-base leading-normal">
                   Cook together, stargaze, tour a museum. Tear it off when you&apos;re done.
                 </p>
               </div>
@@ -91,7 +103,7 @@ export default function Landing() {
               <MiniEnvelope />
               <div>
                 <h3 className="display m-0 text-[22px] leading-[1.1]">Letters for later.</h3>
-                <p className="mt-1.5 mb-0 text-base leading-normal text-muted">
+                <p className="text-muted mt-1.5 mb-0 text-base leading-normal">
                   Open when you can&apos;t sleep. Sealed until they need it.
                 </p>
               </div>
@@ -99,8 +111,10 @@ export default function Landing() {
             <div className="flex flex-col gap-3 lg:mt-24">
               <MiniBoard />
               <div>
-                <h3 className="display m-0 text-[22px] leading-[1.1]">The countdown to arrivals.</h3>
-                <p className="mt-1.5 mb-0 text-base leading-normal text-muted">
+                <h3 className="display m-0 text-[22px] leading-[1.1]">
+                  The countdown to arrivals.
+                </h3>
+                <p className="text-muted mt-1.5 mb-0 text-base leading-normal">
                   Your next visit, flipping down on a departure board.
                 </p>
               </div>
@@ -108,25 +122,32 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="mx-4 mt-12 flex items-start gap-3 rounded-card border border-line p-4 md:mx-8 lg:mt-24 lg:max-w-[640px]">
-          <div className="display flex h-11 w-11 flex-none items-center justify-center rounded-full border-[1.5px] border-text text-base tracking-normal">
+        <section className="rounded-card border-line mx-4 mt-12 flex items-start gap-3 border p-4 md:mx-8 lg:mt-24 lg:max-w-[640px]">
+          <div className="display border-text flex h-11 w-11 flex-none items-center justify-center rounded-full border-[1.5px] text-base tracking-normal">
             18+
           </div>
-          <p className="m-0 text-base leading-normal text-muted">
-            Clink is for adults in a relationship. After Dark, the private space, only opens when you both say yes.
+          <p className="text-muted m-0 text-base leading-normal">
+            Clink is for adults in a relationship. After Dark, the private space, only opens when
+            you both say yes.
           </p>
         </section>
       </main>
 
-      <footer className="mx-4 mt-10 flex max-w-[1200px] items-end justify-between border-t border-line pt-5 md:mx-8 lg:mx-auto lg:px-8">
+      <footer className="border-line mx-4 mt-10 flex max-w-[1200px] items-end justify-between border-t pt-5 md:mx-8 lg:mx-auto lg:px-8">
         <div>
           <div className="display text-[22px] tracking-normal">clink</div>
-          <div className="text-sm text-faint">Made for two.</div>
+          <div className="text-faint text-sm">Made for two.</div>
         </div>
         <nav aria-label="Legal" className="flex flex-col gap-1 text-right text-sm font-medium">
-          <Link href="/privacy" className="text-muted">Privacy</Link>
-          <Link href="/terms" className="text-muted">Terms</Link>
-          <Link href="/safety" className="text-muted">Help and safety</Link>
+          <Link href="/privacy" className="text-muted">
+            Privacy
+          </Link>
+          <Link href="/terms" className="text-muted">
+            Terms
+          </Link>
+          <Link href="/safety" className="text-muted">
+            Help and safety
+          </Link>
         </nav>
       </footer>
     </div>

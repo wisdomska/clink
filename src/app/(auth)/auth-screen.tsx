@@ -24,7 +24,11 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
   const [year, setYear] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [dobError, setDobError] = useState<string | null>(null);
-  const [formError, setFormError] = useState<string | null>(params.get("error") === "link" ? "That link expired or was already used. Send a fresh one." : null);
+  const [formError, setFormError] = useState<string | null>(
+    params.get("error") === "link"
+      ? "That link expired or was already used. Send a fresh one."
+      : null,
+  );
   const [busy, setBusy] = useState(false);
   const [resendIn, setResendIn] = useState(0);
   const monthRef = useRef<HTMLInputElement>(null);
@@ -49,7 +53,9 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
     });
     if (error) {
       if (error.message.toLowerCase().includes("signups not allowed") || error.status === 422) {
-        setFormError(mode === "login" ? "No account with that email yet. Make one instead?" : error.message);
+        setFormError(
+          mode === "login" ? "No account with that email yet. Make one instead?" : error.message,
+        );
       } else if (error.status === 429) {
         setFormError("Too many emails just now. Give it a minute.");
       } else {
@@ -138,7 +144,10 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
 
   return (
     <div className="an-screen flex flex-1 flex-col">
-      <IconButton label="Back" onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}>
+      <IconButton
+        label="Back"
+        onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
+      >
         <ArrowLeft size={20} />
       </IconButton>
 
@@ -156,7 +165,9 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
             )}
           </Display>
           <Lead className="mt-2">
-            {mode === "signup" ? "Takes a minute. Clink is 18+ only." : "Pick up where you two left off."}
+            {mode === "signup"
+              ? "Takes a minute. Clink is 18+ only."
+              : "Pick up where you two left off."}
           </Lead>
           <div className="mt-6 flex flex-col gap-2">
             <Button variant="secondary" size="lg" onClick={passkey}>
@@ -168,10 +179,10 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
               Continue with Google
             </Button>
           </div>
-          <div className="mt-6 mb-4 flex items-center gap-3 text-sm font-medium text-faint">
-            <span className="h-px flex-1 bg-line" />
+          <div className="text-faint mt-6 mb-4 flex items-center gap-3 text-sm font-medium">
+            <span className="bg-line h-px flex-1" />
             or use email
-            <span className="h-px flex-1 bg-line" />
+            <span className="bg-line h-px flex-1" />
           </div>
           <Label htmlFor="email">Email</Label>
           <Input
@@ -188,7 +199,7 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
           <FieldError id="email-error">{emailError}</FieldError>
           {mode === "signup" && (
             <fieldset className="m-0 mt-4 border-0 p-0">
-              <legend className="mb-1.5 p-0 text-sm font-medium text-muted">Date of birth</legend>
+              <legend className="text-muted mb-1.5 p-0 text-sm font-medium">Date of birth</legend>
               <div className="grid grid-cols-[1fr_1fr_1.6fr] gap-2">
                 <Input
                   aria-label="Day"
@@ -243,14 +254,20 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
           <Button type="submit" disabled={busy} className="mt-6 flex-none">
             {busy ? "One sec" : "Continue"}
           </Button>
-          <p className="mt-4 text-center text-sm text-muted">
+          <p className="text-muted mt-4 text-center text-sm">
             {mode === "signup" ? (
               <>
-                Already have an account? <Link href={`/login${next ? `?next=${encodeURIComponent(next)}` : ""}`}>Log in</Link>
+                Already have an account?{" "}
+                <Link href={`/login${next ? `?next=${encodeURIComponent(next)}` : ""}`}>
+                  Log in
+                </Link>
               </>
             ) : (
               <>
-                New here? <Link href={`/signup${next ? `?next=${encodeURIComponent(next)}` : ""}`}>Make an account</Link>
+                New here?{" "}
+                <Link href={`/signup${next ? `?next=${encodeURIComponent(next)}` : ""}`}>
+                  Make an account
+                </Link>
               </>
             )}
           </p>
@@ -262,11 +279,14 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
           <div className="an-reveal flex flex-1 flex-col justify-center gap-4">
             <div
               aria-hidden
-              className="relative h-[120px] w-[180px] overflow-hidden rounded-input border border-line bg-s2"
+              className="rounded-input border-line bg-s2 relative h-[120px] w-[180px] overflow-hidden border"
               style={{ transform: "rotate(-3deg)" }}
             >
-              <div className="absolute inset-0 bg-s3" style={{ clipPath: "polygon(0 0,100% 0,50% 60%)" }} />
-              <div className="absolute top-[60%] left-1/2 -mt-5 -ml-5 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-on-accent">
+              <div
+                className="bg-s3 absolute inset-0"
+                style={{ clipPath: "polygon(0 0,100% 0,50% 60%)" }}
+              />
+              <div className="bg-accent text-on-accent absolute top-[60%] left-1/2 -mt-5 -ml-5 flex h-10 w-10 items-center justify-center rounded-full">
                 <Check size={20} />
               </div>
             </div>
@@ -276,7 +296,10 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
             <Lead>We sent a link to {email}. Tap it on this phone and you&apos;re in.</Lead>
           </div>
           <div className="flex flex-col gap-2">
-            <a href={mailAppHref(email)} className="press flex h-14 items-center justify-center rounded-full bg-accent text-base font-bold text-on-accent hover:text-on-accent">
+            <a
+              href={mailAppHref(email)}
+              className="press bg-accent text-on-accent hover:text-on-accent flex h-14 items-center justify-center rounded-full text-base font-bold"
+            >
               Open email app
             </a>
             <Button
@@ -293,7 +316,9 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
                 setBusy(false);
               }}
             >
-              {resendIn > 0 ? `Resend in 0:${String(resendIn).padStart(2, "0")}` : "Resend the link"}
+              {resendIn > 0
+                ? `Resend in 0:${String(resendIn).padStart(2, "0")}`
+                : "Resend the link"}
             </Button>
           </div>
         </>
@@ -302,7 +327,7 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
       {view === "blocked" && (
         <>
           <div className="an-reveal flex flex-1 flex-col justify-center gap-4">
-            <div className="display flex h-[72px] w-[72px] items-center justify-center rounded-full border-2 border-danger text-[22px] tracking-normal text-danger">
+            <div className="display border-danger text-danger flex h-[72px] w-[72px] items-center justify-center rounded-full border-2 text-[22px] tracking-normal">
               18+
             </div>
             <Display size={36} className="mt-2">
@@ -310,7 +335,10 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
             </Display>
             <Lead>Come back when you&apos;re 18. You can&apos;t try again for 24 hours.</Lead>
           </div>
-          <Link href="/" className="press flex h-[52px] items-center justify-center rounded-full border border-line bg-s2 text-base font-medium text-text hover:text-text">
+          <Link
+            href="/"
+            className="press border-line bg-s2 text-text hover:text-text flex h-[52px] items-center justify-center rounded-full border text-base font-medium"
+          >
             Back to the start
           </Link>
         </>
@@ -321,7 +349,8 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
 
 function mailAppHref(email: string) {
   const domain = email.split("@")[1] ?? "";
-  if (domain === "gmail.com" || domain === "googlemail.com") return "https://mail.google.com/mail/u/0/#inbox";
+  if (domain === "gmail.com" || domain === "googlemail.com")
+    return "https://mail.google.com/mail/u/0/#inbox";
   if (/(outlook|hotmail|live)\./.test(domain)) return "https://outlook.live.com/mail/";
   if (domain.includes("yahoo.")) return "https://mail.yahoo.com/";
   if (domain === "icloud.com" || domain === "me.com") return "https://www.icloud.com/mail";

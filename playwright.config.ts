@@ -4,7 +4,10 @@ if (existsSync(".env.local")) process.loadEnvFile(".env.local");
 
 const port = Number(process.env.PORT ?? 3000);
 // Sandboxed dev containers ship a pre-installed Chromium; CI installs its own.
-const localChromium = existsSync("/opt/pw-browsers/chromium") && !process.env.CI ? "/opt/pw-browsers/chromium" : undefined;
+const localChromium =
+  existsSync("/opt/pw-browsers/chromium") && !process.env.CI
+    ? "/opt/pw-browsers/chromium"
+    : undefined;
 
 export default defineConfig({
   testDir: "tests",
@@ -24,7 +27,15 @@ export default defineConfig({
   },
   projects: [
     { name: "mobile", use: { ...devices["Pixel 7"], browserName: "chromium" } },
-    { name: "tablet", use: { viewport: { width: 834, height: 1194 }, deviceScaleFactor: 1, hasTouch: true, browserName: "chromium" } },
+    {
+      name: "tablet",
+      use: {
+        viewport: { width: 834, height: 1194 },
+        deviceScaleFactor: 1,
+        hasTouch: true,
+        browserName: "chromium",
+      },
+    },
     { name: "desktop", use: { viewport: { width: 1440, height: 900 }, browserName: "chromium" } },
   ],
   webServer: process.env.PW_NO_SERVER
