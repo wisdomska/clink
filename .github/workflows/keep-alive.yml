@@ -1,0 +1,30 @@
+name: Keep Supabase awake
+
+# Supabase Free pauses a project after 7 days without activity.
+# This pings each environment's health endpoint (which touches the database)
+# and the Supabase REST API directly, every 3 days.
+on:
+  schedule:
+    - cron: "17 6 */3 * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env: [production, preview]
+    steps:
+      - name: Ping app health endpoint
+        env:
+          URL: ${{ matrix.env == 'production' && 'https://clinkapp.vercel.app' || 'https://clinkapp-preview.vercel.app' }}
+        run: curl -fsS --max-time 30 "$URL/api/health" || echo "app ping failed"
+      - name: Ping Supabase REST
+        env:
+          SB_URL: ${{ matrix.env == 'production' && secrets.SUPABASE_PROD_URL || secrets.SUPABASE_PREVIEW_URL }}
+          SB_KEY: ${{ matrix.env == 'production' && secrets.SUPABASE_PROD_ANON_KEY || secrets.SUPABASE_PREVIEW_ANON_KEY }}
+        run: |
+          if [ -z "$SB_URL" ]; then echo "secret not set, skipping"; exit 0; fi
+          curl -fsS --max-time 30 "$SB_URL/rest/v1/feature_flags?select=key&limit=1" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY"
