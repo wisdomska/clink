@@ -189,3 +189,41 @@
   .an-float { animation: fadeOut 1200ms ease both; }
   .press:active { transform: none; }
 }
+
+/*
+ * App shell layout.
+ * < 768: bottom bar. 768-1023 portrait: bottom bar. 768-1023 landscape: compact rail.
+ * >= 1024: full left rail with labels. Content capped at 1200 px.
+ */
+.rail { display: none; }
+.rail-mini { display: none; }
+.app-main {
+  min-height: 100dvh;
+  padding-bottom: calc(64px + max(20px, env(safe-area-inset-bottom)));
+  --toast-bottom: calc(100px + env(safe-area-inset-bottom));
+}
+.app-main.no-tabs { padding-bottom: 0; --toast-bottom: 40px; }
+@media (min-width: 768px) and (max-width: 1023px) and (orientation: landscape) {
+  .tabbar { display: none; }
+  .rail { display: flex; width: 88px; }
+  .rail .rail-full { display: none; }
+  .rail .rail-mini { display: inline; }
+  .app-main, .app-main.no-tabs { padding-left: 88px; padding-bottom: 0; --toast-bottom: 40px; }
+}
+@media (min-width: 1024px) {
+  .tabbar { display: none; }
+  .rail { display: flex; width: var(--rail-w); }
+  .app-main, .app-main.no-tabs { padding-left: var(--rail-w); padding-bottom: 0; --toast-bottom: 40px; }
+}
+/* Screen container: phone gutter 16 px, content capped. */
+.screen {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 4px) 16px 24px;
+}
+@media (min-width: 768px) { .screen { padding: 24px 32px 40px; } }
+@media (min-width: 1024px) { .screen { padding: 32px 48px 48px; } }
+
+/* Never allow sideways page scroll on phones. */
+html, body { overflow-x: clip; }

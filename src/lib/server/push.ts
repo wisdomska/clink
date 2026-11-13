@@ -1,5 +1,5 @@
 import "server-only";
-import webpush from "web-push";
+import * as webpush from "web-push";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { serverEnv } from "@/lib/env";
 import { isQuietHours } from "@/lib/time";
