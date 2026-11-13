@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 const APP_PREFIXES = ["/us", "/chat", "/play", "/plans", "/keep", "/settings", "/dark", "/admin"];
-const NEEDS_SESSION = [...APP_PREFIXES, "/onboarding", "/link", "/install", "/archive"];
+const NEEDS_SESSION = [...APP_PREFIXES, "/onboarding", "/link", "/install", "/archive", "/unlock"];
 const AUTH_PAGES = ["/login", "/signup"];
 
 function startsWithAny(path: string, list: string[]) {

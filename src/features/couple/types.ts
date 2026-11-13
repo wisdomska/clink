@@ -25,6 +25,7 @@ export interface CoupleContextValue {
   ritualProposal: { time: string; byMe: boolean } | null;
   darkVisible: boolean;
   discreet: boolean;
+  appLock: boolean;
   isAdmin: boolean;
   email: string | null;
   settings: {

@@ -1071,14 +1071,14 @@ isOneToOne: false
                   ]
                 },"user_private": {
                   Row: {
-                    "age_verification_method": string | null,"age_verified_at": string | null,"created_at": string,"dob": string,"user_id": string
+                    "age_verification_method": string | null,"age_verified_at": string | null,"app_pin_failed_count": number,"app_pin_hash": string | null,"app_pin_locked_until": string | null,"created_at": string,"dob": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "age_verification_method"?: string | null,"age_verified_at"?: string | null,"created_at"?: string,"dob": string,"user_id": string
+                    "age_verification_method"?: string | null,"age_verified_at"?: string | null,"app_pin_failed_count"?: number,"app_pin_hash"?: string | null,"app_pin_locked_until"?: string | null,"created_at"?: string,"dob": string,"user_id": string
                   }
                   Update: {
-                    "age_verification_method"?: string | null,"age_verified_at"?: string | null,"created_at"?: string,"dob"?: string,"user_id"?: string
+                    "age_verification_method"?: string | null,"age_verified_at"?: string | null,"app_pin_failed_count"?: number,"app_pin_hash"?: string | null,"app_pin_locked_until"?: string | null,"created_at"?: string,"dob"?: string,"user_id"?: string
                   }
                   Relationships: [
                     

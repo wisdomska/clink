@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { journeyStep, pathFor } from "@/lib/server/journey";
 import { activeCouple } from "@/lib/server/api";
 import { storage } from "@/lib/storage";
+import { appLockEnabled, isAppUnlocked } from "@/lib/server/app-lock";
 import type { CoupleContextValue, Person } from "@/features/couple/types";
 
 async function avatarUrl(path: string | null): Promise<string | null> {
@@ -25,6 +26,10 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
   if (!user) redirect(`/login?next=${encodeURIComponent(nextPath)}`);
   const step = await journeyStep(user.id);
   if (step !== "app") redirect(pathFor(step));
+  // CHAT-07: optional PIN on open. Nothing is loaded until it is entered.
+  const appLock = await appLockEnabled(user.id);
+  if (appLock && !(await isAppUnlocked(user.id)))
+    redirect(`/unlock?next=${encodeURIComponent(nextPath)}`);
   const couple = (await activeCouple(user.id))!;
   const admin = supabaseAdmin();
   const cols =
@@ -77,6 +82,7 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
       : null,
     darkVisible: darkBoth,
     discreet: meRow.discreet_mode,
+    appLock,
     isAdmin: meRow.is_admin,
     email: user.email ?? null,
     settings: {

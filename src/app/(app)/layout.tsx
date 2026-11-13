@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { loadCoupleContext } from "@/lib/server/couple-context";
 import { CoupleProvider } from "@/features/couple/context";
 import { AppShell } from "@/features/couple/app-shell";
+import { AppRelock } from "@/features/couple/app-relock";
 import { QueryProvider } from "@/features/couple/query-provider";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
@@ -17,6 +18,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <QueryProvider>
       <CoupleProvider value={ctx}>
+        {ctx.appLock && <AppRelock />}
         <AppShell banners={banners ?? []}>{children}</AppShell>
       </CoupleProvider>
     </QueryProvider>

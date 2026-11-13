@@ -22,6 +22,7 @@ import { cn } from "@/components/ui/cn";
 import { enablePush } from "@/lib/pwa";
 import { PasskeyRows } from "./passkeys";
 import { RitualTimeRows } from "./ritual-time";
+import { PrivacyCard } from "./privacy";
 import { IdentityPicker } from "@/components/clink/identity-picker";
 import { asIdentity } from "@/lib/app-identity";
 
@@ -226,16 +227,6 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
                 setSavedBoth(Boolean(d.both));
               }}
             />
-            <Toggle
-              label="Discreet mode"
-              sub="Hide the moon. Long-press the wordmark."
-              checked={discreet}
-              onChange={async (v) => {
-                setDiscreet(v);
-                await patchSettings({ discreet_mode: v });
-                router.refresh();
-              }}
-            />
             <Row href="/dark/consent" last>
               <span>Your tiers</span>
               <span className="text-muted text-sm font-normal">
@@ -255,6 +246,8 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
           </Row>
         )}
       </div>
+
+      <PrivacyCard />
 
       <h2 className="m-0 mt-1 text-lg font-bold">Linking and account</h2>
       <div className="rounded-card border-line bg-s1 overflow-hidden border">
