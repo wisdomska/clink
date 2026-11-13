@@ -1,0 +1,5 @@
+design/
+pnpm-lock.yaml
+.next/
+public/sw.js
+src/styles/tokens.css

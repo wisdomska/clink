@@ -1,0 +1,191 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+@theme inline {
+  --color-page: var(--bg-page);
+  --color-app: var(--bg-app);
+  --color-night: var(--bg-night);
+  --color-s1: var(--surface-1);
+  --color-s1b: var(--surface-1b);
+  --color-s2: var(--surface-2);
+  --color-s3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-faint: var(--text-faint);
+  --color-accent: var(--accent);
+  --color-ember: var(--accent-dark);
+  --color-on-accent: var(--on-accent);
+  --color-pa: var(--partner-a);
+  --color-pb: var(--partner-b);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  --radius-card: 20px;
+  --radius-ticket: 16px;
+  --radius-input: 14px;
+  --radius-thumb: 12px;
+  --radius-flap: 6px;
+
+  --ease-out: var(--ease-out);
+  --ease-pop: var(--ease-pop);
+  --ease-drawer: var(--ease-drawer);
+
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  html {
+    color-scheme: dark;
+    background: var(--bg-page);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--bg-app);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+  a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--text);
+  }
+  button {
+    font-family: var(--font-body);
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-faint);
+  }
+  em {
+    font-style: italic;
+  }
+  /* 2 px accent focus ring, 2 px offset, everywhere. */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+}
+
+@layer components {
+  /* Display type: Cabinet Grotesk 800, -2% tracking */
+  .display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: var(--tracking-display);
+  }
+  .mono {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Tactile press used on every prototype button */
+  .press {
+    transition: var(--press);
+  }
+  .press:active {
+    transform: scale(0.97);
+  }
+  /* Diagonal placeholder stripe used for media slots */
+  .stripe {
+    background: repeating-linear-gradient(135deg, #211e25 0 8px, #1c1a20 8px 16px);
+  }
+  .stripe-dim {
+    background: repeating-linear-gradient(135deg, #18161b 0 8px, #1c1a20 8px 16px);
+  }
+  .flap {
+    background: linear-gradient(#211e25 0 50%, #18161b 50% 100%);
+  }
+  .grain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 80;
+    opacity: 0.05;
+    background-image: var(--grain);
+  }
+}
+
+/* Prototype animation map (renderVals().an). Reduced-motion fallbacks below. */
+@layer utilities {
+  .an-screen { animation: screenIn 220ms var(--ease-out) both; }
+  .an-glassL { animation: glassL 640ms var(--ease-pop) 300ms both; }
+  .an-glassR { animation: glassR 640ms var(--ease-pop) 300ms both; }
+  .an-btnL { animation: glassL 560ms var(--ease-pop); }
+  .an-btnR { animation: glassR 560ms var(--ease-pop); }
+  .an-spark { opacity: 0; animation: spark 560ms var(--ease-out) 520ms both; }
+  .an-spark-late { opacity: 0; animation: spark 560ms var(--ease-out) 640ms both; }
+  .an-spark-btn { opacity: 0; animation: sparkFar 560ms var(--ease-out) 160ms both; }
+  .an-ripple { animation: ripple 700ms var(--ease-out) both; }
+  .an-slide-down { animation: slideDown 340ms var(--ease-drawer) both; }
+  .an-pulse { animation: pulseRing 900ms var(--ease-out) 200ms both; }
+  .an-linkL { animation: linkL 600ms var(--ease-out) 120ms both; }
+  .an-linkR { animation: linkR 600ms var(--ease-out) 120ms both; }
+  .an-flip { animation: flip 420ms var(--ease-in-out) 240ms both; }
+  .an-flip-now { animation: flip 420ms var(--ease-in-out) both; }
+  .an-sealL { animation: sealL 480ms var(--ease-out) both; }
+  .an-sealR { animation: sealR 480ms var(--ease-out) both; }
+  .an-letter { animation: letterUp 420ms var(--ease-out) both; }
+  .an-cork { animation: cork 640ms var(--ease-out) both; }
+  .an-sheet { animation: sheetUp 360ms var(--ease-drawer) both; }
+  .an-flame { animation: flame 300ms var(--ease-out) both; }
+  .an-reveal { animation: fadeUp 260ms var(--ease-out) both; }
+  .an-tear { animation: tear 380ms var(--ease-out) both; }
+  .an-float { animation: floatUp 1300ms var(--ease-out) both; }
+  .an-shake { animation: shake 360ms var(--ease-in-out) both; }
+  .an-toast { animation: toastIn 220ms var(--ease-out) both; }
+  .an-fade { animation: fadeIn 200ms both; }
+  .an-fade-slow { animation: fadeIn 320ms both; }
+  .an-dot { animation: live 1.6s ease-in-out infinite; }
+  .an-typing { animation: dots 1s ease-in-out infinite; }
+  .an-skel { animation: skel 1.2s ease-in-out infinite; }
+  /* Staggered rise: set --i on the element. */
+  .an-rise { animation: rise 280ms var(--ease-out) calc(var(--i, 0) * 40ms) both; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .an-screen { animation: fadeIn 160ms ease both; }
+  .an-glassL, .an-glassR, .an-btnL, .an-btnR, .an-slide-down, .an-linkL, .an-linkR,
+  .an-flip, .an-flip-now, .an-sealL, .an-sealR, .an-letter, .an-cork, .an-sheet,
+  .an-flame, .an-reveal, .an-tear, .an-toast, .an-rise, .an-shake {
+    animation: fadeIn 180ms ease both;
+  }
+  .an-spark, .an-spark-late, .an-spark-btn, .an-pulse, .an-dot, .an-typing, .an-skel {
+    animation: none;
+  }
+  .an-ripple { animation: fadeOut 300ms ease both; }
+  .an-float { animation: fadeOut 1200ms ease both; }
+  .press:active { transform: none; }
+}
