@@ -541,6 +541,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"game_secrets": {
+                  Row: {
+                    "data": NonNullable<Json>,"game_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "data"?: NonNullable<Json>,"game_id": string
+                  }
+                  Update: {
+                    "data"?: NonNullable<Json>,"game_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "game_secrets_game_id_fkey"
+      columns: ["game_id"]
+isOneToOne: true
+      referencedRelation: "games"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"games": {
                   Row: {
                     "couple_id": string,"created_at": string,"created_by": string,"current_turn_user": string | null,"finished_at": string | null,"id": string,"is_draw": boolean,"mode": string,"scores": NonNullable<Json>,"state": NonNullable<Json>,"status": string,"type": string,"updated_at": string,"winner_id": string | null

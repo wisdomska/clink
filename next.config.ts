@@ -27,6 +27,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   typedRoutes: false,
+  outputFileTracingIncludes: { "/api/games/*": ["./node_modules/word-list/words.txt"] },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },

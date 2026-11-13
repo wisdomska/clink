@@ -1,0 +1,273 @@
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCouple } from "@/features/couple/context";
+import { Button } from "@/components/ui/button";
+import { PartnerMark } from "@/components/ui/heading";
+import { toast } from "@/components/ui/toast";
+import type { KnowMeState, TriviaState, WyrState } from "../engines/simultaneous";
+import { RoomHeader, ResultBars, sendMove, type GameRow } from "./shared";
+import { startGame } from "../meta";
+
+const fill = (t: string, name: string) => t.replaceAll("{name}", name);
+
+function Option({ text, onClick, mine, theirs, highlight, disabled }: { text: string; onClick?: () => void; mine?: boolean; theirs?: boolean; highlight?: "mine" | "theirs" | "both"; disabled?: boolean }) {
+  const border = highlight === "theirs" || highlight === "both" ? "2px solid var(--partner-b)" : highlight === "mine" ? "2px solid var(--accent)" : "1px solid var(--line)";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="press flex min-h-14 cursor-pointer items-center gap-2.5 rounded-full bg-s1 px-[18px] py-3 text-left text-base font-medium text-text disabled:cursor-default"
+      style={{ border }}
+    >
+      <span className="flex-1">{text}</span>
+      {mine && <PartnerMark who="a" size={12} />}
+      {theirs && <PartnerMark who="b" size={12} />}
+    </button>
+  );
+}
+
+/* PLAY-02 How well do you know me */
+export function KnowMeRoom({ game }: { game: GameRow }) {
+  const { me, partner } = useCouple();
+  const router = useRouter();
+  const s = game.state as KnowMeState;
+  const iAmSubject = s.subject === me.id;
+  const subjectName = iAmSubject ? "you" : partner.name;
+  // Show the latest reveal until the player taps Next.
+  const [seen, setSeen] = useState(s.reveals.length);
+  const [pick, setPick] = useState<number | null>(null);
+  const showing = seen < s.reveals.length ? seen : null;
+  const qIndex = showing ?? s.index;
+  const q = s.questions[qIndex]!;
+  const reveal = showing !== null ? s.reveals[showing]! : null;
+  const waitingOnThem = showing === null && s.submitted.includes(me.id);
+
+  useEffect(() => setPick(null), [s.index]);
+
+  if (game.status === "finished" && showing === null) {
+    return (
+      <div className="an-reveal flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col justify-center gap-3">
+          <div className="mono text-xs text-faint">ROUND OVER</div>
+          <div className="mono text-[96px] leading-none text-accent">
+            {s.score}
+            <span className="text-faint">/10</span>
+          </div>
+          <div className="display text-[28px] leading-[1.05]">
+            {iAmSubject ? (
+              <>{partner.name} knows you {s.score >= 8 ? <em>suspiciously</em> : s.score >= 5 ? <em>pretty</em> : <em>a little</em>} well.</>
+            ) : (
+              <>You know {partner.name} {s.score >= 8 ? <em>suspiciously</em> : s.score >= 5 ? <em>pretty</em> : <em>a little</em>} well.</>
+            )}
+          </div>
+          <ResultBars type="know_me" current={s.score} />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Button
+            onClick={async () => {
+              const id = await startGame("know_me", { subject: s.guesser === me.id ? "me" : "partner" }).catch((e: Error) => toast(e.message));
+              if (id) router.push(`/play/know_me/${id}`);
+            }}
+          >
+            Rematch, {s.guesser === me.id ? partner.name : "you"} guess{s.guesser === me.id ? "es" : ""}
+          </Button>
+          <Button variant="ghost" size="lg" onClick={() => router.push("/play")}>
+            Back to the lobby
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <RoomHeader type="know_me" counter={`${String(qIndex + 1).padStart(2, "0")}/10`} progress={(qIndex + (reveal ? 1 : 0)) / 10} />
+      <div className="flex flex-wrap gap-4 text-sm font-medium text-muted">
+        <span className="flex items-center gap-1.5">
+          <PartnerMark who="a" />
+          {iAmSubject ? "You answer about yourself" : "You guess"}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <PartnerMark who="b" />
+          {iAmSubject ? `${partner.name} guesses` : `${partner.name} answers honestly`}
+        </span>
+      </div>
+      <h2 className="display mt-3 mb-2 text-[36px] leading-[1.05]">{fill(q.text, iAmSubject ? "you" : partner.name)}</h2>
+      <div className="flex flex-col gap-2">
+        {q.options.map((o, i) => {
+          const theirsMark = reveal ? reveal.answer === i : false;
+          const mineMark = reveal ? reveal.guess === i : false;
+          return (
+            <Option
+              key={i}
+              text={o}
+              disabled={Boolean(reveal) || waitingOnThem}
+              mine={Boolean(reveal) && (iAmSubject ? reveal!.answer === i : mineMark)}
+              theirs={Boolean(reveal) && (iAmSubject ? mineMark : theirsMark)}
+              highlight={reveal ? (theirsMark ? "theirs" : mineMark ? "mine" : undefined) : pick === i ? "mine" : undefined}
+              onClick={async () => {
+                setPick(i);
+                await sendMove(game.id, { pick: i });
+              }}
+            />
+          );
+        })}
+      </div>
+      {waitingOnThem && <div className="an-reveal text-sm text-muted">Locked in. Waiting on {partner.name}.</div>}
+      {reveal && (
+        <div className="an-reveal flex items-center justify-between gap-3 rounded-card bg-s2 p-4">
+          <div>
+            <div className="display text-[22px] tracking-normal">
+              {reveal.answer === reveal.guess ? "Got it." : `Close. It was ${q.options[reveal.answer]}.`}
+            </div>
+            <div className="text-sm text-muted">{reveal.answer === reveal.guess ? `${subjectName === "you" ? "They" : "You"} really know ${subjectName === "you" ? "you" : "them"}.` : "Noted for next time."}</div>
+          </div>
+          <Button size="md" className="flex-none" onClick={() => setSeen((n) => n + 1)}>
+            Next
+          </Button>
+        </div>
+      )}
+    </>
+  );
+}
+
+/* PLAY-04 Trivia duel */
+export function TriviaRoom({ game }: { game: GameRow }) {
+  const { me, partner } = useCouple();
+  const router = useRouter();
+  const s = game.state as TriviaState;
+  const [seen, setSeen] = useState(s.reveals.length);
+  const showing = seen < s.reveals.length ? seen : null;
+  const qIndex = showing ?? s.index;
+  const q = s.questions[qIndex]!;
+  const reveal = showing !== null ? s.reveals[showing]! : null;
+  const waiting = showing === null && s.submitted.includes(me.id);
+  const my = s.scores[me.id] ?? 0;
+  const their = s.scores[partner.id] ?? 0;
+
+  if (game.status === "finished" && showing === null) {
+    return (
+      <div className="an-reveal flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col justify-center gap-3">
+          <div className="mono text-xs text-faint">DUEL OVER</div>
+          <div className="mono text-[72px] leading-none">
+            <span className="text-accent">{my}</span>
+            <span className="text-faint"> : </span>
+            <span style={{ color: "var(--partner-b)" }}>{their}</span>
+          </div>
+          <div className="display text-[28px] leading-[1.05]">{my === their ? <>A <em>draw</em>. Rematch?</> : my > their ? <>You <em>win</em> this one.</> : <>{partner.name} <em>wins</em>. For now.</>}</div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Button onClick={async () => { const id = await startGame("trivia").catch(() => null); if (id) router.push(`/play/trivia/${id}`); }}>Rematch</Button>
+          <Button variant="ghost" size="lg" onClick={() => router.push("/play")}>Back to the lobby</Button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <>
+      <RoomHeader type="trivia" counter={`${String(qIndex + 1).padStart(2, "0")}/10`} progress={(qIndex + (reveal ? 1 : 0)) / 10} />
+      <div className="flex items-center justify-between text-sm font-medium text-muted">
+        <span className="rounded-full border border-line px-3 py-1 text-xs">{q.category}</span>
+        <span className="mono">
+          you {my} · {partner.name.toLowerCase()} {their}
+        </span>
+      </div>
+      <h2 className="display mt-3 mb-2 text-[30px] leading-[1.1]">{q.text}</h2>
+      <div className="flex flex-col gap-2">
+        {q.options.map((o, i) => (
+          <Option
+            key={i}
+            text={o}
+            disabled={Boolean(reveal) || waiting}
+            mine={Boolean(reveal) && reveal!.picks[me.id] === i}
+            theirs={Boolean(reveal) && reveal!.picks[partner.id] === i}
+            highlight={reveal ? (reveal.correct === i ? "both" : undefined) : undefined}
+            onClick={() => sendMove(game.id, { pick: i })}
+          />
+        ))}
+      </div>
+      {waiting && <div className="text-sm text-muted">Locked in. Waiting on {partner.name}.</div>}
+      {reveal && (
+        <div className="an-reveal flex items-center justify-between gap-3 rounded-card bg-s2 p-4">
+          <div className="display text-[22px] tracking-normal">
+            {reveal.picks[me.id] === reveal.correct ? (reveal.picks[partner.id] === reveal.correct ? "You both got it." : "You got it.") : reveal.picks[partner.id] === reveal.correct ? `${partner.name} got it.` : "Neither of you. Ouch."}
+          </div>
+          <Button size="md" className="flex-none" onClick={() => setSeen((n) => n + 1)}>
+            Next
+          </Button>
+        </div>
+      )}
+    </>
+  );
+}
+
+/* PLAY-05 Would you rather / This or that */
+export function WyrRoom({ game }: { game: GameRow }) {
+  const { me, partner } = useCouple();
+  const router = useRouter();
+  const s = game.state as WyrState;
+  const [seen, setSeen] = useState(s.reveals.length);
+  const showing = seen < s.reveals.length ? seen : null;
+  const idx = showing ?? s.index;
+  const card = s.cards[idx]!;
+  const reveal = showing !== null ? s.reveals[showing]! : null;
+  const waiting = showing === null && s.submitted.includes(me.id);
+
+  if (game.status === "finished" && showing === null) {
+    return (
+      <div className="an-reveal flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col justify-center gap-3">
+          <div className="mono text-xs text-faint">{s.deck.toUpperCase()} DECK</div>
+          <div className="mono text-[96px] leading-none text-accent">
+            {s.matches}
+            <span className="text-faint">/{s.cards.length}</span>
+          </div>
+          <div className="display text-[28px] leading-[1.05]">{s.matches >= s.cards.length * 0.7 ? <>Same <em>brain</em>, two cities.</> : s.matches >= s.cards.length * 0.4 ? <>Enough in common. Enough to <em>argue</em> about.</> : <>Opposites. <em>Fun</em>.</>}</div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Button onClick={() => router.push("/play")}>Another deck</Button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <>
+      <RoomHeader type="wyr" counter={`${String(idx + 1).padStart(2, "0")}/${s.cards.length}`} progress={(idx + (reveal ? 1 : 0)) / s.cards.length} />
+      <h2 className="display mt-3 text-[30px] leading-[1.1]">Would you rather</h2>
+      <div className="grid gap-2.5 sm:grid-cols-2">
+        {(["a", "b"] as const).map((k) => {
+          const mine = reveal?.[me.id] === k;
+          const theirs = reveal?.[partner.id] === k;
+          return (
+            <button
+              key={k}
+              type="button"
+              disabled={Boolean(reveal) || waiting}
+              onClick={() => sendMove(game.id, { pick: k })}
+              className="press flex min-h-[120px] cursor-pointer flex-col justify-between gap-3 rounded-card bg-s1 p-4 text-left text-text disabled:cursor-default"
+              style={{ border: mine && theirs ? "2px solid var(--accent)" : theirs ? "2px solid var(--partner-b)" : mine ? "2px solid var(--accent)" : "1px solid var(--line)" }}
+            >
+              <span className="display text-[22px] leading-[1.15] tracking-normal">{k === "a" ? card.a : card.b}</span>
+              <span className="flex gap-2">
+                {mine && <PartnerMark who="a" size={12} />}
+                {theirs && <PartnerMark who="b" size={12} />}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      {waiting && <div className="text-sm text-muted">Picked. Waiting on {partner.name}.</div>}
+      {reveal && (
+        <div className="an-reveal flex items-center justify-between gap-3 rounded-card bg-s2 p-4">
+          <div className="display text-[22px] tracking-normal">{reveal[me.id] === reveal[partner.id] ? "A match." : "Agree to disagree."}</div>
+          <Button size="md" onClick={() => setSeen((n) => n + 1)}>
+            Next
+          </Button>
+        </div>
+      )}
+    </>
+  );
+}

@@ -1,0 +1,225 @@
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Question, PencilSimpleLine, Lightning, ArrowsLeftRight, GridFour, BookOpenText, Plus } from "@phosphor-icons/react";
+import { useCouple } from "@/features/couple/context";
+import { supabaseBrowser } from "@/lib/supabase/client";
+import { Display, PartnerMark } from "@/components/ui/heading";
+import { Sheet } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast";
+import { GAME_META, startGame } from "./meta";
+import type { GameType } from "./engines/types";
+
+const LIVE: Array<{ type: GameType; Icon: typeof Question }> = [
+  { type: "know_me", Icon: Question },
+  { type: "draw_guess", Icon: PencilSimpleLine },
+  { type: "trivia", Icon: Lightning },
+  { type: "wyr", Icon: ArrowsLeftRight },
+];
+
+export function useGames() {
+  const { coupleId } = useCouple();
+  const qc = useQueryClient();
+  const q = useQuery({
+    queryKey: ["games", coupleId],
+    queryFn: async () => {
+      const { data } = await supabaseBrowser().from("games").select("id, type, mode, status, created_by, current_turn_user, state, winner_id, updated_at, finished_at").in("status", ["invited", "active"]).order("updated_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+  useEffect(() => {
+    const sb = supabaseBrowser();
+    const ch = sb
+      .channel(`games:${coupleId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "games", filter: `couple_id=eq.${coupleId}` }, () => qc.invalidateQueries({ queryKey: ["games", coupleId] }))
+      .subscribe();
+    return () => {
+      void sb.removeChannel(ch);
+    };
+  }, [coupleId, qc]);
+  return q;
+}
+
+export function Lobby() {
+  const { me, partner, presence } = useCouple();
+  const router = useRouter();
+  const { data: games = [] } = useGames();
+  const [deckOpen, setDeckOpen] = useState(false);
+  const { data: rivalry } = useQuery({
+    queryKey: ["rivalry"],
+    queryFn: async () => (await supabaseBrowser().rpc("game_rivalry")).data ?? [],
+  });
+  const mine = Number(rivalry?.find((r) => r.user_id === me.id)?.wins ?? 0);
+  const theirs = Number(rivalry?.find((r) => r.user_id === partner.id)?.wins ?? 0);
+  const lead = mine === theirs ? (mine ? "Dead level. Settle it." : "No wins yet. Someone has to go first.") : mine > theirs ? `${me.name} leads. For now.` : `${partner.name} leads. For now.`;
+  const online = presence.online;
+  const invites = games.filter((g) => g.status === "invited");
+  const turnGames = games.filter((g) => g.mode === "turn");
+
+  async function play(type: GameType, extra: Record<string, unknown> = {}) {
+    const invitedByThem = invites.find((g) => g.type === type && g.created_by === partner.id);
+    if (invitedByThem) {
+      await fetch(`/api/games/${invitedByThem.id}/join`, { method: "POST" });
+      router.push(`/play/${type}/${invitedByThem.id}`);
+      return;
+    }
+    if (GAME_META[type].mode === "live" && !online) {
+      toast(`${partner.name}'s away. Try a turn-based game.`);
+      return;
+    }
+    try {
+      const id = await startGame(type, extra);
+      toast(`${GAME_META[type].name} invite sent. Waiting on ${partner.name}.`);
+      router.push(`/play/${type}/${id}`);
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Couldn't start that.");
+    }
+  }
+
+  return (
+    <div className="screen an-screen flex flex-col gap-5">
+      <Display size={48} className="mt-2">
+        Play <em>together</em>
+      </Display>
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-10">
+        <div className="flex min-w-0 flex-col gap-5">
+          <section aria-label="Lifetime score" className="flex flex-none flex-col gap-2.5 rounded-card border border-line bg-s1 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <PartnerMark who={me.role} size={12} />
+                <span className="text-base font-medium">{me.name}</span>
+                <span className="mono text-[28px]">{mine}</span>
+              </div>
+              <div className="mono text-xs text-faint">LIFETIME</div>
+              <div className="flex items-center gap-2">
+                <span className="mono text-[28px]">{theirs}</span>
+                <span className="text-base font-medium">{partner.name}</span>
+                <PartnerMark who={partner.role} size={12} />
+              </div>
+            </div>
+            <div className="flex h-1.5 gap-0.5 overflow-hidden rounded-full" aria-hidden>
+              <span style={{ flex: Math.max(mine, 1), background: "var(--partner-a)" }} />
+              <span style={{ flex: Math.max(theirs, 1), background: "var(--partner-b)" }} />
+            </div>
+            <div className="text-sm text-muted">{lead}</div>
+          </section>
+
+          {online ? (
+            <div className="flex items-center gap-2 text-base font-medium">
+              <span className="an-dot h-2 w-2 rounded-full bg-accent" aria-hidden />
+              {partner.name}&apos;s here. Live games are open.
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-base font-medium text-muted">
+              <span className="h-2 w-2 rounded-full border-[1.5px] border-faint" aria-hidden />
+              {partner.name}&apos;s away. Turn-based games work any time.
+            </div>
+          )}
+
+          {invites
+            .filter((g) => g.created_by === partner.id)
+            .map((g) => (
+              <button
+                key={g.id}
+                type="button"
+                onClick={() => play(g.type as GameType)}
+                className="press an-reveal flex cursor-pointer items-center gap-3 rounded-card border-2 border-accent bg-s1 px-4 py-3.5 text-left text-text"
+              >
+                <span className="flex-1 text-base font-bold">
+                  {partner.name} invited you to {GAME_META[g.type as GameType].name}
+                </span>
+                <span className="rounded-full bg-accent px-3 py-1.5 text-[13px] font-bold text-on-accent">Join</span>
+              </button>
+            ))}
+
+          <div className="grid grid-cols-2 gap-x-3.5 pb-5 sm:gap-x-6 md:grid-cols-4 md:gap-x-4 lg:grid-cols-2 lg:gap-x-6">
+            {LIVE.map(({ type, Icon }, i) => {
+              const pending = invites.some((g) => g.type === type && g.created_by === me.id);
+              const meta = GAME_META[type];
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => (type === "wyr" ? setDeckOpen(true) : play(type))}
+                  className="press an-rise relative flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-full bg-s1 p-[22px] text-center text-text"
+                  style={{ ["--i" as string]: i, marginTop: i % 2 ? 44 : 0, opacity: online ? 1 : 0.45, border: pending ? "2px solid var(--accent)" : "1px solid var(--line)" }}
+                >
+                  <span aria-hidden className="absolute inset-[9px] rounded-full border border-[rgba(244,240,245,.06)]" />
+                  <span aria-hidden className="absolute rounded-full" style={{ inset: "24px 10px 4px 30px", border: "3px solid rgba(173,166,178,.06)" }} />
+                  <Icon size={28} className="text-accent" aria-hidden />
+                  <span className="text-[15px] leading-[1.2] font-bold">{meta.name}</span>
+                  <span className="mono text-[11px] text-muted">{online ? meta.meta : "Needs you both"}</span>
+                  {pending && <span className="absolute top-0.5 -right-1 rounded-full bg-accent px-2.5 py-1 text-xs font-bold text-on-accent">Invite sent</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-3">
+          <h2 className="m-0 text-lg font-bold">Turn by turn, any time</h2>
+          <div className="flex flex-col gap-2">
+            {turnGames.map((g) => {
+              const yourTurn = g.current_turn_user === me.id;
+              const st = g.state as { scores?: Record<string, number>; plays?: unknown[]; lines?: Array<{ text: string }> };
+              const sub =
+                g.type === "word"
+                  ? `Turn ${(st.plays?.length ?? 0) + 1} of 16 · ${(st.scores?.[me.id] ?? 0) >= (st.scores?.[partner.id] ?? 0) ? "you lead" : `${partner.name} leads`} ${st.scores?.[me.id] ?? 0} to ${st.scores?.[partner.id] ?? 0}`
+                  : `Line ${(st.lines?.length ?? 0) + 1} of 40${st.lines?.length ? ` · "${st.lines[st.lines.length - 1]!.text.slice(0, 24)}"` : ""}`;
+              const Icon = g.type === "word" ? GridFour : BookOpenText;
+              return (
+                <Link key={g.id} href={`/play/${g.type}/${g.id}`} className="press flex items-center gap-3 rounded-card border border-line bg-s1 px-4 py-3.5 text-text hover:text-text">
+                  <Icon size={24} className="text-muted" aria-hidden />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-base font-bold">{GAME_META[g.type as GameType].name}</div>
+                    <div className="truncate text-sm text-muted">{sub}</div>
+                  </div>
+                  {yourTurn ? (
+                    <span className="rounded-full bg-accent px-3 py-1.5 text-[13px] font-bold text-on-accent">Your turn</span>
+                  ) : (
+                    <span className="rounded-full border border-line px-3 py-1.5 text-[13px] font-medium text-muted">Their turn</span>
+                  )}
+                </Link>
+              );
+            })}
+            {!turnGames.some((g) => g.type === "word") && (
+              <button type="button" onClick={() => play("word")} className="press flex cursor-pointer items-center gap-3 rounded-card border border-dashed border-line bg-transparent px-4 py-3.5 text-left text-text">
+                <GridFour size={24} className="text-muted" aria-hidden />
+                <span className="flex-1 text-base font-bold">Start a word game</span>
+                <Plus size={18} className="text-accent" aria-hidden />
+              </button>
+            )}
+            {!turnGames.some((g) => g.type === "story") && (
+              <button type="button" onClick={() => play("story")} className="press flex cursor-pointer items-center gap-3 rounded-card border border-dashed border-line bg-transparent px-4 py-3.5 text-left text-text">
+                <BookOpenText size={24} className="text-muted" aria-hidden />
+                <span className="flex-1 text-base font-bold">Start a story</span>
+                <Plus size={18} className="text-accent" aria-hidden />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+      <Sheet open={deckOpen} onOpenChange={setDeckOpen} title="Pick a deck" handle>
+        <div className="display text-[28px]">Pick a deck</div>
+        <div className="grid grid-cols-2 gap-2">
+          {(["Silly", "Deep", "Future", "Travel"] as const).map((d) => (
+            <Button
+              key={d}
+              variant="secondary"
+              size="lg"
+              onClick={() => {
+                setDeckOpen(false);
+                void play("wyr", { deck: d });
+              }}
+            >
+              {d}
+            </Button>
+          ))}
+        </div>
+      </Sheet>
+    </div>
+  );
+}
