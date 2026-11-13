@@ -23,6 +23,7 @@ import { Display } from "@/components/ui/heading";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/cn";
 import { enablePush } from "@/lib/pwa";
+import { PasskeyRows } from "./passkeys";
 
 const ICONS = [
   { key: "clink", label: "Clink", Icon: Wine },
@@ -319,6 +320,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
             className="mono rounded-input border-line bg-s2 text-text h-10 border px-3 text-sm"
           />
         </div>
+        <PasskeyRows />
         <Row href="/help">
           Help and safety
           <CaretRight size={18} className="text-faint" aria-hidden />
