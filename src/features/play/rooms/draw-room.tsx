@@ -240,6 +240,7 @@ export function DrawRoom({ game }: { game: GameRow }) {
           </div>
         ) : (
           <div
+            role="img"
             className="mono text-[28px] tracking-[.3em]"
             aria-label={`${s.lengths[s.turn]} letters`}
           >

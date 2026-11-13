@@ -23,6 +23,7 @@ function ReactionPill({ reactions }: { reactions: Reaction[] }) {
   if (!reactions.length) return null;
   return (
     <div
+      role="img"
       className="border-line bg-s3 absolute -right-2 -bottom-3 flex items-center gap-0.5 rounded-full border px-2 py-0.5 text-sm"
       aria-label={`Reactions: ${reactions.map((r) => r.emoji ?? "voice").join(", ")}`}
     >

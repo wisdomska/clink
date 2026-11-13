@@ -448,7 +448,7 @@ export function ChatScreen() {
         >
           {isFetchingNextPage && <div className="an-skel bg-s2 mx-auto h-4 w-24 rounded-full" />}
           {isLoading ? (
-            <div className="flex flex-col gap-2.5" aria-label="Loading messages">
+            <div role="status" className="flex flex-col gap-2.5" aria-label="Loading messages">
               {[
                 ["flex-start", "62%", 44],
                 ["flex-end", "48%", 44],
@@ -530,6 +530,7 @@ export function ChatScreen() {
           )}
           {typing && (
             <div
+              role="status"
               className="border-line bg-s1 flex gap-1 self-start rounded-[20px_20px_20px_6px] border px-4 py-3.5"
               aria-label={`${partner.name} is typing`}
             >

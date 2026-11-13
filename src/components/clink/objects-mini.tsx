@@ -63,7 +63,7 @@ export function MiniEnvelope({ initials = "N&T" }: { initials?: string }) {
 
 export function MiniBoard({ chars = "081432" }: { chars?: string }) {
   return (
-    <div className="flex items-end gap-1" aria-label="08 days 14 hours 32 minutes">
+    <div role="img" className="flex items-end gap-1" aria-label="08 days 14 hours 32 minutes">
       {chars.split("").map((ch, i) => (
         <div
           key={i}

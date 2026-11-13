@@ -166,7 +166,6 @@ export function PlansHub() {
                 key={k.id}
                 href={`/plans/kits/${k.id}`}
                 className="text-text hover:text-text flex-none"
-                aria-label={`${k.title}, ${k.minutes} minutes`}
               >
                 <KitStub title={k.title} minutes={k.minutes} i={i} />
               </Link>
@@ -193,13 +192,14 @@ export function PlansHub() {
                   <div className="mono text-faint text-[11px]">STREAK</div>
                 </div>
               </div>
-              <div className="grid grid-cols-7 gap-1" aria-label="This week">
+              <div role="group" className="grid grid-cols-7 gap-1" aria-label="This week">
                 {week.map((d, i) => {
                   const row = byDay.get(d);
                   const a = meA ? row?.done_by_a : row?.done_by_b;
                   const b = meA ? row?.done_by_b : row?.done_by_a;
                   return (
                     <div
+                      role="group"
                       key={d}
                       className="flex flex-col items-center gap-1.5"
                       aria-label={`Day ${d}: ${a ? "you done" : "you not yet"}, ${b ? `${partner.name} done` : `${partner.name} not yet`}`}

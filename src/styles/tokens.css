@@ -24,7 +24,7 @@
   /* Text */
   --text: #f4f0f5;
   --text-muted: #ada6b2;
-  --text-faint: #7c7581;
+  --text-faint: #8b8590; /* prototype #7C7581 lifted for WCAG AA 4.5:1 on app, s1 and s2 */
 
   /* Accents */
   --accent: #e68af5; /* main app: pink-purple (v2) */

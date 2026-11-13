@@ -69,7 +69,7 @@ test.describe("After Dark (spec section 7 and the must-pass safety tests)", () =
     await expect(a.getByText("That's not it. 4 tries left.")).toBeVisible();
     for (const k of "2611") await a.getByRole("button", { name: k, exact: true }).click();
     await expect(a).toHaveURL(/\/dark\/home/);
-    await expect(a.getByRole("button", { name: /Spicy: Waiting on them/ })).toBeVisible();
+    await expect(a.getByRole("button", { name: /Spicy\s*Waiting on them/ })).toBeVisible();
 
     // Five wrong tries lock B out for 15 minutes.
     await b.request.post("/api/dark/lock");

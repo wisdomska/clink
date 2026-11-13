@@ -229,6 +229,7 @@ export function LinkScreen({
       ) : (
         <>
           <div
+            role="group"
             className="relative mt-7 mb-2.5 flex gap-1.5"
             aria-label={
               invite ? `Your code ${invite.code.split("").join(" ")}` : "Making your code"

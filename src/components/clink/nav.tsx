@@ -59,6 +59,7 @@ export function TabBar({ unread = 0 }: { unread?: number }) {
               <Icon size={22} weight="regular" aria-hidden />
               {href === "/chat" && unread > 0 && !on && (
                 <span
+                  role="img"
                   className="bg-accent absolute top-0 right-3 h-2 w-2 rounded-full"
                   aria-label={`${unread} unread`}
                 />

@@ -10,7 +10,11 @@ export function GameRoom({ id }: { id: string }) {
   return (
     <div className="an-screen mx-auto flex min-h-dvh w-full max-w-[720px] flex-col gap-4 px-5 pt-[calc(env(safe-area-inset-top)+8px)] pb-8 md:pt-8">
       {isLoading && (
-        <div className="an-skel rounded-card bg-s2 mt-12 h-64" aria-label="Loading game" />
+        <div
+          role="status"
+          className="an-skel rounded-card bg-s2 mt-12 h-64"
+          aria-label="Loading game"
+        />
       )}
       {error && <p className="text-muted mt-12">That game isn&apos;t here any more.</p>}
       {game &&

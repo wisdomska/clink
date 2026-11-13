@@ -119,7 +119,6 @@ export function DarkHub() {
                   transform: `rotate(${[-2, 1.5, -1, 2][i]}deg)`,
                   boxShadow: "var(--shadow-matchbook)",
                 }}
-                aria-label={`${t}: ${STATUS_COPY[st]}`}
               >
                 <span className="display text-[28px]">{t}</span>
                 <span className="flex flex-col items-end gap-0.5 text-right">
@@ -200,7 +199,7 @@ export function DarkHub() {
               {pending.length ? `${partner.name} sent you a request` : "Requests"}
             </span>
             {pending.length > 0 && (
-              <span className="bg-ember h-2 w-2 rounded-full" aria-label="New" />
+              <span role="img" className="bg-ember h-2 w-2 rounded-full" aria-label="New" />
             )}
           </Link>
           <div className="mt-2 flex flex-wrap gap-2">

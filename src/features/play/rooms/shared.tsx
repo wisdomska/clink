@@ -168,6 +168,7 @@ export function ResultBars({ type, current }: { type: GameType; current: number 
   const bars = (data?.length ? data : [current]).slice(-5);
   return (
     <div
+      role="img"
       className="mt-3 flex h-[60px] items-end gap-1.5"
       aria-label={`Last ${bars.length} scores: ${bars.join(", ")}`}
     >

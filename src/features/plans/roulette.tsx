@@ -45,6 +45,7 @@ export function Roulette() {
         Date <em>roulette</em>
       </Display>
       <div
+        role="status"
         className="rounded-card border-line bg-s1 relative h-[168px] flex-none overflow-hidden border"
         aria-live="polite"
         aria-label={

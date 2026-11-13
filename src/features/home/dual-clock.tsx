@@ -52,6 +52,7 @@ export function DualClock({ now }: { now: Date }) {
   const { me, partner } = useCouple();
   return (
     <div
+      role="group"
       className="rounded-card border-line grid flex-none grid-cols-2 overflow-hidden border"
       aria-label="Your clocks"
     >
