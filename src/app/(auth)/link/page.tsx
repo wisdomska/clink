@@ -6,6 +6,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { activeCouple } from "@/lib/server/api";
 import { LinkScreen } from "./link-screen";
 import { isVerified } from "@/lib/server/verified";
+import { readOnlyArchive } from "@/lib/server/archive";
 
 export const metadata: Metadata = { title: "Link your person" };
 
@@ -42,6 +43,7 @@ export default async function LinkPage({
     );
   }
   const verified = isVerified(user);
+  const archive = await readOnlyArchive(user.id);
   return (
     <LinkScreen
       me={me?.display_name ?? ""}
@@ -49,6 +51,7 @@ export default async function LinkPage({
       prefillCode={sp.code ?? null}
       focusEnter={Boolean(sp.enter)}
       verified={verified}
+      archive={archive && { partner: archive.partner, until: archive.until }}
     />
   );
 }

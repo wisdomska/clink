@@ -27,6 +27,7 @@ export function LinkScreen({
   startLinked = false,
   initialPartner = "",
   verified = true,
+  archive = null,
 }: {
   me: string;
   userId?: string;
@@ -35,6 +36,7 @@ export function LinkScreen({
   startLinked?: boolean;
   initialPartner?: string;
   verified?: boolean;
+  archive?: { partner: string; until: string } | null;
 }) {
   const router = useRouter();
   const [invite, setInvite] = useState<Invite | null>(null);
@@ -221,6 +223,16 @@ export function LinkScreen({
         Link your <em>person</em>
       </Display>
       <Lead className="mt-2">One account, one person. Send them this code, or enter theirs.</Lead>
+      {archive && (
+        <a
+          href="/archive"
+          className="rounded-card border-line bg-s1 text-text hover:text-text mt-5 block border p-4 text-base"
+        >
+          Your old chat with {archive.partner} is readable until{" "}
+          {new Date(archive.until).toLocaleDateString("en-GB", { day: "numeric", month: "long" })}.
+          <span className="text-accent mt-1 block font-medium">Open it</span>
+        </a>
+      )}
 
       {!verified ? (
         <div className="rounded-card border-line bg-s1 text-muted mt-7 border p-4 text-base leading-normal">
