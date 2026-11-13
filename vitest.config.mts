@@ -9,6 +9,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: [
+        "src/lib/sentry-options.ts",
         "src/lib/time.ts",
         "src/lib/age.ts",
         "src/lib/push-copy.ts",
