@@ -199,21 +199,22 @@
 .rail-mini { display: none; }
 .app-main {
   min-height: 100dvh;
-  padding-bottom: calc(64px + max(20px, env(safe-area-inset-bottom)));
+  --chrome-bottom: calc(64px + max(20px, env(safe-area-inset-bottom)));
+  padding-bottom: var(--chrome-bottom);
   --toast-bottom: calc(100px + env(safe-area-inset-bottom));
 }
-.app-main.no-tabs { padding-bottom: 0; --toast-bottom: 40px; }
+.app-main.no-tabs { padding-bottom: 0; --toast-bottom: 40px; --chrome-bottom: 0px; }
 @media (min-width: 768px) and (max-width: 1023px) and (orientation: landscape) {
   .tabbar { display: none; }
   .rail { display: flex; width: 88px; }
   .rail .rail-full { display: none; }
   .rail .rail-mini { display: inline; }
-  .app-main, .app-main.no-tabs { padding-left: 88px; padding-bottom: 0; --toast-bottom: 40px; }
+  .app-main, .app-main.no-tabs { padding-left: 88px; padding-bottom: 0; --toast-bottom: 40px; --chrome-bottom: 0px; }
 }
 @media (min-width: 1024px) {
   .tabbar { display: none; }
   .rail { display: flex; width: var(--rail-w); }
-  .app-main, .app-main.no-tabs { padding-left: var(--rail-w); padding-bottom: 0; --toast-bottom: 40px; }
+  .app-main, .app-main.no-tabs { padding-left: var(--rail-w); padding-bottom: 0; --toast-bottom: 40px; --chrome-bottom: 0px; }
 }
 /* Screen container: phone gutter 16 px, content capped. */
 .screen {

@@ -7,11 +7,13 @@ import { Display, Lead } from "@/components/ui/heading";
 import { FieldError } from "@/components/ui/field";
 import { Sparks } from "@/components/clink/sparks";
 import { toast } from "@/components/ui/toast";
+import { supabaseBrowser } from "@/lib/supabase/client";
 
 type Invite = { code: string; expires_at: string };
 
 export function LinkScreen({
   me,
+  userId,
   prefillCode = null,
   focusEnter = false,
   startLinked = false,
@@ -19,6 +21,7 @@ export function LinkScreen({
   verified = true,
 }: {
   me: string;
+  userId?: string;
   prefillCode?: string | null;
   focusEnter?: boolean;
   startLinked?: boolean;
@@ -43,6 +46,14 @@ export function LinkScreen({
     setInviteError(null);
     const res = await fetch(`/api/invites${fresh ? "?fresh=1" : ""}`, { method: "POST" });
     const data = await res.json();
+    if (res.status === 409 && data.error === "already_linked") {
+      const st = await (await fetch("/api/me/state")).json();
+      if (st.linked) {
+        setPartner(st.partner);
+        setLinked(true);
+        return;
+      }
+    }
     if (!res.ok) {
       setInviteError(data.message);
       return;
@@ -55,22 +66,41 @@ export function LinkScreen({
     if (!linked && verified) void loadInvite();
   }, [linked, verified, loadInvite]);
 
-  // The inviter learns they are linked by polling (no couple channel exists yet).
+  // The inviter learns they are linked from a realtime insert on their own
+  // membership row, with polling (and a check on focus) as the fallback.
   useEffect(() => {
     if (linked) return;
-    const t = setInterval(async () => {
+    let done = false;
+    const check = async () => {
+      if (done) return;
       tick((n) => n + 1);
       const res = await fetch("/api/me/state");
       if (!res.ok) return;
       const s = await res.json();
-      if (s.linked) {
+      if (s.linked && !done) {
+        done = true;
         setPartner(s.partner);
         setLinked(true);
-        router.replace("/link?linked=1");
       }
-    }, 4000);
-    return () => clearInterval(t);
-  }, [linked, router]);
+    };
+    const sb = supabaseBrowser();
+    const ch = userId
+      ? sb
+          .channel(`linking:${userId}`)
+          .on("postgres_changes", { event: "INSERT", schema: "public", table: "couple_members", filter: `user_id=eq.${userId}` }, () => void check())
+          .subscribe()
+      : null;
+    const t = setInterval(check, 4000);
+    window.addEventListener("focus", check);
+    document.addEventListener("visibilitychange", check);
+    return () => {
+      done = true;
+      clearInterval(t);
+      window.removeEventListener("focus", check);
+      document.removeEventListener("visibilitychange", check);
+      if (ch) void sb.removeChannel(ch);
+    };
+  }, [linked, router, userId]);
 
   // Arriving from a shared link: look up the inviter to ask "Link with [name]?"
   useEffect(() => {
@@ -108,7 +138,6 @@ export function LinkScreen({
       setPartner(data.partner);
       setLinked(true);
       navigator.vibrate?.([30, 60, 30]);
-      router.replace("/link?linked=1");
     } finally {
       setBusy(false);
     }

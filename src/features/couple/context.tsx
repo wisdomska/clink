@@ -81,7 +81,7 @@ export function CoupleProvider({ value, children }: { value: CoupleContextValue;
         await track();
         heartbeat = setInterval(() => {
           void track();
-          void sb.from("presence").upsert({ user_id: value.me.id, status: statusRef.current, last_seen_at: new Date().toISOString() });
+          sb.from("presence").upsert({ user_id: value.me.id, status: statusRef.current, last_seen_at: new Date().toISOString() }).then(() => undefined);
         }, HEARTBEAT_MS);
       });
       channelRef.current = ch;
@@ -89,7 +89,7 @@ export function CoupleProvider({ value, children }: { value: CoupleContextValue;
 
     const onHide = () => {
       if (document.visibilityState === "hidden") {
-        void sb.from("presence").upsert({ user_id: value.me.id, status: statusRef.current, last_seen_at: new Date().toISOString() });
+        sb.from("presence").upsert({ user_id: value.me.id, status: statusRef.current, last_seen_at: new Date().toISOString() }).then(() => undefined);
       }
     };
     document.addEventListener("visibilitychange", onHide);
@@ -120,7 +120,7 @@ export function CoupleProvider({ value, children }: { value: CoupleContextValue;
       statusRef.current = s;
       setMyStatusState(s);
       void channelRef.current?.track({ status: s, at: new Date().toISOString() });
-      void supabaseBrowser().from("presence").upsert({ user_id: value.me.id, status: s, last_seen_at: new Date().toISOString() });
+      supabaseBrowser().from("presence").upsert({ user_id: value.me.id, status: s, last_seen_at: new Date().toISOString() }).then(() => undefined);
     },
     [value.me.id],
   );

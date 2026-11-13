@@ -38,6 +38,14 @@ export const POST = handler(async (req) => {
     .single();
   if (error) throw error;
   if (body.kind === "hold" && (body.holdSeconds ?? 0) < 1) return ok({ id: row.id });
+  // A quiet system line in chat ("Theo sent a Clink, 21:02").
+  await admin.from("messages").insert({
+    couple_id: coupleId,
+    sender_id: user.id,
+    client_id: `clink-${row.id}`,
+    type: "clink",
+    body: body.kind === "hold" ? `hold:${body.holdSeconds ?? 0}` : body.kind,
+  });
 
   if (!body.partnerOnline && body.kind !== "hold") {
     const { data: me } = await admin.from("profiles").select("display_name").eq("id", user.id).single();

@@ -27,5 +27,5 @@ export default async function LinkPage({ searchParams }: { searchParams: Promise
     return <LinkScreen me={me?.display_name ?? ""} initialPartner={p?.display_name ?? ""} startLinked />;
   }
   const verified = isVerified(user);
-  return <LinkScreen me={me?.display_name ?? ""} prefillCode={sp.code ?? null} focusEnter={Boolean(sp.enter)} verified={verified} />;
+  return <LinkScreen me={me?.display_name ?? ""} userId={user.id} prefillCode={sp.code ?? null} focusEnter={Boolean(sp.enter)} verified={verified} />;
 }
