@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRef } from "react";
-import { Wine, Microphone, WarningCircle, Image as ImageIcon, ArrowBendUpLeft } from "@phosphor-icons/react";
+import { Wine, Microphone, WarningCircle, Image as ImageIcon, ArrowBendUpLeft, EyeSlash } from "@phosphor-icons/react";
 import type { MediaInfo, Reaction, UiMessage } from "./types";
 import { VoicePlayer } from "./voice-player";
 import { cn } from "@/components/ui/cn";
@@ -119,6 +119,16 @@ export function Bubble({
 
   const side = mine ? "self-end" : "self-start";
   const removed = Boolean(m.removed_at);
+  if (m.type === "sensitive") {
+    // SAF-02: private media is only ever a blurred card in chat; it opens in After Dark.
+    return (
+      <Link href={`/dark/view/${m.media_ids[0]}`} className={cn("press relative flex h-[120px] w-[180px] flex-col items-center justify-center gap-1 overflow-hidden rounded-thumb text-text hover:text-text", side)} aria-label="Private. Open in After Dark">
+        <span aria-hidden className="absolute -inset-4" style={{ background: "radial-gradient(circle at 30% 40%,rgba(255,90,60,.55),transparent 45%),#211E25", filter: "blur(14px)" }} />
+        <EyeSlash size={20} className="relative" aria-hidden />
+        <span className="relative text-xs font-medium">{mine ? "You sent something private" : "Something private"}</span>
+      </Link>
+    );
+  }
   let content: React.ReactNode;
 
   if (removed) {

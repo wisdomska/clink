@@ -22,6 +22,11 @@ const schema = z.object({
 export const POST = handler(async (req) => {
   const body = await parseJson(req, schema);
   const caller = body.sensitive ? await requireDark({ minRank: 1 }) : await requireCouple();
+  if (body.sensitive) {
+    // SAF-06: the one-time screenshot notice must have been shown first.
+    const { data: ds } = await supabaseAdmin().from("dark_settings").select("notice_seen_at").eq("user_id", caller.user.id).single();
+    if (!ds?.notice_seen_at) throw deny(428, "notice_required", "They can still screenshot. Only send what feels right.");
+  }
   await rateLimit(`upload:${caller.user.id}`, 200, 3600);
   const s = await storage();
   const cap = limits(s.driver)[body.kind];
