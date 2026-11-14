@@ -18,6 +18,12 @@ All results below come from the local Supabase stack (same migrations and seed a
 | Lighthouse (production, desktop) | `lhci collect`                         | `/login`: performance 99, accessibility 100, best practices 96, LCP 0.7 s, CLS 0. `/` and `/privacy`: accessibility 100, best practices 100, SEO 100                                                                                |
 | Dependencies                     | `pnpm audit --prod --audit-level high` | No known vulnerabilities                                                                                                                                                                                                            |
 
+Bugs found by the suite and fixed before release:
+
+- **Hydration mismatch on live clocks** (React error 418). Under load the clock minute could change between the server render and hydration, so screens with clocks (Us, Chat header, countdowns) occasionally failed to hydrate. Clocks now start from the server's render time (`useCoupleNow`) and tick after mount. Reproduction under 4 parallel workers went from 3 errors in 18 runs to 0 in 24.
+- **No error boundary.** A client error showed the framework's plain white page. `src/app/error.tsx` and `global-error.tsx` now show a dark, on-brand screen with Try again and Reload, and report to Sentry outside private routes.
+- **Accessibility scan raced entrance animations**, measuring contrast mid-fade. The scan now waits for finite animations to finish.
+
 `/login` scores SEO 60 because it is deliberately `noindex`. The landing and privacy pages reported no LCP in the first run because screens faded in from opacity 0; fixed by starting the fade at 0.01 (see `docs/DESIGN_TOKENS.md`).
 
 ## What the end-to-end suite proves
