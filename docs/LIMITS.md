@@ -18,6 +18,17 @@ Clink runs entirely on free plans. This page records each service's limits as ch
 
 The admin dashboard (`/admin`) shows storage, database and realtime use against these limits, with warnings at 70% and 90%.
 
+## Vercel deployment storage
+
+Every retained deployment stores its static output and each Function bundle, and Hobby has a fixed allowance. Clink keeps this small:
+
+- **Retention** (Project Settings, Build and Deployment, Deployment Retention Policy): previews, canceled and errored builds kept 1 day; production kept 1 week. Vercel still always keeps the newest few deployments and whatever the production and preview URLs point to.
+- **Fewer builds** (`vercel.json`): only `main` and `preview` deploy (Dependabot and other branches do not), and commits that only touch docs, tests, CI or scripts skip the build (`ignoreCommand`).
+- **Smaller Functions** (`next.config.ts`, `outputFileTracingExcludes`): the musl, macOS and Windows builds of sharp's libvips are not packaged, because Vercel runs glibc Linux. The four image routes dropped from about 42 MB to about 23 MB each.
+- **Cleanup**: superseded deployments can be deleted from the project's Deployments page; deleting stops the storage charge at once (they stay restorable for a short recovery window).
+
+Storage is shared by every project on the account, so other projects' deployments count too. Setting a team-wide retention policy (Team Settings, Build and Deployment, Deployment Retention Policy, with "Apply this policy to all existing projects") is the quickest way to reduce all of them.
+
 ## Content policies
 
 Clink is for consenting adults in a relationship. After Dark content is private, shared between exactly two linked adults, and never public.

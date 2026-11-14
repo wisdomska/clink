@@ -29,6 +29,16 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   typedRoutes: false,
   outputFileTracingIncludes: { "/api/games/*": ["./node_modules/word-list/words.txt"] },
+  // Deployment Storage: Vercel Functions run on glibc Linux, so the musl
+  // (Alpine) builds of sharp's libvips are dead weight (~19 MB per image route).
+  outputFileTracingExcludes: {
+    "*": [
+      "**/@img/sharp-libvips-linuxmusl-*/**",
+      "**/@img/sharp-linuxmusl-*/**",
+      "**/@img/sharp-*-darwin-*/**",
+      "**/@img/sharp-win32-*/**",
+    ],
+  },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
