@@ -31,7 +31,7 @@ Clink is one Next.js app on Vercel talking to one Supabase project per environme
 
 ## Data and access rules
 
-- **Row-level security everywhere.** Policies use `app.*` helpers (`app.my_couple_id()`, `app.partner_id()`, `app.readable_couple_ids()` and friends). `tests/rls/rls.test.ts` fails if any public table is missing from its matrix.
+- **Row-level security everywhere.** After unlinking, `app.readable_couple_ids()` keeps the old couple readable (never writable) until `read_only_until`; `/archive` shows that chat. Policies use `app.*` helpers (`app.my_couple_id()`, `app.partner_id()`, `app.readable_couple_ids()` and friends). `tests/rls/rls.test.ts` fails if any public table is missing from its matrix.
 - **Couple isolation.** Every couple-owned row carries `couple_id`. A user belongs to at most one active couple; linking and unlinking are server routes only.
 - **After Dark tables have no client policies at all.** Reads and writes go through `/api/dark/*`, which checks the PIN session cookie (`clink_dark`, signed with `APP_SECRET`, 2 minute sliding idle window), the couple's tier agreement (`app.effective_tier_rank`) and the 18+ declarations, then uses the service role. The rules are therefore enforced on the server, never only in the UI.
 - **Hidden game state** (answers, sealed picks, words) lives in `game_secrets`, readable only by the service role. Game engines in `src/features/play/engines` are pure TypeScript and run on the server as referee.
@@ -57,7 +57,8 @@ One private broadcast channel per couple (`couple:<id>`) carries clinks, typing,
 - Nonce-based CSP from `src/proxy.ts`; `/dark` and `/admin` allow no third-party origins at all.
 - HSTS, `X-Frame-Options: DENY`, `nosniff`, strict referrer, locked-down `Permissions-Policy`.
 - After Dark, admin and media responses are `no-store`; After Dark and admin are `noindex`.
-- PIN: argon2id (hash-wasm), 5 attempts then a 15 minute lockout.
+- PIN: argon2id (hash-wasm), 5 attempts then a 15 minute lockout. The same rules apply to the optional app-open PIN (`/unlock`, `src/lib/server/app-lock.ts`); until it is entered the server renders no couple data. Its hash columns are hidden from clients by column-level grants.
+- Sign out everywhere: `app.session_live()` checks the token's `session_id` still exists in `auth.sessions`, inside `app.my_couple_id()` and `app.readable_couple_ids()`, so already-issued access tokens lose couple data the moment sessions are revoked.
 - Admin: `is_admin` granted only by `pnpm seed:admin` from `ADMIN_EMAILS`, TOTP required (`aal2`) on every admin page and API, every action in `audit_events`.
 - Sentry gets errors only, with bodies, cookies, users and breadcrumbs removed, and nothing from After Dark, media or admin. PostHog gets whitelisted event names only, cookieless, never on `/dark` or `/admin`.
 
