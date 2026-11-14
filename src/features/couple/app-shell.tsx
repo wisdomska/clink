@@ -5,6 +5,7 @@ import { TabBar, Rail } from "@/components/clink/nav";
 import { IncomingClink } from "@/features/home/incoming-clink";
 import { cn } from "@/components/ui/cn";
 import { useOnline, useStoredString } from "@/lib/hooks";
+import { GameInviteToast } from "@/features/play/invite-toast";
 
 const HIDE_TABS = [/^\/play\/[^/]+\/[^/]+/, /^\/settings/, /^\/help/, /^\/plans\/watch\//];
 
@@ -31,6 +32,7 @@ export function AppShell({
   return (
     <>
       <Rail />
+      <GameInviteToast />
       <div className={cn("app-main", !tabs && "no-tabs")}>
         {!online && (
           <div

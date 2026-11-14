@@ -64,7 +64,7 @@ export function useGames() {
 }
 
 export function Lobby() {
-  const { me, partner, presence } = useCouple();
+  const { me, partner, presence, send } = useCouple();
   const router = useRouter();
   const { data: games = [] } = useGames();
   const [deckOpen, setDeckOpen] = useState(false);
@@ -99,6 +99,7 @@ export function Lobby() {
     }
     try {
       const id = await startGame(type, extra);
+      send("game.invite", { id, type });
       toast(`${GAME_META[type].name} invite sent. Waiting on ${partner.name}.`);
       router.push(`/play/${type}/${id}`);
     } catch (e) {
