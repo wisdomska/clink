@@ -24,5 +24,10 @@ const config = [
     files: ["tests/**", "scripts/**"],
     rules: { "react-hooks/rules-of-hooks": "off" },
   },
+  {
+    // Command-line scripts report progress on stdout.
+    files: ["scripts/**"],
+    rules: { "no-console": "off" },
+  },
 ];
 export default config;

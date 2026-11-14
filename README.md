@@ -55,11 +55,20 @@ Open http://localhost:3000. Emails sent by the local stack appear in the local m
 
 ## Deploying
 
-1. Create two Supabase Free projects, `clink-prod` and `clink-preview`. For each: `supabase link`, then `supabase db push`, then run `supabase/seed.sql`.
-2. In each project's Vault add `clink_app_url` (the matching Vercel URL) and `clink_cron_secret` (same value as `CRON_SECRET`) so pg_cron can reach `/api/jobs/*`.
-3. In each project's Auth settings: site URL, redirect URLs, Google provider, passkeys, TOTP MFA, and custom SMTP (see `docs/LIMITS.md`).
-4. In Vercel, set the variables from `.env.example` for Production (`main`) and Preview (`preview`), pointing at the matching Supabase project.
-5. Run `pnpm seed:admin` once per environment with `ADMIN_EMAILS` set.
+The Vercel project (`clinkapp`) already builds `main` to production and `preview` to the preview URL. The backend needs two Supabase Free projects, which only the account owner can create. One command does the rest:
+
+1. Create a Supabase access token (supabase.com, Account, Access Tokens) and use the Vercel token you already have. Keep both in your terminal only.
+2. Run:
+
+```bash
+SUPABASE_ACCESS_TOKEN=your-token VERCEL_TOKEN=your-token pnpm setup:cloud
+```
+
+It creates or reuses `clink-prod` and `clink-preview`, applies every migration and the seed, stores the cron URL and secret in Vault, turns on TOTP, sets the site and redirect URLs, and writes the Supabase keys and `CRON_SECRET` into Vercel for each environment. It is safe to re-run.
+
+3. Redeploy (push a commit, or Redeploy in Vercel).
+4. In each Supabase project's Authentication settings: add Google, turn on passkeys, and set custom SMTP (`docs/LIMITS.md`).
+5. Add the repo secrets for the keep-alive workflow (`docs/LIMITS.md`).
 
 ## Becoming an admin
 
