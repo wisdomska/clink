@@ -12,7 +12,7 @@ All results below come from the local Supabase stack (same migrations and seed a
 | Types                            | `pnpm typecheck`                       | Clean, TypeScript strict                                                                                                                                                                                  |
 | Unit                             | `pnpm test:coverage`                   | 44 passed. Coverage on logic files: 92.7% statements, 87.2% branches, 94.9% functions, 95.7% lines (gate: 80/75/80/80)                                                                                    |
 | Row-level security               | `pnpm test:rls`                        | 64 passed. Fails if any public table is missing from the matrix                                                                                                                                           |
-| End to end                       | `pnpm test:e2e`                        | 41 tests (38 flows plus 3 accessibility sweeps) on 3 viewports (Pixel 7, tablet, 1440 px desktop) = 121 passed, 2 skipped by design (swipe is phone only), two real partners in separate browser contexts |
+| End to end                       | `pnpm test:e2e`                        | 42 tests (39 flows plus 3 accessibility sweeps) on 3 viewports (Pixel 7, tablet, 1440 px desktop) = 122 passed, 4 skipped by design (swipe is phone only, latency timing runs once), two real partners in separate browser contexts |
 | Accessibility                    | `tests/a11y/routes.spec.ts`            | axe-core on 27 routes (public, app, After Dark) x 3 viewports: zero serious or critical issues                                                                                                            |
 | Visual regression                | `tests/visual/public.spec.ts`          | 5 public pages x 3 viewports match their baselines (1% tolerance, clock frozen)                                                                                                                           |
 | Lighthouse (production, desktop) | `lhci collect`                         | `/login`: performance 99, accessibility 100, best practices 96, LCP 0.7 s, CLS 0. `/` and `/privacy`: accessibility 100, best practices 100, SEO 100                                                      |
@@ -26,7 +26,7 @@ Core flows (spec section 10):
 
 - 10.1: partner B links with A's code, both see the linked moment, A's Clink reaches B. A used code cannot be reused; one account links to one partner.
 - Chat: text, typing, read receipts, reactions, empty state; the offline queue sends on reconnect; EXIF and GPS are stripped from photos on the server (SAF-03).
-- Play: a full live round of How Well Do You Know Me between two browsers; the server referee refuses out-of-turn moves and peeking at hidden answers; app-wide invite toast joins the room.
+- Play: Draw and Guess strokes reach the partner in a median 41 ms against a 300 ms budget (PLAY-03); a full live round of How Well Do You Know Me between two browsers; the server referee refuses out-of-turn moves and peeking at hidden answers; app-wide invite toast joins the room.
 - Plans and Keep: schedule a kit and see the stub in both time zones; challenge streaks; Open When letters stay sealed; capsules hold text, photo, video or voice.
 - 10.3 to 10.6 (After Dark): hidden until both opt in; PIN with lockout; the lower tier wins; Unhinged needs both verified; spin, pass, spin again; nude request with "Not right now", 12 h cooldown and no reminders; unlink wipes every sensitive item for both.
 - Accounts: passkeys added and removed; unlinked chat readable for 30 days and not writable; sign out everywhere cuts off already-issued tokens; ritual time changes only when both agree; PIN on open; discreet identity picked at install and applied to the manifest.
@@ -70,5 +70,5 @@ Open items: Lighthouse reports a Content Security Policy notice on `/login` with
 - **Production backend not connected yet.** The Vercel project is live and builds from `main` and `preview`, but the two Supabase cloud projects (`clink-prod`, `clink-preview`) need to be created by the owner (it needs their Supabase account). Until then signed-in screens cannot load in production. Steps are in `README.md` under Deploying.
 - Age verification is self-attestation (SAF-01). See `docs/LIMITS.md`.
 - One-tap face blur needs the browser `FaceDetector` API; other browsers get the manual blur brush (DARK-09).
-- Not yet asserted by a test, though implemented: DARK-09 and the PLAY-03 300 ms latency budget (`docs/BUILD_PLAN.md`).
+- Not yet asserted by a test, though implemented: DARK-09 one-tap face blur, which needs a browser with `FaceDetector` (`docs/BUILD_PLAN.md`).
 - Visual baselines are recorded on Linux; GitHub runners can rasterise fonts differently, so CI runs them as an informational step.
