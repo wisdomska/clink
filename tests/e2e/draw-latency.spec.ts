@@ -48,6 +48,9 @@ test("draw and guess strokes arrive in under 300 ms", async ({ couple }, info) =
   }
   samples.sort((p, q) => p - q);
   const median = samples[2]!;
-  console.log(`stroke latency ms: ${samples.join(", ")} (median ${median})`);
+  info.annotations.push({
+    type: "latency",
+    description: `${samples.join(", ")} ms (median ${median})`,
+  });
   expect(median).toBeLessThan(300);
 });
