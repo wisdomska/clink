@@ -11,7 +11,12 @@ const localChromium =
 
 export default defineConfig({
   testDir: "tests",
-  testMatch: ["e2e/**/*.spec.ts", "a11y/**/*.spec.ts", "visual/**/*.spec.ts"],
+  // Visual baselines are recorded on the dev container; CI runs them separately
+  // (see ci.yml) because font rasterising differs between machines.
+  testMatch:
+    process.env.CI && !process.env.VISUAL
+      ? ["e2e/**/*.spec.ts", "a11y/**/*.spec.ts"]
+      : ["e2e/**/*.spec.ts", "a11y/**/*.spec.ts", "visual/**/*.spec.ts"],
   fullyParallel: false,
   workers: 1,
   timeout: 60_000,
