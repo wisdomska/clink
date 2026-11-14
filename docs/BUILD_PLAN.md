@@ -207,4 +207,4 @@ Still open:
 
 - **SAF-01 (P0)**: age verification is self-attestation; a real ID-and-selfie provider is still a stub. Budget limitation, recorded in `docs/LIMITS.md`.
 - **DARK-09 (P1)**: one-tap face blur depends on the `FaceDetector` browser API; elsewhere it falls back to the manual brush.
-- **Test coverage gaps** (implemented but not asserted): CHAT-06, DARK-09, TOG-02, and the PLAY-03 300 ms latency budget. Now covered: DARK-03 (`tests/e2e/dark-decks.spec.ts`), HOME-03 (`tests/e2e/hold-together.spec.ts`), HOME-05 (`tests/e2e/mood.spec.ts`), SAF-07 and SAF-08 (`tests/e2e/dark-safety.spec.ts`), SET-03, ACC-08 and TOG-03 (`tests/e2e/account-data.spec.ts`).
+- **Test coverage gaps** (implemented but not asserted): DARK-09, TOG-02, and the PLAY-03 300 ms latency budget. Now covered: CHAT-06 (`tests/e2e/swipe-reply.spec.ts`), DARK-03 (`tests/e2e/dark-decks.spec.ts`), HOME-03 (`tests/e2e/hold-together.spec.ts`), HOME-05 (`tests/e2e/mood.spec.ts`), SAF-07 and SAF-08 (`tests/e2e/dark-safety.spec.ts`), SET-03, ACC-08 and TOG-03 (`tests/e2e/account-data.spec.ts`).
