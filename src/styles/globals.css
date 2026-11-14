@@ -244,7 +244,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .an-screen {
-    animation: fadeIn 160ms ease both;
+    animation: screenFade 160ms ease both;
   }
   .an-glassL,
   .an-glassR,

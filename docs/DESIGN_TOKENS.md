@@ -8,6 +8,8 @@ Source: `design/claude-design/Clink Prototype v2.dc.html`. Values are copied ver
 | -------------- | --------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--text-faint` | `#7C7581` | `#8B8590` | The prototype value measures about 4.0:1 on `--bg-app`, `--surface-1` and `--surface-2`. `#8B8590` reaches 4.5:1 (WCAG AA for body text) and is visually the same step. |
 
+| `screenIn` keyframe | starts at `opacity: 0` | starts at `opacity: .01` | Elements that paint at opacity 0 are not counted as the largest contentful paint, so the landing and legal pages reported no LCP. `.01` looks identical. |
+
 Everything else is unchanged.
 
 ## Colour

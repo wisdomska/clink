@@ -122,7 +122,9 @@
 @keyframes flame { from { transform: scale(.5) rotate(-45deg); opacity: 0 } to { transform: scale(1) rotate(-45deg) } }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px) } }
 @keyframes rise { from { opacity: 0; transform: translateY(10px) } }
-@keyframes screenIn { from { opacity: 0; transform: translateY(6px) } }
+/* Starts at .01, not 0, so browsers still record the page's largest paint (LCP). */
+@keyframes screenIn { from { opacity: .01; transform: translateY(6px) } }
+@keyframes screenFade { from { opacity: .01 } }
 @keyframes toastIn { from { opacity: 0; transform: translateY(10px) scale(.96) } }
 @keyframes fadeIn { from { opacity: 0 } }
 @keyframes fadeOut { to { opacity: 0 } }
