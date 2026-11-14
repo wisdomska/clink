@@ -183,3 +183,23 @@ export function useCoupleEvent(event: string, fn: Handler) {
   });
   useEffect(() => on(event, (p) => ref.current(p)), [on, event]);
 }
+
+/**
+ * The current time for rendering clocks. Starts at the server's render time so
+ * the hydrated HTML matches what the server sent (no hydration mismatch when the
+ * minute rolls over), then ticks with the real clock.
+ */
+export function useCoupleNow(ms = 15_000): Date {
+  const { renderedAt } = useCouple();
+  const [now, setNow] = useState(() => new Date(renderedAt));
+  useEffect(() => {
+    const tick = () => setNow(new Date());
+    const first = setTimeout(tick, 0);
+    const t = setInterval(tick, ms);
+    return () => {
+      clearTimeout(first);
+      clearInterval(t);
+    };
+  }, [ms]);
+  return now;
+}

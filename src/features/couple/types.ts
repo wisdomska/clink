@@ -26,6 +26,8 @@ export interface CoupleContextValue {
   darkVisible: boolean;
   discreet: boolean;
   appLock: boolean;
+  /** Server render time (ms). Clocks start here so hydration matches the server HTML. */
+  renderedAt: number;
   isAdmin: boolean;
   email: string | null;
   settings: {

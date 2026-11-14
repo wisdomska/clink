@@ -6,7 +6,18 @@ const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 async function scan(page: Page, route: string) {
   await page.goto(route);
-  await page.waitForTimeout(600);
+  await page.waitForTimeout(300);
+  // Measure contrast on the settled screen, not mid-fade: wait for every
+  // finite entrance animation (staggered rises, fades) to finish.
+  await page.waitForFunction(
+    () =>
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getComputedTiming().iterations !== Infinity)
+        .every((a) => a.playState !== "running"),
+    null,
+    { timeout: 10_000 },
+  );
   const r = await new AxeBuilder({ page }).withTags(TAGS).exclude(".grain").analyze();
   const bad = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   const report = bad

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Moon, GearSix } from "@phosphor-icons/react";
-import { useCouple } from "@/features/couple/context";
+import { useCouple, useCoupleNow } from "@/features/couple/context";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { PresencePair } from "./presence-pair";
 import { DualClock } from "./dual-clock";
@@ -15,20 +15,11 @@ import { RitualCard } from "./ritual-card";
 import { AsleepCard } from "./asleep-card";
 import { useSendClink } from "./use-send-clink";
 
-function useNow(ms = 15_000) {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), ms);
-    return () => clearInterval(t);
-  }, [ms]);
-  return now;
-}
-
 export function UsScreen() {
   const { darkVisible, discreet, coupleId } = useCouple();
   const router = useRouter();
   const params = useSearchParams();
-  const now = useNow();
+  const now = useCoupleNow();
   const { sendClink } = useSendClink();
   const wordTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const firstSent = useRef(false);

@@ -19,7 +19,7 @@ import {
   Stop,
 } from "@phosphor-icons/react";
 import Link from "next/link";
-import { useCouple, useCoupleEvent } from "@/features/couple/context";
+import { useCouple, useCoupleNow, useCoupleEvent } from "@/features/couple/context";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/avatar";
 import { IconButton, Button } from "@/components/ui/button";
@@ -66,6 +66,7 @@ function dayLabel(d: Date, tz: string) {
 
 export function ChatScreen() {
   const { me, partner, presence, coupleId, send, discreet } = useCouple();
+  const now = useCoupleNow(30_000);
   const params = useSearchParams();
   const { messages, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, upsertLocal } =
     useMessages();
@@ -407,8 +408,8 @@ export function ChatScreen() {
     .reverse()
     .find((m) => m.sender_id === me.id && !m.local && m.type !== "clink");
   const sub = presence.online
-    ? `Online, ${formatClock(new Date(), partner.timezone)} in ${partner.city}`
-    : `Away, ${formatClock(new Date(), partner.timezone)} in ${partner.city}`;
+    ? `Online, ${formatClock(now, partner.timezone)} in ${partner.city}`
+    : `Away, ${formatClock(now, partner.timezone)} in ${partner.city}`;
   const digits = partner.phone?.replace(/[^\d+]/g, "") ?? "";
 
   return (

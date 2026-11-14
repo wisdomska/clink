@@ -12,9 +12,9 @@ import { useAmbient } from "./ambient";
 
 const STATUSES: PresenceStatus[] = ["free", "studying", "cooking", "working", "sleeping"];
 
-function ago(iso: string | null): string {
+function ago(iso: string | null, now: Date): string {
   if (!iso) return "away";
-  const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  const m = Math.round((now.getTime() - new Date(iso).getTime()) / 60000);
   if (m < 2) return "away";
   if (m < 60) return `away · ${m} min`;
   const h = Math.round(m / 60);
@@ -29,7 +29,7 @@ export function PresencePair({ now }: { now: Date }) {
   const ambient = useAmbient();
   const online = presence.online;
   const asleep = presence.status === "sleeping";
-  const theirStatus = asleep ? "asleep" : online ? presence.status : ago(presence.lastSeen);
+  const theirStatus = asleep ? "asleep" : online ? presence.status : ago(presence.lastSeen, now);
 
   return (
     <>

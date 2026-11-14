@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Plus, Trash } from "@phosphor-icons/react";
 import { supabaseBrowser } from "@/lib/supabase/client";
-import { useCouple } from "@/features/couple/context";
+import { useCouple, useCoupleNow } from "@/features/couple/context";
 import { Button, IconButton } from "@/components/ui/button";
 import { Display, Lead } from "@/components/ui/heading";
 import { Input, Label, Textarea, FieldError } from "@/components/ui/field";
@@ -21,18 +21,13 @@ export function CountdownsScreen() {
   const qc = useQueryClient();
   const { data = [], isLoading } = useCountdowns();
   const [open, setOpen] = useState(params.get("new") === "1");
-  const [now, setNow] = useState(() => new Date());
+  const now = useCoupleNow(30_000);
   const [title, setTitle] = useState("Next visit");
   const [subtitle, setSubtitle] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("18:00");
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 30_000);
-    return () => clearInterval(t);
-  }, []);
 
   const active = data.filter((c) => new Date(c.target_at!) > now);
   const reached = data.filter((c) => new Date(c.target_at!) <= now);

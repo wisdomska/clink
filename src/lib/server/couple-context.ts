@@ -83,6 +83,7 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
     darkVisible: darkBoth,
     discreet: meRow.discreet_mode,
     appLock,
+    renderedAt: Date.now(),
     isAdmin: meRow.is_admin,
     email: user.email ?? null,
     settings: {
