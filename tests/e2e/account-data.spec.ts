@@ -16,7 +16,9 @@ test.describe("Account data (SET-03, ACC-08, TOG-03)", () => {
     expect(hours).toBeGreaterThan(47);
     expect(hours).toBeLessThanOrEqual(48);
     const zip = unzipSync(new Uint8Array(await (await a.request.get(url)).body()));
-    const all = Object.values(zip).map(strFromU8).join("\n");
+    const all = Object.values(zip)
+      .map((u) => strFromU8(u))
+      .join("\n");
     expect(all).toContain(body);
     expect(all).toContain("After Dark and vault items are never included");
   });
