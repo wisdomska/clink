@@ -12,7 +12,7 @@ All results below come from the local Supabase stack (same migrations and seed a
 | Types                            | `pnpm typecheck`                       | Clean, TypeScript strict                                                                                                                                      |
 | Unit                             | `pnpm test:coverage`                   | 44 passed. Coverage on logic files: 92.7% statements, 87.2% branches, 94.9% functions, 95.7% lines (gate: 80/75/80/80)                                        |
 | Row-level security               | `pnpm test:rls`                        | 64 passed. Fails if any public table is missing from the matrix                                                                                               |
-| End to end                       | `pnpm test:e2e`                        | 38 tests (35 flows plus 3 accessibility sweeps) x 3 viewports (Pixel 7, tablet, 1440 px desktop) = 114 passed, two real partners in separate browser contexts |
+| End to end                       | `pnpm test:e2e`                        | 39 tests (36 flows plus 3 accessibility sweeps) x 3 viewports (Pixel 7, tablet, 1440 px desktop) = 117 passed, two real partners in separate browser contexts |
 | Accessibility                    | `tests/a11y/routes.spec.ts`            | axe-core on 27 routes (public, app, After Dark) x 3 viewports: zero serious or critical issues                                                                |
 | Visual regression                | `tests/visual/public.spec.ts`          | 5 public pages x 3 viewports match their baselines (1% tolerance, clock frozen)                                                                               |
 | Lighthouse (production, desktop) | `lhci collect`                         | `/login`: performance 99, accessibility 100, best practices 96, LCP 0.7 s, CLS 0. `/` and `/privacy`: accessibility 100, best practices 100, SEO 100          |
@@ -70,5 +70,5 @@ Open items: Lighthouse reports a Content Security Policy notice on `/login` with
 - **Production backend not connected yet.** The Vercel project is live and builds from `main` and `preview`, but the two Supabase cloud projects (`clink-prod`, `clink-preview`) need to be created by the owner (it needs their Supabase account). Until then signed-in screens cannot load in production. Steps are in `README.md` under Deploying.
 - Age verification is self-attestation (SAF-01). See `docs/LIMITS.md`.
 - One-tap face blur needs the browser `FaceDetector` API; other browsers get the manual blur brush (DARK-09).
-- Not yet asserted by a test, though implemented: CHAT-06, DARK-03, DARK-09, TOG-02, and the PLAY-03 300 ms latency budget (`docs/BUILD_PLAN.md`).
+- Not yet asserted by a test, though implemented: CHAT-06, DARK-09, TOG-02, and the PLAY-03 300 ms latency budget (`docs/BUILD_PLAN.md`).
 - Visual baselines are recorded on Linux; GitHub runners can rasterise fonts differently, so CI runs them as an informational step.
