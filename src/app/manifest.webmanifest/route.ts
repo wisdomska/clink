@@ -14,8 +14,8 @@ export async function GET() {
     scope: "/",
     display: "standalone",
     orientation: "any",
-    background_color: "#0F0E11",
-    theme_color: "#0F0E11",
+    background_color: "#120C10",
+    theme_color: "#120C10",
     categories: id === "clink" ? ["lifestyle", "social"] : ["utilities"],
     icons: [
       { src: `/icons/${id}-192.png`, sizes: "192x192", type: "image/png", purpose: "any" },

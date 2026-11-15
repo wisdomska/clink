@@ -6,60 +6,69 @@
 
 :root {
   /* Backgrounds */
-  --bg-page: #09080a; /* outside the app column */
-  --bg-app: #0f0e11; /* app canvas, on-accent text */
-  --bg-night: #0b0a0d; /* clock half when it is night there */
+  --bg-page: #0a0609; /* outside the app column */
+  --bg-app: #120c10; /* app canvas, on-accent text */
+  --bg-night: #0c080b; /* clock half when it is night there */
 
   /* Surfaces */
-  --surface-1: #18161b; /* cards, sheets, rows */
-  --surface-1b: #1c1a20; /* placeholder stripe partner */
-  --surface-2: #211e25; /* inputs, raised, secondary buttons */
-  --surface-3: #2c2830; /* partner B avatar, sent bubble, toast, selected */
-  --bezel: #1b191e;
+  --surface-1: #1b1318; /* cards, sheets, rows */
+  --surface-1b: #20161c; /* placeholder stripe partner */
+  --surface-2: #251a21; /* inputs, raised, secondary buttons */
+  --surface-3: #31232c; /* partner B avatar, sent bubble, toast, selected */
+  --bezel: #1c1419;
 
   /* Lines */
-  --line: #36313b;
-  --line-strong: #4a4450;
+  --line: #3d2c36;
+  --line-strong: #57404c;
 
   /* Text */
-  --text: #f4f0f5;
-  --text-muted: #ada6b2;
-  --text-faint: #8b8590; /* prototype #7C7581 lifted for WCAG AA 4.5:1 on app, s1 and s2 */
+  --text: #fbf3f6;
+  --text-muted: #bba9b3;
+  --text-faint: #9a8792; /* prototype #7C7581 lifted for WCAG AA 4.5:1 on app, s1 and s2 */
 
   /* Accents */
-  --accent: #e68af5; /* main app: pink-purple (v2) */
+  --accent: #ff4f7b; /* Rouge: the Clink brand colour */
   --accent-dark: #ff5a3c; /* After Dark: Ember */
-  --on-accent: #0f0e11;
-  --partner-a: #e68af5; /* circle */
-  --partner-b: #8fd9c8; /* square */
+  --on-accent: #1a0a10;
+  --partner-a: #ff4f7b; /* circle: Rouge */
+  --partner-b: #b9a4ff; /* square: Lilac */
   --danger: #ff7a6b;
   --warning: #f2b84b;
+
+  /* Brand extras: spicy, playful, romantic */
+  --rouge: #ff4f7b; /* primary: a kiss of hot pink-red */
+  --ember: #ff5a3c; /* spicy: After Dark, heat */
+  --lilac: #b9a4ff; /* romantic: partner B, soft moments */
+  --champagne: #ffd08a; /* celebration: sparks, wins, highlights */
+  --blush: #ffb3c4; /* tender: hover tints, gentle states */
+  --brand-gradient: linear-gradient(135deg, #ff4f7b 0%, #ff7a5c 55%, #ffd08a 100%);
+  --brand-gradient-romance: linear-gradient(135deg, #ff4f7b 0%, #c77dff 100%);
 
   /* Matchbook striker */
   --striker-1: #3a1a12;
   --striker-2: #5a2a1e;
 
   /* Alpha tints used by the prototype */
-  --accent-glow: rgba(230, 138, 245, 0.6);
-  --accent-glow-55: rgba(230, 138, 245, 0.55);
-  --accent-glow-45: rgba(230, 138, 245, 0.45);
-  --accent-halo: rgba(230, 138, 245, 0.18);
-  --accent-wash: rgba(230, 138, 245, 0.06);
+  --accent-glow: rgba(255, 79, 123, 0.6);
+  --accent-glow-55: rgba(255, 79, 123, 0.55);
+  --accent-glow-45: rgba(255, 79, 123, 0.45);
+  --accent-halo: rgba(255, 79, 123, 0.18);
+  --accent-wash: rgba(255, 79, 123, 0.06);
   --ember-50: rgba(255, 90, 60, 0.5);
   --ember-55: rgba(255, 90, 60, 0.55);
   --ember-60: rgba(255, 90, 60, 0.6);
-  --glass-line: rgba(244, 240, 245, 0.3);
+  --glass-line: rgba(251, 243, 246, 0.3);
   --glass-fill: rgba(244, 240, 245, 0.03);
-  --press-glow: rgba(15, 14, 17, 0.12); /* inset darken on accent hover */
-  --accent-soft: rgba(230, 138, 245, 0.22); /* focus glow on inputs */
-  --scrim: rgba(15, 14, 17, 0.75);
-  --scrim-strong: rgba(15, 14, 17, 0.8);
-  --scrim-soft: rgba(15, 14, 17, 0.72);
+  --press-glow: rgba(26, 10, 16, 0.12); /* inset darken on accent hover */
+  --accent-soft: rgba(255, 79, 123, 0.22); /* focus glow on inputs */
+  --scrim: rgba(18, 12, 16, 0.75);
+  --scrim-strong: rgba(18, 12, 16, 0.8);
+  --scrim-soft: rgba(18, 12, 16, 0.72);
   --shadow-sheet: 0 -20px 50px rgba(0, 0, 0, 0.4);
   --shadow-float: 0 20px 50px rgba(0, 0, 0, 0.4);
   --shadow-toast: 0 12px 32px rgba(0, 0, 0, 0.4);
   --shadow-matchbook: 0 -8px 20px rgba(0, 0, 0, 0.4);
-  --shadow-device: 0 0 0 10px #1b191e, 0 0 0 11px #36313b, 0 40px 100px rgba(0, 0, 0, 0.55);
+  --shadow-device: 0 0 0 10px #1c1419, 0 0 0 11px #3d2c36, 0 40px 100px rgba(0, 0, 0, 0.55);
 
   /* Radius */
   --r-pill: 999px;
@@ -113,7 +122,7 @@
 @keyframes sparkFar { 0% { opacity: 0; transform: translateY(-84px) } 20% { opacity: 1 } 100% { opacity: 0; transform: translateY(-134px) } }
 @keyframes ripple { 0% { transform: scale(1); opacity: .9 } 100% { transform: scale(1.6); opacity: 0 } }
 @keyframes slideDown { from { transform: translateY(-110%) } }
-@keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(230, 138, 245, .55) } 100% { box-shadow: 0 0 0 24px rgba(230, 138, 245, 0) } }
+@keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(255, 79, 123, .55) } 100% { box-shadow: 0 0 0 24px rgba(255, 79, 123, 0) } }
 @keyframes linkL { from { transform: translateX(-120px); opacity: 0 } }
 @keyframes linkR { from { transform: translateX(120px); opacity: 0 } }
 @keyframes flip { from { transform: rotateX(90deg) } }
@@ -134,7 +143,7 @@
 @keyframes tear { to { transform: translate(48px, 120px) rotate(22deg); opacity: 0 } }
 @keyframes floatUp { 0% { transform: translateY(0) scale(.8); opacity: 0 } 12% { opacity: 1; transform: translateY(-16px) scale(1) } 100% { transform: translateY(-170px); opacity: 0 } }
 @keyframes shake { 0%, 100% { transform: none } 20% { transform: translateX(-8px) } 40% { transform: translateX(8px) } 60% { transform: translateX(-5px) } 80% { transform: translateX(5px) } }
-@keyframes live { 0%, 100% { box-shadow: 0 0 0 0 rgba(230, 138, 245, .55) } 50% { box-shadow: 0 0 0 5px rgba(230, 138, 245, 0) } }
+@keyframes live { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 79, 123, .55) } 50% { box-shadow: 0 0 0 5px rgba(255, 79, 123, 0) } }
 @keyframes dots { 0%, 100% { opacity: .3 } 50% { opacity: 1 } }
 @keyframes skel { 0%, 100% { opacity: .55 } 50% { opacity: 1 } }
 /* Exit animations (their own curves; `reverse` would turn ease-out into ease-in) */

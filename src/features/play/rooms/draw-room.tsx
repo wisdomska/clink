@@ -18,7 +18,7 @@ interface Stroke {
   pts: Pt[];
 }
 
-const COLORS = ["#F4F0F5", "#E68AF5", "#8FD9C8", "#F2B84B"];
+const COLORS = ["#FBF3F6", "#FF4F7B", "#B9A4FF", "#FFD08A"];
 
 function pathFromStroke(pts: Pt[], w: number): string {
   const outline = getStroke(

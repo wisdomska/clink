@@ -9,17 +9,18 @@ export interface Appearance {
 }
 
 export const ACCENTS = [
-  ["#E68AF5", "Pink"],
+  ["#FF4F7B", "Rouge"],
+  ["#E68AF5", "Orchid"],
   ["#FF8A7A", "Coral"],
   ["#FFC857", "Gold"],
   ["#5ED3B3", "Mint"],
   ["#6CB8FF", "Sky"],
-  ["#A99BFF", "Lavender"],
+  ["#B9A4FF", "Lilac"],
   ["#F4F0F5", "Pearl"],
 ] as const;
 
 const KEY = "clink.appearance.v1";
-const DEFAULT: Appearance = { accent: "#E68AF5", text: "m", bubble: "round" };
+const DEFAULT: Appearance = { accent: "#FF4F7B", text: "m", bubble: "round" };
 let current: Appearance = DEFAULT;
 const listeners = new Set<() => void>();
 

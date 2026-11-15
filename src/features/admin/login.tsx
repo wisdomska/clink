@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, FieldError } from "@/components/ui/field";
 import { feedback } from "@/lib/feedback";
 import { cn } from "@/components/ui/cn";
+import { Logo } from "@/components/brand/logo";
 
 const REMEMBER = "clink.adminEmail";
 
@@ -64,8 +65,9 @@ export function AdminLogin({ next }: { next: string }) {
             "radial-gradient(80% 60% at 15% 10%, color-mix(in oklab, var(--accent) 35%, transparent), transparent 60%), radial-gradient(70% 60% at 90% 90%, color-mix(in oklab, var(--partner-b) 25%, transparent), transparent 60%), var(--surface-1)",
         }}
       >
-        <div className="display text-[34px]">
-          clink <em>admin</em>
+        <div className="flex items-end gap-3">
+          <Logo size={34} />
+          <span className="mono text-faint mb-1.5 text-xs tracking-[0.2em]">ADMIN</span>
         </div>
         <div className="flex flex-col gap-5">
           {POINTS.map((p, i) => (

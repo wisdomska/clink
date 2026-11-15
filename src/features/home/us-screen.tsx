@@ -17,6 +17,7 @@ import { RitualCard } from "./ritual-card";
 import { MilestoneMoment } from "./milestone-moment";
 import { AsleepCard } from "./asleep-card";
 import { useSendClink } from "./use-send-clink";
+import { LogoMark, Wordmark } from "@/components/brand/logo";
 
 export function UsScreen() {
   const { darkVisible, discreet, coupleId } = useCouple();
@@ -55,9 +56,10 @@ export function UsScreen() {
           onPointerDown={wordDown}
           onPointerUp={wordUp}
           onPointerLeave={wordUp}
-          className="display m-0 text-[30px] select-none"
+          className="m-0 flex items-center gap-1.5 select-none"
         >
-          clink
+          <LogoMark size={30} />
+          <Wordmark size={28} />
         </h1>
         <div className="flex gap-2">
           {darkVisible && !discreet && (

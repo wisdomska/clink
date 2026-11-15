@@ -4,6 +4,7 @@ import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { HeroGlasses } from "@/components/clink/hero-glasses";
 import { MiniBoard, MiniEnvelope, MiniMatchbook, MiniStub } from "@/components/clink/objects-mini";
 import { InstalledRedirect } from "./installed-redirect";
+import { Logo } from "@/components/brand/logo";
 
 export const metadata: Metadata = {
   title: { absolute: "Clink: do things together, from apart" },
@@ -35,7 +36,7 @@ export default function Landing() {
           className="display text-text hover:text-text text-[28px]"
           aria-label="Clink home"
         >
-          clink
+          <Logo size={26} />
         </Link>
         <Link
           href="/login"
@@ -135,7 +136,7 @@ export default function Landing() {
 
       <footer className="border-line mx-4 mt-10 flex max-w-[1200px] items-end justify-between border-t pt-5 md:mx-8 lg:mx-auto lg:px-8">
         <div>
-          <div className="display text-[22px] tracking-normal">clink</div>
+          <Logo size={20} />
           <div className="text-faint text-sm">Made for two.</div>
         </div>
         <nav aria-label="Legal" className="flex flex-col gap-1 text-right text-sm font-medium">

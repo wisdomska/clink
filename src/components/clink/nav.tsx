@@ -12,6 +12,7 @@ import {
 } from "@phosphor-icons/react";
 import { cn } from "@/components/ui/cn";
 import { useCouple } from "@/features/couple/context";
+import { Logo, LogoMark } from "@/components/brand/logo";
 
 export const TABS = [
   { href: "/us", label: "Us", Icon: Heart },
@@ -87,8 +88,12 @@ export function Rail({ unread = 0 }: { unread?: number }) {
         className="display rail-word text-text hover:text-text mb-8 px-3 text-[30px]"
         aria-label="Clink, Us"
       >
-        <span className="rail-full">clink</span>
-        <span className="rail-mini">c</span>
+        <span className="rail-full">
+          <Logo size={28} />
+        </span>
+        <span className="rail-mini">
+          <LogoMark size={34} />
+        </span>
       </Link>
       <div className="flex flex-col gap-1">
         {TABS.map(({ href, label, Icon }) => {

@@ -234,7 +234,7 @@ export function StoryRoom({ game }: { game: GameRow }) {
     ctx.fillText("our story", pad, pad + 40);
     ctx.font = `400 36px ${body}`;
     lines.forEach((l, i) => {
-      ctx.fillStyle = l.by === "" ? "#ADA6B2" : l.by === me.id ? "#E68AF5" : "#8FD9C8";
+      ctx.fillStyle = l.by === "" ? "#BBA9B3" : l.by === me.id ? "#FF4F7B" : "#B9A4FF";
       ctx.fillText(l.t, pad, pad + 150 + i * 54);
     });
     ctx.fillStyle = "#7C7581";

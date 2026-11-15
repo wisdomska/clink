@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+<defs>
+<radialGradient id="bg" cx="30%" cy="20%" r="95%"><stop offset="0" stop-color="#3a1424"/><stop offset=".55" stop-color="#1b1016"/><stop offset="1" stop-color="#0e080b"/></radialGradient>
+<linearGradient id="l" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB3C4"/><stop offset=".45" stop-color="#FF4F7B"/><stop offset="1" stop-color="#D9305E"/></linearGradient>
+<linearGradient id="r" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD08A"/><stop offset=".5" stop-color="#FF7A5C"/><stop offset="1" stop-color="#FF5A3C"/></linearGradient>
+<radialGradient id="glow" cx="50%" cy="10%" r="40%"><stop offset="0" stop-color="#FFD08A" stop-opacity=".45"/><stop offset="1" stop-color="#FFD08A" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="64" height="64" rx="14.08" fill="url(#bg)"/><rect width="64" height="64" rx="14.08" fill="url(#glow)"/>
+<g transform="translate(16.92672 14.4384) scale(0.47104)">
+<g transform="rotate(9 32 15)"><path d="M31 16.5C28.3 12.2 24.6 9.5 19.6 9.5C12.6 9.5 7 15.1 7 22.4C7 32.8 15.3 42.2 31 53.2L31 66H24.5C23.7 66 23 66.7 23 67.5C23 68.3 23.7 69 24.5 69H35.5C36.3 69 37 68.3 37 67.5C37 66.7 36.3 66 35.5 66H33.4L33.4 53.6L31 53.2Z" fill="url(#l)"/><path d="M11 23.5C11 20 14 15 19.5 13.5" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.2" stroke-linecap="round"/></g>
+<g transform="rotate(-9 32 15)"><path d="M33 16.5C35.7 12.2 39.4 9.5 44.4 9.5C51.4 9.5 57 15.1 57 22.4C57 32.8 48.7 42.2 33 53.2L33 66H39.5C40.3 66 41 66.7 41 67.5C41 68.3 40.3 69 39.5 69H28.5C27.7 69 27 68.3 27 67.5C27 66.7 27.7 66 28.5 66H30.6L30.6 53.6L33 53.2Z" fill="url(#r)"/><path d="M53 23.5C53 20 50 15 44.5 13.5" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.2" stroke-linecap="round"/></g>
+<path d="M32 0L34.2 4.8L39 7L34.2 9.2L32 14L29.8 9.2L25 7L29.8 4.8Z" fill="#FFD08A"/>
+</g></svg>

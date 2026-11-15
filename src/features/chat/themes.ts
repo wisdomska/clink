@@ -26,9 +26,9 @@ export const CHAT_THEMES = {
   },
   berry: {
     label: "Berry",
-    bg: "linear-gradient(135deg,#b44ce6,#e68af5)",
+    bg: "linear-gradient(135deg,#c77dff,#ff4f7b)",
     fg: "#fff",
-    swatch: "linear-gradient(135deg,#b44ce6,#e68af5)",
+    swatch: "linear-gradient(135deg,#c77dff,#ff4f7b)",
   },
   candy: {
     label: "Candy",

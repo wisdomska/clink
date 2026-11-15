@@ -4,7 +4,7 @@ import { cn } from "@/components/ui/cn";
 
 /** Per-game glow. Low alpha so Clink's accent still leads. */
 export const GAME_TINT: Record<string, string> = {
-  know_me: "#E68AF5",
+  know_me: "#FF4F7B",
   draw_guess: "#4FD1C5",
   trivia: "#FFC857",
   wyr: "#8B7CFF",
@@ -41,7 +41,7 @@ export function GameTile({
   index?: number;
   highlight?: boolean;
 }) {
-  const tint = GAME_TINT[type] ?? "#E68AF5";
+  const tint = GAME_TINT[type] ?? "#FF4F7B";
   return (
     <motion.button
       type="button"

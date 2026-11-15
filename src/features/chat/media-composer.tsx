@@ -26,7 +26,7 @@ const FILTERS = [
 ] as const;
 type FilterKey = (typeof FILTERS)[number]["key"];
 
-const TEXT_COLOURS = ["#FFFFFF", "#111111", "#E68AF5", "#FFC857", "#4FD1C5"];
+const TEXT_COLOURS = ["#FFFFFF", "#111111", "#FF4F7B", "#FFC857", "#B9A4FF"];
 
 interface Item {
   id: string;

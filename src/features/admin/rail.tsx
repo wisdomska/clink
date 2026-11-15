@@ -14,6 +14,7 @@ import {
   SignOut,
 } from "@phosphor-icons/react";
 import { cn } from "@/components/ui/cn";
+import { Logo } from "@/components/brand/logo";
 
 const ITEMS = [
   { href: "/admin", label: "Dashboard", Icon: ChartBar },
@@ -74,7 +75,9 @@ export function AdminRail({ name }: { name: string }) {
       </div>
       {open && <div className="border-line bg-app border-b p-3 lg:hidden">{nav}</div>}
       <aside className="border-line sticky top-0 hidden h-dvh flex-col border-r px-3 py-6 lg:flex">
-        <div className="display mb-1 px-3 text-[30px]">clink</div>
+        <div className="mb-1 px-3">
+          <Logo size={26} />
+        </div>
         <div className="mono text-faint mb-8 px-3 text-xs">ADMIN · CONTENT ACCESS IS LOGGED</div>
         {nav}
         <div className="mt-auto flex flex-col gap-2 px-3">
