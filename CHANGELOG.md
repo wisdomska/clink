@@ -14,6 +14,8 @@ A polish pass, informed by the author's Spil and Spuzl apps.
 - Milestones (100 days, anniversaries) are celebrated once with confetti on Us.
 - Admin: in-app confirmations with a required reason, typed DELETE for account deletion, 7 and 30 day trends with change against the previous period and sparklines, a live switches strip, CSV exports with a formula-injection guard, search kept in the URL, and an audit log written in plain sentences.
 - A branded 404 page, and an offline-aware error screen.
+- Notifications are offered at an earned moment (right after your partner's clink lands), once, with a week's wait after "Not now".
+- Tabs show a calm loading state on slow navigations; your partner's online status rides out short connection blips.
 
 ### Changed
 

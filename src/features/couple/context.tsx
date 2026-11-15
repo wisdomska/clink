@@ -45,6 +45,7 @@ export function CoupleProvider({
   const channelRef = useRef<RealtimeChannel | null>(null);
   const handlers = useRef(new Map<string, Set<Handler>>());
   const [connected, setConnected] = useState(false);
+  const awayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [presence, setPresence] = useState<PartnerPresence>({
     online: false,
     status: "free",
@@ -95,11 +96,20 @@ export function CoupleProvider({
       ch.on("presence", { event: "sync" }, () => {
         const state = ch.presenceState<{ status: PresenceStatus; at: string }>();
         const theirs = state[value.partner.id]?.[0];
-        setPresence((p) => ({
-          online: Boolean(theirs),
-          status: theirs?.status ?? p.status,
-          lastSeen: theirs?.at ?? p.lastSeen,
-        }));
+        // Grace period: a short blip (switching apps, a tunnel) doesn't flip them to away.
+        if (awayTimer.current) clearTimeout(awayTimer.current);
+        if (theirs) {
+          setPresence((p) => ({
+            online: true,
+            status: theirs.status ?? p.status,
+            lastSeen: theirs.at,
+          }));
+        } else {
+          awayTimer.current = setTimeout(
+            () => setPresence((p) => ({ ...p, online: false })),
+            10_000,
+          );
+        }
       });
       ch.subscribe(async (status) => {
         setConnected(status === "SUBSCRIBED");

@@ -6,6 +6,7 @@ import { IncomingClink } from "@/features/home/incoming-clink";
 import { cn } from "@/components/ui/cn";
 import { useOnline, useStoredString } from "@/lib/hooks";
 import { GameInviteToast } from "@/features/play/invite-toast";
+import { PushAsk } from "@/features/home/push-ask";
 
 const HIDE_TABS = [/^\/play\/[^/]+\/[^/]+/, /^\/settings/, /^\/help/, /^\/plans\/watch\//];
 
@@ -71,6 +72,7 @@ export function AppShell({
       </div>
       {tabs && <TabBar />}
       <IncomingClink />
+      <PushAsk />
     </>
   );
 }
