@@ -24,7 +24,8 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : [["list"]],
   use: {
-    baseURL: `http://localhost:${port}`,
+    // BASE_URL runs the suite against a deployed site (e.g. the preview).
+    baseURL: process.env.BASE_URL ?? `http://localhost:${port}`,
     trace: "off",
     screenshot: "only-on-failure",
     locale: "en-GB",
@@ -47,7 +48,8 @@ export default defineConfig({
     },
     { name: "desktop", use: { viewport: { width: 1440, height: 900 }, browserName: "chromium" } },
   ],
-  webServer: process.env.PW_NO_SERVER
-    ? undefined
-    : { command: `pnpm start -p ${port}`, port, reuseExistingServer: true, timeout: 120_000 },
+  webServer:
+    process.env.PW_NO_SERVER || process.env.BASE_URL
+      ? undefined
+      : { command: `pnpm start -p ${port}`, port, reuseExistingServer: true, timeout: 120_000 },
 });

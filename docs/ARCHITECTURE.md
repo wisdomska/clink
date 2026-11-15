@@ -69,4 +69,6 @@ One private broadcast channel per couple (`couple:<id>`) carries clinks, typing,
 | `main`    | https://clinkapp.vercel.app         | `clink-prod`    |
 | `preview` | https://clinkapp-preview.vercel.app | `clink-preview` |
 
+Functions run in Vercel's London region (`lhr1`, set in `vercel.json`) next to both Supabase projects (`eu-west-2`), so each database call stays inside one region.
+
 Migrations are applied with `supabase db push` against each project. Local development uses `supabase start` (Docker) with the same migrations and seed.
