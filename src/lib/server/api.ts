@@ -99,7 +99,7 @@ export interface CoupleCaller extends Caller {
 export async function requireCouple(): Promise<CoupleCaller> {
   const caller = await requireUser();
   const couple = await activeCouple(caller.user.id);
-  if (!couple) throw deny(409, "not_linked", "Link with your person first.");
+  if (!couple) throw deny(409, "not_linked", "Link with your partner first.");
   return { ...caller, ...couple };
 }
 

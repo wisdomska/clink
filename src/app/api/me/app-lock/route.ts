@@ -62,7 +62,11 @@ export const POST = handler(async (req) => {
     await audit(locked ? "app_pin_lockout" : "app_pin_wrong", user.id);
     if (locked)
       throw deny(423, "locked", "Too many tries. Wait 15 minutes, or sign out and back in.");
-    throw deny(401, "wrong_pin", `That's not it. ${PIN_MAX_TRIES - fails} tries left.`);
+    throw deny(
+      401,
+      "wrong_pin",
+      `That's not it. ${PIN_MAX_TRIES - fails} ${PIN_MAX_TRIES - fails === 1 ? "try" : "tries"} left.`,
+    );
   };
 
   if (body.action === "unlock") {

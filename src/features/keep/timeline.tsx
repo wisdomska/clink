@@ -9,6 +9,25 @@ import { useKeep, tagDate } from "./data";
 import { nextAnniversary } from "@/lib/milestones";
 
 /** KEEP-03 full timeline: auto milestones plus manual entries with photos. */
+function ordinal(n: number) {
+  const words = [
+    "",
+    "First",
+    "Second",
+    "Third",
+    "Fourth",
+    "Fifth",
+    "Sixth",
+    "Seventh",
+    "Eighth",
+    "Ninth",
+    "Tenth",
+  ];
+  if (words[n]) return words[n]!;
+  const s = n % 100 >= 11 && n % 100 <= 13 ? "th" : (["th", "st", "nd", "rd"][n % 10] ?? "th");
+  return `${n}${s}`;
+}
+
 export function TimelineScreen() {
   const router = useRouter();
   const { linkedAt, startedOn } = useCouple();
@@ -32,7 +51,7 @@ export function TimelineScreen() {
           <p className="text-muted m-0 mt-1 text-sm">
             {anniversary.inDays === 0
               ? "Happy anniversary."
-              : `${anniversary.years === 1 ? "First" : `Year ${anniversary.years}`} anniversary in ${anniversary.inDays} ${anniversary.inDays === 1 ? "day" : "days"}.`}
+              : `${ordinal(anniversary.years)} anniversary in ${anniversary.inDays} ${anniversary.inDays === 1 ? "day" : "days"}.`}
           </p>
         )}
       </div>

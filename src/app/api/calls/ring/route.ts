@@ -14,7 +14,7 @@ export const POST = handler(async (req) => {
     .eq("id", user.id)
     .single();
   await notify(partnerId, "chat", {
-    body: `${me?.display_name ?? "Your person"} is ${video ? "video " : ""}calling you`,
+    body: `${me?.display_name ?? "Your partner"} is ${video ? "video " : ""}calling you`,
     url: "/chat",
     tag: "call",
   });

@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
 import { LetterScreen } from "@/features/keep/letter";
 
-export const metadata: Metadata = { title: "Open When" };
+export const metadata: Metadata = { title: "Open when letter" };
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

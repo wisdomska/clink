@@ -223,7 +223,7 @@ export function LinkScreen({
         <ArrowLeft size={20} />
       </IconButton>
       <Display size={36} className="mt-6">
-        Link your <em>person</em>
+        Link your <em>partner</em>
       </Display>
       <Lead className="mt-2">One account, one person. Send them this code, or enter theirs.</Lead>
       {archive && (
@@ -293,7 +293,7 @@ export function LinkScreen({
                     if (!invite) return;
                     await navigator.clipboard.writeText(invite.code).catch(() => undefined);
                     setCopied(true);
-                    toast("Copied. Send it to your person.");
+                    toast("Copied. Send it to your partner.");
                   }}
                 >
                   {copied ? <Check size={20} aria-hidden /> : <Copy size={20} aria-hidden />}

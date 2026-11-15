@@ -35,7 +35,25 @@ export function SplitFlap({
       className="flex gap-3.5"
       style={{ perspective: 400 }}
       role="timer"
-      aria-label={groups.map((g) => `${Number(g.value)} ${g.label.toLowerCase()}`).join(", ")}
+      aria-label={groups
+        .map((g) => {
+          const n = Number(g.value);
+          const word =
+            (
+              {
+                d: "day",
+                days: "day",
+                hrs: "hour",
+                h: "hour",
+                min: "minute",
+                m: "minute",
+                s: "second",
+                sec: "second",
+              } as Record<string, string>
+            )[g.label.toLowerCase()] ?? g.label.toLowerCase();
+          return `${n} ${word}${n === 1 || word === g.label.toLowerCase() ? "" : "s"}`;
+        })
+        .join(", ")}
     >
       {groups.map((g) => (
         <div key={g.label} className="flex flex-col gap-1.5" aria-hidden>

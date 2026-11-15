@@ -169,7 +169,7 @@ function Elapsed({ since }: { since: string }) {
   return (
     <span
       className="mono text-faint text-sm"
-      aria-label={`Waiting ${m} minutes ${secs % 60} seconds`}
+      aria-label={`Waiting ${m} ${m === 1 ? "minute" : "minutes"} ${secs % 60} ${secs % 60 === 1 ? "second" : "seconds"}`}
     >
       {String(m).padStart(2, "0")}:{String(secs % 60).padStart(2, "0")}
     </span>

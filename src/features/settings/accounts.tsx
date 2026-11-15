@@ -75,8 +75,8 @@ export function AccountRows() {
 
       <Sheet open={openSwitch} onOpenChange={setOpenSwitch} title="Accounts on this device" handle>
         <p className="text-muted m-0 mb-3 text-sm">
-          Stay signed in to more than one Clink account and hop between them. Each account still has
-          its own one partner.
+          Stay signed in to more than one Clink account and hop between them. Each account is still
+          linked to one partner.
         </p>
         <ul className="m-0 flex list-none flex-col gap-1 p-0">
           {list.map((a) => {

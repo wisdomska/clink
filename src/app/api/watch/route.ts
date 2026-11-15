@@ -59,7 +59,7 @@ export const POST = handler(async (req) => {
     .eq("id", user.id)
     .single();
   await notify(partnerId, "dates", {
-    body: `${me?.display_name ?? "Your person"} started a watch party`,
+    body: `${me?.display_name ?? "Your partner"} started a watch party`,
     url: `/plans/watch/${data.id}`,
   });
   return ok({ id: data.id }, { status: 201 });

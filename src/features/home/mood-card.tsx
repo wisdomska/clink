@@ -66,6 +66,27 @@ export function moodChip(mood: string): string {
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
+/** The same moods, said to you: "You're missing them", "You need a little space". */
+const MINE: Record<string, string> = {
+  Happy: "You're happy",
+  Loved: "You're feeling loved",
+  Cosy: "You're feeling cosy",
+  Excited: "You're excited",
+  Flirty: "You're feeling flirty",
+  Grateful: "You're feeling grateful",
+  "Missing you": "You're missing them",
+  Wired: "You're feeling wired",
+  Tired: "You're tired",
+  Anxious: "You're feeling anxious",
+  Stressed: "You're stressed",
+  Low: "You're feeling low",
+  Sad: "You're sad",
+  Hurt: "You're hurt",
+  Jealous: "You're feeling jealous",
+  Angry: "You're angry",
+  "Need space": "You need a little space",
+};
+
 const HARD = new Set<string>(MOOD_GROUPS[2].moods);
 
 const since = (iso: string) => {
@@ -175,7 +196,7 @@ export function MoodCard() {
             className="h-10 w-10 object-contain"
           />
           <span className="min-w-0 flex-1 text-sm">
-            You&apos;re <span className="font-bold">{mine.mood.toLowerCase()}</span>
+            <span className="font-bold">{MINE[mine.mood] ?? mine.mood}</span>
             <span className="text-faint"> · {since(mine.created_at)}</span>
             {mine.note && (
               <span className="text-muted block truncate">&ldquo;{mine.note}&rdquo;</span>
@@ -246,7 +267,7 @@ export function MoodCard() {
               onClick={() => setEditing(false)}
               className="text-muted cursor-pointer self-start border-0 bg-transparent text-sm"
             >
-              Keep {mine.mood.toLowerCase()}
+              Keep &ldquo;{mine.mood}&rdquo;
             </button>
           )}
         </>

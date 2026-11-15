@@ -9,7 +9,7 @@ test("edit your profile (avatar, about, love language, birthday) and see your pa
   await a.goto("/settings");
   await a.getByRole("button", { name: "Edit profile" }).click();
   const sheet = a.getByRole("dialog", { name: "Edit profile" });
-  await sheet.getByRole("radio", { name: "Fox" }).click();
+  await sheet.getByRole("radio", { name: "Woman dancing, medium skin" }).click();
   await sheet.getByLabel("About you").fill("Coffee snob, terrible singer.");
   await sheet.getByRole("radio", { name: "Quality time" }).click();
   await sheet.getByRole("switch", { name: /Show my birthday/ }).click();
@@ -27,7 +27,7 @@ test("edit your profile (avatar, about, love language, birthday) and see your pa
         ).data,
     )
     .toEqual({
-      avatar_icon: "fox",
+      avatar_icon: "p-w-dance-m",
       bio: "Coffee snob, terrible singer.",
       love_language: "time",
       share_birthday: true,

@@ -238,7 +238,7 @@ export function Lobby() {
               };
               const sub =
                 g.type === "word"
-                  ? `Turn ${(st.plays?.length ?? 0) + 1} of 16 · ${(st.scores?.[me.id] ?? 0) >= (st.scores?.[partner.id] ?? 0) ? "you lead" : `${partner.name} leads`} ${st.scores?.[me.id] ?? 0} to ${st.scores?.[partner.id] ?? 0}`
+                  ? `Turn ${(st.plays?.length ?? 0) + 1} of 16 · ${(st.scores?.[me.id] ?? 0) === (st.scores?.[partner.id] ?? 0) ? `level at ${st.scores?.[me.id] ?? 0}` : `${(st.scores?.[me.id] ?? 0) > (st.scores?.[partner.id] ?? 0) ? "you lead" : `${partner.name} leads`} ${st.scores?.[me.id] ?? 0} to ${st.scores?.[partner.id] ?? 0}`}`
                   : `Line ${(st.lines?.length ?? 0) + 1} of 40${st.lines?.length ? ` · "${st.lines[st.lines.length - 1]!.text.slice(0, 24)}"` : ""}`;
               return (
                 <Link

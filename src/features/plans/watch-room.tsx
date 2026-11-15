@@ -311,7 +311,7 @@ export function WatchRoom({
       >
         <input
           aria-label="Say something"
-          placeholder="Say something, it's not a cinema"
+          placeholder="Say something. It's not a cinema."
           value={text}
           maxLength={200}
           onChange={(e) => setText(e.target.value)}

@@ -57,7 +57,7 @@ export function MilestoneMoment() {
         <ConfettiIcon size={40} className="text-accent" aria-hidden />
         <div className="display text-[32px] leading-[1.05]">{data.title}</div>
         <p className="text-muted m-0 text-base leading-normal">
-          It&apos;s on your timeline. Send a clink to mark it.
+          It&apos;s on your timeline. Send a Clink to mark it.
         </p>
         <Button onClick={() => setOpen(false)}>Lovely</Button>
       </Sheet>

@@ -12,7 +12,7 @@ export default function NotFound() {
         Nothing <em>here</em>.
       </h1>
       <p className="text-muted m-0 text-base leading-normal">
-        That page has moved, or it never existed. Your person is still where you left them.
+        That page has moved, or it never existed. Your partner is still where you left them.
       </p>
       <div className="flex flex-wrap gap-2">
         <Link

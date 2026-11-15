@@ -16,15 +16,15 @@ export const GET = handler(async (req: NextRequest) => {
     .eq("code", parsed.data.code)
     .maybeSingle();
   if (!inv || inv.used_at)
-    throw deny(404, "invalid_code", "That code doesn't work. Check it with your person.");
+    throw deny(404, "invalid_code", "That code doesn't work. Check it with your partner.");
   if (new Date(inv.expires_at) < new Date())
     throw deny(410, "expired", "That code expired. Codes last 48 h.");
   if (inv.inviter_id === user.id)
-    throw deny(409, "own_code", "That's your own code. Send it to your person.");
+    throw deny(409, "own_code", "That's your own code. Send it to your partner.");
   const { data: p } = await admin
     .from("profiles")
     .select("display_name")
     .eq("id", inv.inviter_id)
     .single();
-  return ok({ name: p?.display_name ?? "your person" });
+  return ok({ name: p?.display_name ?? "your partner" });
 });

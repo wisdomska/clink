@@ -7,10 +7,21 @@ import { admin } from "./helpers";
 test("pick a 3D avatar, upload your own photo, and switch back", async ({ couple }) => {
   const { a, nia } = couple;
   await a.goto("/onboarding?edit=1");
-  const grid = a.getByRole("radiogroup", { name: "Avatar" });
-  await expect(grid.getByRole("radio")).toHaveCount(28);
-  await grid.getByRole("radio", { name: "Fox" }).click();
-  await expect(grid.getByRole("radio", { name: "Fox" })).toHaveAttribute("aria-checked", "true");
+  const grid = a.getByRole("radiogroup", { name: "Avatar", exact: true });
+  await expect(grid.getByRole("radio")).toHaveCount(14);
+  await a
+    .getByRole("radiogroup", { name: "Skin tone" })
+    .getByRole("radio", { name: "Dark", exact: true })
+    .click();
+  await a
+    .getByRole("radiogroup", { name: "Avatar style" })
+    .getByRole("radio", { name: "Man", exact: true })
+    .click();
+  await grid.getByRole("radio", { name: "Man dancing, dark skin" }).click();
+  await expect(grid.getByRole("radio", { name: "Man dancing, dark skin" })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
   await a
     .getByRole("button", { name: "Next" })
     .or(a.getByRole("button", { name: "Continue" }))
@@ -22,7 +33,7 @@ test("pick a 3D avatar, upload your own photo, and switch back", async ({ couple
         (await admin.from("profiles").select("avatar_icon").eq("id", nia.id).single()).data
           ?.avatar_icon,
     )
-    .toBe("fox");
+    .toBe("p-m-dance-k");
 
   // Any photo, no content filter: it is only resized and stripped of metadata.
   await a.goto("/onboarding?edit=1");
@@ -43,7 +54,7 @@ test("pick a 3D avatar, upload your own photo, and switch back", async ({ couple
     )
     .toBe("photo");
 
-  await a.getByRole("radio", { name: "Panda" }).click();
+  await a.getByRole("radio", { name: "Man singing, dark skin" }).click();
   await a
     .getByRole("button", { name: "Next" })
     .or(a.getByRole("button", { name: "Continue" }))
@@ -55,7 +66,7 @@ test("pick a 3D avatar, upload your own photo, and switch back", async ({ couple
         (await admin.from("profiles").select("avatar_kind, avatar_icon").eq("id", nia.id).single())
           .data,
     )
-    .toEqual({ avatar_kind: "icon", avatar_icon: "panda" });
+    .toEqual({ avatar_kind: "icon", avatar_icon: "p-m-singer-k" });
   await a.goto("/settings");
-  await expect(a.locator('img[src="/avatars/panda.webp"]').first()).toBeVisible();
+  await expect(a.locator('img[src="/avatars/p/m-singer-k.webp"]').first()).toBeVisible();
 });

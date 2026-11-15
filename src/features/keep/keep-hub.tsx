@@ -297,7 +297,7 @@ function LetterSheet({
   const [body, setBody] = useState("");
   const [error, setError] = useState<string | null>(null);
   return (
-    <Sheet open={open} onOpenChange={onOpenChange} title="Write an Open When letter" handle>
+    <Sheet open={open} onOpenChange={onOpenChange} title="Write an Open when letter" handle>
       <Display as="h2" size={28}>
         For {partner.name}, <em>later</em>
       </Display>

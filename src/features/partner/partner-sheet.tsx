@@ -151,7 +151,7 @@ export function PartnerSheetProvider({ children }: { children: React.ReactNode }
                 online ? "bg-[#34C759]/15 text-[#34C759]" : "bg-s2 text-muted",
               )}
             >
-              {online ? statusLabel(presence.status) : "Away"}
+              {online ? statusLabel(presence.status).replace(/^./, (c) => c.toUpperCase()) : "Away"}
             </span>
             {mood && (
               <span className="bg-s2 rounded-full px-3 py-1 text-xs font-semibold">
@@ -219,7 +219,7 @@ export function PartnerSheetProvider({ children }: { children: React.ReactNode }
           <Fact
             icon={<Heart size={14} />}
             label="Together"
-            value={`${together.toLocaleString()} days`}
+            value={`${together.toLocaleString()} ${together === 1 ? "day" : "days"}`}
           />
           {partner.loveLanguage && (
             <Fact
@@ -234,7 +234,13 @@ export function PartnerSheetProvider({ children }: { children: React.ReactNode }
               label="Birthday"
               value={`${birthdayLabel(partner.birthday)}${(() => {
                 const n = daysUntil(partner.birthday!, now);
-                return n === 0 ? " · today!" : n <= 30 ? ` · in ${n} days` : "";
+                return n === 0
+                  ? " · today!"
+                  : n === 1
+                    ? " · tomorrow"
+                    : n <= 30
+                      ? ` · in ${n} days`
+                      : "";
               })()}`}
             />
           )}

@@ -132,9 +132,25 @@ export const POST = handler(async (req) => {
       .select("display_name")
       .eq("id", user.id)
       .single();
-    const name = me?.display_name ?? "Your person";
+    const name = me?.display_name ?? "Your partner";
     const detail =
-      m.type === "text" ? `${name}: ${(m.body ?? "").slice(0, 80)}` : `${name} ${PREVIEW[m.type]}`;
+      m.type === "text"
+        ? `${name}: ${(m.body ?? "").slice(0, 80)}`
+        : m.type === "media"
+          ? `${name} sent ${
+              m.mediaIds.length > 1
+                ? `${m.mediaIds.length} photos and videos`
+                : (
+                      await supabaseAdmin()
+                        .from("media")
+                        .select("kind")
+                        .eq("id", m.mediaIds[0]!)
+                        .single()
+                    ).data?.kind === "video"
+                  ? "a video"
+                  : "a photo"
+            }`
+          : `${name} ${PREVIEW[m.type]}`;
     await notify(partnerId, "chat", { body: detail, url: "/chat", tag: "chat" });
   }
   await track("message_sent", user.id, { type: m.type }, coupleId);

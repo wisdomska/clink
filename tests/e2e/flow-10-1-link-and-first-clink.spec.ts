@@ -18,7 +18,7 @@ test.describe("Flow 10.1: sign up, link and first Clink", () => {
 
     await signIn(a, nia, "/link");
     await expect(a).toHaveURL(/\/link/);
-    await expect(a.getByRole("heading", { name: /Link your person/ })).toBeVisible();
+    await expect(a.getByRole("heading", { name: /Link your partner/ })).toBeVisible();
     const codeLabel = await a.getByLabel(/^Your code/).getAttribute("aria-label");
     const code = codeLabel!.replace("Your code ", "").replace(/ /g, "");
     expect(code).toMatch(/^[A-HJ-NP-Z2-9]{6}$/);

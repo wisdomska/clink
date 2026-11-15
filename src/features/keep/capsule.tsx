@@ -73,7 +73,7 @@ export function CapsuleScreen({ capsule }: { capsule: Capsule }) {
         <div
           className="mono text-center text-[36px]"
           role="timer"
-          aria-label={`${p.days} days ${p.hours} hours ${p.minutes} minutes to go`}
+          aria-label={`${p.days} ${p.days === 1 ? "day" : "days"}, ${p.hours} ${p.hours === 1 ? "hour" : "hours"} and ${p.minutes} ${p.minutes === 1 ? "minute" : "minutes"} to go`}
         >
           {p.days}d {String(p.hours).padStart(2, "0")}h {String(p.minutes).padStart(2, "0")}m
         </div>

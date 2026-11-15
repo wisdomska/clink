@@ -32,7 +32,7 @@ export const POST = handler(async (req) => {
     .eq("id", user.id)
     .single();
   await notify(partnerId, "dates", {
-    body: `${me?.display_name ?? "Your person"} booked ${kit.title}. Check the stub.`,
+    body: `${me?.display_name ?? "Your partner"} booked ${kit.title}. Check the stub.`,
     url: "/plans",
   });
   return ok({ id: data.id }, { status: 201 });

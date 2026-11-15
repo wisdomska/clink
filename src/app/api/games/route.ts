@@ -77,7 +77,7 @@ export const POST = handler(async (req) => {
     .eq("id", user.id)
     .single();
   await notify(partnerId, "games", {
-    body: `${me?.display_name ?? "Your person"} wants to play ${NAMES[body.type]}`,
+    body: `${me?.display_name ?? "Your partner"} wants to play ${NAMES[body.type]}`,
     url: `/play/${body.type}/${game.id}`,
     tag: `game-${game.id}`,
   });

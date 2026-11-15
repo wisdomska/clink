@@ -300,7 +300,8 @@ export function VerifySheet({
       </div>
       <div className="flex flex-col gap-3 text-base font-medium">
         <div className="flex items-center gap-2.5">
-          <CheckCircle size={22} className="text-ember" aria-hidden /> Date of birth, done at signup
+          <CheckCircle size={22} className="text-ember" aria-hidden /> Date of birth, done at
+          sign-up
         </div>
         <div className="flex items-center gap-2.5">
           {meVerified ? (

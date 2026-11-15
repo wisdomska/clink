@@ -34,6 +34,6 @@ export async function readOnlyArchive(userId: string): Promise<ArchiveInfo | nul
   const { data: p } = other
     ? await admin.from("profiles").select("display_name").eq("id", other.user_id).maybeSingle()
     : { data: null };
-  const partner = p?.display_name ?? "your person";
+  const partner = p?.display_name ?? "your partner";
   return { coupleId: row.couple_id, partner, until: c.read_only_until };
 }

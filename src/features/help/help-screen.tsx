@@ -133,7 +133,7 @@ export function HelpScreen({
                 href="/login?next=/help?report=1"
                 className="press bg-accent text-on-accent hover:text-on-accent flex h-12 items-center self-start rounded-full px-5 font-bold"
               >
-                Log in to report
+                Sign in to report
               </Link>
             )}
           </div>

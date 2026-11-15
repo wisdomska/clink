@@ -8,7 +8,7 @@ import { LinkScreen } from "./link-screen";
 import { isVerified } from "@/lib/server/verified";
 import { readOnlyArchive } from "@/lib/server/archive";
 
-export const metadata: Metadata = { title: "Link your person" };
+export const metadata: Metadata = { title: "Link your partner" };
 
 export default async function LinkPage({
   searchParams,

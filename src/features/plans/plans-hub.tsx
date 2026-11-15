@@ -267,7 +267,7 @@ export function PlansHub() {
             >
               <div className="mono text-muted text-xs">CHALLENGES</div>
               <div className="display text-[22px] tracking-normal">
-                Start a 7 or 30 day challenge
+                Start a 7- or 30-day challenge
               </div>
               <div className="text-muted text-sm">
                 Tick it off daily, both of you. Streaks and badges included.

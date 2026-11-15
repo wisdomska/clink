@@ -36,7 +36,7 @@ function Scoreline({ mine, theirs, label }: { mine: number; theirs: number; labe
     <div className="text-muted flex items-center justify-between text-sm font-medium">
       <span className="mono text-xs tracking-wide">{label}</span>
       <span className="mono">
-        you <span className="text-accent">{mine}</span> · {partner.name.toLowerCase()}{" "}
+        you <span className="text-accent">{mine}</span> · {partner.name}{" "}
         <span style={{ color: "var(--partner-b)" }}>{theirs}</span>
       </span>
     </div>

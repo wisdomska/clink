@@ -295,7 +295,7 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
               <>
                 Already have an account?{" "}
                 <Link href={`/login${next ? `?next=${encodeURIComponent(next)}` : ""}`}>
-                  Log in
+                  Sign in
                 </Link>
               </>
             ) : (

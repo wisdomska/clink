@@ -29,7 +29,7 @@ export function AsleepCard({ now }: { now: Date }) {
         </Link>
         <Link href="/keep?write=letter" className={pill}>
           <EnvelopeSimple size={18} aria-hidden />
-          Open When letter
+          Open when letter
         </Link>
       </div>
     </div>

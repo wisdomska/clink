@@ -97,8 +97,8 @@ export function KnowMeRoom({ game }: { game: GameRow }) {
                   <em>pretty</em>
                 ) : (
                   <em>a little</em>
-                )}{" "}
-                well.
+                )}
+                {s.score >= 5 ? " well." : "."}
               </>
             ) : (
               <>
@@ -109,8 +109,8 @@ export function KnowMeRoom({ game }: { game: GameRow }) {
                   <em>pretty</em>
                 ) : (
                   <em>a little</em>
-                )}{" "}
-                well.
+                )}
+                {s.score >= 5 ? " well." : "."}
               </>
             )}
           </div>
@@ -287,7 +287,7 @@ export function TriviaRoom({ game }: { game: GameRow }) {
       <div className="text-muted flex items-center justify-between text-sm font-medium">
         <span className="border-line rounded-full border px-3 py-1 text-xs">{q.category}</span>
         <span className="mono">
-          you {my} · {partner.name.toLowerCase()} {their}
+          you {my} · {partner.name} {their}
         </span>
       </div>
       <h2 className="display mt-3 mb-2 text-[30px] leading-[1.1]">{q.text}</h2>

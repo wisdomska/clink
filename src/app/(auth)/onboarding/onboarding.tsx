@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, Check, MagnifyingGlass } from "@phosphor-icons/react";
 import { motion } from "motion/react";
-import { AVATARS, avatarSrc, type AvatarKey } from "@/lib/avatars";
+import { avatarSrc, type AvatarKey } from "@/lib/avatars";
+import { AvatarPicker } from "@/components/clink/avatar-picker";
 import { Button } from "@/components/ui/button";
 import { Input, FieldError, Hint } from "@/components/ui/field";
 import { Display, Lead, Mono } from "@/components/ui/heading";
@@ -47,7 +48,7 @@ export function Onboarding({
   const [dobDone, setDobDone] = useState(!needsDob);
   const [step, setStep] = useState(editing ? 2 : 1);
   const [name, setName] = useState(initialName);
-  const [icon, setIcon] = useState<IconKey>((initialIcon as IconKey) ?? "woman_medium");
+  const [icon, setIcon] = useState<IconKey>((initialIcon as IconKey) ?? "p-w-wave-m");
   const [photo, setPhoto] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<City[]>([]);
@@ -175,7 +176,7 @@ export function Onboarding({
           <Display size={36} className="mt-3">
             What should we <em>call</em> you?
           </Display>
-          <Lead className="mt-2 mb-6">Your person sees this. Nicknames welcome.</Lead>
+          <Lead className="mt-2 mb-6">Your partner sees this. Nicknames welcome.</Lead>
           <Input
             aria-label="Your name"
             autoFocus
@@ -192,9 +193,9 @@ export function Onboarding({
       {step === 2 && (
         <div key="2" className="an-reveal">
           <Display size={36} className="mt-3">
-            Pick a <em>face</em>
+            Pick your <em>avatar</em>
           </Display>
-          <Lead className="mt-2 mb-5">Your own photo, or one of these.</Lead>
+          <Lead className="mt-2 mb-5">Your skin tone, your vibe. Or upload your own photo.</Lead>
           <div className="mb-5 flex items-center gap-4">
             <div className="bg-s2 relative flex h-24 w-24 flex-none items-center justify-center overflow-hidden rounded-[30%] shadow-[0_10px_30px_-12px_var(--accent)]">
               {photo ? (
@@ -241,46 +242,13 @@ export function Onboarding({
               onChange={(e) => e.target.files?.[0] && uploadPhoto(e.target.files[0])}
             />
           </div>
-          <div
-            className="grid grid-cols-4 gap-2.5 sm:grid-cols-7"
-            role="radiogroup"
-            aria-label="Avatar"
-          >
-            {AVATARS.map(([key, label]) => {
-              const on = !photo && icon === key;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  role="radio"
-                  aria-checked={on}
-                  aria-label={label}
-                  onClick={() => {
-                    setIcon(key);
-                    setPhoto(null);
-                  }}
-                  className={cn(
-                    "press relative flex aspect-square cursor-pointer items-center justify-center rounded-[30%] border-0 transition-[background,transform] duration-200",
-                    on ? "bg-accent/25 scale-[1.04]" : "bg-s2 hover:bg-s3",
-                  )}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={avatarSrc(key)}
-                    alt=""
-                    loading="lazy"
-                    draggable={false}
-                    className="h-[72%] w-[72%] object-contain"
-                  />
-                  {on && (
-                    <span className="bg-accent text-on-accent absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full">
-                      <Check size={12} weight="bold" aria-hidden />
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+          <AvatarPicker
+            value={photo ? null : icon}
+            onChange={(k) => {
+              setIcon(k);
+              setPhoto(null);
+            }}
+          />
         </div>
       )}
 

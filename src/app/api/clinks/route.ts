@@ -57,7 +57,7 @@ export const POST = handler(async (req) => {
       .eq("id", user.id)
       .single();
     await notify(partnerId, "clinks", {
-      body: `${me?.display_name ?? "Your person"} sent a Clink`,
+      body: `${me?.display_name ?? "Your partner"} sent a Clink`,
       url: "/us?clink=1",
       tag: "clink",
     });

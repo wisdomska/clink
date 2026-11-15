@@ -30,7 +30,9 @@ export function reachedMilestones(start: string, today: string, together: boolea
     if (d <= t)
       out.push({
         key: `days-${n}`,
-        title: together ? `${n.toLocaleString("en-GB")} days together.` : `${n} days on Clink.`,
+        title: together
+          ? `${n.toLocaleString("en-GB")} days together.`
+          : `${n.toLocaleString("en-GB")} days on Clink.`,
         date: iso(d),
       });
   }

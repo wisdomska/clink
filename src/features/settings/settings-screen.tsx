@@ -28,7 +28,7 @@ import { PrivacyCard } from "./privacy";
 import { FeelCard } from "./feel";
 import { IdentityPicker } from "@/components/clink/identity-picker";
 import { asIdentity } from "@/lib/app-identity";
-import { AVATARS, avatarSrc } from "@/lib/avatars";
+import { AvatarPicker } from "@/components/clink/avatar-picker";
 import { LOVE_LANGUAGES } from "@/features/partner/partner-sheet";
 
 async function patchSettings(body: Record<string, unknown>) {
@@ -509,7 +509,6 @@ function ProfileSheet({
   const { me, partner } = useCouple();
   const [name, setName] = useState(me.name);
   const [nick, setNick] = useState(me.nickname ?? "");
-  const [phone, setPhone] = useState(me.phone ?? "");
   const [bio, setBio] = useState(me.bio ?? "");
   const [love, setLove] = useState<string | null>(me.loveLanguage);
   const [shareBday, setShareBday] = useState(me.shareBirthday);
@@ -571,31 +570,7 @@ function ProfileSheet({
           }}
         />
       </div>
-      {!photo && (
-        <div
-          className="no-scrollbar -mx-1 flex flex-none gap-2 overflow-x-auto px-1 pb-1"
-          role="radiogroup"
-          aria-label="3D avatar"
-        >
-          {AVATARS.map(([k, label]) => (
-            <button
-              key={k}
-              type="button"
-              role="radio"
-              aria-checked={icon === k}
-              aria-label={label}
-              onClick={() => setIcon(k)}
-              className={cn(
-                "flex h-14 w-14 flex-none cursor-pointer items-center justify-center rounded-[30%] border-0 p-0 transition-colors",
-                icon === k ? "bg-accent/25" : "bg-s2",
-              )}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={avatarSrc(k)} alt="" className="h-[72%] w-[72%] object-contain" />
-            </button>
-          ))}
-        </div>
-      )}
+      {!photo && <AvatarPicker value={icon} onChange={setIcon} />}
       <div>
         <Label htmlFor="pn">Your name</Label>
         <Input id="pn" value={name} maxLength={40} onChange={(e) => setName(e.target.value)} />
@@ -654,18 +629,6 @@ function ProfileSheet({
           last
         />
       </div>
-      <div>
-        <Label htmlFor="ph">Your number (optional)</Label>
-        <Input
-          id="ph"
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          value={phone}
-          placeholder="+44 7700 900123"
-          onChange={(e) => setPhone(e.target.value)}
-        />
-      </div>
       <FieldError>{error}</FieldError>
       <Button
         loading={saving}
@@ -675,7 +638,6 @@ function ProfileSheet({
           const body: Record<string, unknown> = {
             display_name: name,
             partner_nickname: nick,
-            phone,
             bio,
             love_language: love,
             share_birthday: shareBday,

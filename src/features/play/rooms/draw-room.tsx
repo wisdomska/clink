@@ -229,7 +229,7 @@ export function DrawRoom({ game }: { game: GameRow }) {
           Round {round} of {DRAW_ROUNDS} · {drawing ? "you draw" : `${partner.name} draws`}
         </span>
         <span className="mono">
-          you {myScore} · {partner.name.toLowerCase()} {theirScore}
+          you {myScore} · {partner.name} {theirScore}
         </span>
       </div>
       {last && s.turn > 0 && (

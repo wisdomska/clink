@@ -41,7 +41,7 @@ export default function Landing() {
           href="/login"
           className="press border-line text-text hover:text-text flex h-11 items-center rounded-full border bg-transparent px-[18px] text-sm font-medium"
         >
-          Log in
+          Sign in
         </Link>
       </header>
 
@@ -58,7 +58,7 @@ export default function Landing() {
             </p>
             <div className="mt-6 flex flex-col gap-2 sm:max-w-[420px] lg:max-w-none lg:flex-row">
               <Link href="/signup" className={cta}>
-                Start with your person <ArrowRight size={20} aria-hidden />
+                Start with your partner <ArrowRight size={20} aria-hidden />
               </Link>
               <Link href="/signup?code=1" className={ctaSecondary}>
                 I have a code

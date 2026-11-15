@@ -233,7 +233,7 @@ export async function playersFor(coupleId: string, starter: string): Promise<Pla
     .is("left_at", null);
   const a = data?.find((m) => m.role === "a")?.user_id;
   const b = data?.find((m) => m.role === "b")?.user_id;
-  if (!a || !b) throw deny(409, "not_linked", "Link with your person first.");
+  if (!a || !b) throw deny(409, "not_linked", "Link with your partner first.");
   return { a, b, starter };
 }
 

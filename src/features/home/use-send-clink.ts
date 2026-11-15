@@ -30,7 +30,7 @@ export function useSendClink() {
         toast(
           online
             ? `Clink sent. ${partner.name} felt that.`
-            : `Clink sent. ${partner.name} gets it as a push.`,
+            : `Clink sent. ${partner.name} gets a notification.`,
         );
       }, 950);
     },

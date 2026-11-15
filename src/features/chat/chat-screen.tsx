@@ -484,7 +484,7 @@ export function ChatScreen() {
     } catch {
       return toast("Clink needs your microphone for that.");
     }
-    toast("Recording a 5 second voice reaction.");
+    toast("Recording a 5-second voice reaction.");
     setTimeout(async () => {
       const rec = await r.stop();
       if (!rec) return;
@@ -520,8 +520,8 @@ export function ChatScreen() {
     .reverse()
     .find((m) => m.sender_id === me.id && !m.local && m.type !== "clink" && m.type !== "system");
   const sub = presence.online
-    ? `Online, ${formatClock(now, partner.timezone)} in ${partner.city}`
-    : `Away, ${formatClock(now, partner.timezone)} in ${partner.city}`;
+    ? `Online, ${formatClock(now, partner.timezone)}${partner.city ? ` in ${partner.city}` : ""}`
+    : `Away, ${formatClock(now, partner.timezone)}${partner.city ? ` in ${partner.city}` : ""}`;
 
   return (
     <div className="an-screen flex h-[calc(100dvh-var(--chrome-bottom))] flex-col lg:flex-row">
@@ -748,7 +748,7 @@ export function ChatScreen() {
               <div className="flex flex-col items-start gap-2 py-3">
                 <p className="text-muted m-0 text-sm">
                   Spicy stickers open when you both turn on After Dark. Nobody gets them unless you
-                  both said yes.
+                  both say yes.
                 </p>
                 <Link href="/dark" className="text-accent text-sm font-bold">
                   Open After Dark
