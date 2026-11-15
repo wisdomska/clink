@@ -11,6 +11,8 @@ test("ritual time needs both partners to agree", async ({ couple }) => {
   await expect(a.getByText(`You suggested 20:30. Waiting for ${theo.name}.`)).toBeVisible();
 
   await b.goto("/settings");
+  // Wait for the settled screen (a navigation can briefly overlap two renders).
+  await expect(b.getByText(`${nia.name} suggested 20:30.`)).toHaveCount(1);
   await expect(b.getByText(`${nia.name} suggested 20:30.`)).toBeVisible();
   await b.getByRole("button", { name: "Agree" }).click();
   await expect(b.getByText("Agreed. Ritual at 20:30.")).toBeVisible();
