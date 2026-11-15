@@ -67,6 +67,29 @@ export const POST = handler(async (req) => {
     if (m.type === "voice" && okMedia.some((x) => x.kind !== "audio"))
       throw deny(422, "bad_media", "That isn't a voice note.");
   }
+  if (m.type === "sticker" && m.stickerId) {
+    const { data: st } = await supabaseAdmin()
+      .from("stickers")
+      .select("pack, enabled")
+      .eq("id", m.stickerId)
+      .maybeSingle();
+    if (!st?.enabled) throw deny(422, "bad_sticker", "That sticker isn't available.");
+    // Spicy stickers need you both opted into After Dark.
+    if (st.pack === "spicy") {
+      const { data: members } = await supabaseAdmin()
+        .from("couple_members")
+        .select("user_id")
+        .eq("couple_id", coupleId)
+        .is("left_at", null);
+      const ids = (members ?? []).map((x) => x.user_id);
+      const { data: dark } = await supabaseAdmin()
+        .from("dark_settings")
+        .select("user_id, opted_in_at")
+        .in("user_id", ids);
+      if ((dark ?? []).filter((d) => d.opted_in_at).length < 2)
+        throw deny(403, "spicy_locked", "Spicy stickers open when you both turn on After Dark.");
+    }
+  }
   if (m.replyTo) {
     const { data: r } = await db.from("messages").select("id").eq("id", m.replyTo).maybeSingle();
     if (!r) throw deny(422, "bad_reply", "That message is gone.");

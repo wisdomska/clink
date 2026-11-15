@@ -79,7 +79,9 @@ function dayLabel(d: Date, tz: string) {
 }
 
 export function ChatScreen() {
-  const { me, partner, presence, coupleId, send, discreet, chatTheme, chatWallpaper } = useCouple();
+  const { me, partner, presence, coupleId, send, discreet, chatTheme, chatWallpaper, darkBoth } =
+    useCouple();
+  const [stickerTab, setStickerTab] = useState<"all" | "spicy">("all");
   const [look, setLook] = useState({
     theme: (chatTheme in CHAT_THEMES ? chatTheme : "clink") as ChatTheme,
     wallpaper: (chatWallpaper in WALLPAPERS ? chatWallpaper : "none") as Wallpaper,
@@ -142,7 +144,11 @@ export function ChatScreen() {
     queryFn: async () => {
       const sb = supabaseBrowser();
       const [{ data: all }, { data: recent }] = await Promise.all([
-        sb.from("stickers").select("id, label, sort, caption").eq("enabled", true).order("sort"),
+        sb
+          .from("stickers")
+          .select("id, pack, label, sort, caption")
+          .eq("enabled", true)
+          .order("sort"),
         sb
           .from("sticker_recents")
           .select("sticker_id, used_at")
@@ -153,7 +159,11 @@ export function ChatScreen() {
         STICKER_LABEL.set(s.id, s.label);
         STICKER_CAPTION.set(s.id, s.caption);
       });
-      return { all: all ?? [], recent: (recent ?? []).map((r) => r.sticker_id) };
+      return {
+        all: (all ?? []).filter((x) => x.pack !== "spicy"),
+        spicy: (all ?? []).filter((x) => x.pack === "spicy"),
+        recent: (recent ?? []).map((r) => r.sticker_id),
+      };
     },
   });
 
@@ -662,27 +672,72 @@ export function ChatScreen() {
 
         {tray && (
           <div className="an-sheet border-line bg-s1 flex-none border-t px-4 py-3">
-            <div className="mono text-faint mb-2.5 text-xs">
-              {stickers?.recent.length ? "RECENT · STICKERS" : "STICKERS"}
-            </div>
-            <div className="no-scrollbar grid max-h-[230px] grid-cols-4 gap-2.5 overflow-y-auto sm:grid-cols-6 lg:grid-cols-8">
-              {[
-                ...(stickers?.recent ?? []),
-                ...(stickers?.all.map((s) => s.id).filter((id) => !stickers.recent.includes(id)) ??
-                  []),
-              ].map((id, i) => (
+            <div
+              className="mb-2.5 flex items-center gap-2"
+              role="tablist"
+              aria-label="Sticker packs"
+            >
+              {(
+                [
+                  ["all", "Stickers"],
+                  ["spicy", "Spicy 🌶️"],
+                ] as const
+              ).map(([k, label]) => (
                 <button
-                  key={id}
+                  key={k}
                   type="button"
-                  onClick={() => sendSticker(id)}
-                  aria-label={`Send sticker ${STICKER_LABEL.get(id)}`}
-                  className="press hover:bg-s2 flex aspect-square cursor-pointer items-center justify-center rounded-2xl border-0 bg-transparent p-0 transition-transform hover:scale-110"
-                  style={{ ["--i" as string]: i }}
+                  role="tab"
+                  aria-selected={stickerTab === k}
+                  onClick={() => setStickerTab(k)}
+                  className={cn(
+                    "h-8 cursor-pointer rounded-full border-0 px-3 text-xs font-bold",
+                    stickerTab === k
+                      ? k === "spicy"
+                        ? "bg-ember text-on-accent"
+                        : "bg-accent text-on-accent"
+                      : "bg-s2 text-muted",
+                  )}
                 >
-                  <StickerArt id={id} label={STICKER_LABEL.get(id) ?? ""} size={72} />
+                  {label}
                 </button>
               ))}
             </div>
+            {stickerTab === "spicy" && !darkBoth ? (
+              <div className="flex flex-col items-start gap-2 py-3">
+                <p className="text-muted m-0 text-sm">
+                  Spicy stickers open when you both turn on After Dark. Nobody gets them unless you
+                  both said yes.
+                </p>
+                <Link href="/dark" className="text-accent text-sm font-bold">
+                  Open After Dark
+                </Link>
+              </div>
+            ) : (
+              <div className="no-scrollbar grid max-h-[230px] grid-cols-4 gap-2.5 overflow-y-auto sm:grid-cols-6 lg:grid-cols-8">
+                {(stickerTab === "spicy"
+                  ? (stickers?.spicy ?? []).map((x) => x.id)
+                  : [
+                      ...(stickers?.recent ?? []).filter(
+                        (id) => !id.startsWith("spicy-") || darkBoth,
+                      ),
+                      ...(stickers?.all
+                        .map((x) => x.id)
+                        .filter((id) => !stickers.recent.includes(id)) ?? []),
+                    ]
+                ).map((id, i) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => sendSticker(id)}
+                    aria-label={`Send sticker ${STICKER_LABEL.get(id)}`}
+                    className="press hover:bg-s2 flex aspect-square cursor-pointer items-center justify-center rounded-2xl border-0 bg-transparent p-0 transition-transform hover:scale-110"
+                    style={{ ["--i" as string]: i }}
+                  >
+                    <StickerArt id={id} label={STICKER_LABEL.get(id) ?? ""} size={72} />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
