@@ -37,6 +37,10 @@ Clink is one Next.js app on Vercel talking to one Supabase project per environme
 - **Hidden game state** (answers, sealed picks, words) lives in `game_secrets`, readable only by the service role. Game engines in `src/features/play/engines` are pure TypeScript and run on the server as referee.
 - **Service wrappers.** `public.svc_*` functions are `security definer` and granted to `service_role` only.
 
+## Feedback and motion
+
+`src/lib/feedback.ts` is the single place for haptics (named patterns), synthesised sounds (Web Audio, off by default) and the Motion preference. `src/components/clink/feedback-root.tsx` wraps the app in Motion's `MotionConfig`, applies `data-motion` for CSS, and adds one capture listener for press ticks. Under reduced motion every animation keeps fades and drops movement. Celebrations (`src/components/fx/confetti.tsx`, `count-up.tsx`) run on the compositor and skip on any tap.
+
 ## Realtime
 
 One private broadcast channel per couple (`couple:<id>`) carries clinks, typing, presence, drawing strokes (batched every 50 ms) and watch-party sync. Table changes use `postgres_changes`; the client calls `realtime.setAuth()` first (`subscribeAuthed` in `src/lib/realtime.ts`) so RLS sees the user, and refetches once subscribed so nothing sent during the join is lost. Presence heartbeats every 30 s.

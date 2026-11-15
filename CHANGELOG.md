@@ -2,6 +2,29 @@
 
 All notable changes to Clink. Versions follow [Semantic Versioning](https://semver.org).
 
+## [1.1.0] - 2026-11-15
+
+A polish pass, informed by the author's Spil and Spuzl apps.
+
+### Added
+
+- Feel settings: sound effects (synthesised, no downloads, off by default), haptics, and Motion (System, Reduced, Full). One feedback layer gives every press a quiet tick when sound is on, unlocks audio on iPhone, and stands in a tiny shake where phones can't vibrate.
+- Big moments now have sound and touch: sending and receiving a clink, linking, unlocking, capsules and letters. Clinks and game invites flash the tab title when Clink is in the background.
+- Games: confetti and counting scores on the results screen (once per game), a sound and haptic on every reveal, swipe left or right to pick in Would You Rather, a confirm before leaving a live round (including the back gesture), and a waiting screen with your partner's presence, elapsed time and a nudge with a cooldown.
+- Milestones (100 days, anniversaries) are celebrated once with confetti on Us.
+- Admin: in-app confirmations with a required reason, typed DELETE for account deletion, 7 and 30 day trends with change against the previous period and sparklines, a live switches strip, CSV exports with a formula-injection guard, search kept in the URL, and an audit log written in plain sentences.
+- A branded 404 page, and an offline-aware error screen.
+
+### Changed
+
+- Buttons have loading and soft-disabled states. Toasts have success, error and info styles and can carry an action. Sheets can be pulled down to dismiss and animate out. Skeletons wait 300 ms, then shimmer. Inputs get a focus glow, accent caret and no iPhone zoom.
+- Game progress bars animate with transforms instead of width.
+
+### Fixed
+
+- Simultaneous answers in live games are never lost; game rooms recover from a missed live update.
+- The PIN pad no longer drops digits typed right after a wrong PIN.
+
 ## [1.0.0] - 2026-11-14
 
 First release.
