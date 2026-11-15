@@ -244,57 +244,93 @@ export function Bubble({
     const items =
       m.localMedia ??
       m.media_ids.map((id) => ({ url: mediaUrl(id), kind: media.get(id)?.kind ?? "image", id }));
+    // Messenger-style layouts: 1 tall, 2 side by side, 3 = one big + two,
+    // 4+ = a 2x2 grid with "+N" on the last tile.
+    const shown = items.slice(0, 4);
+    const extra = items.length - shown.length;
+    const n = shown.length;
     content = (
       <div
-        className={cn(
-          "grid w-[min(72vw,320px)] gap-1",
-          items.length > 1 ? "grid-cols-2" : "grid-cols-1",
-          side,
-        )}
+        className={cn("w-[min(72vw,320px)] overflow-hidden", side)}
+        style={{
+          borderRadius: radius(mine, pos),
+          background: mine ? "var(--surface-3)" : "var(--surface-1)",
+        }}
       >
-        {items.map((it, i) => {
-          const id = "id" in it ? (it.id as string) : null;
-          const tile =
-            it.kind === "video" ? (
-              <video
-                src={it.url}
-                preload="metadata"
-                muted
-                playsInline
-                className="h-full w-full object-cover"
-              />
+        <div
+          className={cn(
+            "grid gap-0.5",
+            n === 1 ? "grid-cols-1" : "grid-cols-2",
+            n === 3 && "grid-rows-2",
+          )}
+        >
+          {shown.map((it, i) => {
+            const id = "id" in it ? (it.id as string) : null;
+            const aspect = n === 1 ? "aspect-[4/5]" : n === 2 ? "aspect-[3/4]" : "aspect-square";
+            const span = n === 3 && i === 0 ? "row-span-2 aspect-auto h-full" : aspect;
+            const tile =
+              it.kind === "video" ? (
+                <video
+                  src={it.url}
+                  preload="metadata"
+                  muted
+                  playsInline
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={it.url}
+                  alt="Shared photo"
+                  loading="lazy"
+                  className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+                />
+              );
+            const more =
+              extra > 0 && i === n - 1 ? (
+                <span className="display absolute inset-0 flex items-center justify-center bg-black/50 text-[28px] text-white">
+                  +{extra}
+                </span>
+              ) : null;
+            return id ? (
+              <Link
+                key={i}
+                href={`/chat/media/${id}`}
+                className={cn("stripe relative block overflow-hidden", span)}
+                aria-label="Open media"
+              >
+                {tile}
+                {more}
+              </Link>
             ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={it.url}
-                alt="Shared photo"
-                loading="lazy"
-                className="h-full w-full object-cover"
-              />
+              <div key={i} className={cn("stripe relative overflow-hidden", span)}>
+                {tile}
+                {more}
+                {"progress" in it && it.progress !== undefined && it.progress < 1 && (
+                  <div className="absolute inset-0 flex items-end bg-black/30 p-2">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/25">
+                      <div
+                        className="h-full rounded-full bg-white transition-[width] duration-300"
+                        style={{ width: `${Math.max(4, Math.round(it.progress * 100))}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             );
-          return id ? (
-            <Link
-              key={i}
-              href={`/chat/media/${id}`}
-              className="stripe rounded-thumb relative block aspect-[4/5] overflow-hidden"
-              aria-label="Open media"
+          })}
+        </div>
+        {m.body && (
+          <div className="px-3 pt-2 pb-1.5 text-base leading-[1.35] [overflow-wrap:anywhere] whitespace-pre-wrap">
+            {m.body}
+            <span
+              aria-hidden
+              className="mono text-faint relative top-[5px] float-right ml-2.5 text-[11px] leading-none"
             >
-              {tile}
-            </Link>
-          ) : (
-            <div key={i} className="stripe rounded-thumb relative aspect-[4/5] overflow-hidden">
-              {tile}
-              {"progress" in it && it.progress !== undefined && it.progress < 1 && (
-                <div className="bg-line absolute inset-x-2 bottom-2 h-1 overflow-hidden rounded-full">
-                  <div
-                    className="bg-accent h-full"
-                    style={{ width: `${Math.round(it.progress * 100)}%` }}
-                  />
-                </div>
-              )}
-            </div>
-          );
-        })}
+              {clock(m.sent_at)}
+            </span>
+          </div>
+        )}
       </div>
     );
   } else {

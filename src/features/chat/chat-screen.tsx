@@ -40,6 +40,7 @@ import { MAX_PER_SEND } from "@/lib/media-rules";
 import { useMessages, useReactions, useMediaInfo, useOutboxFlush, sendQueued } from "./use-chat";
 import { useQueue, newClientId, type QueuedPayload } from "./queue";
 import { Bubble, STICKER_LABEL } from "./bubbles";
+import { MediaComposer } from "./media-composer";
 import type { Message, UiMessage } from "./types";
 
 const REACTIONS = ["❤️", "😂", "😭", "🔥", "🥹", "👀"];
@@ -79,6 +80,7 @@ export function ChatScreen() {
   const queue = useQueue();
   const [text, setText] = useState("");
   const [tray, setTray] = useState(false);
+  const [composing, setComposing] = useState<File[] | null>(null);
   const [replyTo, setReplyTo] = useState<UiMessage | null>(null);
   const [actionFor, setActionFor] = useState<UiMessage | null>(null);
   const [typing, setTyping] = useState(false);
@@ -240,8 +242,8 @@ export function ChatScreen() {
     await enqueue({ type: "sticker", stickerId: id });
   }
 
-  async function sendFiles(files: FileList) {
-    const list = Array.from(files).slice(0, MAX_PER_SEND);
+  async function sendFiles(files: File[], caption = "") {
+    const list = files.slice(0, MAX_PER_SEND);
     if (files.length > MAX_PER_SEND)
       toast(`Up to ${MAX_PER_SEND} at a time. Sending the first ${MAX_PER_SEND}.`);
     const clientId = newClientId();
@@ -251,7 +253,7 @@ export function ChatScreen() {
       sender_id: me.id,
       client_id: clientId,
       type: "media",
-      body: null,
+      body: caption || null,
       reply_to: replyTo?.id ?? null,
       media_ids: [],
       sticker_id: null,
@@ -299,7 +301,14 @@ export function ChatScreen() {
         }
       }
       const m = await sendQueued(
-        { clientId, type: "media", mediaIds: ids, replyTo: reply, createdAt: local.sent_at },
+        {
+          clientId,
+          type: "media",
+          mediaIds: ids,
+          body: caption || undefined,
+          replyTo: reply,
+          createdAt: local.sent_at,
+        },
         presence.online,
       );
       if (m) upsertLocal(m);
@@ -668,7 +677,10 @@ export function ChatScreen() {
                 accept="image/*,video/*"
                 multiple
                 hidden
-                onChange={(e) => e.target.files?.length && sendFiles(e.target.files)}
+                onChange={(e) => {
+                  if (e.target.files?.length) setComposing(Array.from(e.target.files));
+                  e.target.value = "";
+                }}
               />
               <div className="rounded-input border-line bg-s2 focus-within:border-accent flex h-11 min-w-0 flex-1 items-center gap-1.5 border pr-1.5 pl-3.5">
                 <input
@@ -813,6 +825,18 @@ export function ChatScreen() {
           </>
         )}
       </Sheet>
+
+      {composing && (
+        <MediaComposer
+          files={composing}
+          partnerName={partner.name}
+          onCancel={() => setComposing(null)}
+          onSend={(files, caption) => {
+            setComposing(null);
+            void sendFiles(files, caption);
+          }}
+        />
+      )}
 
       <Sheet open={callSheet} onOpenChange={setCallSheet} title={`Call ${partner.name}`} handle>
         <div className="display text-[28px]">Call {partner.name}</div>
