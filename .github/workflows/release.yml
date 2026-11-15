@@ -1,0 +1,35 @@
+name: Release
+
+# Publishes a GitHub release (and its tag) for the version in package.json,
+# using that version's section of CHANGELOG.md. Does nothing if the tag exists.
+on:
+  push:
+    branches: [main]
+    paths: [package.json, CHANGELOG.md]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with: { fetch-depth: 0 }
+      - name: Publish release if this version is new
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V="v$(node -p "require('./package.json').version")"
+          if git rev-parse -q --verify "refs/tags/$V" >/dev/null; then
+            echo "$V already released"; exit 0
+          fi
+          VER="${V#v}"
+          awk -v ver="$VER" '
+            $0 ~ "^## \\[" ver "\\]" { on = 1; next }
+            on && /^## \[/ { exit }
+            on { print }
+          ' CHANGELOG.md > notes.md
+          test -s notes.md || { echo "No CHANGELOG section for $VER"; exit 1; }
+          gh release create "$V" --target "$GITHUB_SHA" --title "Clink $V" --notes-file notes.md
