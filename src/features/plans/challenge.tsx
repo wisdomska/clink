@@ -25,9 +25,7 @@ export function ChallengeScreen({ id }: { id: string }) {
         <IconButton label="Back" onClick={() => router.push("/plans")}>
           <ArrowLeft size={20} />
         </IconButton>
-        <Display size={48}>
-          Pick a <em>challenge</em>
-        </Display>
+        <Display size={48}>Pick a challenge</Display>
         <Lead>
           Both of you tick it off each day. Miss one and the streak starts again, no lectures.
         </Lead>
@@ -50,7 +48,7 @@ export function ChallengeScreen({ id }: { id: string }) {
                 router.push(`/plans/challenges/${d.id}`);
               }}
             >
-              <Mono className="text-muted">{t.days} DAYS</Mono>
+              <Mono className="text-muted">{t.days} days</Mono>
               <span className="display text-[22px] tracking-normal">{t.title}</span>
               <span className="text-muted text-sm">{t.blurb}</span>
             </button>
@@ -91,7 +89,7 @@ export function ChallengeScreen({ id }: { id: string }) {
         </div>
         <div className="text-right">
           <div className="mono text-accent text-[48px] leading-none">{s}</div>
-          <div className="mono text-faint text-[11px]">STREAK</div>
+          <div className="text-faint text-xs">Streak</div>
         </div>
       </div>
       <p className="display rounded-card bg-s2 m-0 p-4 text-[22px] leading-[1.15] tracking-normal">

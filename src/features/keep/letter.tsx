@@ -30,8 +30,6 @@ export function LetterScreen({ letter }: { letter: Letter }) {
     `${me.role === "a" ? me.name[0] : partner.name[0]}&${me.role === "a" ? partner.name[0] : me.name[0]}`.toUpperCase();
   const reduced =
     typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const [condHead, ...condTail] = letter.condition.split(" ");
-  const last = condTail.pop() ?? "";
 
   async function breakSeal() {
     if (state !== "sealed") return;
@@ -48,12 +46,9 @@ export function LetterScreen({ letter }: { letter: Letter }) {
       </IconButton>
       <div>
         <Mono>
-          {mine ? "FROM YOU" : `FROM ${partner.name.toUpperCase()}`} · SEALED{" "}
-          {tagDate(letter.sealed_at)}
+          {mine ? "From you" : `From ${partner.name}`} · Sealed {tagDate(letter.sealed_at)}
         </Mono>
-        <h1 className="display mt-1.5 mb-0 text-[36px] leading-[1.05]">
-          {condHead} {condTail.join(" ")} <em>{last}</em>
-        </h1>
+        <h1 className="display mt-1.5 mb-0 text-[36px] leading-[1.05]">{letter.condition}</h1>
       </div>
       {state !== "opened" ? (
         <>
@@ -89,7 +84,6 @@ export function LetterScreen({ letter }: { letter: Letter }) {
                 }}
                 aria-label="Break the seal"
                 className="display bg-accent text-on-accent absolute top-[60%] left-1/2 -mt-[38px] -ml-[38px] flex h-[76px] w-[76px] cursor-grab touch-none items-center justify-center rounded-full border-0 text-xl tracking-normal"
-                style={{ boxShadow: "0 0 0 6px var(--accent-halo)" }}
               >
                 {initials}
               </button>
@@ -112,10 +106,7 @@ export function LetterScreen({ letter }: { letter: Letter }) {
         </>
       ) : (
         <>
-          <div
-            className="an-letter rounded-card bg-text text-on-accent flex flex-col gap-3.5 px-[22px] py-6"
-            style={{ transform: "rotate(-1deg)" }}
-          >
+          <div className="an-letter rounded-card bg-text text-on-accent flex flex-col gap-3.5 px-[22px] py-6">
             {letter.body.split(/\n{2,}/).map((p, i) => (
               <p key={i} className="m-0 text-lg leading-[1.55] whitespace-pre-wrap">
                 {p}

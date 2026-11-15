@@ -76,13 +76,8 @@ export function PlansHub() {
           {next && nextKit ? (
             <>
               <TicketStub
-                label={`${new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: me.timezone }).format(new Date(next.start_at)).toUpperCase().replace(",", "")} · NEXT DATE`}
-                title={
-                  <>
-                    {nextKit.title.split(" ")[0]}{" "}
-                    <em>{nextKit.title.split(" ").slice(1).join(" ") || "night"}</em>
-                  </>
-                }
+                label={`${new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: me.timezone }).format(new Date(next.start_at)).replace(",", "")} · Next date`}
+                title={nextKit.title}
                 times={
                   <>
                     <span>
@@ -136,13 +131,13 @@ export function PlansHub() {
             >
               <Shuffle size={26} className="text-accent" aria-hidden />
               <span className="display text-[22px] leading-[1.05] tracking-normal">
-                Can&apos;t pick? <em>Spin</em> for a date.
+                Can&apos;t pick? Spin for a date.
               </span>
             </button>
             <button
               type="button"
               onClick={() => router.push("/plans/watch")}
-              className="press rounded-card border-line bg-s1 text-text mt-6 flex cursor-pointer flex-col gap-5 border p-4 text-left"
+              className="press rounded-card border-line bg-s1 text-text flex cursor-pointer flex-col gap-5 border p-4 text-left"
             >
               <TelevisionSimple size={26} className="text-accent" aria-hidden />
               <span className="display text-[22px] leading-[1.05] tracking-normal">
@@ -189,17 +184,17 @@ export function PlansHub() {
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="mono text-muted text-xs">
-                    CHALLENGE ·{" "}
+                  <div className="text-muted text-xs">
+                    Challenge ·{" "}
                     {c.status === "completed"
-                      ? "COMPLETE"
-                      : `DAY ${Math.min(today, tpl.days)} OF ${tpl.days}`}
+                      ? "Complete"
+                      : `Day ${Math.min(today, tpl.days)} of ${tpl.days}`}
                   </div>
                   <div className="display mt-1 text-[22px] tracking-normal">{tpl.title}</div>
                 </div>
                 <div className="text-right">
                   <div className="mono text-accent text-[36px] leading-none">{s}</div>
-                  <div className="mono text-faint text-[11px]">STREAK</div>
+                  <div className="text-faint text-xs">Streak</div>
                 </div>
               </div>
               <div role="group" className="grid grid-cols-7 gap-1" aria-label="This week">
@@ -265,7 +260,6 @@ export function PlansHub() {
               href="/plans/challenges/new"
               className="rounded-card border-line text-text hover:text-text flex flex-col gap-2 border border-dashed p-4"
             >
-              <div className="mono text-muted text-xs">CHALLENGES</div>
               <div className="display text-[22px] tracking-normal">
                 Start a 7- or 30-day challenge
               </div>

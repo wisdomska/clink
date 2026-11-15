@@ -222,8 +222,8 @@ export function SendSheet({
             />
           )}
           {file && (
-            <div className="mono bg-app/70 text-muted absolute bottom-2.5 left-2.5 rounded px-1.5 text-[11px]">
-              YOUR {isVideo ? "VIDEO" : "PHOTO"} · EXIF REMOVED
+            <div className="bg-app/90 text-muted absolute bottom-2.5 left-2.5 rounded px-1.5 text-[11px]">
+              Your {isVideo ? "video" : "photo"} · EXIF removed
             </div>
           )}
           {file && !isVideo && (

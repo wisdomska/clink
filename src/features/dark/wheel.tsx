@@ -96,7 +96,7 @@ export function DareWheel() {
         </IconButton>
         <div className="display flex-1 text-[28px]">Dare wheel</div>
         <span className="mono border-line text-muted rounded-full border px-3 py-1.5 text-xs">
-          {open.map((t) => t.toUpperCase()).join(" · ") || "LOCKED"}
+          {open.join(" · ") || "Locked"}
         </span>
       </div>
       <div className="relative flex min-h-[360px] flex-1 items-center justify-center">
@@ -122,7 +122,7 @@ export function DareWheel() {
               className="absolute top-1/2 left-1/2 h-0 w-0"
               style={{ transform: `rotate(${i * 45 + 22.5}deg)` }}
             >
-              <span className="mono text-text absolute -top-[136px] -left-10 w-20 text-center text-[13px] tracking-[.06em]">
+              <span className="mono text-text absolute -top-[136px] -left-10 w-20 text-center text-[13px]">
                 {t}
               </span>
             </div>
@@ -152,9 +152,7 @@ export function DareWheel() {
           .slice(0, 6)
           .map((h) => (
             <li key={h.id} className="flex items-center gap-2 text-sm">
-              <span className="mono text-faint w-16 flex-none text-[11px]">
-                {h.tier.toUpperCase()}
-              </span>
+              <span className="text-faint w-16 flex-none text-xs">{h.tier}</span>
               <span className="text-muted flex-1 truncate">{h.text}</span>
               <span className="text-faint text-xs">{h.outcome === "done" ? "done" : "passed"}</span>
             </li>
@@ -188,7 +186,7 @@ export function DareWheel() {
                 />
               )}
               <div className="rounded-card bg-ember text-on-accent relative h-[170px] w-[250px] overflow-hidden p-[18px]">
-                <div className="mono text-xs tracking-[.08em]">CLINK · AFTER DARK</div>
+                <div className="mono text-xs">Clink · After Dark</div>
                 <div className="display mt-2.5 text-[40px] leading-none">{spin.tier}</div>
                 <div
                   aria-hidden

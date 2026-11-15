@@ -122,7 +122,7 @@
 @keyframes sparkFar { 0% { opacity: 0; transform: translateY(-84px) } 20% { opacity: 1 } 100% { opacity: 0; transform: translateY(-134px) } }
 @keyframes ripple { 0% { transform: scale(1); opacity: .9 } 100% { transform: scale(1.6); opacity: 0 } }
 @keyframes slideDown { from { transform: translateY(-110%) } }
-@keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(255, 79, 123, .55) } 100% { box-shadow: 0 0 0 24px rgba(255, 79, 123, 0) } }
+@keyframes pulseRing { 0% { transform: scale(1) } 40% { transform: scale(1.08) } 100% { transform: scale(1) } }
 @keyframes linkL { from { transform: translateX(-120px); opacity: 0 } }
 @keyframes linkR { from { transform: translateX(120px); opacity: 0 } }
 @keyframes flip { from { transform: rotateX(90deg) } }

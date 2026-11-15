@@ -3,7 +3,7 @@
 /** Sealed envelope: flap, wax seal with both initials. */
 export function SealedEnvelope({
   initials,
-  tilt = -2,
+  tilt = 0,
   seal = 40,
 }: {
   initials: string;
@@ -27,7 +27,7 @@ export function SealedEnvelope({
 }
 
 /** Opened envelope with the letter peeking out. */
-export function OpenedEnvelope({ tilt = 2 }: { tilt?: number }) {
+export function OpenedEnvelope({ tilt = 0 }: { tilt?: number }) {
   return (
     <div
       className="rounded-thumb border-line bg-s1 relative aspect-[3/2] w-full overflow-hidden border"

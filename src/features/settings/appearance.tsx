@@ -36,10 +36,7 @@ export function AppearanceCard() {
                   feedback("select");
                   setAppearance({ accent: hex });
                 }}
-                className={cn(
-                  "flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-0 p-0 transition-shadow",
-                  on && "ring-text ring-offset-s1 ring-2 ring-offset-2",
-                )}
+                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-0 p-0"
                 style={{ background: hex }}
               >
                 {on && <Check size={18} weight="bold" className="text-black/70" aria-hidden />}

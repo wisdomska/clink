@@ -108,9 +108,7 @@ export function LockScreen() {
         <X size={20} />
       </IconButton>
       <Moon size={36} className="text-ember mt-3" aria-hidden />
-      <h1 className="display mt-2.5 mb-0 text-[36px]">
-        After <em>Dark</em>
-      </h1>
+      <h1 className="display mt-2.5 mb-0 text-[36px]">After Dark</h1>
       {lockedUntil ? (
         <div
           className="an-reveal flex flex-1 flex-col items-center justify-center gap-3 text-center"
@@ -138,7 +136,7 @@ export function LockScreen() {
           </p>
           <PinDots n={4} filled={pin.length} wrong={wrong} shake={wrong && !reduced} />
           <PinPad onKey={key} passkey={state?.me.passkey ? passkey : undefined} />
-          <div className="mono text-faint mt-5 text-xs">AUTO-LOCKS AFTER 2 MIN</div>
+          <div className="text-faint mt-5 text-xs">Auto-locks after 2 min</div>
         </>
       )}
     </main>

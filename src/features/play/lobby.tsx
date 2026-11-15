@@ -115,7 +115,7 @@ export function Lobby() {
   return (
     <div className="screen an-screen flex flex-col gap-5">
       <Display size={48} className="mt-2">
-        Play <em>together</em>
+        Play together
       </Display>
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-10">
         <div className="flex min-w-0 flex-col gap-5">
@@ -129,7 +129,7 @@ export function Lobby() {
                 <span className="text-base font-medium">You</span>
                 <span className="mono text-[28px]">{mine}</span>
               </div>
-              <div className="mono text-faint text-xs">LIFETIME</div>
+              <div className="text-faint text-xs">Lifetime</div>
               <div className="flex items-center gap-2">
                 <span className="mono text-[28px]">{theirs}</span>
                 <button

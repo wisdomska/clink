@@ -174,7 +174,7 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
   const q = next ? `?next=${encodeURIComponent(next)}` : "";
   return (
     <div className="relative isolate flex flex-1 flex-col lg:flex-none">
-      <div className="relative flex items-center gap-3">
+      <div className="relative flex items-center gap-3 lg:mb-8">
         <IconButton
           label="Back"
           onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}

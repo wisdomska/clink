@@ -88,7 +88,7 @@ export function SensitiveViewer({
           <X size={20} />
         </IconButton>
         <div className="mono text-faint flex-1 text-xs">
-          {retention === "once" ? "VIEW ONCE" : retention === "vault" ? "KEPT IN VAULT" : "EXPIRES"}
+          {retention === "once" ? "View once" : retention === "vault" ? "Kept in vault" : "Expires"}
         </div>
         {mine && (
           <Button
@@ -114,11 +114,7 @@ export function SensitiveViewer({
           <button
             type="button"
             onClick={reveal}
-            className="rounded-card text-text flex h-full max-h-[70dvh] w-full max-w-[420px] cursor-pointer flex-col items-center justify-center gap-2 border-0"
-            style={{
-              background:
-                "radial-gradient(circle at 30% 40%,rgba(255,90,60,.55),transparent 45%),radial-gradient(circle at 70% 70%,rgba(251,243,246,.15),transparent 50%),#251A21",
-            }}
+            className="rounded-card border-line bg-s2 text-text flex h-full max-h-[70dvh] w-full max-w-[420px] cursor-pointer flex-col items-center justify-center gap-2 border"
           >
             <EyeSlash size={28} aria-hidden />
             <span className="text-base font-medium">Tap to reveal</span>

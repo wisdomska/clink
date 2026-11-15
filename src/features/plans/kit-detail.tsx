@@ -35,7 +35,7 @@ export function ScheduleSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title={`Schedule ${title}`} handle>
       <Display as="h2" size={28}>
-        When&apos;s <em>{title.toLowerCase()}</em>?
+        When&apos;s {title.toLowerCase()}?
       </Display>
       <div className="grid grid-cols-[1.4fr_1fr] gap-2">
         <div>
@@ -103,9 +103,9 @@ export function KitDetail({ id }: { id: string }) {
       <div>
         <Mono className="text-muted">
           {kit.minutes >= 120 && kit.minutes % 60 === 0
-            ? `${kit.minutes / 60} H`
-            : `${kit.minutes} MIN`}{" "}
-          · ADMIT 2
+            ? `${kit.minutes / 60} h`
+            : `${kit.minutes} min`}{" "}
+          · Admit 2
         </Mono>
         <Display size={48} className="mt-1">
           {kit.title}
@@ -117,7 +117,7 @@ export function KitDetail({ id }: { id: string }) {
           <CheckCircle size={22} aria-hidden /> You did this one. It&apos;s on your timeline.
         </div>
       ) : booked ? (
-        <div className="rounded-card bg-s2 flex flex-col gap-1 p-4">
+        <div className="rounded-card border-line bg-s1 flex flex-col gap-1 border p-4">
           <div className="text-muted text-sm font-medium">
             {inProgress ? "Happening now" : "Booked"}
           </div>
@@ -131,7 +131,7 @@ export function KitDetail({ id }: { id: string }) {
         <h2 id="steps" className="m-0 text-lg font-bold">
           How it goes
         </h2>
-        <ol className="m-0 flex list-none flex-col gap-2 p-0">
+        <ol className="rounded-card border-line bg-s1 divide-line m-0 flex list-none flex-col divide-y overflow-hidden border p-0">
           {steps.map((s, i) => {
             const on = checked.includes(i);
             return (
@@ -140,7 +140,7 @@ export function KitDetail({ id }: { id: string }) {
                   type="button"
                   aria-pressed={on}
                   onClick={() => setChecked(on ? checked.filter((x) => x !== i) : [...checked, i])}
-                  className="press rounded-input border-line bg-s1 text-text flex w-full cursor-pointer items-start gap-3 border p-3.5 text-left text-base"
+                  className="text-text hover:bg-s2 flex w-full cursor-pointer items-start gap-3 border-0 bg-transparent p-3.5 text-left text-base transition-colors"
                 >
                   <span
                     className="mono border-line flex h-7 w-7 flex-none items-center justify-center rounded-full border text-sm"
@@ -169,13 +169,9 @@ export function KitDetail({ id }: { id: string }) {
         <h2 id="prompts" className="m-0 text-lg font-bold">
           Things to ask each other
         </h2>
-        <div className="flex flex-col gap-2">
+        <div className="rounded-card border-line bg-s1 divide-line flex flex-col divide-y border">
           {prompts.map((p, i) => (
-            <p
-              key={i}
-              className="display rounded-card bg-s2 m-0 p-4 text-[20px] leading-[1.2] tracking-normal"
-              style={{ transform: `rotate(${i % 2 ? 0.6 : -0.6}deg)` }}
-            >
+            <p key={i} className="display m-0 p-4 text-[20px] leading-[1.2] tracking-normal">
               {p}
             </p>
           ))}

@@ -14,6 +14,7 @@ import {
   Palette,
   VideoCamera,
   Plus,
+  Check,
   Sticker,
   Microphone,
   PaperPlaneRight,
@@ -1176,11 +1177,16 @@ export function ChatScreen() {
             >
               <span
                 className={cn(
-                  "flex h-14 w-full items-end justify-end rounded-2xl p-1.5",
-                  look.theme === k && "shadow-[0_0_0_2px_var(--accent)]",
+                  "rounded-input relative flex h-14 w-full items-end justify-end p-1.5",
+                  look.theme === k && "shadow-[inset_0_0_0_2px_var(--accent)]",
                 )}
                 style={{ background: CHAT_THEMES[k].swatch }}
               >
+                {look.theme === k && (
+                  <span className="bg-accent text-on-accent absolute top-1.5 left-1.5 flex h-5 w-5 items-center justify-center rounded-full">
+                    <Check size={12} weight="bold" aria-hidden />
+                  </span>
+                )}
                 <span
                   className="rounded-[10px_10px_3px_10px] px-2 py-0.5 text-[10px] font-bold"
                   style={{
@@ -1211,11 +1217,17 @@ export function ChatScreen() {
               >
                 <span
                   className={cn(
-                    "bg-app block h-16 w-full rounded-2xl",
-                    look.wallpaper === k && "shadow-[0_0_0_2px_var(--accent)]",
+                    "bg-app border-line rounded-input relative block h-16 w-full border",
+                    look.wallpaper === k && "border-accent border-2",
                   )}
                   style={{ backgroundImage: WALLPAPERS[k].css, backgroundSize: wallpaperSize(k) }}
-                />
+                >
+                  {look.wallpaper === k && (
+                    <span className="bg-accent text-on-accent absolute top-1.5 left-1.5 flex h-5 w-5 items-center justify-center rounded-full">
+                      <Check size={12} weight="bold" aria-hidden />
+                    </span>
+                  )}
+                </span>
                 {WALLPAPERS[k].label}
               </button>
             ))}
@@ -1225,8 +1237,8 @@ export function ChatScreen() {
             type="button"
             onClick={() => wallInput.current?.click()}
             className={cn(
-              "relative flex h-16 w-24 flex-none cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-0 p-0",
-              look.wallpaper === "custom" ? "shadow-[0_0_0_2px_var(--accent)]" : "bg-s2",
+              "rounded-input relative flex h-16 w-24 flex-none cursor-pointer items-center justify-center overflow-hidden border p-0",
+              look.wallpaper === "custom" ? "border-accent border-2" : "bg-s2 border-line",
             )}
             aria-label={look.media ? "Change wallpaper photo" : "Use your own photo"}
           >

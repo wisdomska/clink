@@ -60,16 +60,6 @@ export function BrandPoster({
       )}
       style={{ background: "linear-gradient(160deg, #2A101C 0%, #1B0D14 55%, #140A10 100%)" }}
     >
-      {/* Watermark */}
-      <div
-        className={cn(
-          "pointer-events-none absolute -z-10 opacity-[.07]",
-          compact ? "-right-6 -bottom-10" : "top-[12%] -right-16",
-        )}
-      >
-        <LogoMark size={compact ? 220 : 560} animate={false} decorative />
-      </div>
-
       {/* Top bar */}
       <div className="flex items-center gap-2.5">
         <LogoMark size={compact ? 30 : 38} decorative />

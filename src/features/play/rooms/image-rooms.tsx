@@ -34,7 +34,7 @@ function Scoreline({ mine, theirs, label }: { mine: number; theirs: number; labe
   const { partner } = useCouple();
   return (
     <div className="text-muted flex items-center justify-between text-sm font-medium">
-      <span className="mono text-xs tracking-wide">{label}</span>
+      <span className="text-xs">{label}</span>
       <span className="mono">
         you <span className="text-accent">{mine}</span> · {partner.name}{" "}
         <span style={{ color: "var(--partner-b)" }}>{theirs}</span>
@@ -76,17 +76,11 @@ function GameOver({ game, type }: { game: GameRow; type: GameType }) {
         </div>
         <div className="display text-[28px] leading-[1.05]">
           {my === their ? (
-            <>
-              A <em>draw</em>. Rematch?
-            </>
+            <>A draw. Rematch?</>
           ) : my > their ? (
-            <>
-              You <em>win</em> this one.
-            </>
+            <>You win this one.</>
           ) : (
-            <>
-              {partner.name} <em>wins</em>. For now.
-            </>
+            <>{partner.name} wins. For now.</>
           )}
         </div>
       </div>
@@ -161,13 +155,13 @@ export function RpsRoom({ game }: { game: GameRow }) {
       <RoomHeader
         type="rps"
         live={game.status === "active"}
-        counter={`ROUND ${s.rounds.length + (revealing ? 0 : 1)}`}
+        counter={`Round ${s.rounds.length + (revealing ? 0 : 1)}`}
         progress={Math.max(s.scores[me.id] ?? 0, s.scores[partner.id] ?? 0) / RPS_TARGET}
       />
       <Scoreline
         mine={s.scores[me.id] ?? 0}
         theirs={s.scores[partner.id] ?? 0}
-        label={`FIRST TO ${RPS_TARGET}`}
+        label={`First to ${RPS_TARGET}`}
       />
       <div className="relative flex min-h-[260px] flex-1 items-center justify-center gap-6">
         <AnimatePresence mode="wait">
@@ -209,15 +203,7 @@ export function RpsRoom({ game }: { game: GameRow }) {
               animate={{ opacity: 1, y: 0 }}
             >
               <div className="display text-[30px] leading-[1.1]">
-                {thrown ? (
-                  <>
-                    Locked <em>in</em>.
-                  </>
-                ) : (
-                  <>
-                    Rock, paper, <em>scissors</em>...
-                  </>
-                )}
+                {thrown ? <>Locked in.</> : <>Rock, paper, scissors...</>}
               </div>
               {thrown && <WaitingOn text={`Waiting on ${partner.name}`} />}
             </motion.div>
@@ -226,17 +212,11 @@ export function RpsRoom({ game }: { game: GameRow }) {
         {revealing && (
           <div className="display absolute bottom-0 text-[24px]" aria-live="polite">
             {revealing.winner === me.id ? (
-              <>
-                You <em>take it</em>
-              </>
+              <>You take it</>
             ) : revealing.winner ? (
-              <>
-                {partner.name} <em>takes it</em>
-              </>
+              <>{partner.name} takes it</>
             ) : (
-              <>
-                Same <em>throw</em>
-              </>
+              <>Same throw</>
             )}
           </div>
         )}
@@ -247,7 +227,7 @@ export function RpsRoom({ game }: { game: GameRow }) {
             key={t.key}
             type="button"
             disabled={thrown || !!revealing || pending !== null}
-            whileTap={{ scale: 0.9, rotate: -8 }}
+            whileTap={{ scale: 0.97 }}
             onClick={async () => {
               setPending(t.key);
               feedback("select");
@@ -255,9 +235,9 @@ export function RpsRoom({ game }: { game: GameRow }) {
               setPending(null);
             }}
             className={cn(
-              "bg-s2 flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-[26px] border-0 text-sm font-bold text-[var(--text)] transition-opacity disabled:cursor-default",
-              (thrown || revealing) && "opacity-40",
-              pending === t.key && "bg-accent/25 opacity-100",
+              "bg-s2 border-line rounded-card flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 border text-sm font-bold text-[var(--text)] transition-opacity disabled:cursor-default",
+              (thrown || revealing) && "opacity-50",
+              pending === t.key && "border-accent bg-accent/10 border-[1.5px] opacity-100",
             )}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -295,8 +275,8 @@ export function SnapRoom({ game }: { game: GameRow }) {
         counter={`${s.index + 1}/${s.prompts.length}`}
         progress={(s.index + (s.phase === "vote" ? 0.5 : 0)) / s.prompts.length}
       />
-      <Scoreline mine={s.scores[me.id] ?? 0} theirs={s.scores[partner.id] ?? 0} label="SNAP" />
-      <div className="mono text-faint mt-2 text-xs">THE PROMPT</div>
+      <Scoreline mine={s.scores[me.id] ?? 0} theirs={s.scores[partner.id] ?? 0} />
+      <div className="text-faint mt-2 text-xs">The prompt</div>
       <h2 className="display m-0 text-[32px] leading-[1.08]">{s.prompts[s.index]}</h2>
 
       {s.phase === "shoot" ? (
@@ -359,8 +339,8 @@ export function SnapRoom({ game }: { game: GameRow }) {
                   type="button"
                   disabled={done || voting}
                   aria-label={`Vote for ${who === me.id ? "your photo" : `${partner.name}'s photo`}`}
-                  initial={{ opacity: 0.01, y: 20, rotate: i ? 3 : -3 }}
-                  animate={{ opacity: 1, y: 0, rotate: i ? 2 : -2 }}
+                  initial={{ opacity: 0.01, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.12, type: "spring", stiffness: 300, damping: 22 }}
                   whileTap={{ scale: 0.96 }}
                   onClick={async () => {
@@ -370,17 +350,17 @@ export function SnapRoom({ game }: { game: GameRow }) {
                     setVoting(false);
                   }}
                   className={cn(
-                    "relative cursor-pointer overflow-hidden rounded-[22px] border-0 bg-white p-1.5 pb-8 text-left shadow-[0_14px_30px_-14px_rgba(0,0,0,.8)]",
-                    mine && "outline-accent outline-[3px] outline-solid",
+                    "rounded-card bg-s2 relative cursor-pointer overflow-hidden border p-1.5 pb-8 text-left",
+                    mine ? "border-accent border-[1.5px]" : "border-line",
                   )}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={view(shots![who]!)}
                     alt={who === me.id ? "Your photo" : `${partner.name}'s photo`}
-                    className="aspect-[3/4] w-full rounded-[16px] object-cover"
+                    className="rounded-input aspect-[3/4] w-full object-cover"
                   />
-                  <span className="absolute bottom-2 left-3 text-sm font-bold text-[#111]">
+                  <span className="text-text absolute bottom-2 left-3 text-sm font-bold">
                     {who === me.id ? "You" : partner.name}
                   </span>
                   {mine && (
@@ -437,7 +417,7 @@ export function ZoomRoom({ game }: { game: GameRow }) {
         counter={`${s.index + 1}/${s.rounds.length}`}
         progress={(s.index + (r.mediaId ? 0.5 : 0)) / s.rounds.length}
       />
-      <Scoreline mine={s.scores[me.id] ?? 0} theirs={s.scores[partner.id] ?? 0} label="ZOOM" />
+      <Scoreline mine={s.scores[me.id] ?? 0} theirs={s.scores[partner.id] ?? 0} />
     </>
   );
 
@@ -451,18 +431,10 @@ export function ZoomRoom({ game }: { game: GameRow }) {
           <img
             src={view(rr.mediaId!)}
             alt={rr.answer ?? ""}
-            className="max-h-[46dvh] rounded-[24px] object-contain"
+            className="rounded-card max-h-[46dvh] object-contain"
           />
           <div className="display text-[30px] leading-[1.1]">
-            {rr.solved ? (
-              <>
-                Got it: <em>{rr.answer}</em>
-              </>
-            ) : (
-              <>
-                It was <em>{rr.answer}</em>
-              </>
-            )}
+            {rr.solved ? <>Got it: {rr.answer}</> : <>It was {rr.answer}</>}
           </div>
         </div>
       </>
@@ -477,9 +449,7 @@ export function ZoomRoom({ game }: { game: GameRow }) {
           <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/art/zoom.webp" alt="" aria-hidden className="h-28 w-28 object-contain" />
-            <div className="display text-[28px]">
-              {partner.name} is picking a <em>photo</em>
-            </div>
+            <div className="display text-[28px]">{partner.name} is picking a photo</div>
             <WaitingOn text="Get ready to guess" />
           </div>
         </>
@@ -488,7 +458,7 @@ export function ZoomRoom({ game }: { game: GameRow }) {
       <>
         {header}
         <h2 className="display m-0 text-[30px] leading-[1.1]">
-          Pick a photo for {partner.name} to <em>guess</em>
+          Pick a photo for {partner.name} to guess
         </h2>
         <input
           ref={input}
@@ -516,7 +486,7 @@ export function ZoomRoom({ game }: { game: GameRow }) {
                 setFocus({ x: (e.clientX - b.left) / b.width, y: (e.clientY - b.top) / b.height });
                 feedback("tap");
               }}
-              className="relative cursor-crosshair overflow-hidden rounded-[24px] border-0 p-0"
+              className="rounded-card relative cursor-crosshair overflow-hidden border-0 p-0"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -574,15 +544,7 @@ export function ZoomRoom({ game }: { game: GameRow }) {
       {header}
       <div className="flex items-center justify-between">
         <h2 className="display m-0 text-[28px] leading-[1.1]">
-          {setter ? (
-            <>
-              {partner.name} is <em>guessing</em>
-            </>
-          ) : (
-            <>
-              What&apos;s <em>this</em>?
-            </>
-          )}
+          {setter ? <>{partner.name} is guessing</> : <>What&apos;s this?</>}
         </h2>
         <span className="mono text-muted text-xs">{ZOOM_LEVELS.length - r.level} PTS</span>
       </div>
@@ -590,7 +552,7 @@ export function ZoomRoom({ game }: { game: GameRow }) {
         key={shake}
         animate={shake ? { x: [0, -10, 10, -6, 6, 0] } : {}}
         transition={{ duration: 0.4 }}
-        className="bg-s2 relative aspect-square w-full overflow-hidden rounded-[28px]"
+        className="rounded-card bg-s2 relative aspect-square w-full overflow-hidden"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -695,11 +657,11 @@ export function MemoryRoom({ game }: { game: GameRow }) {
         counter={`${Object.keys(s.matched).length / 2}/${s.size / 2}`}
         progress={Object.keys(s.matched).length / s.size}
       />
-      <Scoreline mine={s.scores[me.id] ?? 0} theirs={s.scores[partner.id] ?? 0} label="PAIRS" />
+      <Scoreline mine={s.scores[me.id] ?? 0} theirs={s.scores[partner.id] ?? 0} label="Pairs" />
       <div
         className={cn(
           "flex items-center justify-center gap-2 rounded-full py-2 text-sm font-bold transition-colors",
-          myTurn ? "bg-accent/20 text-accent" : "bg-s2 text-muted",
+          myTurn ? "bg-accent text-on-accent" : "bg-s2 text-muted",
         )}
         aria-live="polite"
       >
@@ -733,13 +695,7 @@ export function MemoryRoom({ game }: { game: GameRow }) {
               animate={{ rotateY: up ? 180 : 0, scale: matchedBy ? 0.94 : 1 }}
               transition={{ type: "spring", stiffness: 260, damping: 22 }}
             >
-              <span
-                className="bg-s2 absolute inset-0 flex items-center justify-center rounded-[18px] [backface-visibility:hidden]"
-                style={{
-                  background:
-                    "radial-gradient(80% 60% at 30% 20%, color-mix(in oklab, var(--accent) 22%, transparent), transparent), var(--surface-2)",
-                }}
-              >
+              <span className="rounded-input border-line bg-s2 absolute inset-0 flex items-center justify-center border [backface-visibility:hidden]">
                 {busy === i ? (
                   <LoadingDots className="text-accent" />
                 ) : (
@@ -747,7 +703,7 @@ export function MemoryRoom({ game }: { game: GameRow }) {
                 )}
               </span>
               <span
-                className="absolute inset-0 [transform:rotateY(180deg)] overflow-hidden rounded-[18px] bg-white [backface-visibility:hidden]"
+                className="rounded-input bg-s3 absolute inset-0 [transform:rotateY(180deg)] overflow-hidden [backface-visibility:hidden]"
                 style={{
                   boxShadow: matchedBy
                     ? `0 0 0 3px ${matchedBy === me.id ? "var(--accent)" : "var(--partner-b)"}`

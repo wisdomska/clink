@@ -45,16 +45,12 @@ export function CapsuleScreen({ capsule }: { capsule: Capsule }) {
   }, [state, capsule.id]);
 
   const p = countdownParts(now, new Date(capsule.unlock_at));
-  const words = capsule.title.split(" ");
-  const tail = words.pop();
   return (
     <div className="screen an-screen flex max-w-[640px] flex-col gap-5">
       <IconButton label="Back" onClick={() => router.push("/keep")}>
         <ArrowLeft size={20} />
       </IconButton>
-      <h1 className="display m-0 text-[36px] leading-[1.05]">
-        {words.join(" ")} <em>{tail}</em>
-      </h1>
+      <h1 className="display m-0 text-[36px] leading-[1.05]">{capsule.title}</h1>
       {!ready && (
         <p className="text-muted -mt-2 mb-0 text-base">
           Neither of you can open it early. That&apos;s the point.
@@ -91,7 +87,7 @@ export function CapsuleScreen({ capsule }: { capsule: Capsule }) {
       ) : state === "open" ? (
         <div className="an-letter rounded-card border-line bg-s1 flex flex-col gap-3 border p-[18px]">
           <Mono>
-            FROM {capsule.author_id === me.id ? "YOU" : partner.name.toUpperCase()} ·{" "}
+            From {capsule.author_id === me.id ? "you" : partner.name} ·{" "}
             {tagDate(capsule.created_at)}
           </Mono>
           {content ? (

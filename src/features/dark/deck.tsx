@@ -112,17 +112,15 @@ export function Deck({ tier }: { tier: string }) {
       )}
       {locked && !isLoading ? (
         <div className="an-reveal mt-4 flex flex-col gap-4">
-          <div className="display text-[32px] leading-[1.05]">
-            {tier} isn&apos;t <em>open</em> yet
-          </div>
+          <div className="display text-[32px] leading-[1.05]">{tier} isn&apos;t open yet</div>
           <p className="text-muted m-0 text-base">
             A tier opens only when you both choose it
             {tier === "Unhinged" ? ", and Unhinged needs you both verified" : ""}. Here&apos;s
             what&apos;s left:
           </p>
-          <ul className="m-0 flex list-none flex-col gap-2 p-0">
+          <ul className="rounded-card border-line bg-s1 divide-line m-0 flex list-none flex-col divide-y overflow-hidden border p-0">
             {(missing.length ? missing : [{ text: "Waiting on you both to agree" }]).map((m) => (
-              <li key={m.text} className="bg-s2 flex items-center gap-3 rounded-2xl p-3.5">
+              <li key={m.text} className="flex items-center gap-3 p-3.5">
                 <span className="bg-ember h-2.5 w-2.5 flex-none rounded-full" aria-hidden />
                 <span className="flex-1 text-sm">{m.text}</span>
                 {m.href && (
@@ -140,14 +138,14 @@ export function Deck({ tier }: { tier: string }) {
         <>
           <Card tier={tier} text={reveal.text} />
           <div className="an-reveal grid grid-cols-2 gap-1.5">
-            <div className="bg-s2 flex flex-col gap-2 rounded-[20px_6px_6px_20px] p-3.5">
-              <span className="mono text-muted flex items-center gap-1.5 text-xs">
-                <span className="bg-ember h-2.5 w-2.5 rounded-full" aria-hidden /> YOU
+            <div className="rounded-input border-line bg-s2 flex flex-col gap-2 border p-3.5">
+              <span className="text-muted flex items-center gap-1.5 text-xs font-medium">
+                <span className="bg-ember h-2.5 w-2.5 rounded-full" aria-hidden /> You
               </span>
               <span className="text-base leading-[1.4]">{reveal.mine}</span>
             </div>
-            <div className="bg-s2 flex flex-col gap-2 rounded-[6px_20px_20px_6px] p-3.5">
-              <span className="mono text-muted flex items-center gap-1.5 text-xs uppercase">
+            <div className="rounded-input border-line bg-s2 flex flex-col gap-2 border p-3.5">
+              <span className="text-muted flex items-center gap-1.5 text-xs font-medium">
                 <PartnerMark who="b" /> {partner.name}
               </span>
               <span className="text-base leading-[1.4]">{reveal.theirs}</span>
@@ -194,12 +192,7 @@ export function Deck({ tier }: { tier: string }) {
 
 function Card({ tier, text }: { tier: string; text: string }) {
   return (
-    <div className="relative mt-2 flex-none">
-      <div
-        aria-hidden
-        className="rounded-card bg-s2 absolute"
-        style={{ inset: "8px -6px -8px 6px", transform: "rotate(3deg)" }}
-      />
+    <div className="mt-2 flex-none">
       <div className="rounded-card border-line bg-s1 relative flex min-h-[220px] flex-col justify-between gap-5 border px-5 py-6">
         <span className="bg-ember text-on-accent self-start rounded-full px-2.5 py-1 text-xs font-bold">
           {tier}

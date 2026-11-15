@@ -91,25 +91,13 @@ export function KnowMeRoom({ game }: { game: GameRow }) {
             {iAmSubject ? (
               <>
                 {partner.name} knows you{" "}
-                {s.score >= 8 ? (
-                  <em>suspiciously</em>
-                ) : s.score >= 5 ? (
-                  <em>pretty</em>
-                ) : (
-                  <em>a little</em>
-                )}
+                {s.score >= 8 ? "suspiciously" : s.score >= 5 ? "pretty" : "a little"}
                 {s.score >= 5 ? " well." : "."}
               </>
             ) : (
               <>
                 You know {partner.name}{" "}
-                {s.score >= 8 ? (
-                  <em>suspiciously</em>
-                ) : s.score >= 5 ? (
-                  <em>pretty</em>
-                ) : (
-                  <em>a little</em>
-                )}
+                {s.score >= 8 ? "suspiciously" : s.score >= 5 ? "pretty" : "a little"}
                 {s.score >= 5 ? " well." : "."}
               </>
             )}
@@ -246,17 +234,11 @@ export function TriviaRoom({ game }: { game: GameRow }) {
           </div>
           <div className="display text-[28px] leading-[1.05]">
             {my === their ? (
-              <>
-                A <em>draw</em>. Rematch?
-              </>
+              <>A draw. Rematch?</>
             ) : my > their ? (
-              <>
-                You <em>win</em> this one.
-              </>
+              <>You win this one.</>
             ) : (
-              <>
-                {partner.name} <em>wins</em>. For now.
-              </>
+              <>{partner.name} wins. For now.</>
             )}
           </div>
         </div>
@@ -353,17 +335,11 @@ export function WyrRoom({ game }: { game: GameRow }) {
           </div>
           <div className="display text-[28px] leading-[1.05]">
             {s.matches >= s.cards.length * 0.7 ? (
-              <>
-                Same <em>brain</em>, two cities.
-              </>
+              <>Same brain, two cities.</>
             ) : s.matches >= s.cards.length * 0.4 ? (
-              <>
-                Enough in common. Enough to <em>argue</em> about.
-              </>
+              <>Enough in common. Enough to argue about.</>
             ) : (
-              <>
-                Opposites. <em>Fun</em>.
-              </>
+              <>Opposites. Fun.</>
             )}
           </div>
         </div>

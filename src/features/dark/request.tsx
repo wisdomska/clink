@@ -77,28 +77,13 @@ export function RequestScreen() {
       ) : received ? (
         <>
           <h1 className="display mt-2 mb-0 text-[36px] leading-[1.05]">
-            {partner.name} sent you a <em>request</em>
+            {partner.name} sent you a request
           </h1>
-          <div
-            className="rounded-card relative aspect-[4/3] flex-none overflow-hidden"
-            style={{
-              background:
-                "radial-gradient(circle at 30% 40%,rgba(255,90,60,.55),transparent 45%),radial-gradient(circle at 70% 70%,rgba(251,243,246,.15),transparent 50%),#251A21",
-            }}
-          >
-            <div
-              className="absolute inset-0 flex flex-col items-center justify-center gap-2"
-              style={{
-                backdropFilter: "blur(18px)",
-                WebkitBackdropFilter: "blur(18px)",
-                background: "rgba(24,22,27,.35)",
-              }}
-            >
-              <EyeSlash size={28} aria-hidden />
-              <span className="px-6 text-center text-base font-medium">
-                &quot;{received.note || "something just for me?"}&quot;
-              </span>
-            </div>
+          <div className="rounded-card border-line bg-s2 flex aspect-[4/3] flex-none flex-col items-center justify-center gap-2 border">
+            <EyeSlash size={28} className="text-ember" aria-hidden />
+            <span className="px-6 text-center text-base font-medium">
+              &quot;{received.note || "something just for me?"}&quot;
+            </span>
           </div>
           <p className="text-muted m-0 text-base leading-normal">
             No pressure, ever. Not right now is always a fine answer.
@@ -124,9 +109,7 @@ export function RequestScreen() {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          <h1 className="display mt-2 mb-0 text-[36px] leading-[1.05]">
-            Ask for <em>something</em>
-          </h1>
+          <h1 className="display mt-2 mb-0 text-[36px] leading-[1.05]">Ask for something</h1>
           {!unhinged ? (
             <>
               <p className="text-muted m-0 text-base leading-normal">

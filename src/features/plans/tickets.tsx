@@ -18,8 +18,8 @@ export function TicketStub({
   return (
     <div className="relative h-[176px] flex-none md:h-[200px]">
       <div className="absolute inset-0 flex">
-        <div className="bg-s2 flex flex-1 flex-col justify-between rounded-l-[20px] p-[18px] md:p-6">
-          <div className="mono text-muted text-xs tracking-[.06em]">{label}</div>
+        <div className="bg-s2 rounded-l-card flex flex-1 flex-col justify-between p-[18px] md:p-6">
+          <div className="mono text-muted text-xs">{label}</div>
           <div className="display text-[36px] leading-none md:text-[44px]">{title}</div>
           <div className="mono text-text flex flex-wrap gap-3 text-[13px]">{times}</div>
         </div>
@@ -30,8 +30,8 @@ export function TicketStub({
         <div className="w-[84px]" />
       </div>
       {!torn ? (
-        <div className="bg-accent text-on-accent absolute inset-y-0 right-0 flex w-[84px] flex-col items-center justify-center gap-2 rounded-r-[20px]">
-          <span className="mono text-sm tracking-[.2em]" style={{ writingMode: "vertical-rl" }}>
+        <div className="bg-accent text-on-accent rounded-r-card absolute inset-y-0 right-0 flex w-[84px] flex-col items-center justify-center gap-2">
+          <span className="mono text-sm" style={{ writingMode: "vertical-rl" }}>
             ADMIT TWO
           </span>
           <span className="mono text-[11px]">{ticketNo}</span>
@@ -40,7 +40,7 @@ export function TicketStub({
         <>
           <div
             aria-hidden
-            className="an-tear bg-accent absolute inset-y-0 right-0 w-[84px] rounded-r-[20px]"
+            className="an-tear bg-accent rounded-r-card absolute inset-y-0 right-0 w-[84px]"
           />
           <div className="text-accent absolute inset-y-0 right-0 flex w-[84px] items-center justify-center">
             <CheckCircle size={32} aria-label="Done" />
@@ -65,10 +65,10 @@ export function KitStub({ title, minutes, i }: { title: string; minutes: number;
       </div>
       <div className="border-line w-0 border-l-2 border-dashed" aria-hidden />
       <div
-        className="mono rounded-r-ticket border-line bg-s2 text-faint flex w-[30px] items-center justify-center border border-l-0 text-[11px] tracking-[.1em]"
+        className="mono rounded-r-ticket border-line bg-s2 text-faint flex w-[30px] items-center justify-center border border-l-0 text-[11px]"
         style={{ writingMode: "vertical-rl" }}
       >
-        ADMIT 2
+        Admit 2
       </div>
     </div>
   );

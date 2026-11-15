@@ -44,8 +44,8 @@ export function TimelineScreen() {
       </IconButton>
       <div>
         <Display size={48}>Timeline</Display>
-        <p className="mono text-muted m-0 mt-1 text-sm">
-          DAY {days.toLocaleString("en-GB")} {startedOn ? "TOGETHER" : "ON CLINK"}
+        <p className="text-muted m-0 mt-1 text-sm">
+          Day {days.toLocaleString("en-GB")} {startedOn ? "together" : "on Clink"}
         </p>
         {anniversary && (
           <p className="text-muted m-0 mt-1 text-sm">

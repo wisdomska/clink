@@ -176,17 +176,11 @@ export function DrawRoom({ game }: { game: GameRow }) {
           </div>
           <div className="display text-[28px] leading-[1.05]">
             {myScore === theirScore ? (
-              <>
-                Level. <em>Rematch</em>?
-              </>
+              <>Level. Rematch?</>
             ) : myScore > theirScore ? (
-              <>
-                Artist and <em>mind reader</em>.
-              </>
+              <>Artist and mind reader.</>
             ) : (
-              <>
-                {partner.name} takes the <em>easel</em>.
-              </>
+              <>{partner.name} takes the easel.</>
             )}
           </div>
           <ul className="text-muted m-0 mt-2 flex list-none flex-col gap-1 p-0 text-sm">
@@ -241,7 +235,7 @@ export function DrawRoom({ game }: { game: GameRow }) {
       <div className="flex items-center justify-between gap-2">
         {drawing ? (
           <div className="display text-[28px]">
-            Draw: <em>{word ?? "..."}</em>
+            Draw: <span className="text-accent">{word ?? "..."}</span>
           </div>
         ) : (
           <div

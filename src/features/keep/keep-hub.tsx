@@ -67,7 +67,7 @@ export function KeepHub() {
       {empty && (
         <div className="rounded-card border-line flex flex-col items-start gap-3 border border-dashed p-5">
           <div className="w-40">
-            <SealedEnvelope initials={initials} />
+            <SealedEnvelope initials={initials} tilt={0} />
           </div>
           <div className="display text-[28px] leading-[1.05]">Nothing sealed yet.</div>
           <p className="text-muted m-0 text-base">
@@ -85,17 +85,16 @@ export function KeepHub() {
                 Open when, from {partner.name}
               </h2>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                {fromThem.map((l, i) => (
+                {fromThem.map((l) => (
                   <Link
                     key={l.id}
                     href={`/keep/letters/${l.id}`}
                     className="press text-text hover:text-text flex flex-col gap-2"
-                    style={{ marginTop: i % 2 ? 28 : 0 }}
                   >
                     {l.opened_at ? (
-                      <OpenedEnvelope tilt={i % 2 ? 2 : -2} />
+                      <OpenedEnvelope tilt={0} />
                     ) : (
-                      <SealedEnvelope initials={initials} tilt={i % 2 ? 2 : -2} />
+                      <SealedEnvelope initials={initials} tilt={0} />
                     )}
                     <span className="text-base leading-[1.25] font-bold">{l.condition}</span>
                     <Mono>
@@ -113,11 +112,11 @@ export function KeepHub() {
               <h2 id="mine-h" className="m-0 text-lg font-bold">
                 Sealed by you
               </h2>
-              <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+              <ul className="rounded-card border-line bg-s1 divide-line m-0 flex list-none flex-col divide-y overflow-hidden border p-0">
                 {fromMe.map((l) => (
                   <li
                     key={l.id}
-                    className="rounded-input border-line bg-s1 flex items-center justify-between gap-3 border px-4 py-3 text-sm"
+                    className="flex items-center justify-between gap-3 px-4 py-3 text-sm"
                   >
                     <span className="font-medium">{l.condition}</span>
                     <Mono className={l.opened_at ? "text-accent" : ""}>
@@ -299,7 +298,7 @@ function LetterSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title="Write an Open when letter" handle>
       <Display as="h2" size={28}>
-        For {partner.name}, <em>later</em>
+        For {partner.name}, later
       </Display>
       <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="When should they open it">
         {[...CONDITIONS, "Something else"].map((c) => (
@@ -388,7 +387,7 @@ function CapsuleSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title="Seal a time capsule" handle>
       <Display as="h2" size={28}>
-        Bottle it <em>up</em>
+        Bottle it up
       </Display>
       <div>
         <Label htmlFor="ct">Name it</Label>
@@ -564,7 +563,7 @@ function MomentSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title="Add a moment" handle>
       <Display as="h2" size={28}>
-        Add a <em>moment</em>
+        Add a moment
       </Display>
       <div>
         <Label htmlFor="mt">What happened</Label>

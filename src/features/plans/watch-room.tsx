@@ -162,13 +162,13 @@ export function SyncedPlayer({
         </div>
         {!ready && (
           <div className="mono text-faint absolute inset-0 flex items-center justify-center text-xs">
-            LOADING PLAYER
+            Loading player
           </div>
         )}
         {partnerHere && (
           <div className="mono bg-app text-accent absolute top-2.5 left-2.5 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs">
             <span className="bg-accent h-1.5 w-1.5 rounded-full" aria-hidden />
-            SYNCED{drift !== null ? ` · ${drift.toFixed(1)} S` : ""}
+            Synced{drift !== null ? ` · ${drift.toFixed(1)} s` : ""}
           </div>
         )}
         {partnerHere && !audioOnly && (

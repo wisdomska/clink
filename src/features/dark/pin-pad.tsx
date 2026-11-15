@@ -21,7 +21,7 @@ export function PinPad({
           disabled={disabled || (k === "pass" && !passkey)}
           onClick={() => (k === "pass" ? passkey?.() : onKey(k))}
           aria-label={k === "del" ? "Delete" : k === "pass" ? "Use passkey" : k}
-          className="mono bg-s2 text-text active:bg-s3 flex h-[76px] w-[76px] cursor-pointer items-center justify-center rounded-[26px] border-0 text-[28px] shadow-[inset_0_1px_0_rgba(255,255,255,.06),0_6px_16px_-10px_rgba(0,0,0,.8)] transition-[background,transform] duration-150 active:scale-[.94] disabled:cursor-default disabled:opacity-40"
+          className="mono border-line bg-s2 text-text active:bg-s3 flex h-[76px] w-[76px] cursor-pointer items-center justify-center rounded-full border text-[28px] transition-[background,transform] duration-150 active:scale-[.97] disabled:cursor-default disabled:opacity-40"
           style={k === "pass" && !passkey ? { visibility: "hidden" } : undefined}
         >
           {k === "del" ? <Backspace size={26} /> : k === "pass" ? <Fingerprint size={26} /> : k}

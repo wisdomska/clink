@@ -3,7 +3,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, Check, Plus, Trash } from "@phosphor-icons/react";
+import {
+  AirplaneTilt,
+  ArrowLeft,
+  BookOpen,
+  Check,
+  FilmSlate,
+  ForkKnife,
+  Plus,
+  Sparkle,
+  Trash,
+} from "@phosphor-icons/react";
 import { IconButton, Button } from "@/components/ui/button";
 import { Display } from "@/components/ui/heading";
 import { useCouple } from "@/features/couple/context";
@@ -15,11 +25,11 @@ import { cn } from "@/components/ui/cn";
 import { Confetti } from "@/components/fx/confetti";
 
 const CATS = [
-  { key: "do", label: "Do", emoji: "✨" },
-  { key: "go", label: "Go", emoji: "✈️" },
-  { key: "eat", label: "Eat", emoji: "🍜" },
-  { key: "watch", label: "Watch", emoji: "🎬" },
-  { key: "learn", label: "Learn", emoji: "📚" },
+  { key: "do", label: "Do", Icon: Sparkle },
+  { key: "go", label: "Go", Icon: AirplaneTilt },
+  { key: "eat", label: "Eat", Icon: ForkKnife },
+  { key: "watch", label: "Watch", Icon: FilmSlate },
+  { key: "learn", label: "Learn", Icon: BookOpen },
 ] as const;
 type Cat = (typeof CATS)[number]["key"];
 
@@ -95,7 +105,7 @@ export function BucketList() {
 
   const open = data.filter((i) => !i.done_at);
   const done = data.filter((i) => i.done_at);
-  const emoji = (c: string) => CATS.find((x) => x.key === c)?.emoji ?? "✨";
+  const iconFor = (c: string) => CATS.find((x) => x.key === c)?.Icon ?? Sparkle;
 
   return (
     <main className="screen an-screen relative flex max-w-[640px] flex-col gap-4">
@@ -108,9 +118,7 @@ export function BucketList() {
         <IconButton label="Back" onClick={() => router.push("/plans")}>
           <ArrowLeft size={20} />
         </IconButton>
-        <Display size={36}>
-          Our <em>list</em>
-        </Display>
+        <Display size={36}>Our list</Display>
       </div>
       <p className="text-muted m-0 text-base">
         Everything you and {partner.name} want to do together.{" "}
@@ -118,7 +126,7 @@ export function BucketList() {
       </p>
 
       <form
-        className="bg-s1 border-line flex flex-col gap-2.5 rounded-[24px] border p-3"
+        className="bg-s1 border-line rounded-card flex flex-col gap-2.5 border p-3"
         onSubmit={(e) => {
           e.preventDefault();
           void add();
@@ -146,11 +154,12 @@ export function BucketList() {
               aria-checked={cat === c.key}
               onClick={() => setCat(c.key)}
               className={cn(
-                "h-8 cursor-pointer rounded-full border-0 px-3 text-xs font-semibold",
+                "flex h-8 cursor-pointer items-center gap-1.5 rounded-full border-0 px-3 text-xs font-semibold",
                 cat === c.key ? "bg-accent text-on-accent" : "bg-s2 text-muted",
               )}
             >
-              {c.emoji} {c.label}
+              <c.Icon size={14} weight="bold" aria-hidden />
+              {c.label}
             </button>
           ))}
         </div>
@@ -174,41 +183,50 @@ export function BucketList() {
         </div>
       )}
 
-      <ul className="m-0 flex list-none flex-col gap-2 p-0" aria-label="To do">
+      <ul
+        className={cn(
+          "divide-line m-0 flex list-none flex-col divide-y p-0",
+          open.length > 0 && "rounded-card border-line bg-s1 overflow-hidden border",
+        )}
+        aria-label="To do"
+      >
         <AnimatePresence initial={false}>
-          {open.map((i) => (
-            <motion.li
-              key={i.id}
-              layout
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, x: 40 }}
-              className="bg-s1 border-line flex items-center gap-3 rounded-[20px] border p-3"
-            >
-              <button
-                type="button"
-                aria-label={`Done: ${i.text}`}
-                onClick={() => void toggle(i.id, false)}
-                className="bg-s2 hover:bg-accent/30 flex h-10 w-10 flex-none cursor-pointer items-center justify-center rounded-xl border-0 text-lg"
+          {open.map((i) => {
+            const Icon = iconFor(i.category);
+            return (
+              <motion.li
+                key={i.id}
+                layout
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: 40 }}
+                className="flex items-center gap-3 p-3"
               >
-                {emoji(i.category)}
-              </button>
-              <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-semibold">{i.text}</span>
-                <span className="text-faint text-xs">
-                  Added by {i.created_by === me.id ? "you" : partner.name}
+                <button
+                  type="button"
+                  aria-label={`Done: ${i.text}`}
+                  onClick={() => void toggle(i.id, false)}
+                  className="bg-s2 text-muted hover:bg-accent hover:text-on-accent rounded-input flex h-10 w-10 flex-none cursor-pointer items-center justify-center border-0 transition-colors"
+                >
+                  <Icon size={18} aria-hidden />
+                </button>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[15px] font-semibold">{i.text}</span>
+                  <span className="text-faint text-xs">
+                    Added by {i.created_by === me.id ? "you" : partner.name}
+                  </span>
                 </span>
-              </span>
-              <button
-                type="button"
-                aria-label={`Remove ${i.text}`}
-                onClick={() => void remove(i.id)}
-                className="text-faint hover:text-danger flex h-10 w-10 cursor-pointer items-center justify-center border-0 bg-transparent"
-              >
-                <Trash size={18} />
-              </button>
-            </motion.li>
-          ))}
+                <button
+                  type="button"
+                  aria-label={`Remove ${i.text}`}
+                  onClick={() => void remove(i.id)}
+                  className="text-faint hover:text-danger flex h-10 w-10 cursor-pointer items-center justify-center border-0 bg-transparent"
+                >
+                  <Trash size={18} />
+                </button>
+              </motion.li>
+            );
+          })}
         </AnimatePresence>
       </ul>
 
@@ -216,7 +234,7 @@ export function BucketList() {
         <section aria-label="Done together" className="flex flex-col gap-2">
           <h2 className="text-muted m-0 text-sm font-semibold">Done together</h2>
           {done.map((i) => (
-            <div key={i.id} className="flex items-center gap-3 rounded-[20px] px-3 py-2 opacity-75">
+            <div key={i.id} className="text-muted flex items-center gap-3 px-3 py-2">
               <button
                 type="button"
                 aria-label={`Not done: ${i.text}`}

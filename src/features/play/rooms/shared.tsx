@@ -147,9 +147,7 @@ export function RoomHeader({
         </div>
       )}
       <Sheet open={confirm} onOpenChange={setConfirm} title="Leave the game?" handle>
-        <div className="display text-[28px] leading-[1.05]">
-          Leave <em>mid-round</em>?
-        </div>
+        <div className="display text-[28px] leading-[1.05]">Leave mid-round?</div>
         <p className="text-muted m-0 text-base leading-normal">
           The game stays open, so you can come back to it from Play.
         </p>
@@ -214,15 +212,7 @@ export function Waiting({ game }: { game: GameRow }) {
         </div>
       </div>
       <div className="display text-[36px] leading-[1.05]">
-        {mineInvite ? (
-          <>
-            Waiting on {partner.name}. <em>No rush.</em>
-          </>
-        ) : (
-          <>
-            {partner.name} wants to <em>play</em>.
-          </>
-        )}
+        {mineInvite ? <>Waiting on {partner.name}. No rush.</> : <>{partner.name} wants to play.</>}
       </div>
       <p className="text-muted m-0 text-base">
         {mineInvite
@@ -300,7 +290,7 @@ export function ResultBars({ type, current }: { type: GameType; current: number 
           }}
         />
       ))}
-      <span className="mono text-faint ml-1.5 text-xs">LAST {bars.length}</span>
+      <span className="mono text-faint ml-1.5 text-xs">Last {bars.length}</span>
     </div>
   );
 }

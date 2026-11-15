@@ -60,7 +60,7 @@ export function WordRoom({ game }: { game: GameRow }) {
           <span className="mono text-[28px]">{my}</span>
         </div>
         {game.status === "finished" ? (
-          <span className="mono text-faint text-xs">FINAL</span>
+          <span className="text-faint text-xs">Final</span>
         ) : myTurn ? (
           <span className="bg-accent text-on-accent rounded-full px-3 py-1.5 text-[13px] font-bold">
             Your turn
@@ -165,17 +165,7 @@ export function WordRoom({ game }: { game: GameRow }) {
       {game.status === "finished" && (
         <div className="flex flex-col gap-2">
           <div className="display text-[28px]">
-            {my === their ? (
-              "A draw."
-            ) : my > their ? (
-              <>
-                You <em>win</em>.
-              </>
-            ) : (
-              <>
-                {partner.name} <em>wins</em>.
-              </>
-            )}
+            {my === their ? "A draw." : my > their ? <>You win.</> : <>{partner.name} wins.</>}
           </div>
           <Button
             onClick={async () => {
@@ -261,10 +251,7 @@ export function StoryRoom({ game }: { game: GameRow }) {
         counter={`${s.lines.length}/${STORY_MAX_LINES}`}
         progress={s.lines.length / STORY_MAX_LINES}
       />
-      <div
-        className="rounded-card bg-s2 flex flex-col gap-3 p-5"
-        style={{ transform: "rotate(-0.5deg)" }}
-      >
+      <div className="rounded-card border-line bg-s1 flex flex-col gap-3 border p-5">
         {all.map((l, i) => (
           <p
             key={i}
@@ -311,9 +298,7 @@ export function StoryRoom({ game }: { game: GameRow }) {
         </form>
       ) : s.ended ? (
         <div className="flex flex-col gap-2">
-          <div className="display text-[28px]">
-            The <em>end</em>.
-          </div>
+          <div className="display text-[28px]">The end.</div>
           <Button onClick={exportCard}>
             <DownloadSimple size={20} aria-hidden /> Save as an image
           </Button>

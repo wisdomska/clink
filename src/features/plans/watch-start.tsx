@@ -36,9 +36,7 @@ export function WatchStart() {
       <IconButton label="Back" onClick={() => router.push("/plans")}>
         <ArrowLeft size={20} />
       </IconButton>
-      <Display size={48}>
-        Watch <em>party</em>
-      </Display>
+      <Display size={48}>Watch party</Display>
       <Lead>Paste a YouTube link. Play, pause and skip stay in step for both of you.</Lead>
       {live && (
         <button

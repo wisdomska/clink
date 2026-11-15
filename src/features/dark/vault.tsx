@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, EyeSlash, Plus } from "@phosphor-icons/react";
+import { ArrowLeft, EyeSlash, Plus, Vault } from "@phosphor-icons/react";
 import { useState } from "react";
 import { IconButton, Button } from "@/components/ui/button";
 import { darkFetch } from "./api";
@@ -18,9 +18,6 @@ interface Item {
   removed: boolean;
   duration: number | null;
 }
-
-const veil = (i: number) =>
-  `radial-gradient(circle at ${20 + i * 7}% ${30 + ((i * 13) % 50)}%, rgba(255,90,60,.55), transparent 45%), radial-gradient(circle at ${70 - i * 4}% 75%, rgba(251,243,246,.18), transparent 50%), #251A21`;
 
 /** DARK-08 vault: empty, blurred grid, removed by sender. Revealing opens the protected viewer. */
 export function VaultScreen() {
@@ -66,18 +63,10 @@ export function VaultScreen() {
                 key={v.id}
                 href={`/dark/view/${v.id}`}
                 aria-label={`${v.kind === "video" ? "Video" : "Photo"} from ${v.mine ? "you" : "them"}. Tap to reveal`}
-                className="press an-rise rounded-thumb text-text hover:text-text relative block aspect-[3/4] overflow-hidden"
+                className="press an-rise rounded-thumb border-line bg-s2 text-text hover:text-text relative block aspect-[3/4] overflow-hidden border"
                 style={{ ["--i" as string]: Math.min(i, 12) }}
               >
-                <span
-                  aria-hidden
-                  className="absolute -inset-4"
-                  style={{ background: veil(i), filter: "blur(14px)" }}
-                />
-                <span
-                  className="absolute inset-0 flex flex-col items-center justify-center gap-1"
-                  style={{ background: "rgba(15,14,17,.35)" }}
-                >
+                <span className="absolute inset-0 flex flex-col items-center justify-center gap-1">
                   <EyeSlash size={20} aria-hidden />
                   <span className="text-[11px] font-medium">Tap to reveal</span>
                 </span>
@@ -88,12 +77,12 @@ export function VaultScreen() {
                 </span>
                 <span className="mono text-muted absolute bottom-1.5 left-1.5 text-[10px]">
                   {v.retention === "once"
-                    ? "ONCE"
+                    ? "once"
                     : v.retention === "vault"
                       ? v.mine
-                        ? "YOURS"
-                        : "KEPT"
-                      : "EXPIRES"}
+                        ? "yours"
+                        : "kept"
+                      : "expires"}
                 </span>
               </Link>
             ),
@@ -103,15 +92,9 @@ export function VaultScreen() {
         <div className="flex flex-1 flex-col items-center justify-center gap-3.5 text-center">
           <div
             aria-hidden
-            className="rounded-thumb border-line bg-s2 relative h-20 w-[120px] overflow-hidden border"
+            className="rounded-input border-line bg-s2 text-ember flex h-16 w-16 items-center justify-center border"
           >
-            <span
-              className="absolute inset-x-0 bottom-0 h-3.5"
-              style={{
-                background:
-                  "repeating-linear-gradient(90deg,rgba(255,90,60,.5) 0 2px,#251A21 2px 5px)",
-              }}
-            />
+            <Vault size={30} />
           </div>
           <div className="display text-[28px] leading-[1.05]">Nothing kept. Yet.</div>
           <p className="text-muted m-0 text-base leading-normal">

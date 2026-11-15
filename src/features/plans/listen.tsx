@@ -68,9 +68,7 @@ export function ListenTogether() {
       <IconButton label="Back" onClick={() => router.push("/plans")}>
         <ArrowLeft size={20} />
       </IconButton>
-      <Display size={48}>
-        Listen <em>together</em>
-      </Display>
+      <Display size={48}>Listen together</Display>
       <Lead>One queue, two pairs of headphones. Either of you can add a song.</Lead>
       {now ? (
         <>
@@ -117,27 +115,26 @@ export function ListenTogether() {
         </Button>
       </form>
       <FieldError>{error}</FieldError>
-      <ol className="m-0 flex list-none flex-col gap-2 p-0">
-        {queue.slice(1).map((q) => (
-          <li
-            key={q.id}
-            className="rounded-input border-line bg-s1 flex items-center gap-3 border px-4 py-3"
-          >
-            <PartnerMark who={q.added_by === me.id ? me.role : partner.role} />
-            <span className="flex-1 truncate">{q.title ?? q.video_id}</span>
-            <IconButton
-              label="Remove from queue"
-              dim={40}
-              onClick={async () => {
-                await supabaseBrowser().from("listen_queue").delete().eq("id", q.id);
-                void qc.invalidateQueries({ queryKey: key });
-              }}
-            >
-              <Trash size={18} />
-            </IconButton>
-          </li>
-        ))}
-      </ol>
+      {queue.length > 1 && (
+        <ol className="rounded-card border-line bg-s1 divide-line m-0 flex list-none flex-col divide-y overflow-hidden border p-0">
+          {queue.slice(1).map((q) => (
+            <li key={q.id} className="flex items-center gap-3 px-4 py-2">
+              <PartnerMark who={q.added_by === me.id ? me.role : partner.role} />
+              <span className="flex-1 truncate">{q.title ?? q.video_id}</span>
+              <IconButton
+                label="Remove from queue"
+                dim={40}
+                onClick={async () => {
+                  await supabaseBrowser().from("listen_queue").delete().eq("id", q.id);
+                  void qc.invalidateQueries({ queryKey: key });
+                }}
+              >
+                <Trash size={18} />
+              </IconButton>
+            </li>
+          ))}
+        </ol>
+      )}
     </div>
   );
 }

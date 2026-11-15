@@ -42,9 +42,7 @@ export function DesireMatch() {
       <IconButton label="Back" onClick={() => router.push("/dark/home")}>
         <ArrowLeft size={20} />
       </IconButton>
-      <Display size={36}>
-        Desire <em>match</em>
-      </Display>
+      <Display size={36}>Desire match</Display>
       <Lead>
         Yes, no or maybe, privately. You only ever see the things you both said yes to, or yes and
         maybe. Nobody sees a no.
@@ -60,17 +58,12 @@ export function DesireMatch() {
         ]}
       />
       {tab === "answer" ? (
-        <ul className="m-0 flex list-none flex-col gap-2 p-0">
+        <ul className="rounded-card border-line bg-s1 divide-line m-0 flex list-none flex-col divide-y overflow-hidden border p-0">
           {(data?.items ?? []).map((it) => (
-            <li
-              key={it.id}
-              className="rounded-card border-line bg-s1 flex flex-col gap-2.5 border p-4"
-            >
+            <li key={it.id} className="flex flex-col gap-2.5 p-4">
               <div className="flex items-start justify-between gap-3">
                 <span className="text-base font-medium">{it.text}</span>
-                <span className="mono text-faint flex-none text-[11px]">
-                  {it.tier.toUpperCase()}
-                </span>
+                <span className="text-faint flex-none text-xs">{it.tier}</span>
               </div>
               <div className="grid grid-cols-3 gap-1.5" role="radiogroup" aria-label={it.text}>
                 {(["yes", "maybe", "no"] as const).map((a) => (
@@ -95,12 +88,9 @@ export function DesireMatch() {
           ))}
         </ul>
       ) : data?.matches.length ? (
-        <ul className="m-0 flex list-none flex-col gap-2 p-0">
+        <ul className="rounded-card border-line bg-s1 divide-line m-0 flex list-none flex-col divide-y overflow-hidden border p-0">
           {data.matches.map((m) => (
-            <li
-              key={m.item_id}
-              className="an-reveal rounded-card bg-s2 flex items-center gap-3 p-4"
-            >
+            <li key={m.item_id} className="an-reveal flex items-center gap-3 p-4">
               <Heart
                 size={22}
                 weight={m.kind === "yes" ? "fill" : "regular"}
@@ -108,8 +98,8 @@ export function DesireMatch() {
                 aria-label={m.kind === "yes" ? "You both said yes" : "Yes and maybe"}
               />
               <span className="flex-1 text-base">{m.text}</span>
-              <span className="mono text-muted text-[11px]">
-                {m.kind === "yes" ? "BOTH YES" : "YES + MAYBE"}
+              <span className="text-muted text-xs">
+                {m.kind === "yes" ? "Both yes" : "Yes + maybe"}
               </span>
             </li>
           ))}
