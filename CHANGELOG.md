@@ -4,6 +4,20 @@ All notable changes to Clink. Versions follow [Semantic Versioning](https://semv
 
 ## [Unreleased]
 
+### Added
+
+- Picture stickers: 36 stickers drawn from Fluent Emoji 3D; the classics keep their words as meme-style captions.
+- Instant camera in chat: tap for a photo, hold for a video, flip camera; shots open in the editor.
+- Write your own status, with quick suggestions; preset statuses carry an emoji.
+- Calls in the chat history (missed, couldn't pick up, or how long you talked) with one-tap call back; a missed-call card on Us and Chat; minimise a call to a floating pill.
+- Chat themes and wallpapers, shared with your partner and synced live; double-tap a message to heart it.
+- Admins land on /admin after signing in.
+
+### Changed
+
+- Us page: a glowing hero with both of you and a heartbeat line, 3D mood tiles, and a glossy Clink button. No more rings, including avatar borders.
+- Voice notes: a live waveform while recording; playback bars fill smoothly and dance at the playhead; tap to seek. The voice bubble no longer clips at the right edge.
+
 ## [1.2.0] - 2026-11-15
 
 Calls, photo games, accounts and a livelier look.
