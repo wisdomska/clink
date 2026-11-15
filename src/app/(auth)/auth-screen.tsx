@@ -4,6 +4,14 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Fingerprint, Check } from "@phosphor-icons/react";
 import { BrandLogo } from "@/components/clink/brand-logo";
+import { AuthHero } from "@/components/clink/auth-hero";
+import { motion } from "motion/react";
+import { cn } from "@/components/ui/cn";
+
+const ITEM = {
+  hidden: { opacity: 0.01, y: 14 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 320, damping: 28 } },
+};
 import { Button, IconButton } from "@/components/ui/button";
 import { Input, Label, FieldError, Hint } from "@/components/ui/field";
 import { Display, Lead } from "@/components/ui/heading";
@@ -163,34 +171,81 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
 
   const two = (v: string) => v.replace(/\D/g, "").slice(0, 2);
 
+  const q = next ? `?next=${encodeURIComponent(next)}` : "";
   return (
-    <div className="an-screen flex flex-1 flex-col">
-      <IconButton
-        label="Back"
-        onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
-      >
-        <ArrowLeft size={20} />
-      </IconButton>
+    <div className="relative isolate flex flex-1 flex-col lg:flex-none">
+      <div className="relative flex items-center gap-3">
+        <IconButton
+          label="Back"
+          onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
+        >
+          <ArrowLeft size={20} />
+        </IconButton>
+        {view === "form" && (
+          <nav
+            aria-label="Account"
+            className="bg-s2/80 ml-auto flex rounded-full p-1 backdrop-blur"
+          >
+            {(
+              [
+                ["login", "Sign in", `/login${q}`],
+                ["signup", "Create account", `/signup${q}`],
+              ] as const
+            ).map(([k, label, href]) => (
+              <Link
+                key={k}
+                href={href}
+                replace
+                aria-current={mode === k ? "page" : undefined}
+                className="relative flex h-9 items-center rounded-full px-3.5 text-[13px] font-bold"
+              >
+                {mode === k && (
+                  <motion.span
+                    layoutId="auth-tab"
+                    className="bg-accent absolute inset-0 rounded-full"
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                  />
+                )}
+                <span className={cn("relative", mode === k ? "text-on-accent" : "text-muted")}>
+                  {label}
+                </span>
+              </Link>
+            ))}
+          </nav>
+        )}
+      </div>
 
       {view === "form" && (
-        <form onSubmit={onSubmit} noValidate className="flex flex-1 flex-col">
-          <Display size={36} className="mt-6">
-            {mode === "signup" ? (
-              <>
-                Make your <em>account</em>
-              </>
-            ) : (
-              <>
-                Welcome <em>back</em>
-              </>
-            )}
-          </Display>
-          <Lead className="mt-2">
-            {mode === "signup"
-              ? "Takes a minute. Clink is 18+ only."
-              : "Pick up where you two left off."}
-          </Lead>
-          <div className="mt-6 flex flex-col gap-2">
+        <motion.form
+          onSubmit={onSubmit}
+          noValidate
+          className="relative flex flex-1 flex-col lg:flex-none"
+          initial="hidden"
+          animate="show"
+          variants={{ show: { transition: { staggerChildren: 0.06, delayChildren: 0.15 } } }}
+        >
+          <motion.div variants={ITEM} className="mt-4 lg:hidden">
+            <AuthHero mode={mode} />
+          </motion.div>
+          <motion.div variants={ITEM}>
+            <Display size={36} className="mt-4">
+              {mode === "signup" ? (
+                <>
+                  Make your <em>account</em>
+                </>
+              ) : (
+                <>
+                  Welcome <em>back</em>
+                </>
+              )}
+            </Display>
+            <Lead className="mt-2">
+              {mode === "signup"
+                ? "Takes a minute. Clink is 18+ only."
+                : "Pick up where you two left off."}
+            </Lead>
+          </motion.div>
+          <motion.div variants={ITEM} className="mt-6 flex flex-col gap-2">
             <Button variant="secondary" size="lg" onClick={passkey}>
               <Fingerprint size={22} aria-hidden />
               Continue with a passkey
@@ -199,12 +254,15 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
               <BrandLogo brand="google" size={26} />
               Continue with Google
             </Button>
-          </div>
-          <div className="text-faint mt-6 mb-4 flex items-center gap-3 text-sm font-medium">
+          </motion.div>
+          <motion.div
+            variants={ITEM}
+            className="text-faint mt-6 mb-4 flex items-center gap-3 text-sm font-medium"
+          >
             <span className="bg-line h-px flex-1" />
             or use email
             <span className="bg-line h-px flex-1" />
-          </div>
+          </motion.div>
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
@@ -286,45 +344,33 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
             </fieldset>
           )}
           <FieldError>{formError}</FieldError>
-          <div className="min-h-6 flex-1" />
+          <div className="min-h-6 flex-1 lg:min-h-0 lg:flex-none" />
           <Button type="submit" loading={busy} className="mt-6 flex-none">
             {mode === "login" && password ? "Sign in" : "Continue"}
           </Button>
-          <p className="text-muted mt-4 text-center text-sm">
-            {mode === "signup" ? (
-              <>
-                Already have an account?{" "}
-                <Link href={`/login${next ? `?next=${encodeURIComponent(next)}` : ""}`}>
-                  Sign in
-                </Link>
-              </>
-            ) : (
-              <>
-                New here?{" "}
-                <Link href={`/signup${next ? `?next=${encodeURIComponent(next)}` : ""}`}>
-                  Make an account
-                </Link>
-              </>
-            )}
-          </p>
-        </form>
+        </motion.form>
       )}
 
       {view === "sent" && (
         <>
           <div className="an-reveal flex flex-1 flex-col justify-center gap-4">
-            <div
-              aria-hidden
-              className="rounded-input border-line bg-s2 relative h-[120px] w-[180px] overflow-hidden border"
-              style={{ transform: "rotate(-3deg)" }}
-            >
-              <div
-                className="bg-s3 absolute inset-0"
-                style={{ clipPath: "polygon(0 0,100% 0,50% 60%)" }}
+            <div aria-hidden className="relative h-[140px] w-[160px]">
+              <motion.img
+                src="/stickers/xoxo.webp"
+                alt=""
+                className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_16px_20px_rgba(0,0,0,.45)]"
+                initial={{ y: 60, rotate: -20, scale: 0.6, opacity: 0.01 }}
+                animate={{ y: [60, -10, 0], rotate: [-20, 8, -4], scale: 1, opacity: 1 }}
+                transition={{ duration: 0.9, ease: [0.2, 0.9, 0.3, 1.2] }}
               />
-              <div className="bg-accent text-on-accent absolute top-[60%] left-1/2 -mt-5 -ml-5 flex h-10 w-10 items-center justify-center rounded-full">
-                <Check size={20} />
-              </div>
+              <motion.span
+                className="bg-accent text-on-accent absolute -right-1 bottom-2 flex h-11 w-11 items-center justify-center rounded-full shadow-[0_8px_20px_-6px_var(--accent)]"
+                initial={{ scale: 0 }}
+                animate={{ scale: [0, 1.25, 1] }}
+                transition={{ delay: 0.7, duration: 0.45 }}
+              >
+                <Check size={22} weight="bold" />
+              </motion.span>
             </div>
             <Display size={36} className="mt-2">
               Check your <em>inbox</em>

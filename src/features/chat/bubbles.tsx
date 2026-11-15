@@ -22,11 +22,14 @@ export type GroupPos = "single" | "first" | "middle" | "last";
 
 const R = 20; // outer corner
 const J = 6; // joined corner, toward the sender's side
+// Corner sizes come from Appearance (round, soft or square bubbles).
+const RV = `var(--bubble-r, ${R}px)`;
+const JV = `var(--bubble-j, ${J}px)`;
 function radius(mine: boolean, pos: GroupPos) {
-  const top = pos === "middle" || pos === "last" ? J : R;
-  const bottom = pos === "first" || pos === "middle" || pos === "single" ? J : R;
+  const top = pos === "middle" || pos === "last" ? JV : RV;
+  const bottom = pos === "first" || pos === "middle" || pos === "single" ? JV : RV;
   // order: top-left top-right bottom-right bottom-left
-  return mine ? `${R}px ${top}px ${bottom}px ${R}px` : `${top}px ${R}px ${R}px ${bottom}px`;
+  return mine ? `${RV} ${top} ${bottom} ${RV}` : `${top} ${RV} ${RV} ${bottom}`;
 }
 
 function clock(iso: string) {
@@ -37,21 +40,50 @@ function mediaUrl(id: string) {
   return `/api/media/${id}/view`;
 }
 
-function ReactionPill({ reactions }: { reactions: Reaction[] }) {
+function ReactionPill({
+  reactions,
+  meId,
+  onTapOwn,
+  onTapOther,
+}: {
+  reactions: Reaction[];
+  meId: string;
+  onTapOwn: (r: Reaction) => void;
+  onTapOther: () => void;
+}) {
   if (!reactions.length) return null;
   return (
     <div
-      role="img"
-      className="border-line bg-s3 absolute -right-2 -bottom-3 flex items-center gap-0.5 rounded-full border px-2 py-0.5 text-sm"
+      role="group"
+      className="border-line bg-s3 absolute -right-2 -bottom-3 z-[1] flex items-center gap-0.5 rounded-full border p-0.5 text-sm"
       aria-label={`Reactions: ${reactions.map((r) => r.emoji ?? "voice").join(", ")}`}
+      onPointerDown={(e) => e.stopPropagation()}
     >
-      {reactions.map((r) =>
-        r.voice_media_id ? (
-          <Microphone key={r.id} size={14} aria-hidden />
-        ) : (
-          <span key={r.id}>{r.emoji}</span>
-        ),
-      )}
+      {reactions.map((r) => {
+        const own = r.user_id === meId;
+        return (
+          <button
+            key={r.id}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (own) onTapOwn(r);
+              else onTapOther();
+            }}
+            aria-label={
+              own
+                ? `Your reaction ${r.emoji ?? "voice"}. Tap to remove`
+                : `Their reaction ${r.emoji ?? "voice"}`
+            }
+            className={cn(
+              "flex h-7 min-w-7 cursor-pointer items-center justify-center rounded-full border-0 px-1 transition-colors",
+              own ? "bg-accent/30" : "bg-transparent",
+            )}
+          >
+            {r.voice_media_id ? <Microphone size={14} aria-hidden /> : r.emoji}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -98,6 +130,8 @@ export function Bubble({
   onSwipeReply,
   onRetry,
   onDoubleTap,
+  meId,
+  onRemoveReaction,
   pos = "single",
 }: {
   onDoubleTap?: (m: UiMessage) => void;
@@ -109,6 +143,8 @@ export function Bubble({
   reactions: Reaction[];
   replyTarget?: UiMessage;
   onLongPress: (m: UiMessage) => void;
+  meId: string;
+  onRemoveReaction?: (r: Reaction) => void;
   onSwipeReply: (m: UiMessage) => void;
   onRetry: (m: UiMessage) => void;
 }) {
@@ -332,7 +368,7 @@ export function Bubble({
           })}
         </div>
         {m.body && (
-          <div className="px-3 pt-2 pb-1.5 text-base leading-[1.35] [overflow-wrap:anywhere] whitespace-pre-wrap">
+          <div className="px-3 pt-2 pb-1.5 text-[length:var(--chat-text,16px)] leading-[1.35] [overflow-wrap:anywhere] whitespace-pre-wrap">
             {m.body}
             <span
               aria-hidden
@@ -360,7 +396,7 @@ export function Bubble({
         </div>
       ) : (
         <div
-          className="w-fit max-w-full px-3.5 pt-2 pb-1.5 text-base leading-[1.35] [overflow-wrap:anywhere] whitespace-pre-wrap"
+          className="w-fit max-w-full px-3.5 pt-2 pb-1.5 text-[length:var(--chat-text,16px)] leading-[1.35] [overflow-wrap:anywhere] whitespace-pre-wrap"
           style={{
             borderRadius: radius(mine, pos),
             background: mine ? "var(--bubble-out, var(--surface-3))" : "var(--surface-1)",
@@ -423,7 +459,12 @@ export function Bubble({
         )}
         <div className="relative max-w-[80%] md:max-w-[min(80%,560px)]">
           {content}
-          <ReactionPill reactions={reactions} />
+          <ReactionPill
+            reactions={reactions}
+            meId={meId}
+            onTapOwn={(r) => onRemoveReaction?.(r)}
+            onTapOther={() => onLongPress(m)}
+          />
         </div>
       </div>
       {m.local === "failed" && (

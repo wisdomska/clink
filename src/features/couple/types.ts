@@ -31,6 +31,8 @@ export interface CoupleContextValue {
   darkVisible: boolean;
   chatTheme: string;
   chatWallpaper: string;
+  chatWallpaperMedia: string | null;
+  chatWallpaperBlur: boolean;
   /** Both partners have set up After Dark. */
   darkBoth: boolean;
   discreet: boolean;

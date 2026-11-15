@@ -7,7 +7,7 @@ import {
   type InfiniteData,
 } from "@tanstack/react-query";
 import { supabaseBrowser } from "@/lib/supabase/client";
-import { useCouple } from "@/features/couple/context";
+import { useCoupleEvent, useCouple } from "@/features/couple/context";
 import type { MediaInfo, Message, Reaction } from "./types";
 import { useQueue, type QueuedPayload } from "./queue";
 import { subscribeAuthed } from "@/lib/realtime";
@@ -117,6 +117,12 @@ export function useReactions() {
         st === "SUBSCRIBED" && void qc.invalidateQueries({ queryKey: ["reactions", coupleId] }),
     );
   }, [coupleId, qc]);
+  // Deletes don't pass the couple filter on realtime, so a removal is also
+  // announced on the couple channel.
+  useCoupleEvent(
+    "chat.reaction",
+    () => void qc.invalidateQueries({ queryKey: ["reactions", coupleId] }),
+  );
   const byMessage = useMemo(() => {
     const m = new Map<string, Reaction[]>();
     for (const r of q.data ?? []) m.set(r.message_id, [...(m.get(r.message_id) ?? []), r]);

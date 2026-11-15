@@ -45,5 +45,5 @@ test("chat theme and wallpaper are shared; double-tap hearts a message", async (
 
   // Instagram-style double tap.
   await b.getByRole("button", { name: /Nia: hello you/ }).dblclick();
-  await expect(a.getByRole("img", { name: /Reactions: ❤️/ })).toBeVisible({ timeout: 10000 });
+  await expect(a.getByRole("group", { name: /Reactions: ❤️/ })).toBeVisible({ timeout: 10000 });
 });

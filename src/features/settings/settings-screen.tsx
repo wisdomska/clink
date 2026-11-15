@@ -26,6 +26,7 @@ import { AccountRows } from "./accounts";
 import { RitualTimeRows } from "./ritual-time";
 import { PrivacyCard } from "./privacy";
 import { FeelCard } from "./feel";
+import { AppearanceCard } from "./appearance";
 import { IdentityPicker } from "@/components/clink/identity-picker";
 import { asIdentity } from "@/lib/app-identity";
 import { AvatarPicker } from "@/components/clink/avatar-picker";
@@ -211,6 +212,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
         </Row>
       </div>
 
+      <AppearanceCard />
       <FeelCard />
 
       <h2 className="m-0 mt-1 text-lg font-bold">App icon and name</h2>

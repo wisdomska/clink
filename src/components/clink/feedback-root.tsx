@@ -8,6 +8,7 @@ import {
   useFeedbackPrefs,
   useReducedMotion,
 } from "@/lib/feedback";
+import { applyAppearance } from "@/lib/appearance";
 
 const PRESSABLE = "button, [role=button], [role=switch], [role=tab], [role=radio], a[href]";
 
@@ -20,6 +21,9 @@ const PRESSABLE = "button, [role=button], [role=switch], [role=tab], [role=radio
 export function FeedbackRoot({ children }: { children: ReactNode }) {
   const prefs = useFeedbackPrefs();
   const reduced = useReducedMotion();
+
+  // Apply the saved look (accent, chat text, bubbles) on every page.
+  useEffect(() => applyAppearance(), []);
 
   useEffect(() => {
     const root = document.documentElement;

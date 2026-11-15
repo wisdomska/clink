@@ -301,17 +301,23 @@ isOneToOne: false
                   ]
                 },"couples": {
                   Row: {
-                    "chat_theme": string,"chat_wallpaper": string,"created_at": string,"dark_opened_at": string | null,"id": string,"linked_at": string,"read_only_until": string | null,"ritual_time": string,"ritual_time_proposed": string | null,"ritual_time_proposed_by": string | null,"started_on": string | null,"unlinked_at": string | null
+                    "chat_theme": string,"chat_wallpaper": string,"chat_wallpaper_blur": boolean,"chat_wallpaper_media": string | null,"created_at": string,"dark_opened_at": string | null,"id": string,"linked_at": string,"read_only_until": string | null,"ritual_time": string,"ritual_time_proposed": string | null,"ritual_time_proposed_by": string | null,"started_on": string | null,"unlinked_at": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "chat_theme"?: string,"chat_wallpaper"?: string,"created_at"?: string,"dark_opened_at"?: string | null,"id"?: string,"linked_at"?: string,"read_only_until"?: string | null,"ritual_time"?: string,"ritual_time_proposed"?: string | null,"ritual_time_proposed_by"?: string | null,"started_on"?: string | null,"unlinked_at"?: string | null
+                    "chat_theme"?: string,"chat_wallpaper"?: string,"chat_wallpaper_blur"?: boolean,"chat_wallpaper_media"?: string | null,"created_at"?: string,"dark_opened_at"?: string | null,"id"?: string,"linked_at"?: string,"read_only_until"?: string | null,"ritual_time"?: string,"ritual_time_proposed"?: string | null,"ritual_time_proposed_by"?: string | null,"started_on"?: string | null,"unlinked_at"?: string | null
                   }
                   Update: {
-                    "chat_theme"?: string,"chat_wallpaper"?: string,"created_at"?: string,"dark_opened_at"?: string | null,"id"?: string,"linked_at"?: string,"read_only_until"?: string | null,"ritual_time"?: string,"ritual_time_proposed"?: string | null,"ritual_time_proposed_by"?: string | null,"started_on"?: string | null,"unlinked_at"?: string | null
+                    "chat_theme"?: string,"chat_wallpaper"?: string,"chat_wallpaper_blur"?: boolean,"chat_wallpaper_media"?: string | null,"created_at"?: string,"dark_opened_at"?: string | null,"id"?: string,"linked_at"?: string,"read_only_until"?: string | null,"ritual_time"?: string,"ritual_time_proposed"?: string | null,"ritual_time_proposed_by"?: string | null,"started_on"?: string | null,"unlinked_at"?: string | null
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "couples_chat_wallpaper_media_fkey"
+      columns: ["chat_wallpaper_media"]
+isOneToOne: false
+      referencedRelation: "media"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"dare_spins": {
                   Row: {

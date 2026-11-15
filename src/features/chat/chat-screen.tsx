@@ -2,7 +2,7 @@
 import { feedback, haptic } from "@/lib/feedback";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Phone,
   Camera,
@@ -30,6 +30,8 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/avatar";
 import { IconButton, Button } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
+import { LoadingDots } from "@/components/ui/spinner";
+import { Toggle } from "@/components/ui/toggle";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/cn";
 import { formatClock } from "@/lib/time";
@@ -85,28 +87,51 @@ function dayLabel(d: Date, tz: string) {
 }
 
 export function ChatScreen() {
-  const { me, partner, presence, coupleId, send, discreet, chatTheme, chatWallpaper, darkBoth } =
-    useCouple();
+  const {
+    me,
+    partner,
+    presence,
+    coupleId,
+    send,
+    discreet,
+    chatTheme,
+    chatWallpaper,
+    chatWallpaperMedia,
+    chatWallpaperBlur,
+    darkBoth,
+  } = useCouple();
   const [stickerTab, setStickerTab] = useState<"all" | "spicy">("all");
   const [look, setLook] = useState({
     theme: (chatTheme in CHAT_THEMES ? chatTheme : "clink") as ChatTheme,
     wallpaper: (chatWallpaper in WALLPAPERS ? chatWallpaper : "none") as Wallpaper,
+    media: chatWallpaperMedia,
+    blur: chatWallpaperBlur,
   });
+  const wallRef = useRef<HTMLDivElement>(null);
+  const wallInput = useRef<HTMLInputElement>(null);
+  const [wallBusy, setWallBusy] = useState(false);
   const [lookOpen, setLookOpen] = useState(false);
   useCoupleEvent("chat.look", (p) =>
     setLook((cur) => ({
       theme: (String(p.theme) in CHAT_THEMES ? p.theme : cur.theme) as ChatTheme,
       wallpaper: (String(p.wallpaper) in WALLPAPERS ? p.wallpaper : cur.wallpaper) as Wallpaper,
+      media: p.media === undefined ? cur.media : ((p.media as string | null) ?? null),
+      blur: p.blur === undefined ? cur.blur : Boolean(p.blur),
     })),
   );
-  const saveLook = async (next: { theme: ChatTheme; wallpaper: Wallpaper }) => {
+  const saveLook = async (next: typeof look) => {
     setLook(next);
     haptic("select");
     send("chat.look", next);
     await fetch("/api/couple", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_theme: next.theme, chat_wallpaper: next.wallpaper }),
+      body: JSON.stringify({
+        chat_theme: next.theme,
+        chat_wallpaper: next.wallpaper,
+        chat_wallpaper_media: next.media,
+        chat_wallpaper_blur: next.blur,
+      }),
     });
   };
   const now = useCoupleNow(30_000);
@@ -114,6 +139,7 @@ export function ChatScreen() {
   const { messages, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, upsertLocal } =
     useMessages();
   const reactions = useReactions();
+  const qc = useQueryClient();
   const queue = useQueue();
   const [text, setText] = useState("");
   const [tray, setTray] = useState(false);
@@ -270,6 +296,11 @@ export function ChatScreen() {
   function onScroll() {
     const el = listRef.current;
     if (!el) return;
+    // Subtle parallax: the wallpaper drifts a little as you scroll back in time.
+    if (wallRef.current) {
+      const fromBottom = el.scrollHeight - el.clientHeight - el.scrollTop;
+      wallRef.current.style.transform = `translate3d(0, ${Math.min(48, fromBottom * 0.04)}px, 0)`;
+    }
     stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
     if (el.scrollTop < 120 && hasNextPage && !isFetchingNextPage) {
       const before = el.scrollHeight;
@@ -466,8 +497,11 @@ export function ChatScreen() {
     setActionFor(null);
     const mine = reactions.get(m.id)?.find((r) => r.user_id === me.id);
     const sb = supabaseBrowser();
-    if (mine?.emoji === emoji) await sb.from("reactions").delete().eq("id", mine.id);
-    else
+    if (mine?.emoji === emoji) {
+      await sb.from("reactions").delete().eq("id", mine.id);
+      send("chat.reaction", {});
+      void qc.invalidateQueries({ queryKey: ["reactions", coupleId] });
+    } else
       await sb
         .from("reactions")
         .upsert(
@@ -565,151 +599,186 @@ export function ChatScreen() {
         <div className="flex-none px-4 pt-2 empty:hidden">
           <MissedCallCard />
         </div>
-        <div
-          ref={listRef}
-          onScroll={onScroll}
-          className="no-scrollbar relative flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-4"
-          style={
-            {
-              filter: blurred ? "blur(14px)" : undefined,
-              backgroundImage: WALLPAPERS[look.wallpaper].css,
-              backgroundSize: wallpaperSize(look.wallpaper),
-              backgroundAttachment: "local",
-              "--bubble-out": CHAT_THEMES[look.theme].bg,
-              "--bubble-out-fg": CHAT_THEMES[look.theme].fg,
-            } as React.CSSProperties
-          }
-          onClick={() => blurred && setBlurred(false)}
-          aria-live="polite"
-        >
-          {isFetchingNextPage && <div className="an-skel bg-s2 mx-auto h-4 w-24 rounded-full" />}
-          {isLoading ? (
-            <div role="status" className="flex flex-col gap-2.5" aria-label="Loading messages">
-              {[
-                ["flex-start", "62%", 44],
-                ["flex-end", "48%", 44],
-                ["flex-start", "70%", 150],
-                ["flex-end", "78%", 56],
-                ["flex-start", "55%", 44],
-                ["flex-end", "40%", 44],
-              ].map(([side, w, h], i) => (
-                <div
-                  key={i}
-                  className="an-skel rounded-card bg-s2"
-                  style={{
-                    alignSelf: side as string,
-                    width: w as string,
-                    height: h as number,
-                    animationDelay: `${i * 90}ms`,
-                  }}
-                />
-              ))}
-            </div>
-          ) : all.length === 0 ? (
-            <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-              <div className="flex flex-col items-center" aria-hidden>
-                <div className="flex gap-7">
-                  <Coffee size={44} className="text-text" />
-                  <Coffee size={44} className="text-accent" style={{ transform: "scaleX(-1)" }} />
-                </div>
-                <div className="bg-line mt-0.5 h-0.5 w-40 rounded-sm" />
-              </div>
-              <div className="display text-[28px] leading-[1.05]">
-                Say something.
-                <br />
-                Or just send a <em>Clink</em>.
-              </div>
-              <Link
-                href="/us"
-                className="press border-line bg-s2 text-text hover:text-text flex h-11 items-center gap-1.5 rounded-full border px-[18px] text-sm font-medium"
-              >
-                <Wine size={18} aria-hidden />
-                Send a Clink
-              </Link>
-            </div>
-          ) : (
-            all.map((m, i) => {
-              const prev = all[i - 1];
-              const next = all[i + 1];
-              const gap =
-                !prev ||
-                new Date(m.sent_at).getTime() - new Date(prev.sent_at).getTime() > 30 * 60 * 1000;
-              // Runs from the same person within 2 minutes read as one block.
-              const joins = (x?: (typeof all)[number], y?: (typeof all)[number]) =>
-                Boolean(
-                  x &&
-                  y &&
-                  x.sender_id === y.sender_id &&
-                  x.type !== "clink" &&
-                  x.type !== "system" &&
-                  y.type !== "clink" &&
-                  y.type !== "system" &&
-                  Math.abs(new Date(y.sent_at).getTime() - new Date(x.sent_at).getTime()) <
-                    2 * 60 * 1000,
-                );
-              const withPrev = !gap && joins(prev, m);
-              const withNext = joins(m, next) && !(lastMine?.id === m.id);
-              const pos = withPrev ? (withNext ? "middle" : "last") : withNext ? "first" : "single";
-              return (
-                <div key={m.id} className="contents">
-                  {gap && (
-                    <div className="mono text-faint self-center py-1 text-xs">
-                      {dayLabel(new Date(m.sent_at), me.timezone)}
-                    </div>
-                  )}
-                  <Bubble
-                    pos={pos}
-                    m={m}
-                    mine={m.sender_id === me.id}
-                    partnerName={partner.name}
-                    media={mediaInfo}
-                    reactions={reactions.get(m.id) ?? []}
-                    replyTarget={m.reply_to ? byId.get(m.reply_to) : undefined}
-                    onLongPress={(x) => !x.local && setActionFor(x)}
-                    onSwipeReply={(x) => !x.local && setReplyTo(x)}
-                    onDoubleTap={(x) => {
-                      if (x.local) return;
-                      haptic("select");
-                      void react(x, "❤️");
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+          {/* The wallpaper stays put behind the messages; it only drifts slightly (parallax). */}
+          <div
+            ref={wallRef}
+            aria-hidden
+            data-testid="chat-wallpaper"
+            className="pointer-events-none absolute inset-x-0 -top-12 bottom-0 transition-transform duration-300 ease-out will-change-transform"
+            style={
+              look.wallpaper === "custom" && look.media
+                ? {
+                    backgroundImage: `url(/api/media/${look.media}/view)`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    filter: look.blur ? "blur(18px) brightness(.7)" : "brightness(.75)",
+                    transform: "translate3d(0, 0, 0)",
+                    scale: look.blur ? "1.08" : undefined,
+                  }
+                : {
+                    backgroundImage: WALLPAPERS[look.wallpaper].css,
+                    backgroundSize: wallpaperSize(look.wallpaper),
+                    filter: look.blur && look.wallpaper !== "none" ? "blur(6px)" : undefined,
+                  }
+            }
+          />
+          <div
+            ref={listRef}
+            onScroll={onScroll}
+            className="no-scrollbar relative flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-4"
+            style={
+              {
+                filter: blurred ? "blur(14px)" : undefined,
+                "--bubble-out": CHAT_THEMES[look.theme].bg,
+                "--bubble-out-fg": CHAT_THEMES[look.theme].fg,
+              } as React.CSSProperties
+            }
+            onClick={() => blurred && setBlurred(false)}
+            aria-live="polite"
+          >
+            {isFetchingNextPage && <div className="an-skel bg-s2 mx-auto h-4 w-24 rounded-full" />}
+            {isLoading ? (
+              <div role="status" className="flex flex-col gap-2.5" aria-label="Loading messages">
+                {[
+                  ["flex-start", "62%", 44],
+                  ["flex-end", "48%", 44],
+                  ["flex-start", "70%", 150],
+                  ["flex-end", "78%", 56],
+                  ["flex-start", "55%", 44],
+                  ["flex-end", "40%", 44],
+                ].map(([side, w, h], i) => (
+                  <div
+                    key={i}
+                    className="an-skel rounded-card bg-s2"
+                    style={{
+                      alignSelf: side as string,
+                      width: w as string,
+                      height: h as number,
+                      animationDelay: `${i * 90}ms`,
                     }}
-                    onRetry={() => void flush()}
                   />
-                  {lastMine?.id === m.id && (
-                    <div className="mono text-faint self-end text-xs">
-                      {m.read_at
-                        ? `Read ${formatClock(new Date(m.read_at), me.timezone)}`
-                        : m.delivered_at
-                          ? "Delivered"
-                          : "Sent"}
-                    </div>
-                  )}
+                ))}
+              </div>
+            ) : all.length === 0 ? (
+              <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
+                <div className="flex flex-col items-center" aria-hidden>
+                  <div className="flex gap-7">
+                    <Coffee size={44} className="text-text" />
+                    <Coffee size={44} className="text-accent" style={{ transform: "scaleX(-1)" }} />
+                  </div>
+                  <div className="bg-line mt-0.5 h-0.5 w-40 rounded-sm" />
                 </div>
-              );
-            })
-          )}
-          {typing && (
-            <div
-              role="status"
-              className="border-line bg-s1 flex gap-1 self-start rounded-[20px_20px_20px_6px] border px-4 py-3.5"
-              aria-label={`${partner.name} is typing`}
-            >
-              {[0, 0.2, 0.4].map((d) => (
-                <span
-                  key={d}
-                  className="an-typing bg-muted h-[7px] w-[7px] rounded-full"
-                  style={{ animationDelay: `${d}s` }}
-                />
-              ))}
-            </div>
-          )}
-          {blurred && (
-            <div
-              className="bg-s3 sticky bottom-1/2 self-center rounded-full px-4 py-2 text-sm font-medium"
-              style={{ filter: "none" }}
-            >
-              Tap to show the chat
-            </div>
-          )}
+                <div className="display text-[28px] leading-[1.05]">
+                  Say something.
+                  <br />
+                  Or just send a <em>Clink</em>.
+                </div>
+                <Link
+                  href="/us"
+                  className="press border-line bg-s2 text-text hover:text-text flex h-11 items-center gap-1.5 rounded-full border px-[18px] text-sm font-medium"
+                >
+                  <Wine size={18} aria-hidden />
+                  Send a Clink
+                </Link>
+              </div>
+            ) : (
+              all.map((m, i) => {
+                const prev = all[i - 1];
+                const next = all[i + 1];
+                const gap =
+                  !prev ||
+                  new Date(m.sent_at).getTime() - new Date(prev.sent_at).getTime() > 30 * 60 * 1000;
+                // Runs from the same person within 2 minutes read as one block.
+                const joins = (x?: (typeof all)[number], y?: (typeof all)[number]) =>
+                  Boolean(
+                    x &&
+                    y &&
+                    x.sender_id === y.sender_id &&
+                    x.type !== "clink" &&
+                    x.type !== "system" &&
+                    y.type !== "clink" &&
+                    y.type !== "system" &&
+                    Math.abs(new Date(y.sent_at).getTime() - new Date(x.sent_at).getTime()) <
+                      2 * 60 * 1000,
+                  );
+                const withPrev = !gap && joins(prev, m);
+                const withNext = joins(m, next) && !(lastMine?.id === m.id);
+                const pos = withPrev
+                  ? withNext
+                    ? "middle"
+                    : "last"
+                  : withNext
+                    ? "first"
+                    : "single";
+                return (
+                  <div key={m.id} className="contents">
+                    {gap && (
+                      <div className="mono text-faint self-center py-1 text-xs">
+                        {dayLabel(new Date(m.sent_at), me.timezone)}
+                      </div>
+                    )}
+                    <Bubble
+                      pos={pos}
+                      m={m}
+                      mine={m.sender_id === me.id}
+                      partnerName={partner.name}
+                      media={mediaInfo}
+                      reactions={reactions.get(m.id) ?? []}
+                      replyTarget={m.reply_to ? byId.get(m.reply_to) : undefined}
+                      onLongPress={(x) => !x.local && setActionFor(x)}
+                      onSwipeReply={(x) => !x.local && setReplyTo(x)}
+                      meId={me.id}
+                      onRemoveReaction={async (r) => {
+                        haptic("tap");
+                        await supabaseBrowser().from("reactions").delete().eq("id", r.id);
+                        send("chat.reaction", {});
+                        void qc.invalidateQueries({ queryKey: ["reactions", coupleId] });
+                      }}
+                      onDoubleTap={(x) => {
+                        if (x.local) return;
+                        haptic("select");
+                        void react(x, "❤️");
+                      }}
+                      onRetry={() => void flush()}
+                    />
+                    {lastMine?.id === m.id && (
+                      <div className="mono text-faint self-end text-xs">
+                        {m.read_at
+                          ? `Read ${formatClock(new Date(m.read_at), me.timezone)}`
+                          : m.delivered_at
+                            ? "Delivered"
+                            : "Sent"}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+            {typing && (
+              <div
+                role="status"
+                className="border-line bg-s1 flex gap-1 self-start rounded-[20px_20px_20px_6px] border px-4 py-3.5"
+                aria-label={`${partner.name} is typing`}
+              >
+                {[0, 0.2, 0.4].map((d) => (
+                  <span
+                    key={d}
+                    className="an-typing bg-muted h-[7px] w-[7px] rounded-full"
+                    style={{ animationDelay: `${d}s` }}
+                  />
+                ))}
+              </div>
+            )}
+            {blurred && (
+              <div
+                className="bg-s3 sticky bottom-1/2 self-center rounded-full px-4 py-2 text-sm font-medium"
+                style={{ filter: "none" }}
+              >
+                Tap to show the chat
+              </div>
+            )}
+          </div>
         </div>
 
         {tray && (
@@ -984,19 +1053,10 @@ export function ChatScreen() {
       >
         {actionFor && (
           <>
-            <div className="flex justify-between gap-2" role="group" aria-label="React">
-              {REACTIONS.map((e) => (
-                <button
-                  key={e}
-                  type="button"
-                  onClick={() => react(actionFor, e)}
-                  aria-label={`React ${e}`}
-                  className="press border-line bg-s2 flex h-[52px] w-[52px] cursor-pointer items-center justify-center rounded-full border text-[22px]"
-                >
-                  {e}
-                </button>
-              ))}
-            </div>
+            <ReactRow
+              current={reactions.get(actionFor.id)?.find((r) => r.user_id === me.id)?.emoji ?? null}
+              onPick={(e) => react(actionFor, e)}
+            />
             <div className="rounded-card border-line bg-s2 overflow-hidden border">
               <SheetAction
                 icon={<Microphone size={20} />}
@@ -1137,25 +1197,100 @@ export function ChatScreen() {
         </div>
         <div className="mono text-faint text-xs">WALLPAPER</div>
         <div className="grid grid-cols-4 gap-3" role="radiogroup" aria-label="Chat wallpaper">
-          {(Object.keys(WALLPAPERS) as Wallpaper[]).map((k) => (
-            <button
-              key={k}
-              type="button"
-              role="radio"
-              aria-checked={look.wallpaper === k}
-              onClick={() => void saveLook({ ...look, wallpaper: k })}
-              className="flex cursor-pointer flex-col items-center gap-1.5 border-0 bg-transparent p-0 text-xs font-medium text-[var(--text-muted)]"
-            >
-              <span
-                className={cn(
-                  "bg-app block h-16 w-full rounded-2xl transition-transform",
-                  look.wallpaper === k && "scale-105 shadow-[0_0_0_2px_var(--accent)]",
-                )}
-                style={{ backgroundImage: WALLPAPERS[k].css, backgroundSize: wallpaperSize(k) }}
+          {(Object.keys(WALLPAPERS) as Wallpaper[])
+            .filter((k) => k !== "custom")
+            .map((k) => (
+              <button
+                key={k}
+                type="button"
+                role="radio"
+                aria-checked={look.wallpaper === k}
+                onClick={() => void saveLook({ ...look, wallpaper: k })}
+                className="flex cursor-pointer flex-col items-center gap-1.5 border-0 bg-transparent p-0 text-xs font-medium text-[var(--text-muted)]"
+              >
+                <span
+                  className={cn(
+                    "bg-app block h-16 w-full rounded-2xl transition-transform",
+                    look.wallpaper === k && "scale-105 shadow-[0_0_0_2px_var(--accent)]",
+                  )}
+                  style={{ backgroundImage: WALLPAPERS[k].css, backgroundSize: wallpaperSize(k) }}
+                />
+                {WALLPAPERS[k].label}
+              </button>
+            ))}
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => wallInput.current?.click()}
+            className={cn(
+              "relative flex h-16 w-24 flex-none cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-0 p-0",
+              look.wallpaper === "custom" ? "shadow-[0_0_0_2px_var(--accent)]" : "bg-s2",
+            )}
+            aria-label={look.media ? "Change wallpaper photo" : "Use your own photo"}
+          >
+            {look.media ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={`/api/media/${look.media}/view`}
+                alt=""
+                className="h-full w-full object-cover"
               />
-              {WALLPAPERS[k].label}
-            </button>
-          ))}
+            ) : wallBusy ? (
+              <LoadingDots className="text-accent" />
+            ) : (
+              <ImagesSquare size={24} className="text-muted" />
+            )}
+          </button>
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <span className="text-sm font-semibold">Your photo</span>
+            <span className="text-muted text-xs">Any photo, shared with {partner.name}.</span>
+            {look.media && look.wallpaper !== "custom" && (
+              <button
+                type="button"
+                onClick={() => void saveLook({ ...look, wallpaper: "custom" })}
+                className="text-accent cursor-pointer self-start border-0 bg-transparent p-0 text-xs font-bold"
+              >
+                Use it again
+              </button>
+            )}
+          </div>
+          <input
+            ref={wallInput}
+            type="file"
+            accept="image/*"
+            hidden
+            data-testid="wallpaper-input"
+            onChange={async (e) => {
+              const f = e.target.files?.[0];
+              e.target.value = "";
+              if (!f) return;
+              setWallBusy(true);
+              try {
+                const img = await compressImage(f);
+                const r = await uploadMedia(img.blob, {
+                  kind: "image",
+                  width: img.width,
+                  height: img.height,
+                });
+                await saveLook({ ...look, wallpaper: "custom", media: r.id });
+                toast.ok("Wallpaper set.");
+              } catch {
+                toast.err("That photo didn't upload.");
+              } finally {
+                setWallBusy(false);
+              }
+            }}
+          />
+        </div>
+        <div className="rounded-card border-line bg-s2 overflow-hidden border">
+          <Toggle
+            label="Blur the wallpaper"
+            sub="Softer behind your messages, easier to read."
+            checked={look.blur}
+            onChange={(v) => void saveLook({ ...look, blur: v })}
+            last
+          />
         </div>
       </Sheet>
 
@@ -1180,6 +1315,82 @@ export function ChatScreen() {
           }}
         />
       )}
+    </div>
+  );
+}
+
+/** Quick reactions, your current one highlighted (tap it again to remove), plus any emoji. */
+function ReactRow({ current, onPick }: { current: string | null; onPick: (e: string) => void }) {
+  const [custom, setCustom] = useState(false);
+  const quick =
+    current && !REACTIONS.includes(current) ? [current, ...REACTIONS.slice(0, 5)] : REACTIONS;
+  if (custom)
+    return (
+      <form
+        className="flex items-center gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const v = (new FormData(e.currentTarget).get("emoji") as string) ?? "";
+          const first = [
+            ...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(v.trim()),
+          ][0]?.segment;
+          if (first && /\p{Extended_Pictographic}/u.test(first)) onPick(first);
+        }}
+      >
+        <input
+          name="emoji"
+          autoFocus
+          aria-label="React with any emoji"
+          placeholder="Pick from your emoji keyboard"
+          inputMode="text"
+          maxLength={16}
+          onChange={(e) => {
+            const first = [
+              ...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(
+                e.target.value.trim(),
+              ),
+            ][0]?.segment;
+            if (first && /\p{Extended_Pictographic}/u.test(first)) onPick(first);
+          }}
+          className="rounded-input bg-s2 text-text h-[52px] min-w-0 flex-1 border-0 px-4 text-xl"
+        />
+        <button
+          type="button"
+          onClick={() => setCustom(false)}
+          className="text-muted h-[52px] cursor-pointer border-0 bg-transparent px-2 text-sm"
+        >
+          Back
+        </button>
+      </form>
+    );
+  return (
+    <div className="flex justify-between gap-1.5" role="group" aria-label="React">
+      {quick.map((e) => {
+        const on = current === e;
+        return (
+          <button
+            key={e}
+            type="button"
+            onClick={() => onPick(e)}
+            aria-label={on ? `Remove your ${e} reaction` : `React ${e}`}
+            aria-pressed={on}
+            className={cn(
+              "press flex aspect-square max-w-[52px] flex-1 cursor-pointer items-center justify-center rounded-full border-0 text-[22px] transition-transform",
+              on ? "bg-accent/30 scale-110" : "bg-s2",
+            )}
+          >
+            {e}
+          </button>
+        );
+      })}
+      <button
+        type="button"
+        onClick={() => setCustom(true)}
+        aria-label="React with any emoji"
+        className="press bg-s2 text-muted flex aspect-square max-w-[52px] flex-1 cursor-pointer items-center justify-center rounded-full border-0"
+      >
+        <Plus size={22} weight="bold" />
+      </button>
     </div>
   );
 }

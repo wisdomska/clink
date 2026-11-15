@@ -73,6 +73,7 @@ export const WALLPAPERS = {
     label: "Aurora",
     css: "radial-gradient(80% 60% at 0% 0%, rgba(79,209,197,.22), transparent 60%), radial-gradient(70% 60% at 100% 30%, rgba(139,124,255,.22), transparent 60%), radial-gradient(70% 60% at 30% 100%, rgba(230,138,245,.2), transparent 60%)",
   },
+  custom: { label: "Your photo", css: "none" },
 } as const;
 export type Wallpaper = keyof typeof WALLPAPERS;
 export const wallpaperSize = (w: Wallpaper) =>

@@ -40,7 +40,7 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
       admin
         .from("couples")
         .select(
-          "id, started_on, linked_at, chat_theme, chat_wallpaper, ritual_time, ritual_time_proposed, ritual_time_proposed_by, dark_opened_at",
+          "id, started_on, linked_at, chat_theme, chat_wallpaper, chat_wallpaper_media, chat_wallpaper_blur, ritual_time, ritual_time_proposed, ritual_time_proposed_by, dark_opened_at",
         )
         .eq("id", couple.coupleId)
         .single(),
@@ -87,6 +87,8 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
     startedOn: c?.started_on ?? null,
     chatTheme: c?.chat_theme ?? "clink",
     chatWallpaper: c?.chat_wallpaper ?? "none",
+    chatWallpaperMedia: c?.chat_wallpaper_media ?? null,
+    chatWallpaperBlur: c?.chat_wallpaper_blur ?? false,
     linkedAt: c!.linked_at,
     ritualTime: c?.ritual_time?.slice(0, 5) ?? "21:00",
     ritualProposal: c?.ritual_time_proposed
