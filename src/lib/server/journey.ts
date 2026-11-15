@@ -23,3 +23,20 @@ export function pathFor(step: Step, next?: string | null): string {
   if (next && next.startsWith("/") && !next.startsWith("//")) return next;
   return "/us";
 }
+
+/**
+ * Where to send someone right after they sign in. Admins go straight to the
+ * admin portal (no onboarding or partner needed) unless they asked for a
+ * specific page; everyone else follows their journey.
+ */
+export async function landingFor(userId: string, next?: string | null): Promise<string> {
+  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+  const { data } = await supabaseAdmin()
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", userId)
+    .maybeSingle();
+  if (data?.is_admin && (!safeNext || safeNext.startsWith("/admin") || safeNext === "/us"))
+    return safeNext?.startsWith("/admin") ? safeNext : "/admin";
+  return pathFor(await journeyStep(userId), safeNext);
+}

@@ -4,7 +4,7 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { supabaseServer } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { unsign } from "@/lib/server/crypto";
-import { journeyStep, pathFor } from "@/lib/server/journey";
+import { landingFor } from "@/lib/server/journey";
 import { audit } from "@/lib/server/api";
 
 /** Email links (PKCE code or token hash) and Google OAuth land here. */
@@ -47,6 +47,5 @@ export async function GET(req: NextRequest) {
   }
   await audit("login", user.id, { method: code ? "code" : "otp" });
 
-  const step = await journeyStep(user.id);
-  return NextResponse.redirect(new URL(pathFor(step, next), url.origin));
+  return NextResponse.redirect(new URL(await landingFor(user.id, next), url.origin));
 }

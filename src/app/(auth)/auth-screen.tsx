@@ -117,7 +117,13 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
           );
           return;
         }
-        window.location.assign(next ?? "/us");
+        // A temporary password goes to the change screen first (proxy), then on.
+        const land = await fetch(
+          `/api/me/landing${next ? `?next=${encodeURIComponent(next)}` : ""}`,
+        )
+          .then((r) => r.json())
+          .catch(() => ({ to: "/us" }));
+        window.location.assign(land.to ?? "/us");
         return;
       }
       if (await sendLink()) {

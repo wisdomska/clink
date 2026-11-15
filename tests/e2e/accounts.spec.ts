@@ -97,3 +97,33 @@ test("change email asks for confirmation", async ({ couple }) => {
   await a.getByRole("button", { name: "Send confirmation" }).click();
   await expect(a.getByText(/Check both inboxes/)).toBeVisible();
 });
+
+test("an admin signing in with a password lands on /admin", async ({ browser }) => {
+  const { makeUser } = await import("./helpers");
+  const boss = await makeUser("Boss");
+  await admin.from("profiles").update({ is_admin: true }).eq("id", boss.id);
+  await admin.auth.admin.updateUserById(boss.id, {
+    password: "Temporary-Admin-123",
+    app_metadata: { must_change_password: true },
+  });
+  const ctx = await browser.newContext();
+  const p = await ctx.newPage();
+  await p.goto("/login");
+  await p.getByLabel("Email").fill(boss.email);
+  await p.getByLabel(/Password/).fill("Temporary-Admin-123");
+  await p.getByRole("button", { name: "Sign in" }).click();
+  // Temporary password first, then straight into the admin portal.
+  await expect(p).toHaveURL(/\/account\/password\?forced=1/);
+  await p.getByLabel("New password").fill("Admin-Own-Password-1");
+  await p.getByLabel("Type it again").fill("Admin-Own-Password-1");
+  await p.getByRole("button", { name: "Save password" }).click();
+  await expect(p).toHaveURL(/\/admin$/);
+  // Next time, straight to /admin.
+  await ctx.clearCookies();
+  await p.goto("/login");
+  await p.getByLabel("Email").fill(boss.email);
+  await p.getByLabel(/Password/).fill("Admin-Own-Password-1");
+  await p.getByRole("button", { name: "Sign in" }).click();
+  await expect(p).toHaveURL(/\/admin$/);
+  await ctx.close();
+});
