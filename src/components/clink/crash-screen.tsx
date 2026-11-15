@@ -21,9 +21,7 @@ export function CrashScreen({
     return (
       <main className="an-screen mx-auto flex min-h-dvh max-w-[480px] flex-col justify-center gap-4 px-5">
         <WifiSlash size={44} className="text-warning" aria-hidden />
-        <h1 className="display m-0 text-[36px] leading-[1.05]">
-          You&apos;re <em>offline</em>.
-        </h1>
+        <h1 className="display m-0 text-[36px] leading-[1.05]">You&apos;re offline.</h1>
         <p className="text-muted m-0 text-base leading-normal">
           This screen needs a connection. It comes back by itself when you&apos;re online.
         </p>
@@ -39,9 +37,7 @@ export function CrashScreen({
   return (
     <main className="an-screen mx-auto flex min-h-dvh max-w-[480px] flex-col justify-center gap-4 px-5">
       <WarningCircle size={44} className="text-warning" aria-hidden />
-      <h1 className="display m-0 text-[36px] leading-[1.05]">
-        That didn&apos;t <em>load</em>.
-      </h1>
+      <h1 className="display m-0 text-[36px] leading-[1.05]">That didn&apos;t load.</h1>
       <p className="text-muted m-0 text-base leading-normal">
         Something broke on our side. Nothing you sent is lost. Try again, or reload Clink.
       </p>

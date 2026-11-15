@@ -2,6 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { sign, unsign } from "@/lib/server/crypto";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { ageVerifier, DECLARATION } from "@/lib/server/age-verification";
 import { deny, requireCouple, type CoupleCaller } from "@/lib/server/api";
 
 export const TIERS = ["Flirty", "Steamy", "Spicy", "Unhinged"] as const;
@@ -77,4 +78,21 @@ export async function bothAllowSaved(coupleId: string): Promise<boolean> {
     .eq("couple_id", coupleId)
     .is("left_at", null);
   return (data ?? []).length === 2 && (data ?? []).every((m) => m.allow_saved_spicy);
+}
+
+/**
+ * Unhinged needs a signed 18+ declaration. Picking it is the declaration (the
+ * screen says so), so record it on the spot instead of a separate step. The
+ * verifier still checks the date of birth given at sign-up.
+ */
+export async function ensureAdultFor(userId: string): Promise<void> {
+  const { data: priv } = await supabaseAdmin()
+    .from("user_private")
+    .select("age_verified_at")
+    .eq("user_id", userId)
+    .single();
+  if (priv?.age_verified_at) return;
+  const r = await ageVerifier().start(userId, { declaration: DECLARATION });
+  if (r.status !== "passed")
+    throw deny(403, r.reason ?? "needs_verification", "Unhinged is for adults only.");
 }

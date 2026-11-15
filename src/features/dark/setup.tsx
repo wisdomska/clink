@@ -50,7 +50,7 @@ export function DarkSetup() {
     const r = await fetch("/api/dark/setup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pin: first, tiers: tiers.filter((t) => t !== "Unhinged") }),
+      body: JSON.stringify({ pin: first, tiers }),
     });
     setBusy(false);
     if (!r.ok) return setError((await r.json()).message);
@@ -123,37 +123,32 @@ export function DarkSetup() {
             How far, <em>for now</em>?
           </Display>
           <Lead className="mt-2">
-            Pick what you&apos;re up for. A tier opens only when {partner.name} picks it too. You
-            can change this any time.
+            Tap how far you want to go. Everything up to it opens once {partner.name} picks it too.
+            Change it any time.
           </Lead>
           <div className="mt-6 flex flex-col gap-2" role="group" aria-label="Tiers">
             {TIERS.map((t, i) => {
               const on = tiers.includes(t);
-              const locked = t === "Unhinged";
               return (
                 <button
                   key={t}
                   type="button"
-                  disabled={locked}
                   aria-pressed={on}
-                  onClick={() =>
-                    setTiers(
-                      on
-                        ? TIERS.slice(0, i)
-                        : TIERS.slice(0, i + 1).filter((x) => x !== "Unhinged"),
-                    )
-                  }
+                  onClick={() => setTiers(TIERS.slice(0, Math.max(1, i + 1)))}
                   className="press rounded-card bg-s2 text-text flex min-h-16 cursor-pointer items-center justify-between gap-3 px-[18px] text-left disabled:cursor-default disabled:opacity-60"
                   style={{ border: on ? "2px solid var(--accent-dark)" : "1px solid var(--line)" }}
                 >
                   <span className="display text-[24px] tracking-normal">{t}</span>
-                  <span className="text-muted text-sm">
-                    {locked ? "Needs you both verified, later" : on ? "Yes" : "Not yet"}
-                  </span>
+                  <span className="text-muted text-sm">{on ? "Yes" : "Not yet"}</span>
                 </button>
               );
             })}
           </div>
+          {tiers.includes("Unhinged") && (
+            <p className="text-faint m-0 mt-3 text-sm">
+              Picking Unhinged confirms you&apos;re 18 or over.
+            </p>
+          )}
           <FieldError>{error}</FieldError>
           <div className="min-h-6 flex-1" />
           <Button className="bg-ember" loading={busy} onClick={finish}>

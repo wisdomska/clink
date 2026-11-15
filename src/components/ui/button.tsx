@@ -16,9 +16,10 @@ type Size = "xl" | "lg" | "md" | "sm" | "xs";
 const variants: Record<Variant, string> = {
   primary:
     "bg-accent text-on-accent font-bold border-0 hover:shadow-[inset_0_0_0_99px_var(--press-glow)]",
-  secondary: "bg-s2 text-text border border-line font-medium",
-  ghost: "bg-transparent text-text border border-line font-medium",
-  outline: "bg-transparent text-text border border-line font-medium",
+  secondary: "bg-s2 text-text border border-line font-semibold hover:bg-s3",
+  ghost:
+    "bg-transparent text-text border border-line font-medium hover:border-line-strong hover:bg-s1",
+  outline: "bg-transparent text-text border border-line font-medium hover:border-line-strong",
   text: "bg-transparent text-text border-0 font-medium",
   "accent-text": "bg-transparent text-accent border-0 font-bold",
   danger:

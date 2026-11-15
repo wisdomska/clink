@@ -86,7 +86,6 @@ export function Rail({ unread = 0 }: { unread?: number }) {
       <Link
         href="/us"
         className="display rail-word text-text hover:text-text mb-8 px-3 text-[30px]"
-        aria-label="Clink, Us"
       >
         <span className="rail-full">
           <Logo size={28} />

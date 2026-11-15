@@ -88,15 +88,13 @@ export function Roulette() {
       <IconButton label="Back" onClick={() => router.push("/plans")}>
         <ArrowLeft size={20} />
       </IconButton>
-      <Display size={48}>
-        Date <em>roulette</em>
-      </Display>
+      <Display size={48}>Date roulette</Display>
       <div className="relative flex items-center gap-4">
         <motion.img
           src="/art/slot.webp"
           alt=""
           aria-hidden
-          className="h-20 w-20 flex-none object-contain drop-shadow-[0_10px_14px_rgba(0,0,0,.45)]"
+          className="h-16 w-16 flex-none object-contain"
           animate={
             phase === "spinning" ? { rotate: [0, -8, 8, -6, 6, 0], y: [0, -3, 0] } : { rotate: 0 }
           }
@@ -110,36 +108,38 @@ export function Roulette() {
       </div>
       <div
         role="status"
-        className="rounded-card relative flex-none overflow-hidden border border-[var(--line)]"
-        style={{
-          height: ROW * VISIBLE,
-          perspective: 700,
-          background:
-            "radial-gradient(90% 60% at 50% 50%, color-mix(in oklab, var(--accent) 14%, transparent), transparent 70%), linear-gradient(var(--surface-1), var(--surface-2) 50%, var(--surface-1))",
-        }}
+        className="rounded-card border-line bg-s1 relative flex-none overflow-hidden border"
+        style={{ height: ROW * VISIBLE, perspective: 700 }}
         aria-live="polite"
         aria-label={
           phase === "result" && pick ? `Tonight's pick: ${pick.title}` : "Date roulette reel"
         }
       >
-        {/* The pick sits on a soft glowing band, not between lines. */}
+        {/* The selection window: two hairlines and an accent tick, like a classic picker. */}
         <motion.div
           aria-hidden
-          className="absolute inset-x-3 rounded-2xl"
-          style={{
-            top: centre * ROW + 4,
-            height: ROW - 8,
-            background: "color-mix(in oklab, var(--accent) 16%, transparent)",
-            boxShadow: "0 0 40px -6px color-mix(in oklab, var(--accent) 55%, transparent)",
-          }}
-          animate={phase === "result" ? { scale: [1, 1.04, 1] } : { scale: 1 }}
-          transition={{ duration: 0.45 }}
-        />
+          className="border-line-strong bg-s2 absolute inset-x-0 border-y"
+          style={{ top: centre * ROW, height: ROW }}
+          animate={phase === "result" ? { backgroundColor: "var(--surface-3)" } : {}}
+          transition={{ duration: 0.3 }}
+        >
+          <span className="bg-accent absolute top-1/2 left-0 h-8 w-1 -translate-y-1/2 rounded-r-full" />
+        </motion.div>
         <div className="absolute inset-0" style={{ transformStyle: "preserve-3d" }}>
           {reel.map((k, i) => (
             <ReelRow key={i} i={i} y={y} title={k.title} />
           ))}
         </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-24"
+          style={{ background: "linear-gradient(var(--surface-1), transparent)" }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-24"
+          style={{ background: "linear-gradient(transparent, var(--surface-1))" }}
+        />
         {phase === "result" && !reduced && (
           <div key={burst} className="pointer-events-none absolute inset-0">
             <Confetti count={28} seed={burst} />
@@ -147,8 +147,8 @@ export function Roulette() {
         )}
       </div>
       {phase === "result" && pick && (
-        <div className="an-reveal rounded-card bg-s2 flex flex-col gap-2.5 p-[18px]">
-          <div className="mono text-muted text-xs">TONIGHT&apos;S PICK</div>
+        <div className="an-reveal rounded-card border-line bg-s1 flex flex-col gap-2.5 border p-[18px]">
+          <div className="text-muted text-sm font-medium">Tonight&apos;s pick</div>
           <div className="display text-[36px] leading-none">{pick.title}</div>
           <div className="text-muted text-sm">{pick.blurb}</div>
           <div className="flex flex-wrap gap-2">

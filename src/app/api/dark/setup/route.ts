@@ -2,7 +2,7 @@ import { z } from "zod";
 import { handler, ok, parseJson, requireCouple, rateLimit, audit } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { hashPin } from "@/lib/server/pin";
-import { setDarkSession } from "@/lib/server/dark";
+import { setDarkSession, ensureAdultFor } from "@/lib/server/dark";
 import { notify } from "@/lib/server/push";
 
 const schema = z.object({
@@ -13,18 +13,14 @@ const schema = z.object({
     .default(["Flirty"]),
 });
 
-/** Flow 10.3 steps 1-3: set an After Dark PIN and opt into tiers (Unhinged waits for age verification). */
+/** Flow 10.3 steps 1-3: set an After Dark PIN and opt into tiers (picking Unhinged records the 18+ declaration). */
 export const POST = handler(async (req) => {
   const { user, coupleId, partnerId } = await requireCouple();
   await rateLimit(`dark-setup:${user.id}`, 10, 3600);
   const body = await parseJson(req, schema);
   const admin = supabaseAdmin();
-  const { data: priv } = await admin
-    .from("user_private")
-    .select("age_verified_at")
-    .eq("user_id", user.id)
-    .single();
-  const tiers = body.tiers.filter((t) => t !== "Unhinged" || Boolean(priv?.age_verified_at));
+  if (body.tiers.includes("Unhinged")) await ensureAdultFor(user.id);
+  const tiers = body.tiers;
   const { data: existing } = await admin
     .from("dark_settings")
     .select("opted_in_at")

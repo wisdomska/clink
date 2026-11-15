@@ -73,7 +73,7 @@ export function EmojiPicker({
   return (
     <div className="flex flex-col gap-2" role="group" aria-label={label}>
       <div className="flex items-center gap-2">
-        <label className="rounded-input bg-s2 flex h-11 min-w-0 flex-1 items-center gap-2 px-3 focus-within:shadow-[0_0_0_2px_var(--accent)]">
+        <label className="rounded-input bg-s2 focus-within:border-accent flex h-11 min-w-0 flex-1 items-center gap-2 border border-transparent px-3">
           <MagnifyingGlass size={18} className="text-faint flex-none" aria-hidden />
           <input
             aria-label="Search emoji"

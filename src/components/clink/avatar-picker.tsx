@@ -37,14 +37,15 @@ export function AvatarPicker({
                 setTone(t);
                 if (current) onChange(poseKey(current.g, current.pose, t));
               }}
-              className={cn(
-                "h-8 w-8 cursor-pointer rounded-full border-0 p-0 transition-transform",
-                tone === t
-                  ? "scale-110 shadow-[0_0_0_3px_var(--surface-1),0_0_0_5px_var(--accent)]"
-                  : "",
-              )}
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-0 p-0"
               style={{ background: colour }}
-            />
+            >
+              {tone === t && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-black/45 text-white">
+                  <Check size={12} weight="bold" aria-hidden />
+                </span>
+              )}
+            </button>
           ))}
         </div>
         <div className="bg-s2 flex rounded-full p-1" role="radiogroup" aria-label="Avatar style">

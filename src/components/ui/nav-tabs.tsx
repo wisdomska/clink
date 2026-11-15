@@ -90,7 +90,7 @@ export function NavTabs<T extends string>({
             {on && (
               <motion.span
                 layoutId={`navtab-${label}`}
-                className="bg-accent absolute inset-0 rounded-full shadow-[0_6px_20px_-6px_var(--accent)]"
+                className="bg-accent absolute inset-0 rounded-full"
                 transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 aria-hidden
               />

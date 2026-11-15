@@ -9,7 +9,7 @@ const scale = {
   22: "text-[22px]",
 } as const;
 
-/** Cabinet Grotesk 800, -2% tracking, 1.05 line height. Use <em> for emphasis. */
+/** Cabinet Grotesk 800, -2% tracking, 1.05 line height. */
 export function Display({
   as: Tag = "h1",
   size = 36,

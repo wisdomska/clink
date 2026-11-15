@@ -2,9 +2,9 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Fingerprint, Check } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowRight, Fingerprint, Check, ShieldCheck } from "@phosphor-icons/react";
 import { BrandLogo } from "@/components/clink/brand-logo";
-import { AuthHero } from "@/components/clink/auth-hero";
+import { AuthPoster } from "@/components/clink/auth-poster";
 import { motion } from "motion/react";
 import { cn } from "@/components/ui/cn";
 
@@ -225,19 +225,11 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
           variants={{ show: { transition: { staggerChildren: 0.06, delayChildren: 0.15 } } }}
         >
           <motion.div variants={ITEM} className="mt-4 lg:hidden">
-            <AuthHero mode={mode} />
+            <AuthPoster compact />
           </motion.div>
           <motion.div variants={ITEM}>
-            <Display size={36} className="mt-4">
-              {mode === "signup" ? (
-                <>
-                  Make your <em>account</em>
-                </>
-              ) : (
-                <>
-                  Welcome <em>back</em>
-                </>
-              )}
+            <Display size={48} className="mt-6 lg:mt-2">
+              {mode === "signup" ? <>Make your account</> : <>Welcome back</>}
             </Display>
             <Lead className="mt-2">
               {mode === "signup"
@@ -345,9 +337,34 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
           )}
           <FieldError>{formError}</FieldError>
           <div className="min-h-6 flex-1 lg:min-h-0 lg:flex-none" />
-          <Button type="submit" loading={busy} className="mt-6 flex-none">
+          <Button type="submit" loading={busy} className="group mt-6 flex-none">
             {mode === "login" && password ? "Sign in" : "Continue"}
+            <ArrowRight
+              size={18}
+              weight="bold"
+              aria-hidden
+              className="transition-transform duration-200 group-hover:translate-x-1"
+            />
           </Button>
+          <p className="text-faint m-0 mt-4 flex items-start justify-center gap-1.5 text-center text-xs leading-relaxed">
+            <ShieldCheck
+              size={14}
+              weight="fill"
+              className="text-accent mt-0.5 flex-none"
+              aria-hidden
+            />
+            <span>
+              By continuing you agree to our{" "}
+              <Link href="/terms" className="text-muted underline underline-offset-2">
+                Terms
+              </Link>{" "}
+              and{" "}
+              <Link href="/privacy" className="text-muted underline underline-offset-2">
+                Privacy policy
+              </Link>
+              .
+            </span>
+          </p>
         </motion.form>
       )}
 
@@ -373,7 +390,7 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
               </motion.span>
             </div>
             <Display size={36} className="mt-2">
-              Check your <em>inbox</em>
+              Check your inbox
             </Display>
             <Lead>We sent a link to {email}. Tap it on this device and you&apos;re in.</Lead>
           </div>
@@ -413,7 +430,7 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
               18+
             </div>
             <Display size={36} className="mt-2">
-              Clink is for <em>adults</em>.
+              Clink is for adults.
             </Display>
             <Lead>Come back when you&apos;re 18. You can&apos;t try again for 24 hours.</Lead>
           </div>

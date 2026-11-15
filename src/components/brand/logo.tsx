@@ -14,11 +14,14 @@ export function LogoMark({
   animate = true,
   className,
   title = "Clink",
+  decorative = false,
 }: {
   size?: number;
   animate?: boolean;
   className?: string;
   title?: string;
+  /** Hide from screen readers when a wordmark next to it already says "Clink". */
+  decorative?: boolean;
 }) {
   const id = useId().replace(/:/g, "");
   const reduced = useReducedMotion();
@@ -43,8 +46,9 @@ export function LogoMark({
       viewBox={MARK.viewBox}
       width={(size * 64) / 80}
       height={size}
-      role="img"
-      aria-label={title}
+      role={decorative ? undefined : "img"}
+      aria-label={decorative ? undefined : title}
+      aria-hidden={decorative || undefined}
       className={cn("overflow-visible", className)}
       onHoverStart={() => live && setN((v) => v + 1)}
       onTap={() => live && setN((v) => v + 1)}
@@ -146,7 +150,7 @@ export function Wordmark({ size = 30, className }: { size?: number; className?: 
 export function Logo({ size = 32, className }: { size?: number; className?: string }) {
   return (
     <span className={cn("inline-flex items-center gap-2", className)}>
-      <LogoMark size={size * 1.25} />
+      <LogoMark size={size * 1.25} decorative />
       <Wordmark size={size} />
     </span>
   );

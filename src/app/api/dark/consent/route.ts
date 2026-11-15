@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { handler, ok, parseJson, deny, rateLimit, audit } from "@/lib/server/api";
+import { handler, ok, parseJson, rateLimit, audit } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { requireDark, effectiveRank, TIERS } from "@/lib/server/dark";
+import { requireDark, effectiveRank, ensureAdultFor, TIERS } from "@/lib/server/dark";
 import { track } from "@/lib/server/analytics";
 
 /**
- * POST /api/dark/consent: PIN verified in session; Unhinged requires
- * age_verified_at. Lowering is always allowed, with no notice beyond
+ * POST /api/dark/consent: PIN verified in session. Picking Unhinged records
+ * the 18+ declaration in the same step. Lowering is always allowed, with no notice beyond
  * "After Dark settings changed".
  */
 export const POST = handler(async (req) => {
@@ -14,15 +14,7 @@ export const POST = handler(async (req) => {
   await rateLimit(`dark-consent:${d.user.id}`, 30, 3600);
   const { tiers } = await parseJson(req, z.object({ tiers: z.array(z.enum(TIERS)).max(4) }));
   const admin = supabaseAdmin();
-  if (tiers.includes("Unhinged")) {
-    const { data: priv } = await admin
-      .from("user_private")
-      .select("age_verified_at")
-      .eq("user_id", d.user.id)
-      .single();
-    if (!priv?.age_verified_at)
-      throw deny(403, "needs_verification", "Unhinged needs you both verified first.");
-  }
+  if (tiers.includes("Unhinged")) await ensureAdultFor(d.user.id);
   const before = d.rank;
   await admin
     .from("dark_settings")

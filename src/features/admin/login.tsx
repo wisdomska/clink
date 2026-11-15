@@ -1,30 +1,49 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { Eye, EyeSlash, LockKey, ShieldCheck, Warning, ArrowRight } from "@phosphor-icons/react";
+import {
+  Eye,
+  EyeSlash,
+  LockKey,
+  ShieldCheck,
+  Warning,
+  ArrowRight,
+  ChartLineUp,
+  Flag,
+  Database,
+} from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input, Label, FieldError } from "@/components/ui/field";
 import { feedback } from "@/lib/feedback";
 import { cn } from "@/components/ui/cn";
-import { Logo } from "@/components/brand/logo";
+import { BrandPoster, type Moment } from "@/components/brand/poster";
 
 const REMEMBER = "clink.adminEmail";
 
-const POINTS = [
+const MOMENTS: Moment[] = [
   {
-    art: "admin-bar-chart",
-    title: "Live health",
-    text: "Sign-ups, activity and free-tier usage at a glance.",
+    icon: <ChartLineUp size={22} weight="fill" />,
+    tone: "#FFD08A",
+    title: "Sign-ups up 18% this week",
+    meta: "Dashboard · live health",
   },
   {
-    art: "admin-shield",
-    title: "Safety first",
-    text: "Reports, suspensions and audited actions in one place.",
+    icon: <Flag size={22} weight="fill" />,
+    tone: "#FF4F7B",
+    title: "2 reports waiting",
+    meta: "Reports · oldest 3 h ago",
   },
   {
-    art: "admin-locked-with-key",
-    title: "Separate sign-in",
-    text: "This login never opens the Clink app, and the app never opens this.",
+    icon: <ShieldCheck size={22} weight="fill" />,
+    tone: "#B9A4FF",
+    title: "Every look is logged",
+    meta: "Audit log · reasons required",
+  },
+  {
+    icon: <Database size={22} weight="fill" />,
+    tone: "#FF8A7A",
+    title: "Storage at 41% of free tier",
+    meta: "Usage · no action needed",
   },
 ];
 
@@ -58,47 +77,36 @@ export function AdminLogin({ next }: { next: string }) {
   }, []);
 
   return (
-    <main className="grid min-h-dvh lg:grid-cols-[1.1fr_1fr]">
+    <main className="bg-app grid min-h-dvh lg:grid-cols-[minmax(0,1.08fr)_minmax(0,1fr)]">
       {/* Brand side (desktop) */}
-      <section
-        aria-hidden
-        className="relative hidden overflow-hidden p-12 lg:flex lg:flex-col lg:justify-between"
-        style={{
-          background:
-            "radial-gradient(80% 60% at 15% 10%, color-mix(in oklab, var(--accent) 35%, transparent), transparent 60%), radial-gradient(70% 60% at 90% 90%, color-mix(in oklab, var(--partner-b) 25%, transparent), transparent 60%), var(--surface-1)",
-        }}
-      >
-        <div className="flex items-end gap-3">
-          <Logo size={34} />
-          <span className="mono text-faint mb-1.5 text-xs tracking-[0.2em]">ADMIN</span>
+      <aside className="relative hidden p-3 lg:block">
+        <div className="sticky top-3 h-[calc(100dvh-24px)]">
+          <BrandPoster
+            eyebrow="ADMIN"
+            moments={MOMENTS}
+            headline={
+              <>
+                Look after every
+                <br />
+                couple.
+              </>
+            }
+            sub="Health, safety and settings for Clink. Separate from the app, and every action lands in the audit log."
+            chips={["Separate sign-in", "Audited access", "After Dark never shown"]}
+          />
         </div>
-        <div className="flex flex-col gap-5">
-          {POINTS.map((p, i) => (
-            <motion.div
-              key={p.title}
-              initial={{ opacity: 0.01, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 + i * 0.1, type: "spring", stiffness: 260, damping: 26 }}
-              className="flex items-center gap-4"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`/art/${p.art}.webp`}
-                alt=""
-                className="h-16 w-16 object-contain drop-shadow-[0_10px_14px_rgba(0,0,0,.4)]"
-              />
-              <div>
-                <div className="text-lg font-bold">{p.title}</div>
-                <div className="text-muted max-w-[34ch] text-sm">{p.text}</div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-        <div className="text-faint text-xs">Every admin action is written to the audit log.</div>
-      </section>
+      </aside>
 
       {/* Form */}
-      <div className="flex items-center justify-center px-5 py-10">
+      <div className="flex flex-col items-center justify-center gap-6 px-5 py-6 lg:py-10">
+        <div className="w-full max-w-[400px] lg:hidden">
+          <BrandPoster
+            compact
+            eyebrow="ADMIN"
+            moments={MOMENTS}
+            headline={<>Look after every couple.</>}
+          />
+        </div>
         <motion.form
           key={shake}
           initial={shake ? { x: 0 } : { opacity: 0.01, y: 16 }}
@@ -138,13 +146,8 @@ export function AdminLogin({ next }: { next: string }) {
             );
           }}
         >
-          <div className="flex flex-col gap-3">
-            <span className="bg-accent/15 text-accent flex h-14 w-14 items-center justify-center rounded-2xl">
-              <ShieldCheck size={30} weight="duotone" aria-hidden />
-            </span>
-            <h1 className="display m-0 text-[34px] leading-[1.05]">
-              Admin <em>sign in</em>
-            </h1>
+          <div className="flex flex-col gap-2">
+            <h1 className="display m-0 text-[40px] leading-[1.05]">Admin sign in</h1>
             <p className="text-muted m-0 text-sm">
               Separate from your Clink account. Signing in here doesn&apos;t sign you into the app.
             </p>
