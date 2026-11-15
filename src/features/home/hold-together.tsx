@@ -72,7 +72,7 @@ export function HoldTogether() {
       });
       toast(`Held together for ${n} s`);
     } else {
-      toast(`${partner.name} wasn't holding. Try again together.`);
+      toast.err(`${partner.name} wasn't holding. Try again together.`);
     }
   }
 

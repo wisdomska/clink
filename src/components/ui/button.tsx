@@ -1,4 +1,4 @@
-import { forwardRef, type ButtonHTMLAttributes } from "react";
+import { forwardRef, type ButtonHTMLAttributes, type MouseEvent } from "react";
 import { cn } from "./cn";
 
 type Variant =
@@ -13,13 +13,15 @@ type Variant =
 type Size = "xl" | "lg" | "md" | "sm" | "xs";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-accent text-on-accent font-bold border-0",
+  primary:
+    "bg-accent text-on-accent font-bold border-0 hover:shadow-[inset_0_0_0_99px_var(--press-glow)]",
   secondary: "bg-s2 text-text border border-line font-medium",
   ghost: "bg-transparent text-text border border-line font-medium",
   outline: "bg-transparent text-text border border-line font-medium",
   text: "bg-transparent text-text border-0 font-medium",
   "accent-text": "bg-transparent text-accent border-0 font-bold",
-  danger: "bg-danger text-on-accent border-0 font-bold",
+  danger:
+    "bg-danger text-on-accent border-0 font-bold hover:shadow-[inset_0_0_0_99px_var(--press-glow)]",
   "danger-outline": "bg-transparent text-danger border-[1.5px] border-danger font-bold",
 };
 
@@ -36,25 +38,59 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   size?: Size;
   block?: boolean;
+  /** Shows a spinner, sets aria-busy and ignores further taps. */
+  loading?: boolean;
+  /** Looks disabled but stays focusable and clickable, so onClick can explain why. */
+  softDisabled?: boolean;
+}
+
+function Spinner() {
+  return (
+    <span
+      aria-hidden
+      className="inline-block h-4 w-4 rounded-full border-2 border-current border-t-transparent motion-safe:animate-spin"
+    />
+  );
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = "primary", size = "xl", block, className, type = "button", ...rest },
+  {
+    variant = "primary",
+    size = "xl",
+    block,
+    className,
+    type = "button",
+    loading,
+    softDisabled,
+    onClick,
+    children,
+    ...rest
+  },
   ref,
 ) {
+  const inert = loading || softDisabled;
   return (
     <button
       ref={ref}
       type={type}
+      aria-busy={loading || undefined}
+      aria-disabled={inert || undefined}
+      onClick={(e: MouseEvent<HTMLButtonElement>) => {
+        if (loading) return e.preventDefault();
+        onClick?.(e);
+      }}
       className={cn(
-        "press inline-flex cursor-pointer items-center justify-center gap-2 rounded-full whitespace-nowrap select-none disabled:cursor-not-allowed disabled:opacity-50",
+        "press inline-flex cursor-pointer items-center justify-center gap-2 rounded-full whitespace-nowrap transition-shadow duration-200 select-none disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50",
         variants[variant],
         sizes[size],
         block && "w-full",
         className,
       )}
       {...rest}
-    />
+    >
+      {loading && <Spinner />}
+      {children}
+    </button>
   );
 });
 
@@ -77,7 +113,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       title={label}
       style={{ width: dim, height: dim, ...style }}
       className={cn(
-        "press flex flex-none cursor-pointer items-center justify-center rounded-full",
+        "press-icon flex flex-none cursor-pointer items-center justify-center rounded-full transition-[transform,background-color,border-color] duration-150",
         tone === "outline" && "border-line text-text border bg-transparent",
         tone === "surface" && "border-line bg-s1 text-text border",
         tone === "accent" && "bg-accent text-on-accent border-0",

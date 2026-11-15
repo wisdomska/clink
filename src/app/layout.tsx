@@ -6,6 +6,7 @@ import { IDENTITIES, IDENTITY_COOKIE, asIdentity } from "@/lib/app-identity";
 import { Toaster } from "@/components/ui/toast";
 import { ServiceWorker } from "@/components/clink/sw-register";
 import { Hydrated } from "@/components/clink/hydrated";
+import { FeedbackRoot } from "@/components/clink/feedback-root";
 import "@/styles/globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -47,7 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <body>
-        {children}
+        <FeedbackRoot>{children}</FeedbackRoot>
         <Toaster />
         <ServiceWorker />
         <Hydrated />

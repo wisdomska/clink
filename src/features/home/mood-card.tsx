@@ -45,7 +45,7 @@ export function MoodCard() {
       .insert({ couple_id: coupleId, user_id: me.id, mood, note: note.trim() || null });
     if (error) {
       setPicked(null);
-      toast("Couldn't send that. Try again.");
+      toast.err("Couldn't send that. Try again.");
       return;
     }
     send("mood.set", {});

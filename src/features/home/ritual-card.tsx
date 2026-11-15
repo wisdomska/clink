@@ -57,7 +57,7 @@ export function RitualCard() {
       prompt_id: data.prompt.id,
       answer: text.trim(),
     });
-    if (error) return toast("Couldn't save that. Try again.");
+    if (error) return toast.err("Couldn't save that. Try again.");
     setOpen(false);
     send("ritual.answered", {});
     void qc.invalidateQueries({ queryKey: ["ritual", coupleId, day] });

@@ -1,4 +1,5 @@
 "use client";
+import { haptic } from "@/lib/feedback";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -66,13 +67,13 @@ export function DareWheel() {
       );
     } catch (e) {
       setPhase("idle");
-      toast(e instanceof Error ? e.message : "The wheel stuck.");
+      toast.err(e instanceof Error ? e.message : "The wheel stuck.");
     }
   }
 
   function struck() {
     setPhase("struck");
-    navigator.vibrate?.(60);
+    haptic("heavy");
   }
 
   async function outcome(o: "done" | "passed" | "respun") {

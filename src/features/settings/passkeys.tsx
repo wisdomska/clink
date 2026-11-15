@@ -23,14 +23,14 @@ export function PasskeyRows() {
 
   const add = async () => {
     const { error } = await supabaseBrowser().auth.registerPasskey();
-    if (error) return toast("Passkey not added. Try again on this device.");
+    if (error) return toast.err("Passkey not added. Try again on this device.");
     toast("Passkey added. Sign in with your face or fingerprint next time.");
     qc.invalidateQueries({ queryKey: ["passkeys"] });
   };
 
   const remove = async (id: string) => {
     const { error } = await supabaseBrowser().auth.passkey.delete({ passkeyId: id });
-    if (error) return toast("Couldn't remove that passkey.");
+    if (error) return toast.err("Couldn't remove that passkey.");
     toast("Passkey removed.");
     qc.invalidateQueries({ queryKey: ["passkeys"] });
   };

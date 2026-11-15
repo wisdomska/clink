@@ -50,7 +50,7 @@ export function AdminUsers() {
       toast("Done. Logged in the audit trail.");
       void qc.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (e) {
-      toast(e instanceof Error ? e.message : "Failed.");
+      toast.err(e instanceof Error ? e.message : "Failed.");
     }
   }
 

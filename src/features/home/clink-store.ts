@@ -15,10 +15,5 @@ export const useClinkStore = create<ClinkState>((set) => ({
   setPartnerHolding: (partnerHolding) => set({ partnerHolding }),
 }));
 
-export function vibrate(pattern: number | number[]) {
-  try {
-    navigator.vibrate?.(pattern);
-  } catch {
-    /* iOS: visual pulse only */
-  }
-}
+/** Kept for existing callers; goes through the shared, reduced-motion-aware helper. */
+export { haptic as vibrate } from "@/lib/feedback";

@@ -1,4 +1,5 @@
 "use client";
+import { haptic } from "@/lib/feedback";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -302,7 +303,7 @@ export function ChatScreen() {
         return n;
       });
     } catch (e) {
-      toast(e instanceof Error ? e.message : "That didn't send.");
+      toast.err(e instanceof Error ? e.message : "That didn't send.");
       setPendingMedia((p) => ({ ...p, [clientId]: { ...local, local: "failed" } }));
     }
   }
@@ -315,7 +316,7 @@ export function ChatScreen() {
       recorder.current = r;
       setRecording(true);
       setRecSecs(0);
-      navigator.vibrate?.(20);
+      haptic("select");
     } catch {
       toast("Clink needs your microphone for voice notes.");
     }
@@ -346,7 +347,7 @@ export function ChatScreen() {
       });
       await enqueue({ type: "voice", mediaIds: [up.id] });
     } catch (e) {
-      toast(e instanceof Error ? e.message : "That voice note didn't send.");
+      toast.err(e instanceof Error ? e.message : "That voice note didn't send.");
     }
   }
 

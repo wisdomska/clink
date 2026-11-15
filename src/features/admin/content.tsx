@@ -104,7 +104,7 @@ export function AdminContent() {
       );
       void qc.invalidateQueries({ queryKey: key });
     } catch (e) {
-      toast(e instanceof Error ? e.message : "Couldn't add.");
+      toast.err(e instanceof Error ? e.message : "Couldn't add.");
     }
   }
 
@@ -164,7 +164,7 @@ export function AdminContent() {
                     await patch(r, { [field]: v });
                     toast("Saved.");
                   } catch (e) {
-                    toast(e instanceof Error ? e.message : "Couldn't save.");
+                    toast.err(e instanceof Error ? e.message : "Couldn't save.");
                   }
                 }
               }}

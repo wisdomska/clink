@@ -336,7 +336,7 @@ export function StoryRoom({ game }: { game: GameRow }) {
       {!s.ended && (
         <button
           type="button"
-          onClick={() => exportCard().catch(() => toast("Couldn't make the image."))}
+          onClick={() => exportCard().catch(() => toast.err("Couldn't make the image."))}
           className="text-accent cursor-pointer self-center bg-transparent text-sm font-medium"
         >
           Save the story so far as an image

@@ -115,8 +115,11 @@
   .press {
     transition: var(--press);
   }
-  .press:active {
+  .press:active:not(:disabled, [aria-disabled="true"]) {
     transform: scale(0.97);
+  }
+  .press-icon:active:not(:disabled, [aria-disabled="true"]) {
+    transform: scale(0.92);
   }
   /* Diagonal placeholder stripe used for media slots */
   .stripe {
@@ -233,13 +236,59 @@
   .an-typing {
     animation: dots 1s ease-in-out infinite;
   }
+  /* Skeletons wait 300 ms (fast loads never flash), then fade in with a shimmer sweep. */
   .an-skel {
-    animation: skel 1.2s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 200ms ease 300ms both;
+  }
+  .an-skel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(244, 240, 245, 0.06), transparent);
+    animation: shimmer 1.4s linear infinite;
+  }
+  /* Sheets and dialogs leave the way they came (Radix waits for animationend). */
+  .an-sheet[data-state="closed"] {
+    animation: sheetDown 180ms var(--ease-out) forwards;
+  }
+  .an-fade[data-state="closed"] {
+    animation: fadeOut 160ms var(--ease-out) forwards;
+  }
+  .haptic-shake {
+    animation: hapticShake 90ms ease-in-out 2;
+  }
+  .an-pop {
+    animation: popIn 320ms var(--ease-pop) both;
+  }
+  .an-shake-a {
+    animation: shakeA 360ms var(--ease-in-out);
+  }
+  .an-shake-b {
+    animation: shakeB 360ms var(--ease-in-out);
   }
   /* Staggered rise: set --i on the element. */
   .an-rise {
     animation: rise 280ms var(--ease-out) calc(var(--i, 0) * 40ms) both;
   }
+}
+
+@media (min-width: 768px) {
+  .an-sheet[data-state="closed"] {
+    animation: modalOut 150ms var(--ease-out) forwards;
+  }
+}
+
+/* In-app "Reduce motion" (Settings) collapses every animation and transition. */
+:root[data-motion="reduce"] *,
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  animation-duration: 1ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -274,7 +323,7 @@
   .an-pulse,
   .an-dot,
   .an-typing,
-  .an-skel {
+  .an-skel::after {
     animation: none;
   }
   .an-ripple {
@@ -283,8 +332,68 @@
   .an-float {
     animation: fadeOut 1200ms ease both;
   }
-  .press:active {
-    transform: none;
+  .an-pop,
+  .an-shake-a,
+  .an-shake-b,
+  .haptic-shake {
+    animation: fadeIn 160ms ease both;
+  }
+  .press:active,
+  .press-icon:active {
+    transform: none !important;
+  }
+}
+
+/*
+ * Form base layer: accent caret, a soft focus glow instead of a second ring,
+ * autofill that keeps the dark theme, no native number spinners or search clears.
+ */
+@layer base {
+  :where(input, textarea, select) {
+    caret-color: var(--accent);
+  }
+  :where(
+    input:not([type="checkbox"], [type="radio"], [type="range"]),
+    textarea,
+    select
+  ):focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  :where(input, textarea, select):-webkit-autofill {
+    -webkit-text-fill-color: var(--text);
+    caret-color: var(--accent);
+    transition:
+      background-color 600000s 0s,
+      color 600000s 0s;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+  :where(h1, h2, h3) {
+    overflow-wrap: break-word;
+    font-synthesis: none;
+  }
+  html {
+    scrollbar-color: var(--line-strong) transparent;
+  }
+  /* iPhone: inputs under 16 px make Safari zoom in on focus. */
+  @media (pointer: coarse) {
+    :where(input, textarea, select) {
+      font-size: max(16px, 1em);
+    }
+  }
+  /* No callout menu or text selection on long-press of controls (hold together, reactions). */
+  :where(button, [role="button"]) {
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
   }
 }
 

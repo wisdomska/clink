@@ -72,7 +72,7 @@ export async function sendMove(id: string, move: Record<string, unknown>) {
   });
   const d = await r.json();
   if (!r.ok) {
-    toast(d.message ?? "That move didn't go through.");
+    toast.err(d.message ?? "That move didn't go through.");
     return null;
   }
   return d as { correct?: boolean; finished?: boolean };

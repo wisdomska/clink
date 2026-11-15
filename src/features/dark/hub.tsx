@@ -346,7 +346,7 @@ export function VerifySheet({
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ declaration: data?.declaration }),
             });
-            if (!r.ok) return toast((await r.json()).message);
+            if (!r.ok) return toast.err((await r.json()).message);
             onOpenChange(false);
             toast(
               partnerVerified

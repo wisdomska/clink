@@ -153,7 +153,7 @@ export function Onboarding({
       setPhoto(url);
       toast("Looking good.");
     } catch (e) {
-      toast(e instanceof Error ? e.message : "That photo didn't upload.");
+      toast.err(e instanceof Error ? e.message : "That photo didn't upload.");
     } finally {
       setBusy(false);
     }

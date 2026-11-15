@@ -1,4 +1,5 @@
 "use client";
+import { haptic } from "@/lib/feedback";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -35,7 +36,7 @@ export function PlansHub() {
   async function tear() {
     if (!next) return;
     setTorn(true);
-    navigator.vibrate?.(40);
+    haptic("heavy");
     const r = await fetch(`/api/dates/${next.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -43,7 +44,7 @@ export function PlansHub() {
     });
     if (!r.ok) {
       setTorn(false);
-      return toast("Couldn't tear it. Try again.");
+      return toast.err("Couldn't tear it. Try again.");
     }
     toast("Torn off. Added to your timeline.");
     setTimeout(() => {

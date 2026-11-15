@@ -119,7 +119,7 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
       provider: "google",
       options: { redirectTo: callback() },
     });
-    if (error) toast("Google sign-in isn't available right now.");
+    if (error) toast.err("Google sign-in isn't available right now.");
   }
 
   async function passkey() {

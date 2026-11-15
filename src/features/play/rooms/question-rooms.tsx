@@ -107,7 +107,7 @@ export function KnowMeRoom({ game }: { game: GameRow }) {
             onClick={async () => {
               const id = await startGame("know_me", {
                 subject: s.guesser === me.id ? "me" : "partner",
-              }).catch((e: Error) => toast(e.message));
+              }).catch((e: Error) => toast.err(e.message));
               if (id) router.push(`/play/know_me/${id}`);
             }}
           >

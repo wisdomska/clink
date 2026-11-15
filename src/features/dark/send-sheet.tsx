@@ -89,7 +89,9 @@ export function SendSheet({
       .FaceDetector;
     if (!FD || !canvas.current) {
       setBrush(true);
-      toast("Auto face blur isn't available on this browser. Paint over anything you want hidden.");
+      toast.err(
+        "Auto face blur isn't available on this browser. Paint over anything you want hidden.",
+      );
       return;
     }
     const faces = await new FD({ fastMode: false, maxDetectedFaces: 5 }).detect(canvas.current);
@@ -148,7 +150,7 @@ export function SendSheet({
       onSent?.();
       onClose();
     } catch (e) {
-      toast(e instanceof Error ? e.message : "That didn't send.");
+      toast.err(e instanceof Error ? e.message : "That didn't send.");
     } finally {
       setBusy(false);
       setProgress(0);

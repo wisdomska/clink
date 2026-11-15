@@ -42,7 +42,7 @@ export function IdentityPicker({
             });
             if (!r.ok) {
               onChange(prev);
-              return toast("Couldn't save that.");
+              return toast.err("Couldn't save that.");
             }
             if (installed)
               toast(

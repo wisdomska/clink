@@ -1,4 +1,5 @@
 "use client";
+import { feedback } from "@/lib/feedback";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -167,7 +168,7 @@ export function LinkScreen({
       }
       setPartner(data.partner);
       setLinked(true);
-      navigator.vibrate?.([30, 60, 30]);
+      feedback("success", "clink");
     } finally {
       setBusy(false);
     }

@@ -1,4 +1,5 @@
 "use client";
+import { feedback } from "@/lib/feedback";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Play } from "@phosphor-icons/react";
@@ -80,7 +81,7 @@ export function CapsuleScreen({ capsule }: { capsule: Capsule }) {
         <Button
           onClick={() => {
             setState("uncorking");
-            navigator.vibrate?.(30);
+            feedback("success", "pop");
             void fetch(`/api/capsules/${capsule.id}/open`, { method: "POST" });
             setTimeout(() => setState("open"), reduced ? 200 : 900);
           }}

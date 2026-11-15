@@ -1,4 +1,5 @@
 "use client";
+import { haptic } from "@/lib/feedback";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "@phosphor-icons/react";
@@ -35,7 +36,7 @@ export function LetterScreen({ letter }: { letter: Letter }) {
   async function breakSeal() {
     if (state !== "sealed") return;
     setState("breaking");
-    navigator.vibrate?.(40);
+    haptic("heavy");
     void fetch(`/api/letters/${letter.id}/open`, { method: "POST" });
     setTimeout(() => setState("opened"), reduced ? 200 : 800);
   }

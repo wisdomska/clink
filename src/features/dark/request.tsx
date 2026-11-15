@@ -164,11 +164,11 @@ export function RequestScreen() {
                 onClick={async () => {
                   try {
                     await darkFetch("/api/dark/requests", { note: note || undefined });
-                    toast(`Sent. ${partner.name} can say yes, not right now, or later.`);
+                    toast.err(`Sent. ${partner.name} can say yes, not right now, or later.`);
                     setNote("");
                     void refresh();
                   } catch (e) {
-                    toast(e instanceof Error ? e.message : "Couldn't send.");
+                    toast.err(e instanceof Error ? e.message : "Couldn't send.");
                   }
                 }}
               >

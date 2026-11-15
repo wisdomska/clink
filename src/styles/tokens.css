@@ -50,6 +50,8 @@
   --ember-60: rgba(255, 90, 60, 0.6);
   --glass-line: rgba(244, 240, 245, 0.3);
   --glass-fill: rgba(244, 240, 245, 0.03);
+  --press-glow: rgba(15, 14, 17, 0.12); /* inset darken on accent hover */
+  --accent-soft: rgba(230, 138, 245, 0.22); /* focus glow on inputs */
   --scrim: rgba(15, 14, 17, 0.75);
   --scrim-strong: rgba(15, 14, 17, 0.8);
   --scrim-soft: rgba(15, 14, 17, 0.72);
@@ -98,6 +100,7 @@
 /* After Dark swaps the accent everywhere inside it. */
 [data-mode="dark"] {
   --accent: #ff5a3c;
+  --accent-soft: rgba(255, 90, 60, 0.22);
   --accent-glow: rgba(255, 90, 60, 0.6);
   --accent-glow-55: rgba(255, 90, 60, 0.55);
   --accent-halo: rgba(255, 90, 60, 0.18);
@@ -134,3 +137,13 @@
 @keyframes live { 0%, 100% { box-shadow: 0 0 0 0 rgba(230, 138, 245, .55) } 50% { box-shadow: 0 0 0 5px rgba(230, 138, 245, 0) } }
 @keyframes dots { 0%, 100% { opacity: .3 } 50% { opacity: 1 } }
 @keyframes skel { 0%, 100% { opacity: .55 } 50% { opacity: 1 } }
+/* Exit animations (their own curves; `reverse` would turn ease-out into ease-in) */
+@keyframes sheetDown { to { transform: translateY(100%) } }
+@keyframes modalOut { to { opacity: 0; transform: scale(.96) } }
+/* iPhone haptic stand-in: a 2 px shake of the pressed element */
+@keyframes hapticShake { 0%, 100% { translate: 0 } 25% { translate: -2px 0 } 75% { translate: 2px 0 } }
+/* Skeleton shimmer and celebration pieces */
+@keyframes shimmer { to { transform: translateX(100%) } }
+@keyframes popIn { 0% { transform: scale(.6); opacity: 0 } 60% { transform: scale(1.08); opacity: 1 } 100% { transform: scale(1) } }
+@keyframes shakeA { 0%, 100% { transform: none } 20% { transform: translateX(-6px) } 40% { transform: translateX(6px) } 60% { transform: translateX(-3px) } 80% { transform: translateX(3px) } }
+@keyframes shakeB { 0%, 100% { transform: none } 20% { transform: translateX(-6px) } 40% { transform: translateX(6px) } 60% { transform: translateX(-3px) } 80% { transform: translateX(3px) } }

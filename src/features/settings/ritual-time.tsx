@@ -31,7 +31,7 @@ export function RitualTimeRows() {
       done(d);
       router.refresh();
     } catch (e) {
-      toast(e instanceof Error ? e.message : "Couldn't save that.");
+      toast.err(e instanceof Error ? e.message : "Couldn't save that.");
     }
   };
 

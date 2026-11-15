@@ -71,7 +71,7 @@ export function Consent() {
             toast("After Dark settings changed.");
             router.push("/dark/home");
           } catch (e) {
-            toast(e instanceof Error ? e.message : "Couldn't save.");
+            toast.err(e instanceof Error ? e.message : "Couldn't save.");
           }
         }}
       >

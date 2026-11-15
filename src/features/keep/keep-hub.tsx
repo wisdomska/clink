@@ -620,7 +620,7 @@ function MomentSheet({
             onDone();
             toast("On the timeline.");
           } catch {
-            toast("Couldn't add that.");
+            toast.err("Couldn't add that.");
           } finally {
             setBusy(false);
           }

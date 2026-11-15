@@ -57,7 +57,7 @@ export function PrivacyCard() {
             });
             if (!r.ok) {
               setDiscreet(!v);
-              return toast("Couldn't save that.");
+              return toast.err("Couldn't save that.");
             }
             router.refresh();
           }}

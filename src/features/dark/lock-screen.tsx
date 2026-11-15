@@ -1,4 +1,5 @@
 "use client";
+import { feedback } from "@/lib/feedback";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { X, Moon, LockKey } from "@phosphor-icons/react";
@@ -48,14 +49,14 @@ export function LockScreen() {
     });
     const d = await r.json();
     if (d.ok) {
-      navigator.vibrate?.(20);
+      feedback("success", "unlock");
       router.replace(next?.startsWith("/dark/") ? next : "/dark/home");
       return;
     }
     if (d.lockedUntil) setLockedUntil(d.lockedUntil);
     setTries(d.triesLeft ?? 0);
     setWrong(true);
-    navigator.vibrate?.([40, 40, 40]);
+    feedback("error", "error");
     // Clear the red dots after the shake, unless they have already started typing again.
     if (clearTimer.current) clearTimeout(clearTimer.current);
     clearTimer.current = setTimeout(() => setPin(""), 450);

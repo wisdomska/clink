@@ -62,14 +62,5 @@ export function useNow(ms = 30_000): number {
   return now;
 }
 
-export function usePrefersReducedMotion(): boolean {
-  return useSyncExternalStore(
-    (cb) => {
-      const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-      mq.addEventListener("change", cb);
-      return () => mq.removeEventListener("change", cb);
-    },
-    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    () => false,
-  );
-}
+/** Honours the in-app Motion setting (Settings) as well as the OS preference. */
+export { useReducedMotion as usePrefersReducedMotion } from "@/lib/feedback";

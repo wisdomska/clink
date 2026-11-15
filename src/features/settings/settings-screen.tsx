@@ -23,6 +23,7 @@ import { enablePush } from "@/lib/pwa";
 import { PasskeyRows } from "./passkeys";
 import { RitualTimeRows } from "./ritual-time";
 import { PrivacyCard } from "./privacy";
+import { FeelCard } from "./feel";
 import { IdentityPicker } from "@/components/clink/identity-picker";
 import { asIdentity } from "@/lib/app-identity";
 
@@ -104,7 +105,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
       await patchSettings({ notify: { [k]: v } });
     } catch {
       setNotify((n) => ({ ...n, [k]: prev ?? false }));
-      toast("Couldn't save that.");
+      toast.err("Couldn't save that.");
     }
   }
 
@@ -199,6 +200,8 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
         </Row>
       </div>
 
+      <FeelCard />
+
       <h2 className="m-0 mt-1 text-lg font-bold">App icon and name</h2>
       <IdentityPicker value={icon} onChange={setIcon} />
 
@@ -288,7 +291,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
             const r = await fetch("/api/me/export", { method: "POST" });
             const d = await r.json();
             setBusy(false);
-            if (!r.ok) return toast(d.message ?? "Couldn't build your export.");
+            if (!r.ok) return toast.err(d.message ?? "Couldn't build your export.");
             window.location.href = d.url;
             toast("Your export is ready. The link works for 48 h.");
           }}
@@ -392,7 +395,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
                   body: JSON.stringify({ step: "confirm", token: unlinkToken }),
                 });
                 setBusy(false);
-                if (!r.ok) return toast((await r.json()).message ?? "Couldn't unlink.");
+                if (!r.ok) return toast.err((await r.json()).message ?? "Couldn't unlink.");
                 toast("Unlinked. Wipe finishes within 1 hour.");
                 window.location.href = "/link";
               }}
@@ -434,7 +437,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
               body: JSON.stringify({ confirm: "DELETE" }),
             });
             setBusy(false);
-            if (!r.ok) return toast((await r.json()).message ?? "Couldn't delete.");
+            if (!r.ok) return toast.err((await r.json()).message ?? "Couldn't delete.");
             window.location.href = "/";
           }}
         >

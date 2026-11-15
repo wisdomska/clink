@@ -45,7 +45,7 @@ export function ChallengeScreen({ id }: { id: string }) {
                   body: JSON.stringify({ templateId: t.id }),
                 });
                 const d = await r.json();
-                if (!r.ok) return toast(d.message);
+                if (!r.ok) return toast.err(d.message);
                 await qc.invalidateQueries({ queryKey: ["challenge", coupleId] });
                 router.push(`/plans/challenges/${d.id}`);
               }}
@@ -110,7 +110,7 @@ export function ChallengeScreen({ id }: { id: string }) {
           onClick={async () => {
             const r = await fetch(`/api/challenges/${c.id}/check`, { method: "POST" });
             const d = await r.json();
-            if (!r.ok) return toast(d.message);
+            if (!r.ok) return toast.err(d.message);
             void qc.invalidateQueries({ queryKey: ["challenge", coupleId] });
             toast(
               theirs(today)

@@ -103,7 +103,7 @@ export function Lobby() {
       toast(`${GAME_META[type].name} invite sent. Waiting on ${partner.name}.`);
       router.push(`/play/${type}/${id}`);
     } catch (e) {
-      toast(e instanceof Error ? e.message : "Couldn't start that.");
+      toast.err(e instanceof Error ? e.message : "Couldn't start that.");
     }
   }
 
