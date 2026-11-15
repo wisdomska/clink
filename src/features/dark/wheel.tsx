@@ -111,7 +111,7 @@ export function DareWheel() {
             transform: `rotate(${deg}deg)`,
             transition: reduced ? "none" : "transform 3.2s cubic-bezier(0.23,1,0.32,1)",
             background:
-              "conic-gradient(#211E25 0 45deg,#2C2830 45deg 90deg,#211E25 90deg 135deg,#2C2830 135deg 180deg,#211E25 180deg 225deg,#2C2830 225deg 270deg,#211E25 270deg 315deg,#2C2830 315deg 360deg)",
+              "conic-gradient(#251A21 0 45deg,#31232C 45deg 90deg,#251A21 90deg 135deg,#31232C 135deg 180deg,#251A21 180deg 225deg,#31232C 225deg 270deg,#251A21 270deg 315deg,#31232C 315deg 360deg)",
           }}
           role="img"
           aria-label={`Wheel with ${open.join(", ")}`}

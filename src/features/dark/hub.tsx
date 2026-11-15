@@ -130,16 +130,16 @@ export function DarkHub() {
                   className="border-line absolute inset-x-0 bottom-0 h-4 border-t"
                   style={{
                     background:
-                      "repeating-linear-gradient(90deg,rgba(255,90,60,.5) 0 2px,#211E25 2px 5px)",
+                      "repeating-linear-gradient(90deg,rgba(255,90,60,.5) 0 2px,#251A21 2px 5px)",
                   }}
                 />
                 {!open && (
                   <span
                     aria-hidden
-                    className="rounded-card absolute inset-0 border border-[rgba(244,240,245,.2)]"
+                    className="rounded-card absolute inset-0 border border-[rgba(251,243,246,.2)]"
                     style={{
                       background:
-                        "repeating-linear-gradient(115deg,rgba(244,240,245,.07) 0 2px,transparent 2px 16px)",
+                        "repeating-linear-gradient(115deg,rgba(251,243,246,.07) 0 2px,transparent 2px 16px)",
                     }}
                   />
                 )}

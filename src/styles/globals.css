@@ -123,13 +123,13 @@
   }
   /* Diagonal placeholder stripe used for media slots */
   .stripe {
-    background: repeating-linear-gradient(135deg, #211e25 0 8px, #1c1a20 8px 16px);
+    background: repeating-linear-gradient(135deg, #251a21 0 8px, #20161c 8px 16px);
   }
   .stripe-dim {
-    background: repeating-linear-gradient(135deg, #18161b 0 8px, #1c1a20 8px 16px);
+    background: repeating-linear-gradient(135deg, #1b1318 0 8px, #20161c 8px 16px);
   }
   .flap {
-    background: linear-gradient(#211e25 0 50%, #18161b 50% 100%);
+    background: linear-gradient(#251a21 0 50%, #1b1318 50% 100%);
   }
   .grain {
     position: fixed;

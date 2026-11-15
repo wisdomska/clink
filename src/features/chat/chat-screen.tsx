@@ -58,6 +58,7 @@ import { useCall } from "@/features/call/call-provider";
 import { useOpenPartner } from "@/features/partner/partner-sheet";
 import { MissedCallCard } from "@/features/call/missed-call-card";
 import type { Message, UiMessage } from "./types";
+import { EmojiPicker } from "@/components/ui/emoji-picker";
 
 const REACTIONS = ["❤️", "😂", "😭", "🔥", "🥹", "👀"];
 
@@ -1326,42 +1327,7 @@ function ReactRow({ current, onPick }: { current: string | null; onPick: (e: str
     current && !REACTIONS.includes(current) ? [current, ...REACTIONS.slice(0, 5)] : REACTIONS;
   if (custom)
     return (
-      <form
-        className="flex items-center gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const v = (new FormData(e.currentTarget).get("emoji") as string) ?? "";
-          const first = [
-            ...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(v.trim()),
-          ][0]?.segment;
-          if (first && /\p{Extended_Pictographic}/u.test(first)) onPick(first);
-        }}
-      >
-        <input
-          name="emoji"
-          autoFocus
-          aria-label="React with any emoji"
-          placeholder="Pick from your emoji keyboard"
-          inputMode="text"
-          maxLength={16}
-          onChange={(e) => {
-            const first = [
-              ...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(
-                e.target.value.trim(),
-              ),
-            ][0]?.segment;
-            if (first && /\p{Extended_Pictographic}/u.test(first)) onPick(first);
-          }}
-          className="rounded-input bg-s2 text-text h-[52px] min-w-0 flex-1 border-0 px-4 text-xl"
-        />
-        <button
-          type="button"
-          onClick={() => setCustom(false)}
-          className="text-muted h-[52px] cursor-pointer border-0 bg-transparent px-2 text-sm"
-        >
-          Back
-        </button>
-      </form>
+      <EmojiPicker label="React with any emoji" onPick={onPick} onClose={() => setCustom(false)} />
     );
   return (
     <div className="flex justify-between gap-1.5" role="group" aria-label="React">

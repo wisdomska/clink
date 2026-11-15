@@ -227,9 +227,9 @@ export function StoryRoom({ game }: { game: GameRow }) {
     };
     const lines = all.flatMap((l) => wrap(l.text).map((t) => ({ t, by: l.by })));
     canvas.height = Math.max(1080, pad * 3 + 120 + lines.length * 54);
-    ctx.fillStyle = "#0F0E11";
+    ctx.fillStyle = "#120C10";
     ctx.fillRect(0, 0, w, canvas.height);
-    ctx.fillStyle = "#F4F0F5";
+    ctx.fillStyle = "#FBF3F6";
     ctx.font = `800 64px ${display}, sans-serif`;
     ctx.fillText("our story", pad, pad + 40);
     ctx.font = `400 36px ${body}`;

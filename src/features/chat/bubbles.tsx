@@ -235,7 +235,7 @@ export function Bubble({
           className="absolute -inset-4"
           style={{
             background:
-              "radial-gradient(circle at 30% 40%,rgba(255,90,60,.55),transparent 45%),#211E25",
+              "radial-gradient(circle at 30% 40%,rgba(255,90,60,.55),transparent 45%),#251A21",
             filter: "blur(14px)",
           }}
         />

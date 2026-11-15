@@ -2,7 +2,13 @@
 import { useEffect, useRef } from "react";
 import { reducedMotion } from "@/lib/feedback";
 
-const COLOURS = ["var(--accent)", "var(--partner-b)", "#F4F0F5", "var(--warning)"];
+const COLOURS = [
+  "var(--accent)",
+  "var(--partner-b)",
+  "var(--champagne)",
+  "var(--ember)",
+  "#FBF3F6",
+];
 
 /** Small seeded PRNG so a burst looks the same on every render (and in tests). */
 function rng(seed: number) {

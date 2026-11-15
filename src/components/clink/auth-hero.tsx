@@ -98,7 +98,12 @@ export function AuthHero({ mode }: { mode: "login" | "signup" }) {
                     ease: "easeOut",
                   }}
                   style={{
-                    background: i % 3 === 0 ? "#FFC857" : i % 3 === 1 ? "var(--accent)" : "#5ED3B3",
+                    background:
+                      i % 3 === 0
+                        ? "var(--champagne)"
+                        : i % 3 === 1
+                          ? "var(--accent)"
+                          : "var(--lilac)",
                   }}
                 />
               ))}

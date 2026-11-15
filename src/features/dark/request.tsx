@@ -83,7 +83,7 @@ export function RequestScreen() {
             className="rounded-card relative aspect-[4/3] flex-none overflow-hidden"
             style={{
               background:
-                "radial-gradient(circle at 30% 40%,rgba(255,90,60,.55),transparent 45%),radial-gradient(circle at 70% 70%,rgba(244,240,245,.15),transparent 50%),#211E25",
+                "radial-gradient(circle at 30% 40%,rgba(255,90,60,.55),transparent 45%),radial-gradient(circle at 70% 70%,rgba(251,243,246,.15),transparent 50%),#251A21",
             }}
           >
             <div

@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, type ReactNode } from "react";
+import { useId, useRef, useState, type ReactNode } from "react";
 import { ArrowDownRight, ArrowUpRight, Minus } from "@phosphor-icons/react";
 import { Sheet } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -186,13 +186,21 @@ export function Sparkline({
   const max = Math.max(1, ...values);
   const step = values.length > 1 ? w / (values.length - 1) : w;
   const points = values.map((v, i) => `${i * step},${h - 2 - (v / max) * (h - 4)}`).join(" ");
+  const id = useId().replace(/:/g, "");
   return (
     <svg
       viewBox={`0 0 ${w} ${h}`}
       preserveAspectRatio="none"
       aria-hidden
-      className={cn("h-8 w-full", className)}
+      className={cn("h-8 w-full overflow-visible", className)}
     >
+      <defs>
+        <linearGradient id={`spk${id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={colour} stopOpacity=".35" />
+          <stop offset="1" stopColor={colour} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon points={`0,${h} ${points} ${w},${h}`} fill={`url(#spk${id})`} />
       <polyline
         points={points}
         fill="none"
@@ -211,9 +219,12 @@ export function Delta({ current, previous }: { current: number; previous: number
   if (!previous && !current) return <span className="text-faint text-xs">No change</span>;
   const pct = previous ? Math.round(((current - previous) / previous) * 100) : 100;
   const Icon = pct > 0 ? ArrowUpRight : pct < 0 ? ArrowDownRight : Minus;
-  const tone = pct > 0 ? "var(--partner-b)" : pct < 0 ? "var(--warning)" : "var(--text-faint)";
+  const tone = pct > 0 ? "var(--accent)" : pct < 0 ? "var(--warning)" : "var(--text-faint)";
   return (
-    <span className="inline-flex items-center gap-1 text-xs font-medium" style={{ color: tone }}>
+    <span
+      className="inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold"
+      style={{ color: tone, background: `color-mix(in oklab, ${tone} 14%, transparent)` }}
+    >
       <Icon size={14} weight="bold" aria-hidden />
       {pct > 0 ? "+" : ""}
       {pct}% vs previous
@@ -237,9 +248,11 @@ export function TrendCard({
   footnote?: ReactNode;
 }) {
   return (
-    <div className="rounded-card border-line bg-s1 flex flex-col gap-2 border p-4">
+    <div className="rounded-card border-line bg-s1 hover:border-line-strong flex flex-col gap-2 border p-4 transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-18px_var(--accent)]">
       <div className="text-muted text-sm">{label}</div>
-      <div className="mono text-[28px] leading-none">{current.toLocaleString("en-GB")}</div>
+      <div className="display text-[32px] leading-none font-extrabold">
+        {current.toLocaleString("en-GB")}
+      </div>
       <Delta current={current} previous={previous} />
       <Sparkline values={series.map((s) => s.value)} />
       <table className="sr-only">

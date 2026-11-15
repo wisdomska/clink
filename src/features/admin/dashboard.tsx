@@ -114,7 +114,7 @@ function LiveSwitches() {
         id: f.key,
         icon: ToggleRight,
         text: `Feature flag on: ${f.description || f.key}`,
-        tone: "var(--partner-b)",
+        tone: "var(--champagne)",
       })),
   ];
   return (

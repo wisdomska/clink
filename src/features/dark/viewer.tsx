@@ -117,7 +117,7 @@ export function SensitiveViewer({
             className="rounded-card text-text flex h-full max-h-[70dvh] w-full max-w-[420px] cursor-pointer flex-col items-center justify-center gap-2 border-0"
             style={{
               background:
-                "radial-gradient(circle at 30% 40%,rgba(255,90,60,.55),transparent 45%),radial-gradient(circle at 70% 70%,rgba(244,240,245,.15),transparent 50%),#211E25",
+                "radial-gradient(circle at 30% 40%,rgba(255,90,60,.55),transparent 45%),radial-gradient(circle at 70% 70%,rgba(251,243,246,.15),transparent 50%),#251A21",
             }}
           >
             <EyeSlash size={28} aria-hidden />
@@ -154,7 +154,7 @@ export function SensitiveViewer({
               {kind === "video" && (
                 <div
                   aria-hidden
-                  className="mono pointer-events-none absolute bottom-3 left-3 text-[11px] text-[rgba(244,240,245,.55)]"
+                  className="mono pointer-events-none absolute bottom-3 left-3 text-[11px] text-[rgba(251,243,246,.55)]"
                 >
                   {me.name.toUpperCase()} · {formatClock(new Date(), me.timezone)}
                 </div>

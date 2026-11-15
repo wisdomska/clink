@@ -42,7 +42,7 @@ export const CHAT_THEMES = {
     fg: "#fff",
     swatch: "linear-gradient(135deg,#232a6b,#5b3fb5)",
   },
-  mono: { label: "Mono", bg: "#f4f0f5", fg: "#141216", swatch: "#f4f0f5" },
+  mono: { label: "Mono", bg: "#fbf3f6", fg: "#1a0a10", swatch: "#fbf3f6" },
 } as const;
 export type ChatTheme = keyof typeof CHAT_THEMES;
 
@@ -55,7 +55,7 @@ export const WALLPAPERS = {
   },
   hearts: {
     label: "Hearts",
-    css: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cpath d='M28 38s-9-5.6-9-11.2A4.8 4.8 0 0 1 28 24a4.8 4.8 0 0 1 9 2.8C37 32.4 28 38 28 38z' fill='%23E68AF5' fill-opacity='.10'/%3E%3C/svg%3E\")",
+    css: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cpath d='M28 38s-9-5.6-9-11.2A4.8 4.8 0 0 1 28 24a4.8 4.8 0 0 1 9 2.8C37 32.4 28 38 28 38z' fill='%23FF4F7B' fill-opacity='.10'/%3E%3C/svg%3E\")",
   },
   stars: {
     label: "Stars",
@@ -63,15 +63,15 @@ export const WALLPAPERS = {
   },
   dots: {
     label: "Dots",
-    css: "radial-gradient(rgba(244,240,245,.08) 1.2px, transparent 1.4px)",
+    css: "radial-gradient(rgba(251,243,246,.08) 1.2px, transparent 1.4px)",
   },
   waves: {
     label: "Waves",
-    css: "repeating-linear-gradient(135deg, rgba(230,138,245,.05) 0 14px, transparent 14px 28px)",
+    css: "repeating-linear-gradient(135deg, rgba(255,79,123,.05) 0 14px, transparent 14px 28px)",
   },
   aurora: {
     label: "Aurora",
-    css: "radial-gradient(80% 60% at 0% 0%, rgba(79,209,197,.22), transparent 60%), radial-gradient(70% 60% at 100% 30%, rgba(139,124,255,.22), transparent 60%), radial-gradient(70% 60% at 30% 100%, rgba(230,138,245,.2), transparent 60%)",
+    css: "radial-gradient(80% 60% at 0% 0%, rgba(79,209,197,.22), transparent 60%), radial-gradient(70% 60% at 100% 30%, rgba(139,124,255,.22), transparent 60%), radial-gradient(70% 60% at 30% 100%, rgba(255,79,123,.2), transparent 60%)",
   },
   custom: { label: "Your photo", css: "none" },
 } as const;

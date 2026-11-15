@@ -105,7 +105,7 @@ export function PasswordScreen({
                 <li
                   key={r.label}
                   className="flex items-center gap-2 transition-colors duration-200"
-                  style={{ color: met ? "var(--partner-b)" : "var(--text-muted)" }}
+                  style={{ color: met ? "var(--accent)" : "var(--text-muted)" }}
                 >
                   <Check size={14} weight="bold" aria-hidden style={{ opacity: met ? 1 : 0.35 }} />
                   {r.label}

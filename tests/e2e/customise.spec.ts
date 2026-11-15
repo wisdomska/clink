@@ -11,10 +11,11 @@ test("reactions toggle off, any emoji, custom blurred wallpaper, appearance", as
   await a.getByRole("textbox", { name: "Message Theo" }).fill("react to me");
   await a.keyboard.press("Enter");
 
-  // Theo reacts with any emoji from the keyboard, then sees it highlighted.
+  // Theo searches the emoji picker and reacts, then sees it highlighted.
   await b.getByRole("button", { name: /Nia: react to me/ }).click({ button: "right" });
   await b.getByRole("button", { name: "React with any emoji" }).click();
-  await b.getByRole("textbox", { name: "React with any emoji" }).fill("🦄");
+  await b.getByRole("textbox", { name: "Search emoji" }).fill("unicorn");
+  await b.getByRole("button", { name: "🦄" }).click();
   await expect(a.getByRole("group", { name: /Reactions: 🦄/ })).toBeVisible({ timeout: 10000 });
   await b.getByRole("button", { name: /Nia: react to me/ }).click({ button: "right" });
   await expect(b.getByRole("button", { name: "Remove your 🦄 reaction" })).toHaveAttribute(

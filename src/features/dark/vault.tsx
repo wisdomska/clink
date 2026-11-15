@@ -20,7 +20,7 @@ interface Item {
 }
 
 const veil = (i: number) =>
-  `radial-gradient(circle at ${20 + i * 7}% ${30 + ((i * 13) % 50)}%, rgba(255,90,60,.55), transparent 45%), radial-gradient(circle at ${70 - i * 4}% 75%, rgba(244,240,245,.18), transparent 50%), #211E25`;
+  `radial-gradient(circle at ${20 + i * 7}% ${30 + ((i * 13) % 50)}%, rgba(255,90,60,.55), transparent 45%), radial-gradient(circle at ${70 - i * 4}% 75%, rgba(251,243,246,.18), transparent 50%), #251A21`;
 
 /** DARK-08 vault: empty, blurred grid, removed by sender. Revealing opens the protected viewer. */
 export function VaultScreen() {
@@ -109,7 +109,7 @@ export function VaultScreen() {
               className="absolute inset-x-0 bottom-0 h-3.5"
               style={{
                 background:
-                  "repeating-linear-gradient(90deg,rgba(255,90,60,.5) 0 2px,#211E25 2px 5px)",
+                  "repeating-linear-gradient(90deg,rgba(255,90,60,.5) 0 2px,#251A21 2px 5px)",
               }}
             />
           </div>

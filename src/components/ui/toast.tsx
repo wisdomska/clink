@@ -41,7 +41,7 @@ export const toast = Object.assign((m: string) => useToast.getState().show(m), {
 });
 
 const ICON = { ok: CheckCircle, err: WarningCircle, info: Info } as const;
-const COLOUR = { ok: "text-[var(--partner-b)]", err: "text-danger", info: "text-muted" } as const;
+const COLOUR = { ok: "text-accent", err: "text-danger", info: "text-muted" } as const;
 
 /** Pill toast above the tab bar on phones, bottom-right on desktop. Re-showing restarts the timer. */
 export function Toaster() {

@@ -14,7 +14,7 @@ export function MiniMatchbook() {
       <div className="mono text-muted absolute bottom-[30px] left-3 text-xs">strike</div>
       <div
         className="border-line absolute inset-x-0 bottom-0 h-[22px] border-t"
-        style={{ background: "repeating-linear-gradient(90deg,#4A4450 0 2px,#211E25 2px 5px)" }}
+        style={{ background: "repeating-linear-gradient(90deg,#57404C 0 2px,#251A21 2px 5px)" }}
       />
     </div>
   );
