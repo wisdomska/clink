@@ -7,7 +7,8 @@
  *
  *   SUPABASE_ACCESS_TOKEN=... VERCEL_TOKEN=... pnpm setup:cloud
  *
- * Optional: SMTP_USER and SMTP_PASS (a Gmail address and its app password)
+ * Optional: GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET (Google sign-in),
+ * SMTP_USER and SMTP_PASS (a Gmail address and its app password)
  * to send auth email through Gmail, SUPABASE_ORG_ID (defaults to your first organisation),
  * SUPABASE_REGION (defaults to eu-west-2), ONLY=prod or ONLY=preview.
  * Safe to re-run: existing projects are reused and migrations already applied
@@ -182,6 +183,18 @@ async function main() {
         webauthn_rp_display_name: "Clink",
       }),
     });
+    // Optional Google sign-in (one OAuth client serves both projects).
+    if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+      await sb(`/projects/${ref}/config/auth`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          external_google_enabled: true,
+          external_google_client_id: process.env.GOOGLE_CLIENT_ID,
+          external_google_secret: process.env.GOOGLE_CLIENT_SECRET,
+        }),
+      });
+      console.log("  Google sign-in on.");
+    }
     // Optional custom SMTP (Gmail with an app password, see docs/LIMITS.md).
     if (process.env.SMTP_USER && process.env.SMTP_PASS) {
       await sb(`/projects/${ref}/config/auth`, {

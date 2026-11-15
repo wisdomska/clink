@@ -67,7 +67,7 @@ SUPABASE_ACCESS_TOKEN=your-token VERCEL_TOKEN=your-token pnpm setup:cloud
 It creates or reuses `clink-prod` and `clink-preview`, applies every migration and the seed, stores the cron URL and secret in Vault, turns on TOTP, sets the site and redirect URLs, and writes the Supabase keys and `CRON_SECRET` into Vercel for each environment. It is safe to re-run.
 
 3. Redeploy (push a commit, or Redeploy in Vercel).
-4. In each Supabase project's Authentication settings: add Google, turn on passkeys, and set custom SMTP (`docs/LIMITS.md`).
+4. Google sign-in: create a Web OAuth client in Google Cloud with redirect URIs `https://<project-ref>.supabase.co/auth/v1/callback` for both projects, then re-run the command above with `GOOGLE_CLIENT_ID=... GOOGLE_CLIENT_SECRET=...` added. Custom SMTP works the same way with `SMTP_USER` and `SMTP_PASS` (`docs/LIMITS.md`).
 5. Add the repo secrets for the keep-alive workflow (`docs/LIMITS.md`).
 
 ## Becoming an admin
