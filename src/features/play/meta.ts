@@ -7,6 +7,10 @@ export const GAME_META: Record<GameType, { name: string; meta: string; mode: "li
   wyr: { name: "Would you rather", meta: "4 decks", mode: "live" },
   word: { name: "Word game", meta: "Any time", mode: "turn" },
   story: { name: "Story builder", meta: "Any time", mode: "turn" },
+  rps: { name: "Rock paper scissors", meta: "First to 3", mode: "live" },
+  snap: { name: "Snap challenge", meta: "3 prompts · photos", mode: "live" },
+  zoom: { name: "Zoom guess", meta: "Guess the close-up", mode: "live" },
+  memory: { name: "Photo memory", meta: "Your photos · 6 pairs", mode: "live" },
 };
 
 export async function startGame(

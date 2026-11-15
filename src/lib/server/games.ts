@@ -24,10 +24,51 @@ import {
   storyInit,
   storyMove,
 } from "@/features/play/engines/turns";
+import {
+  rpsInit,
+  rpsMove,
+  snapInit,
+  snapMove,
+  zoomInit,
+  zoomMove,
+  memoryInit,
+  memoryMove,
+  type MemoryCard,
+} from "@/features/play/engines/image";
 import { isWord } from "@/lib/server/dictionary";
+import { AVATAR_KEYS } from "@/lib/avatars";
 import type { Json } from "@/types/database";
 
-export const LIVE: GameType[] = ["know_me", "draw_guess", "trivia", "wyr"];
+export const LIVE: GameType[] = [
+  "know_me",
+  "draw_guess",
+  "trivia",
+  "wyr",
+  "rps",
+  "snap",
+  "zoom",
+  "memory",
+];
+
+/** Snap challenge prompts: easy to shoot anywhere, a little bit flirty. */
+export const SNAP_PROMPTS = [
+  "Something that reminds you of me",
+  "Your view right now",
+  "Your best silly face",
+  "Something blue",
+  "What you're drinking",
+  "Your shoes today",
+  "The last thing that made you smile",
+  "Something soft",
+  "Your best 'miss you' face",
+  "Something older than you",
+  "The messiest spot near you",
+  "Your hand doing a heart",
+  "Something you'd want me to see in person",
+  "Sky, right now",
+  "Your favourite mug or glass",
+  "A tiny detail most people would miss",
+];
 export const TURN: GameType[] = ["word", "story"];
 
 async function pick<T>(
@@ -48,7 +89,7 @@ async function pick<T>(
 export async function initGame(
   type: GameType,
   p: Players,
-  opts: { deck?: string; subject?: string },
+  opts: { deck?: string; subject?: string; coupleId?: string },
 ): Promise<EngineResult<unknown, unknown>> {
   switch (type) {
     case "know_me": {
@@ -112,6 +153,32 @@ export async function initGame(
         words.map((w) => w.word),
       );
     }
+    case "rps":
+      return rpsInit(p);
+    case "snap":
+      return snapInit(p, shuffle(SNAP_PROMPTS).slice(0, 3));
+    case "zoom":
+      return zoomInit(p);
+    case "memory": {
+      // Your own shared photos first (newest, not private), topped up with 3D art.
+      const { data } = await supabaseAdmin()
+        .from("media")
+        .select("id")
+        .eq("couple_id", opts.coupleId ?? "")
+        .eq("kind", "image")
+        .eq("is_sensitive", false)
+        .eq("status", "ready")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(24);
+      const photos: MemoryCard[] = shuffle(data ?? [])
+        .slice(0, 6)
+        .map((m) => ({ kind: "media", ref: m.id }));
+      const art: MemoryCard[] = shuffle([...AVATAR_KEYS])
+        .slice(0, 6 - photos.length)
+        .map((k) => ({ kind: "art", ref: k }));
+      return memoryInit(p, shuffle([...photos, ...art]));
+    }
     case "word":
       return wordInit(p);
     case "story": {
@@ -128,7 +195,7 @@ export function applyMove(
   secrets: unknown,
   userId: string,
   move: Record<string, unknown>,
-): EngineResult<unknown, unknown> & { correct?: boolean } {
+): EngineResult<unknown, unknown> & { correct?: boolean; hit?: boolean } {
   try {
     switch (type) {
       case "know_me":
@@ -143,6 +210,14 @@ export function applyMove(
         return wordMove(p, state as never, userId, move as never, isWord);
       case "story":
         return storyMove(p, state as never, userId, move as never);
+      case "rps":
+        return rpsMove(p, state as never, secrets as never, userId, move as never);
+      case "snap":
+        return snapMove(p, state as never, secrets as never, userId, move as never);
+      case "zoom":
+        return zoomMove(p, state as never, secrets as never, userId, move as never);
+      case "memory":
+        return memoryMove(p, state as never, secrets as never, userId, move as never);
     }
   } catch (e) {
     if (e instanceof MoveError) throw deny(422, "bad_move", e.message);

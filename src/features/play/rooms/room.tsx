@@ -5,8 +5,9 @@ import { DrawRoom } from "./draw-room";
 import { WordRoom, StoryRoom } from "./turn-rooms";
 import { RoomHeader } from "./shared";
 import { GameReactions, StartCountdown } from "./live-extras";
+import { RpsRoom, SnapRoom, ZoomRoom, MemoryRoom } from "./image-rooms";
 
-const LIVE = new Set(["know_me", "trivia", "wyr", "draw_guess"]);
+const LIVE = new Set(["know_me", "trivia", "wyr", "draw_guess", "rps", "snap", "zoom", "memory"]);
 
 export function GameRoom({ id }: { id: string }) {
   const { data: game, isLoading, error } = useGame(id);
@@ -39,6 +40,14 @@ export function GameRoom({ id }: { id: string }) {
           <WyrRoom game={game} />
         ) : game.type === "draw_guess" ? (
           <DrawRoom game={game} />
+        ) : game.type === "rps" ? (
+          <RpsRoom game={game} />
+        ) : game.type === "snap" ? (
+          <SnapRoom game={game} />
+        ) : game.type === "zoom" ? (
+          <ZoomRoom game={game} />
+        ) : game.type === "memory" ? (
+          <MemoryRoom game={game} />
         ) : game.type === "word" ? (
           <WordRoom game={game} />
         ) : (

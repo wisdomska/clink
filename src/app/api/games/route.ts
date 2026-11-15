@@ -5,7 +5,18 @@ import { initGame, playersFor, LIVE, asJson } from "@/lib/server/games";
 import { notify } from "@/lib/server/push";
 
 const schema = z.object({
-  type: z.enum(["know_me", "draw_guess", "trivia", "wyr", "word", "story"]),
+  type: z.enum([
+    "know_me",
+    "draw_guess",
+    "trivia",
+    "wyr",
+    "word",
+    "story",
+    "rps",
+    "snap",
+    "zoom",
+    "memory",
+  ]),
   deck: z.enum(["Silly", "Deep", "Future", "Travel"]).optional(),
   subject: z.enum(["me", "partner"]).optional(),
 });
@@ -17,6 +28,10 @@ const NAMES: Record<string, string> = {
   wyr: "Would you rather",
   word: "Word game",
   story: "Story builder",
+  rps: "Rock paper scissors",
+  snap: "Snap challenge",
+  zoom: "Zoom guess",
+  memory: "Photo memory",
 };
 
 /** PLAY-01: start a game. Live games begin as an invite; turn-based games start at once. */
@@ -39,6 +54,7 @@ export const POST = handler(async (req) => {
   const r = await initGame(body.type, p, {
     deck: body.deck,
     subject: body.subject === "me" ? user.id : body.subject === "partner" ? partnerId : undefined,
+    coupleId,
   });
   const { data: game, error } = await admin
     .from("games")

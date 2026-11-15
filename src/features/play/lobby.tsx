@@ -30,6 +30,8 @@ const LIVE: Array<{ type: GameType; Icon: typeof Question }> = [
   { type: "wyr", Icon: ArrowsLeftRight },
 ];
 
+const PHOTO: GameType[] = ["rps", "snap", "zoom", "memory"];
+
 export function useGames() {
   const { coupleId } = useCouple();
   const qc = useQueryClient();
@@ -180,13 +182,36 @@ export function Lobby() {
                   key={type}
                   type={type}
                   index={i}
-                  hero={i === 0}
+                  hero={i === 0 || (i === LIVE.length - 1 && i % 2 === 1)}
                   name={meta.name}
                   meta={online ? meta.meta : "Needs you both"}
                   dim={!online}
                   highlight={pending}
                   badge={pending ? "Invite sent" : undefined}
                   onClick={() => (type === "wyr" ? setDeckOpen(true) : play(type))}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-3">
+          <h2 className="m-0 text-lg font-bold">Play with photos</h2>
+          <div className="grid grid-cols-2 gap-3 pb-5 md:grid-cols-4 lg:grid-cols-2">
+            {PHOTO.map((type, i) => {
+              const pending = invites.some((g) => g.type === type && g.created_by === me.id);
+              const meta = GAME_META[type];
+              return (
+                <GameTile
+                  key={type}
+                  type={type}
+                  index={i + LIVE.length}
+                  name={meta.name}
+                  meta={online ? meta.meta : "Needs you both"}
+                  dim={!online}
+                  highlight={pending}
+                  badge={pending ? "Invite sent" : undefined}
+                  onClick={() => play(type)}
                 />
               );
             })}

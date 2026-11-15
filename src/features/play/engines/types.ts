@@ -3,7 +3,17 @@
  * unit tests. Public state goes to games.state (both partners can read it);
  * secrets go to game_secrets (server only) until it's fair to reveal them.
  */
-export type GameType = "know_me" | "draw_guess" | "trivia" | "wyr" | "word" | "story";
+export type GameType =
+  | "know_me"
+  | "draw_guess"
+  | "trivia"
+  | "wyr"
+  | "word"
+  | "story"
+  | "rps"
+  | "snap"
+  | "zoom"
+  | "memory";
 
 export interface Players {
   a: string; // partner A user id

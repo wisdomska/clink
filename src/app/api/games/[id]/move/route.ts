@@ -15,6 +15,23 @@ export const POST = handler(async (req, ctx: { params: Promise<{ id: string }> }
   await rateLimit(`game-move:${user.id}`, 900, 3600);
   const { move } = await parseJson(req, schema);
   const admin = supabaseAdmin();
+  // Photo moves must use your own, finished, non-private upload in this couple.
+  if (typeof move.mediaId === "string") {
+    const { data: m } = await admin
+      .from("media")
+      .select("owner_id, couple_id, kind, is_sensitive, status")
+      .eq("id", move.mediaId)
+      .maybeSingle();
+    if (
+      !m ||
+      m.owner_id !== user.id ||
+      m.couple_id !== coupleId ||
+      m.kind !== "image" ||
+      m.is_sensitive ||
+      m.status !== "ready"
+    )
+      throw deny(422, "bad_move", "That photo didn't upload. Try again.");
+  }
   // Both partners often answer at the same moment. Read, apply and save
   // atomically; if someone else moved in between, re-read and apply again.
   let attempt = 0;
@@ -75,5 +92,9 @@ export const POST = handler(async (req, ctx: { params: Promise<{ id: string }> }
   }
   if (r.finished)
     await track("activity_completed", user.id, { type: "game", mode: g.mode }, coupleId);
-  return ok({ correct: "correct" in r ? r.correct : undefined, finished: Boolean(r.finished) });
+  return ok({
+    correct: "correct" in r ? r.correct : undefined,
+    hit: "hit" in r ? r.hit : undefined,
+    finished: Boolean(r.finished),
+  });
 });
