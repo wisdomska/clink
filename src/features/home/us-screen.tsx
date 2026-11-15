@@ -12,6 +12,7 @@ import { ClinkButton } from "./clink-button";
 import { MoodCard } from "./mood-card";
 import { CountdownCard } from "./countdown-card";
 import { RitualCard } from "./ritual-card";
+import { MilestoneMoment } from "./milestone-moment";
 import { AsleepCard } from "./asleep-card";
 import { useSendClink } from "./use-send-clink";
 
@@ -95,6 +96,7 @@ export function UsScreen() {
           <MoodCard />
           <CountdownCard now={now} />
           <RitualCard />
+          <MilestoneMoment />
         </div>
       </div>
     </div>

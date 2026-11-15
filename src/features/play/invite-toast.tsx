@@ -6,6 +6,7 @@ import { GameController } from "@phosphor-icons/react";
 import { useCouple, useCoupleEvent } from "@/features/couple/context";
 import { Button } from "@/components/ui/button";
 import { GAME_META } from "./meta";
+import { feedback, flashTitle } from "@/lib/feedback";
 import type { GameType } from "./engines/types";
 
 /** App-wide game invite (prototype "Invite pending"). The lobby shows its own list. */
@@ -17,7 +18,11 @@ export function GameInviteToast() {
 
   useCoupleEvent("game.invite", (p) => {
     const type = p.type as GameType;
-    if (typeof p.id === "string" && type in GAME_META) setInvite({ id: p.id, type });
+    if (typeof p.id === "string" && type in GAME_META) {
+      setInvite({ id: p.id, type });
+      feedback("receive", "pop");
+      flashTitle(`${partner.name} wants to play`);
+    }
   });
 
   if (!invite || path.startsWith("/play")) return null;

@@ -5,7 +5,8 @@ import { Wine } from "@phosphor-icons/react";
 import { useCouple, useCoupleEvent } from "@/features/couple/context";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useClinkStore, vibrate } from "./clink-store";
+import { useClinkStore } from "./clink-store";
+import { feedback, flashTitle } from "@/lib/feedback";
 import { useSendClink } from "./use-send-clink";
 import { HoldTogether } from "./hold-together";
 
@@ -19,7 +20,8 @@ export function IncomingClink() {
   useCoupleEvent("clink.sent", (p) => {
     if (path.startsWith("/dark")) return;
     setIncoming({ kind: String(p.kind ?? "tap"), at: Date.now() });
-    vibrate([30, 60, 30]);
+    feedback("receive", "clink");
+    flashTitle(`${partner.name} clinked`);
   });
   useCoupleEvent("clink.hold", (p) => setPartnerHolding(Boolean(p.holding)));
 

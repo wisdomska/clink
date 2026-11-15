@@ -1,5 +1,5 @@
 "use client";
-import { haptic } from "@/lib/feedback";
+import { feedback, haptic } from "@/lib/feedback";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -225,6 +225,7 @@ export function ChatScreen() {
     const body = text.trim();
     if (!body) return;
     setText("");
+    feedback("tap", "send");
     send("chat.typing", { typing: false });
     await enqueue({ type: "text", body });
   }

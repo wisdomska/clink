@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCouple } from "@/features/couple/context";
 import { toast } from "@/components/ui/toast";
-import { vibrate } from "./clink-store";
+import { feedback } from "@/lib/feedback";
 
 /** Sends a Clink: broadcast first (sub-second for an online partner), then persist + push. */
 export function useSendClink() {
@@ -15,7 +15,7 @@ export function useSendClink() {
     async (kind: "tap" | "back" = "tap") => {
       if (clinking) return;
       setClinking(true);
-      vibrate([30, 60, 30]);
+      feedback("send", "clink");
       send("clink.sent", { kind });
       const online = presence.online;
       fetch("/api/clinks", {

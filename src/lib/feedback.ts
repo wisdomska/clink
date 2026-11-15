@@ -218,3 +218,29 @@ export function feedback(h: HapticName, s?: SoundName) {
   haptic(h);
   if (s) playSound(s);
 }
+
+/* ---------------------------------------------------------- title flash */
+
+let flashing: ReturnType<typeof setInterval> | null = null;
+
+/**
+ * When the tab is in the background, alternate the title with `text` until the
+ * person looks again. Generic text only: never put private content here.
+ */
+export function flashTitle(text: string) {
+  if (typeof document === "undefined" || !document.hidden || flashing) return;
+  const base = document.title;
+  let on = false;
+  flashing = setInterval(() => {
+    on = !on;
+    document.title = on ? text : base;
+  }, 1000);
+  const stop = () => {
+    if (document.hidden) return;
+    if (flashing) clearInterval(flashing);
+    flashing = null;
+    document.title = base;
+    document.removeEventListener("visibilitychange", stop);
+  };
+  document.addEventListener("visibilitychange", stop);
+}

@@ -260,6 +260,9 @@
   .haptic-shake {
     animation: hapticShake 90ms ease-in-out 2;
   }
+  .an-bar {
+    animation: barGrow 420ms var(--ease-out) calc(var(--i, 0) * 60ms + 150ms) both;
+  }
   .an-pop {
     animation: popIn 320ms var(--ease-pop) both;
   }
@@ -333,6 +336,7 @@
     animation: fadeOut 1200ms ease both;
   }
   .an-pop,
+  .an-bar,
   .an-shake-a,
   .an-shake-b,
   .haptic-shake {

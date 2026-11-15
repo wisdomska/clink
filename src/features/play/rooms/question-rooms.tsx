@@ -6,7 +6,16 @@ import { Button } from "@/components/ui/button";
 import { PartnerMark } from "@/components/ui/heading";
 import { toast } from "@/components/ui/toast";
 import type { KnowMeState, TriviaState, WyrState } from "../engines/simultaneous";
-import { RoomHeader, ResultBars, sendMove, type GameRow } from "./shared";
+import {
+  RoomHeader,
+  ResultBars,
+  ResultMoment,
+  sendMove,
+  useRevealFeedback,
+  type GameRow,
+} from "./shared";
+import { CountUp } from "@/components/fx/count-up";
+import { SwipePick } from "./swipe-pick";
 import { startGame } from "../meta";
 
 const fill = (t: string, name: string) => t.replaceAll("{name}", name);
@@ -62,15 +71,20 @@ export function KnowMeRoom({ game }: { game: GameRow }) {
   const qIndex = showing ?? s.index;
   const q = s.questions[qIndex]!;
   const reveal = showing !== null ? s.reveals[showing]! : null;
+  useRevealFeedback(
+    reveal ? `${game.id}:${showing}` : null,
+    !!reveal && reveal.answer === reveal.guess,
+  );
   const waitingOnThem = showing === null && s.submitted.includes(me.id);
 
   if (game.status === "finished" && showing === null) {
     return (
       <div className="an-reveal flex flex-1 flex-col">
         <div className="flex flex-1 flex-col justify-center gap-3">
+          <ResultMoment gameId={game.id} celebrate={s.score >= 6} />
           <div className="mono text-faint text-xs">ROUND OVER</div>
           <div className="mono text-accent text-[96px] leading-none">
-            {s.score}
+            <CountUp value={s.score} />
             <span className="text-faint">/10</span>
           </div>
           <div className="display text-[28px] leading-[1.05]">
@@ -126,6 +140,7 @@ export function KnowMeRoom({ game }: { game: GameRow }) {
     <>
       <RoomHeader
         type="know_me"
+        live={game.status === "active"}
         counter={`${String(qIndex + 1).padStart(2, "0")}/10`}
         progress={(qIndex + (reveal ? 1 : 0)) / 10}
       />
@@ -208,6 +223,10 @@ export function TriviaRoom({ game }: { game: GameRow }) {
   const qIndex = showing ?? s.index;
   const q = s.questions[qIndex]!;
   const reveal = showing !== null ? s.reveals[showing]! : null;
+  useRevealFeedback(
+    reveal ? `${game.id}:${showing}` : null,
+    !!reveal && reveal.picks[me.id] === reveal.correct,
+  );
   const waiting = showing === null && s.submitted.includes(me.id);
   const my = s.scores[me.id] ?? 0;
   const their = s.scores[partner.id] ?? 0;
@@ -216,11 +235,14 @@ export function TriviaRoom({ game }: { game: GameRow }) {
     return (
       <div className="an-reveal flex flex-1 flex-col">
         <div className="flex flex-1 flex-col justify-center gap-3">
+          <ResultMoment gameId={game.id} celebrate={my >= their} />
           <div className="mono text-faint text-xs">DUEL OVER</div>
           <div className="mono text-[72px] leading-none">
-            <span className="text-accent">{my}</span>
+            <CountUp value={my} className="text-accent" />
             <span className="text-faint"> : </span>
-            <span style={{ color: "var(--partner-b)" }}>{their}</span>
+            <span style={{ color: "var(--partner-b)" }}>
+              <CountUp value={their} />
+            </span>
           </div>
           <div className="display text-[28px] leading-[1.05]">
             {my === their ? (
@@ -258,6 +280,7 @@ export function TriviaRoom({ game }: { game: GameRow }) {
     <>
       <RoomHeader
         type="trivia"
+        live={game.status === "active"}
         counter={`${String(qIndex + 1).padStart(2, "0")}/10`}
         progress={(qIndex + (reveal ? 1 : 0)) / 10}
       />
@@ -312,15 +335,20 @@ export function WyrRoom({ game }: { game: GameRow }) {
   const idx = showing ?? s.index;
   const card = s.cards[idx]!;
   const reveal = showing !== null ? s.reveals[showing]! : null;
+  useRevealFeedback(
+    reveal ? `${game.id}:${showing}` : null,
+    !!reveal && reveal[me.id] === reveal[partner.id],
+  );
   const waiting = showing === null && s.submitted.includes(me.id);
 
   if (game.status === "finished" && showing === null) {
     return (
       <div className="an-reveal flex flex-1 flex-col">
         <div className="flex flex-1 flex-col justify-center gap-3">
+          <ResultMoment gameId={game.id} celebrate={s.matches >= s.cards.length * 0.6} />
           <div className="mono text-faint text-xs">{s.deck.toUpperCase()} DECK</div>
           <div className="mono text-accent text-[96px] leading-none">
-            {s.matches}
+            <CountUp value={s.matches} />
             <span className="text-faint">/{s.cards.length}</span>
           </div>
           <div className="display text-[28px] leading-[1.05]">
@@ -349,10 +377,21 @@ export function WyrRoom({ game }: { game: GameRow }) {
     <>
       <RoomHeader
         type="wyr"
+        live={game.status === "active"}
         counter={`${String(idx + 1).padStart(2, "0")}/${s.cards.length}`}
         progress={(idx + (reveal ? 1 : 0)) / s.cards.length}
       />
       <h2 className="display mt-3 text-[30px] leading-[1.1]">Would you rather</h2>
+      {!reveal && !waiting && (
+        <div className="md:hidden">
+          <SwipePick
+            key={idx}
+            a={card.a}
+            b={card.b}
+            onPick={(k) => void sendMove(game.id, { pick: k })}
+          />
+        </div>
+      )}
       <div className="grid gap-2.5 sm:grid-cols-2">
         {(["a", "b"] as const).map((k) => {
           const mine = reveal?.[me.id] === k;

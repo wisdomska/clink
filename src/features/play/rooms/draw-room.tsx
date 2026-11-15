@@ -7,7 +7,8 @@ import { useCouple, useCoupleEvent } from "@/features/couple/context";
 import { Button, IconButton } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { DRAW_ROUNDS, TURN_SECONDS, type DrawState } from "../engines/turns";
-import { RoomHeader, sendMove, type GameRow } from "./shared";
+import { RoomHeader, ResultMoment, sendMove, type GameRow } from "./shared";
+import { CountUp } from "@/components/fx/count-up";
 import { startGame } from "../meta";
 
 type Pt = [number, number, number];
@@ -164,11 +165,14 @@ export function DrawRoom({ game }: { game: GameRow }) {
     return (
       <div className="an-reveal flex flex-1 flex-col">
         <div className="flex flex-1 flex-col justify-center gap-3">
+          <ResultMoment gameId={game.id} celebrate={myScore >= theirScore} />
           <div className="mono text-faint text-xs">GAME OVER</div>
           <div className="mono text-[72px] leading-none">
-            <span className="text-accent">{myScore}</span>
+            <CountUp value={myScore} className="text-accent" />
             <span className="text-faint"> : </span>
-            <span style={{ color: "var(--partner-b)" }}>{theirScore}</span>
+            <span style={{ color: "var(--partner-b)" }}>
+              <CountUp value={theirScore} />
+            </span>
           </div>
           <div className="display text-[28px] leading-[1.05]">
             {myScore === theirScore ? (
@@ -216,6 +220,7 @@ export function DrawRoom({ game }: { game: GameRow }) {
     <>
       <RoomHeader
         type="draw_guess"
+        live={game.status === "active"}
         counter={`${String(left).padStart(2, "0")} s`}
         progress={left / TURN_SECONDS}
       />
