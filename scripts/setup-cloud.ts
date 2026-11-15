@@ -7,13 +7,15 @@
  *
  *   SUPABASE_ACCESS_TOKEN=... VERCEL_TOKEN=... pnpm setup:cloud
  *
- * Optional: SUPABASE_ORG_ID (defaults to your first organisation),
+ * Optional: SMTP_USER and SMTP_PASS (a Gmail address and its app password)
+ * to send auth email through Gmail, SUPABASE_ORG_ID (defaults to your first organisation),
  * SUPABASE_REGION (defaults to eu-west-2), ONLY=prod or ONLY=preview.
  * Safe to re-run: existing projects are reused and migrations already applied
  * are skipped. Nothing secret is printed.
  */
 import { readdirSync, readFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
+import { EMAIL_TEMPLATES } from "./email-templates";
 
 const SB = "https://api.supabase.com/v1";
 const VC = "https://api.vercel.com";
@@ -174,8 +176,39 @@ async function main() {
         mailer_autoconfirm: false,
         mfa_totp_enroll_enabled: true,
         mfa_totp_verify_enabled: true,
+        passkey_enabled: true,
+        webauthn_rp_id: new URL(env.site).hostname,
+        webauthn_rp_origins: env.site,
+        webauthn_rp_display_name: "Clink",
       }),
     });
+    // Optional custom SMTP (Gmail with an app password, see docs/LIMITS.md).
+    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+      await sb(`/projects/${ref}/config/auth`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          smtp_host: process.env.SMTP_HOST ?? "smtp.gmail.com",
+          smtp_port: process.env.SMTP_PORT ?? "465",
+          smtp_user: process.env.SMTP_USER,
+          smtp_pass: process.env.SMTP_PASS,
+          smtp_admin_email: process.env.SMTP_USER,
+          smtp_sender_name: "Clink",
+          rate_limit_email_sent: 30,
+        }),
+      });
+      console.log("  Custom SMTP set.");
+    }
+    // Branded, any-device email links. Supabase only allows custom templates
+    // once custom SMTP is configured, so this is skipped until then.
+    try {
+      await sb(`/projects/${ref}/config/auth`, {
+        method: "PATCH",
+        body: JSON.stringify(EMAIL_TEMPLATES),
+      });
+      console.log("  Email templates set.");
+    } catch {
+      console.log("  Email templates skipped (set custom SMTP first, then re-run).");
+    }
 
     const keys = await sb<Array<{ name: string; api_key: string }>>(
       `/projects/${ref}/api-keys?reveal=true`,
