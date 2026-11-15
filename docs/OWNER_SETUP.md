@@ -10,13 +10,14 @@ Until the app is published, only "test users" can use Continue with Google.
 2. Under **Publishing status**, click **Publish app**, then **Confirm**.
 3. The status should now say **In production**. Clink only asks Google for name and email, so no review is needed.
 
-## 2. Sign in for the first time and add a passkey (3 minutes)
+## 2. Sign in for the first time and set your own password (3 minutes)
 
 1. Open https://clinkapp.vercel.app/login (a private window is fine).
-2. Tap **Continue with Google** and choose **wisdomska@gmail.com** (already an admin).
-3. Enter your date of birth and set up your profile when asked.
-4. Open **Settings** and tap **Sign in with a passkey**. Approve with your fingerprint, face or screen lock. From now on you can sign in without Google or email.
-5. Open https://clinkapp.vercel.app/admin to check the admin dashboard opens.
+2. Type **wisdomska@gmail.com** and the temporary password you were given, then tap **Sign in**. (Continue with Google works too.)
+3. Clink asks you to choose your own password straight away. Every other page waits until you do.
+4. Enter your date of birth and set up your profile when asked.
+5. Optional: open **Settings** and tap **Sign in with a passkey** to sign in with your fingerprint or face next time.
+6. Open https://clinkapp.vercel.app/admin to check the admin dashboard opens.
 
 ## 3. A Gmail account for sending email (10 minutes)
 
@@ -42,7 +43,15 @@ It prints `Custom SMTP set.` and `Email templates set.` for each project. Sign-i
 4. Leave every box unticked. A rule on its own already blocks force-pushes and deleting the branch. Don't tick "Require a pull request", or direct pushes stop working.
 5. Click **Create**.
 
-## 5. Optional: error reporting (Sentry, 5 minutes)
+## 5. Optional: a TURN relay for calls on strict networks (5 minutes)
+
+Calls connect directly for most home Wi-Fi and mobile data. Some office or carrier networks block that; a TURN relay fixes it.
+
+1. Sign up for a free TURN account, for example https://dashboard.metered.ca/signup (it has a free plan).
+2. Create a credential and copy its URLs, username and password.
+3. In Vercel (**clinkapp** → **Settings → Environment Variables**) add `NEXT_PUBLIC_TURN_URLS` (the URLs, comma separated), `NEXT_PUBLIC_TURN_USERNAME` and `NEXT_PUBLIC_TURN_CREDENTIAL`, ticking Production and Preview. Then redeploy.
+
+## 6. Optional: error reporting (Sentry, 5 minutes)
 
 1. Sign up at https://sentry.io/signup/ (the free Developer plan).
 2. Create a project, choose **Next.js**, name it `clink`.
@@ -51,10 +60,10 @@ It prints `Custom SMTP set.` and `Email templates set.` for each project. Sign-i
 
 Private screens (After Dark, media, admin) never report errors.
 
-## 6. Optional: product analytics (PostHog, 5 minutes)
+## 7. Optional: product analytics (PostHog, 5 minutes)
 
 1. Sign up at https://eu.posthog.com/signup. Choose the **EU** cloud; Clink's security rules only allow the EU address.
 2. Open **Project settings** and copy the **Project API key** (starts with `phc_`).
-3. Send it to the developer, or add `NEXT_PUBLIC_POSTHOG_KEY` in Vercel as in step 5 and redeploy.
+3. Send it to the developer, or add `NEXT_PUBLIC_POSTHOG_KEY` in Vercel as in step 6 and redeploy.
 
 Clink only sends a short allow-list of event names. Never message text, names or anything from After Dark.

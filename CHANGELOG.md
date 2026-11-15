@@ -4,11 +4,30 @@ All notable changes to Clink. Versions follow [Semantic Versioning](https://semv
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-15
+
+Calls, photo games, accounts and a livelier look.
+
 ### Added
 
+- In-app voice and video calls with no phone number: ring on any screen, accept or decline, mute, camera on or off, flip camera, and a push notification when Clink is closed. Peer to peer and encrypted. An optional TURN relay (`NEXT_PUBLIC_TURN_*`) helps on strict networks.
+- Four photo games: Rock paper scissors (first to 3), Snap challenge (shoot to a prompt, reveal together, vote), Zoom guess (guess the close-up, each miss zooms out) and Photo memory (6 pairs from your own shared photos).
+- Chat media composer: rotate, seven filters, text on photos, add or remove shots, one caption, then send. Photos show as a Messenger-style grid with a full caption.
+- Accounts: optional password sign-in, a forced change for temporary passwords, change your email or password in Settings, and switch between accounts kept on one device.
+- 28 high-quality 3D avatars (Microsoft Fluent Emoji 3D, MIT) and photo upload straight from the picker.
+- Share link menu with the official WhatsApp, Instagram, Snapchat, Telegram, Messenger, X, Messages and Email marks, plus Copy and the device share sheet.
 - Live games: a 3, 2, 1, Go countdown when the game starts, and reactions (❤️ 😂 😮 🔥 👏) that float up on both screens.
 - The top of the screen holds one card at a time: an incoming clink, then a game invite, then the notification offer, never stacked.
 - Google sign-in can be switched on for both projects with `pnpm setup:cloud` (see README).
+
+### Changed
+
+- After Dark: the entry shows for every couple (setup, PIN and both partners' consent still gate it), and media you send is kept in the Vault by default.
+- Busy buttons show hopping dots instead of text; a new gradient spinner.
+- Chat bubbles hug short messages, group runs from one person with joined corners, show the time inline, and big emoji stand alone.
+- Play lobby is a bento grid with 3D art; Date roulette is a 3D drum with a glowing pick band and ticks; the PIN pad uses soft keys. No more decorative rings.
+- Voice notes record reliably on iPhone and Android, with clear messages when the microphone is blocked or missing.
+- Copy says "this device" rather than "this phone".
 
 ## [1.1.0] - 2026-11-15
 
