@@ -4,6 +4,8 @@ All notable changes to Clink. Versions follow [Semantic Versioning](https://semv
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-15
+
 ### Added
 
 - Picture stickers: 36 stickers drawn from Fluent Emoji 3D; the classics keep their words as meme-style captions.
@@ -11,12 +13,22 @@ All notable changes to Clink. Versions follow [Semantic Versioning](https://semv
 - Write your own status, with quick suggestions; preset statuses carry an emoji.
 - Calls in the chat history (missed, couldn't pick up, or how long you talked) with one-tap call back; a missed-call card on Us and Chat; minimise a call to a floating pill.
 - Chat themes and wallpapers, shared with your partner and synced live; double-tap a message to heart it.
-- Admins land on /admin after signing in.
+- Admin portal: its own sign-in at /admin (separate from Clink accounts), change admin email and password, detailed user pages with activity, and chat access behind a stated reason with every look logged. After Dark content is never available to admins.
+- Partner profile from anywhere (local time and weather, distance, days together, mood, about, love language, birthday) and a richer Edit profile with the avatar picker built in.
+- 17 moods in three groups, including the hard ones (angry, hurt, need space); change yours any time.
+- Spicy sticker pack, unlocked only when you both opt into After Dark.
+- Edit messages for 15 minutes, search the chat, a photos and videos gallery, On this day memories, and Our list (a shared bucket list).
 
 ### Changed
 
 - Us page: a glowing hero with both of you and a heartbeat line, 3D mood tiles, and a glossy Clink button. No more rings, including avatar borders.
 - Voice notes: a live waveform while recording; playback bars fill smoothly and dance at the playhead; tap to seek. The voice bubble no longer clips at the right edge.
+
+### Fixed
+
+- Unhinged (and any locked tier) now explains what's missing instead of an empty deck.
+- Updates: a new version clears old cached pages and scripts, and Update always reloads.
+- Mood sentences read naturally; the voice-note speed control is a full touch target; sheets never squash their contents.
 
 ## [1.2.0] - 2026-11-15
 

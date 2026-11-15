@@ -70,6 +70,7 @@ const COUPLE_SCOPED = [
   "media",
   "couples",
   "couple_members",
+  "bucket_items",
 ] as const;
 const SERVER_ONLY = [
   "dark_settings",
@@ -90,6 +91,7 @@ const SERVER_ONLY = [
   "wipe_jobs",
   "game_secrets",
   "notification_log",
+  "admin_accounts",
 ] as const;
 const PARTNER_VISIBLE = ["presence"] as const;
 const SELF_ONLY = [
