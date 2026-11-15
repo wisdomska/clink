@@ -3,6 +3,7 @@ import { expectNoHorizontalScroll } from "./no-horizontal-scroll";
 
 test.describe("Play (PLAY-01 to PLAY-08)", () => {
   test("live: invite, join and a full round of How well do you know me", async ({ couple }) => {
+    test.setTimeout(120_000); // ten rounds; slower when run against a deployed site
     const { a, b } = couple;
     await a.goto("/play");
     await b.goto("/play");

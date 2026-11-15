@@ -38,6 +38,9 @@ export function useGame(id: string) {
       if (error) throw error;
       return data as unknown as GameRow;
     },
+    // Safety net: realtime can drop an event on a flaky connection. While the
+    // game is live, re-check every few seconds so nobody is left waiting.
+    refetchInterval: (query) => (query.state.data?.status === "active" ? 4000 : false),
   });
   useEffect(() => {
     const sb = supabaseBrowser();
@@ -46,7 +49,12 @@ export function useGame(id: string) {
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "games", filter: `id=eq.${id}` },
-        (p) => qc.setQueryData(["game", id], p.new),
+        (p) =>
+          // Events can arrive out of order; never replace newer state with older.
+          qc.setQueryData<GameRow>(["game", id], (cur) => {
+            const next = p.new as GameRow;
+            return cur && cur.updated_at > next.updated_at ? cur : next;
+          }),
       );
     return subscribeAuthed(
       ch,
