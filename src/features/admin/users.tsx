@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -162,7 +163,12 @@ export function AdminUsers() {
               {(data?.users ?? []).map((u) => (
                 <tr key={u.id} className="border-line border-t align-top">
                   <td className="px-4 py-3">
-                    <div className="font-medium">{u.name ?? "No name yet"}</div>
+                    <Link
+                      href={`/admin/users/${u.id}`}
+                      className="text-text hover:text-accent font-medium underline-offset-4 hover:underline"
+                    >
+                      {u.name ?? "No name yet"}
+                    </Link>
                     <div className="text-muted">{u.email}</div>
                     {u.admin && <span className="mono text-accent text-[11px]">ADMIN</span>}
                   </td>

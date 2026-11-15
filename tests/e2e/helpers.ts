@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Browser, BrowserContext, Page } from "@playwright/test";
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID, scryptSync } from "node:crypto";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321";
 const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -67,4 +67,35 @@ export async function twoPartners(browser: Browser, contextOptions = {}) {
   const a = await ctxA.newPage();
   const b = await ctxB.newPage();
   return { ctxA, ctxB, a, b };
+}
+
+/** scrypt hash in the admin portal's format (see src/lib/server/admin-auth.ts). */
+export function adminHash(password: string): string {
+  const salt = randomBytes(16);
+  const key = scryptSync(password, salt, 32, { N: 16384, r: 8, p: 1 });
+  return `scrypt$16384$8$1$${salt.toString("base64url")}$${key.toString("base64url")}`;
+}
+
+/** Creates an admin portal account and signs this page's context into it. */
+export async function adminSignIn(
+  page: Page,
+  opts: { password?: string; mustChange?: boolean; userId?: string } = {},
+) {
+  const email = `ops-${randomUUID().slice(0, 8)}@clink.test`;
+  const password = opts.password ?? "Ops-Password-2026";
+  const { data, error } = await admin
+    .from("admin_accounts")
+    .insert({
+      email,
+      name: "Ops",
+      password_hash: adminHash(password),
+      must_change_password: opts.mustChange ?? false,
+      user_id: opts.userId ?? null,
+    })
+    .select("id")
+    .single();
+  if (error) throw error;
+  const r = await page.request.post("/api/admin/auth/login", { data: { email, password } });
+  if (!r.ok()) throw new Error(`admin login failed: ${r.status()}`);
+  return { id: data.id, email, password };
 }

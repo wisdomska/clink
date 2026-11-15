@@ -16,7 +16,7 @@ export const PATCH = handler(async (req, ctx: { params: Promise<{ id: string }> 
   const body = await parseJson(req, schema);
   const patch: {
     status?: "open" | "triage" | "assigned" | "resolved" | "escalated";
-    assigned_to?: string;
+    assigned_to?: string | null;
     resolution?: string;
   } = {};
   if (body.status) patch.status = body.status;

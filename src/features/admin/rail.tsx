@@ -82,12 +82,8 @@ export function AdminRail({ name }: { name: string }) {
           <button
             type="button"
             onClick={async () => {
-              await fetch("/api/auth/signout", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: "{}",
-              });
-              window.location.href = "/";
+              await fetch("/api/admin/auth/logout", { method: "POST" });
+              window.location.href = "/admin/login";
             }}
             className="text-muted flex cursor-pointer items-center gap-2 bg-transparent text-sm"
           >

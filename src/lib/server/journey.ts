@@ -25,18 +25,10 @@ export function pathFor(step: Step, next?: string | null): string {
 }
 
 /**
- * Where to send someone right after they sign in. Admins go straight to the
- * admin portal (no onboarding or partner needed) unless they asked for a
- * specific page; everyone else follows their journey.
+ * Where to send someone right after they sign in to Clink. The admin portal
+ * has its own sign-in at /admin, so admins land in the app like anyone else.
  */
 export async function landingFor(userId: string, next?: string | null): Promise<string> {
   const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : null;
-  const { data } = await supabaseAdmin()
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", userId)
-    .maybeSingle();
-  if (data?.is_admin && (!safeNext || safeNext.startsWith("/admin") || safeNext === "/us"))
-    return safeNext?.startsWith("/admin") ? safeNext : "/admin";
   return pathFor(await journeyStep(userId), safeNext);
 }

@@ -5,7 +5,21 @@ export type Database = {
   
   "public": {
           Tables: {
-            "age_blocks": {
+            "admin_accounts": {
+                  Row: {
+                    "created_at": string,"email": string,"failed_logins": number,"id": string,"last_login_at": string | null,"locked_until": string | null,"must_change_password": boolean,"name": string,"password_hash": string,"session_version": number,"updated_at": string,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"email": string,"failed_logins"?: number,"id"?: string,"last_login_at"?: string | null,"locked_until"?: string | null,"must_change_password"?: boolean,"name"?: string,"password_hash": string,"session_version"?: number,"updated_at"?: string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"email"?: string,"failed_logins"?: number,"id"?: string,"last_login_at"?: string | null,"locked_until"?: string | null,"must_change_password"?: boolean,"name"?: string,"password_hash"?: string,"session_version"?: number,"updated_at"?: string,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"age_blocks": {
                   Row: {
                     "blocked_until": string,"created_at": string,"key_hash": string
                   }

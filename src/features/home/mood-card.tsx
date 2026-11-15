@@ -10,6 +10,15 @@ import { localParts } from "@/lib/time";
 import { toast } from "@/components/ui/toast";
 
 export const MOODS = ["Cosy", "Missing you", "Wired", "Tired", "Flirty", "Low"] as const;
+/** How each mood reads after a name: "Senya is missing you", "Theo is feeling cosy". */
+const MOOD_PHRASE: Record<string, string> = {
+  Cosy: "is feeling cosy",
+  "Missing you": "is missing you",
+  Wired: "is feeling wired",
+  Tired: "is tired",
+  Flirty: "is feeling flirty",
+  Low: "is feeling low",
+};
 const MOOD_ART: Record<string, string> = {
   Cosy: "mood-cosy",
   "Missing you": "mood-missing",
@@ -83,7 +92,8 @@ export function MoodCard() {
             className="h-10 w-10 flex-none object-contain"
           />
           <span className="text-text min-w-0 text-sm">
-            <span className="font-bold">{partner.name}</span> is feeling {theirs.mood.toLowerCase()}
+            <span className="font-bold">{partner.name}</span>{" "}
+            {MOOD_PHRASE[theirs.mood] ?? `is feeling ${theirs.mood.toLowerCase()}`}
             {theirs.note && (
               <span className="text-muted block truncate">&ldquo;{theirs.note}&rdquo;</span>
             )}

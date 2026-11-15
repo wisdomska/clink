@@ -147,9 +147,9 @@ export async function audit(
   event: string,
   userId: string | null,
   meta: Record<string, Json> = {},
-  actorId?: string,
+  actorId?: string | null,
 ) {
   await supabaseAdmin()
     .from("audit_events")
-    .insert({ event, user_id: userId, actor_id: actorId ?? userId, meta });
+    .insert({ event, user_id: userId, actor_id: actorId === undefined ? userId : actorId, meta });
 }

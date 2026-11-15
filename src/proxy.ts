@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const APP_PREFIXES = ["/us", "/chat", "/play", "/plans", "/keep", "/settings", "/dark", "/admin"];
+// /admin is not here: it has its own sign-in (admin accounts), checked in its layout.
+const APP_PREFIXES = ["/us", "/chat", "/play", "/plans", "/keep", "/settings", "/dark"];
 const NEEDS_SESSION = [
   ...APP_PREFIXES,
   "/onboarding",
@@ -89,7 +90,12 @@ export async function proxy(request: NextRequest) {
   }
 
   // A temporary password must be replaced before anything else opens.
-  if (signedIn && mustChangePassword && !path.startsWith("/account/password")) {
+  if (
+    signedIn &&
+    mustChangePassword &&
+    !path.startsWith("/account/password") &&
+    !path.startsWith("/admin")
+  ) {
     const to = request.nextUrl.clone();
     to.pathname = "/account/password";
     to.search = `?forced=1&next=${encodeURIComponent(path)}`;

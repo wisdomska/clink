@@ -1,13 +1,11 @@
 import { test, expect } from "./fixtures";
-import { admin, makeUser, signIn } from "./helpers";
+import { admin, adminSignIn } from "./helpers";
 
 test("admin: trends, live switches and in-app confirmations", async ({ couple, browser }) => {
   const { nia } = couple;
-  const boss = await makeUser("Ops", { onboarded: true });
-  await admin.from("profiles").update({ is_admin: true }).eq("id", boss.id);
   const ctx = await browser.newContext();
   const p = await ctx.newPage();
-  await signIn(p, boss, "/admin");
+  await adminSignIn(p);
   await p.goto("/admin");
 
   await expect(p.getByRole("heading", { name: "Trends" })).toBeVisible({ timeout: 15000 });

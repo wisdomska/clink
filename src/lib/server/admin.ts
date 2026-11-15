@@ -1,31 +1,25 @@
 import "server-only";
-import { supabaseServer } from "@/lib/supabase/server";
-import { supabaseAdmin } from "@/lib/supabase/admin";
 import { deny, rateLimit, audit } from "@/lib/server/api";
+import { currentAdmin } from "@/lib/server/admin-auth";
 import type { Json } from "@/types/database";
 
 /**
- * Every admin route and API goes through here: signed in and is_admin in the
- * database (granted only by scripts/seed-admin.ts). Admin rate limits are separate.
+ * Every admin route and API goes through here: a signed-in admin portal
+ * session (separate from any Clink user session). A temporary password must
+ * be replaced before anything else works. Admin rate limits are separate.
  */
-export async function requireAdmin(opts: { rate?: number } = {}) {
-  const db = await supabaseServer();
-  const {
-    data: { user },
-  } = await db.auth.getUser();
-  if (!user) throw deny(404, "not_found", "Not found.");
-  const { data: p } = await supabaseAdmin()
-    .from("profiles")
-    .select("is_admin, display_name")
-    .eq("id", user.id)
-    .single();
-  if (!p?.is_admin) throw deny(404, "not_found", "Not found.");
-  await rateLimit(`admin:${user.id}`, opts.rate ?? 600, 3600);
-  return { user, name: p.display_name ?? user.email ?? "admin" };
+export async function requireAdmin(opts: { rate?: number; allowMustChange?: boolean } = {}) {
+  const account = await currentAdmin();
+  if (!account) throw deny(401, "admin_signed_out", "Sign in to the admin portal.");
+  if (account.must_change_password && !opts.allowMustChange)
+    throw deny(403, "admin_must_change", "Set your own password first.");
+  await rateLimit(`admin:${account.id}`, opts.rate ?? 600, 3600);
+  // Audit rows name the linked Clink user when there is one.
+  return { user: { id: account.user_id }, account, name: account.name || account.email };
 }
 
 export async function adminAudit(
-  adminId: string,
+  adminId: string | null,
   event: string,
   meta: Record<string, Json> = {},
   subjectUserId: string | null = null,
