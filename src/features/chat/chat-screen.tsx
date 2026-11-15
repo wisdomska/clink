@@ -17,7 +17,6 @@ import {
   ArrowBendUpLeft,
   Copy,
   Trash,
-  Stop,
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useCouple, useCoupleNow, useCoupleEvent } from "@/features/couple/context";
@@ -31,7 +30,12 @@ import { formatClock } from "@/lib/time";
 import { compressImage } from "@/lib/media/compress";
 import { prepareVideo } from "@/lib/media/video";
 import { uploadMedia } from "@/lib/media/upload";
-import { VoiceRecorder, type Recording } from "@/lib/media/recorder";
+import {
+  VoiceRecorder,
+  RecorderError,
+  RECORDER_MESSAGES,
+  type Recording,
+} from "@/lib/media/recorder";
 import { MAX_PER_SEND } from "@/lib/media-rules";
 import { useMessages, useReactions, useMediaInfo, useOutboxFlush, sendQueued } from "./use-chat";
 import { useQueue, newClientId, type QueuedPayload } from "./queue";
@@ -86,6 +90,7 @@ export function ChatScreen() {
   const listRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const recorder = useRef<VoiceRecorder | null>(null);
+  const [holding, setHolding] = useState(false);
   const fingerDown = useRef(false);
   const heldSince = useRef(0);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -318,8 +323,12 @@ export function ChatScreen() {
       setRecording(true);
       setRecSecs(0);
       haptic("select");
-    } catch {
-      toast("Clink needs your microphone for voice notes.");
+    } catch (e) {
+      toast.err(
+        e instanceof RecorderError
+          ? RECORDER_MESSAGES[e.problem]
+          : "Clink needs your microphone for voice notes.",
+      );
     }
   }
 
@@ -619,10 +628,12 @@ export function ChatScreen() {
                 <span className="mono text-sm">
                   {Math.floor(recSecs / 60)}:{String(recSecs % 60).padStart(2, "0")}
                 </span>
-                <span className="text-muted text-sm">Release to send, up to 3:00</span>
+                <span className="text-muted truncate text-sm">
+                  {holding ? "Release to send" : "Tap send when you're done"}
+                </span>
               </div>
-              <IconButton label="Stop and send" tone="accent" onClick={() => stopRecording(true)}>
-                <Stop size={20} weight="fill" />
+              <IconButton label="Send voice note" tone="accent" onClick={() => stopRecording(true)}>
+                <PaperPlaneRight size={20} weight="fill" />
               </IconButton>
             </>
           ) : (
@@ -673,25 +684,43 @@ export function ChatScreen() {
                 <IconButton
                   label="Hold to record a voice note"
                   tone="accent"
+                  onContextMenu={(e) => e.preventDefault()}
+                  style={{ touchAction: "none", WebkitTouchCallout: "none", userSelect: "none" }}
                   onPointerDown={(e) => {
                     e.preventDefault();
                     // Hold to record: if the finger is still down once recording starts,
                     // lifting it sends. A quick tap (or a permission prompt) leaves it
-                    // recording until Stop.
+                    // recording until you press send. Capturing the pointer keeps the
+                    // release on this button even if the finger drifts or the page scrolls.
+                    try {
+                      e.currentTarget.setPointerCapture(e.pointerId);
+                    } catch {
+                      /* not all browsers allow capture here */
+                    }
                     fingerDown.current = true;
-                    const up = () => {
+                    const done = (ev: PointerEvent) => {
+                      window.removeEventListener("pointerup", done);
+                      window.removeEventListener("pointercancel", done);
                       fingerDown.current = false;
+                      // A cancelled touch (long-press, scroll) keeps recording; only a real
+                      // release after a proper hold sends.
                       if (
+                        ev.type === "pointerup" &&
                         recorder.current &&
                         heldSince.current &&
                         Date.now() - heldSince.current > 400
                       )
                         void stopRecording(true);
                       heldSince.current = 0;
+                      setHolding(false);
                     };
-                    window.addEventListener("pointerup", up, { once: true });
+                    window.addEventListener("pointerup", done);
+                    window.addEventListener("pointercancel", done);
                     void startRecording().then(() => {
-                      if (fingerDown.current) heldSince.current = Date.now();
+                      if (fingerDown.current) {
+                        heldSince.current = Date.now();
+                        setHolding(true);
+                      }
                     });
                   }}
                   onKeyDown={(e) =>

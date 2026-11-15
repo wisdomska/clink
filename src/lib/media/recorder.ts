@@ -2,8 +2,15 @@
 
 export const VOICE_MAX_S = 180;
 
+// AAC in MP4 first: it plays on every phone (WebM/Opus often won't play on iPhone).
 function pickAudioMime(): string {
-  const options = ["audio/webm;codecs=opus", "audio/mp4", "audio/ogg;codecs=opus", "audio/webm"];
+  const options = [
+    "audio/mp4;codecs=mp4a.40.2",
+    "audio/mp4",
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/ogg;codecs=opus",
+  ];
   return (
     options.find((m) => typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(m)) ??
     ""
@@ -38,6 +45,20 @@ export interface Recording {
   waveform: number[];
 }
 
+export type RecorderProblem = "unsupported" | "blocked" | "no_mic" | "busy";
+export class RecorderError extends Error {
+  constructor(public problem: RecorderProblem) {
+    super(problem);
+  }
+}
+
+export const RECORDER_MESSAGES: Record<RecorderProblem, string> = {
+  unsupported: "This browser can't record audio. Update it, or try Chrome or Safari.",
+  blocked: "The microphone is blocked for Clink. Allow it in your browser's site settings.",
+  no_mic: "No microphone found on this device.",
+  busy: "The microphone is busy in another app. Close it and try again.",
+};
+
 /** Hold-to-record voice notes, capped at 3 minutes (CHAT-02). */
 export class VoiceRecorder {
   private rec: MediaRecorder | null = null;
@@ -48,14 +69,31 @@ export class VoiceRecorder {
   onAutoStop?: () => void;
 
   async start() {
-    this.stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true },
-    });
+    if (typeof MediaRecorder === "undefined" || !navigator.mediaDevices?.getUserMedia)
+      throw new RecorderError("unsupported");
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true },
+      });
+    } catch (e) {
+      const name = (e as DOMException)?.name;
+      throw new RecorderError(
+        name === "NotAllowedError" || name === "SecurityError"
+          ? "blocked"
+          : name === "NotFoundError" || name === "OverconstrainedError"
+            ? "no_mic"
+            : "busy",
+      );
+    }
     const mime = pickAudioMime();
-    this.rec = new MediaRecorder(
-      this.stream,
-      mime ? { mimeType: mime, audioBitsPerSecond: 48_000 } : undefined,
-    );
+    try {
+      this.rec = new MediaRecorder(
+        this.stream,
+        mime ? { mimeType: mime, audioBitsPerSecond: 48_000 } : undefined,
+      );
+    } catch {
+      this.rec = new MediaRecorder(this.stream); // let the browser pick its own format
+    }
     this.chunks = [];
     this.rec.ondataavailable = (e) => e.data.size && this.chunks.push(e.data);
     this.rec.start(250);
@@ -77,7 +115,8 @@ export class VoiceRecorder {
     this.stream?.getTracks().forEach((t) => t.stop());
     const durationS = Math.min(VOICE_MAX_S, (performance.now() - this.started) / 1000);
     this.rec = null;
-    const blob = new Blob(this.chunks, { type: (rec.mimeType || "audio/webm").split(";")[0] });
+    const type = (rec.mimeType || this.chunks[0]?.type || "audio/webm").split(";")[0]!;
+    const blob = new Blob(this.chunks, { type });
     if (durationS < 0.6 || blob.size === 0) return null;
     return { blob, durationS: Math.round(durationS * 10) / 10, waveform: await peaks(blob) };
   }
