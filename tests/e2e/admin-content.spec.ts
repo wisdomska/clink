@@ -21,7 +21,7 @@ test("admin content access: reason required, every look logged, After Dark never
   });
   expect(bare.status()).toBe(422);
 
-  await p.goto(`/admin/users/${nia.id}`);
+  await p.goto(`/admin/users/${nia.id}?tab=conversation`);
   await p.getByLabel("Why do you need to look?").fill("Checking report about harassment");
   await p.getByRole("button", { name: "Open conversation" }).click();
   await expect(p.getByText("hello from nia 4471")).toBeVisible();

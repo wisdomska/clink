@@ -26,6 +26,7 @@ import { AccountRows } from "./accounts";
 import { RitualTimeRows } from "./ritual-time";
 import { PrivacyCard } from "./privacy";
 import { FeelCard } from "./feel";
+import { NavTabs, TabPanel, useTab } from "@/components/ui/nav-tabs";
 import { AppearanceCard } from "./appearance";
 import { IdentityPicker } from "@/components/clink/identity-picker";
 import { asIdentity } from "@/lib/app-identity";
@@ -75,6 +76,13 @@ function Row({
   return <div className={cls}>{children}</div>;
 }
 
+const SETTINGS_TABS = [
+  { value: "look", label: "Look and feel" },
+  { value: "alerts", label: "Notifications" },
+  { value: "privacy", label: "Privacy" },
+  { value: "account", label: "Account" },
+] as const;
+
 export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myTiers: string[] }) {
   const router = useRouter();
   const ctx = useCouple();
@@ -102,6 +110,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
   const [quietOpen, setQuietOpen] = useState(false);
   const [startedOn, setStartedOn] = useState(ctx.startedOn ?? "");
   const [busy, setBusy] = useState(false);
+  const tab = useTab(SETTINGS_TABS);
 
   async function tog(k: string, v: boolean) {
     const prev = notify[k];
@@ -148,202 +157,218 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
         </Button>
       </div>
 
-      <h2 className="m-0 mt-1 text-lg font-bold">Notifications</h2>
-      <div className="rounded-card border-line bg-s1 overflow-hidden border">
-        <Toggle
-          label="Clinks"
-          checked={notify.clinks !== false}
-          onChange={(v) => tog("clinks", v)}
-        />
-        <Toggle label="Chat" checked={notify.chat !== false} onChange={(v) => tog("chat", v)} />
-        <Toggle
-          label="Games"
-          sub="Your turn and invites"
-          checked={notify.games !== false}
-          onChange={(v) => tog("games", v)}
-        />
-        <Toggle
-          label="Dates"
-          sub="1 day and 1 hour before"
-          checked={notify.dates !== false}
-          onChange={(v) => tog("dates", v)}
-        />
-        <Toggle
-          label="Keepsakes"
-          sub="Letters opened, capsules ready"
-          checked={notify.keepsakes !== false}
-          onChange={(v) => tog("keepsakes", v)}
-        />
-        <Toggle
-          label="After Dark"
-          sub='Says only "New moment in Clink", so your lock screen gives nothing away'
-          checked={notify.dark === true}
-          onChange={(v) => tog("dark", v)}
-        />
-        <Toggle
-          label="Show message text"
-          sub='Off: "New moment in Clink". Never for After Dark.'
-          checked={notify.detailed === true}
-          onChange={(v) => tog("detailed", v)}
-        />
-        <Row onClick={() => setQuietOpen(true)}>
-          <span>Quiet hours</span>
-          <span className="mono text-muted text-sm">
-            {quiet.start} to {quiet.end}
-          </span>
-        </Row>
-        <Row
-          last
-          onClick={async () => {
-            const r = await enablePush();
-            toast(
-              r === "granted"
-                ? "This device gets notifications."
-                : r === "unsupported"
-                  ? "Install Clink first, then turn these on."
-                  : "Notifications are blocked in your browser settings.",
-            );
-          }}
-        >
-          <span className="flex items-center gap-2">
-            <BellRinging size={18} aria-hidden /> Notifications on this device
-          </span>
-          <CaretRight size={18} className="text-faint" aria-hidden />
-        </Row>
-      </div>
+      <NavTabs label="Settings sections" tabs={SETTINGS_TABS} />
 
-      <AppearanceCard />
-      <FeelCard />
+      {tab === "look" && (
+        <TabPanel key="look" className="flex flex-col gap-4">
+          <AppearanceCard />
+          <FeelCard />
+          <h2 className="m-0 mt-1 text-lg font-bold">App icon and name</h2>
+          <IdentityPicker value={icon} onChange={setIcon} />
+        </TabPanel>
+      )}
 
-      <h2 className="m-0 mt-1 text-lg font-bold">App icon and name</h2>
-      <IdentityPicker value={icon} onChange={setIcon} />
-
-      <h2 className="m-0 mt-1 text-lg font-bold">After Dark</h2>
-      <div className="rounded-card border-line bg-s1 overflow-hidden border">
-        {darkSetUp ? (
-          <>
+      {tab === "alerts" && (
+        <TabPanel key="alerts" className="flex flex-col gap-4">
+          <h2 className="sr-only">Notifications</h2>
+          <div className="rounded-card border-line bg-s1 overflow-hidden border">
             <Toggle
-              label="Allow saved spicy media"
-              sub={
-                savedBoth
-                  ? "On for both of you"
-                  : saved
-                    ? `On for you. Waiting on ${partner.name}.`
-                    : "You both need this on"
-              }
-              checked={saved}
-              onChange={async (v) => {
-                setSaved(v);
-                const r = await fetch("/api/couple/allow-saved", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ allow: v }),
-                });
-                const d = await r.json();
-                setSavedBoth(Boolean(d.both));
-              }}
+              label="Clinks"
+              checked={notify.clinks !== false}
+              onChange={(v) => tog("clinks", v)}
             />
-            <Row href="/dark/consent" last>
-              <span>Your tiers</span>
-              <span className="text-muted text-sm font-normal">
-                {myTiers.length ? myTiers.join(", ") : "None yet"}
+            <Toggle label="Chat" checked={notify.chat !== false} onChange={(v) => tog("chat", v)} />
+            <Toggle
+              label="Games"
+              sub="Your turn and invites"
+              checked={notify.games !== false}
+              onChange={(v) => tog("games", v)}
+            />
+            <Toggle
+              label="Dates"
+              sub="1 day and 1 hour before"
+              checked={notify.dates !== false}
+              onChange={(v) => tog("dates", v)}
+            />
+            <Toggle
+              label="Keepsakes"
+              sub="Letters opened, capsules ready"
+              checked={notify.keepsakes !== false}
+              onChange={(v) => tog("keepsakes", v)}
+            />
+            <Toggle
+              label="After Dark"
+              sub='Says only "New moment in Clink", so your lock screen gives nothing away'
+              checked={notify.dark === true}
+              onChange={(v) => tog("dark", v)}
+            />
+            <Toggle
+              label="Show message text"
+              sub='Off: "New moment in Clink". Never for After Dark.'
+              checked={notify.detailed === true}
+              onChange={(v) => tog("detailed", v)}
+            />
+            <Row onClick={() => setQuietOpen(true)}>
+              <span>Quiet hours</span>
+              <span className="mono text-muted text-sm">
+                {quiet.start} to {quiet.end}
               </span>
             </Row>
-          </>
-        ) : (
-          <Row href="/dark/setup" last>
-            <span>
-              Set up After Dark
-              <span className="text-faint block text-[13px] font-normal">
-                18+, private, opens only when you both say yes.
+            <Row
+              last
+              onClick={async () => {
+                const r = await enablePush();
+                toast(
+                  r === "granted"
+                    ? "This device gets notifications."
+                    : r === "unsupported"
+                      ? "Install Clink first, then turn these on."
+                      : "Notifications are blocked in your browser settings.",
+                );
+              }}
+            >
+              <span className="flex items-center gap-2">
+                <BellRinging size={18} aria-hidden /> Notifications on this device
               </span>
-            </span>
-            <CaretRight size={18} className="text-faint" aria-hidden />
-          </Row>
-        )}
-      </div>
+              <CaretRight size={18} className="text-faint" aria-hidden />
+            </Row>
+          </div>
+        </TabPanel>
+      )}
 
-      <PrivacyCard />
+      {tab === "privacy" && (
+        <TabPanel key="privacy" className="flex flex-col gap-4">
+          <PrivacyCard />
+          <h2 className="m-0 mt-1 text-lg font-bold">After Dark</h2>
+          <div className="rounded-card border-line bg-s1 overflow-hidden border">
+            {darkSetUp ? (
+              <>
+                <Toggle
+                  label="Allow saved spicy media"
+                  sub={
+                    savedBoth
+                      ? "On for both of you"
+                      : saved
+                        ? `On for you. Waiting on ${partner.name}.`
+                        : "You both need this on"
+                  }
+                  checked={saved}
+                  onChange={async (v) => {
+                    setSaved(v);
+                    const r = await fetch("/api/couple/allow-saved", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ allow: v }),
+                    });
+                    const d = await r.json();
+                    setSavedBoth(Boolean(d.both));
+                  }}
+                />
+                <Row href="/dark/consent" last>
+                  <span>Your tiers</span>
+                  <span className="text-muted text-sm font-normal">
+                    {myTiers.length ? myTiers.join(", ") : "None yet"}
+                  </span>
+                </Row>
+              </>
+            ) : (
+              <Row href="/dark/setup" last>
+                <span>
+                  Set up After Dark
+                  <span className="text-faint block text-[13px] font-normal">
+                    18+, private, opens only when you both say yes.
+                  </span>
+                </span>
+                <CaretRight size={18} className="text-faint" aria-hidden />
+              </Row>
+            )}
+          </div>
+        </TabPanel>
+      )}
 
-      <h2 className="m-0 mt-1 text-lg font-bold">Linking and account</h2>
-      <div className="rounded-card border-line bg-s1 overflow-hidden border">
-        <Row>
-          <span>Linked with {partner.name}</span>
-          <span className="mono text-muted text-[13px]">SINCE {since}</span>
-        </Row>
-        <div className="border-line flex min-h-14 items-center justify-between gap-3 border-b px-4 py-2.5">
-          <label htmlFor="started" className="text-base font-medium">
-            Together since
-          </label>
-          <input
-            id="started"
-            type="date"
-            value={startedOn}
-            max={new Date().toISOString().slice(0, 10)}
-            onChange={async (e) => {
-              setStartedOn(e.target.value);
-              const r = await fetch("/api/couple", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ started_on: e.target.value || null }),
-              });
-              if (r.ok) toast("Saved. It's on your timeline.");
-            }}
-            className="mono rounded-input border-line bg-s2 text-text h-10 border px-3 text-sm"
-          />
-        </div>
-        <RitualTimeRows />
-        <AccountRows />
-        <PasskeyRows />
-        <Row href="/help">
-          Help and safety
-          <CaretRight size={18} className="text-faint" aria-hidden />
-        </Row>
-        <Row
-          onClick={async () => {
-            setBusy(true);
-            const r = await fetch("/api/me/export", { method: "POST" });
-            const d = await r.json();
-            setBusy(false);
-            if (!r.ok) return toast.err(d.message ?? "Couldn't build your export.");
-            window.location.href = d.url;
-            toast("Your export is ready. The link works for 48 h.");
-          }}
-        >
-          {busy ? "Packing your data" : "Download my data"}
-          <CaretRight size={18} className="text-faint" aria-hidden />
-        </Row>
-        <Row
-          onClick={async () => {
-            await fetch("/api/auth/signout", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ everywhere: false }),
-            });
-            window.location.href = "/";
-          }}
-        >
-          Sign out
-        </Row>
-        <Row
-          onClick={async () => {
-            await fetch("/api/auth/signout", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ everywhere: true }),
-            });
-            window.location.href = "/login";
-          }}
-        >
-          Sign out of all devices
-        </Row>
-        <Row danger onClick={() => setUnlink(1)}>
-          Unlink from {partner.name}
-        </Row>
-        <Row danger last onClick={() => setDel(true)}>
-          Delete my account
-        </Row>
-      </div>
+      {tab === "account" && (
+        <TabPanel key="account" className="flex flex-col gap-4">
+          <h2 className="m-0 mt-1 text-lg font-bold">Linking and account</h2>
+          <div className="rounded-card border-line bg-s1 overflow-hidden border">
+            <Row>
+              <span>Linked with {partner.name}</span>
+              <span className="mono text-muted text-[13px]">SINCE {since}</span>
+            </Row>
+            <div className="border-line flex min-h-14 items-center justify-between gap-3 border-b px-4 py-2.5">
+              <label htmlFor="started" className="text-base font-medium">
+                Together since
+              </label>
+              <input
+                id="started"
+                type="date"
+                value={startedOn}
+                max={new Date().toISOString().slice(0, 10)}
+                onChange={async (e) => {
+                  setStartedOn(e.target.value);
+                  const r = await fetch("/api/couple", {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ started_on: e.target.value || null }),
+                  });
+                  if (r.ok) toast("Saved. It's on your timeline.");
+                }}
+                className="mono rounded-input border-line bg-s2 text-text h-10 border px-3 text-sm"
+              />
+            </div>
+            <RitualTimeRows />
+            <AccountRows />
+            <PasskeyRows />
+            <Row href="/help">
+              Help and safety
+              <CaretRight size={18} className="text-faint" aria-hidden />
+            </Row>
+            <Row
+              onClick={async () => {
+                setBusy(true);
+                const r = await fetch("/api/me/export", { method: "POST" });
+                const d = await r.json();
+                setBusy(false);
+                if (!r.ok) return toast.err(d.message ?? "Couldn't build your export.");
+                window.location.href = d.url;
+                toast("Your export is ready. The link works for 48 h.");
+              }}
+            >
+              {busy ? "Packing your data" : "Download my data"}
+              <CaretRight size={18} className="text-faint" aria-hidden />
+            </Row>
+            <Row
+              onClick={async () => {
+                await fetch("/api/auth/signout", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ everywhere: false }),
+                });
+                window.location.href = "/";
+              }}
+            >
+              Sign out
+            </Row>
+            <Row
+              onClick={async () => {
+                await fetch("/api/auth/signout", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ everywhere: true }),
+                });
+                window.location.href = "/login";
+              }}
+            >
+              Sign out of all devices
+            </Row>
+            <Row danger onClick={() => setUnlink(1)}>
+              Unlink from {partner.name}
+            </Row>
+            <Row danger last onClick={() => setDel(true)}>
+              Delete my account
+            </Row>
+          </div>
+        </TabPanel>
+      )}
 
       <Sheet
         open={unlink > 0}

@@ -5,7 +5,7 @@ import { admin } from "./helpers";
 // CHAT-07: discreet mode for everyone, and an optional PIN asked for when Clink opens.
 test("PIN on open locks the app until it is entered", async ({ couple }) => {
   const { a, b, nia } = couple;
-  await a.goto("/settings");
+  await a.goto("/settings?tab=privacy");
   await expect(a.getByRole("switch", { name: /Discreet mode/ })).toBeVisible();
   await a.getByRole("button", { name: /Ask for a PIN on open/ }).click();
   await a.getByLabel("New PIN").fill("2468");

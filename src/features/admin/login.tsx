@@ -46,6 +46,9 @@ export function AdminLogin({ next }: { next: string }) {
       const saved = localStorage.getItem(REMEMBER);
       if (saved)
         requestAnimationFrame(() => {
+          // Never overwrite something already typed.
+          const typed = (document.getElementById("admin-email") as HTMLInputElement | null)?.value;
+          if (typed) return;
           setEmail(saved);
           pwRef.current?.focus();
         });

@@ -34,7 +34,7 @@ test("password sign-in with a temporary password forces a new one first", async 
   await expect(a).toHaveURL(/\/(us|chat)/);
   const { data } = await admin.auth.admin.getUserById(nia.id);
   expect(data.user?.app_metadata.must_change_password).toBe(false);
-  await a.goto("/settings");
+  await a.goto("/settings?tab=account");
   await expect(a).toHaveURL(/\/settings/);
 
   // The new password works; the temporary one no longer does.
@@ -52,7 +52,7 @@ test("password sign-in with a temporary password forces a new one first", async 
 test("switch between two accounts on one device without signing in again", async ({ couple }) => {
   const { a, nia, theo } = couple;
   await admin.auth.admin.updateUserById(theo.id, { password: "Theo-Password-2026" });
-  await a.goto("/settings");
+  await a.goto("/settings?tab=account");
   await a.getByRole("button", { name: /Switch account/ }).click();
   await expect(a.getByRole("dialog").getByText(nia.email)).toBeVisible();
   await a.getByRole("button", { name: "Add another account" }).click();
@@ -64,7 +64,7 @@ test("switch between two accounts on one device without signing in again", async
   await expect(a).toHaveURL(/\/us/);
 
   // Both accounts are listed; hop back to Nia with one tap.
-  await a.goto("/settings");
+  await a.goto("/settings?tab=account");
   await a.getByRole("button", { name: /Switch account/ }).click();
   const sheet = a.getByRole("dialog");
   await expect(sheet.getByText(theo.email)).toBeVisible();
@@ -76,7 +76,7 @@ test("switch between two accounts on one device without signing in again", async
   expect((await (await a.request.get("/api/me/state")).json()).partner).toBe(theo.name);
 
   // And back to Theo again: his saved sign-in still works after Nia's refreshed.
-  await a.goto("/settings");
+  await a.goto("/settings?tab=account");
   await a.getByRole("button", { name: /Switch account/ }).click();
   await a
     .getByRole("dialog")
@@ -88,7 +88,7 @@ test("switch between two accounts on one device without signing in again", async
 
 test("change email asks for confirmation", async ({ couple }) => {
   const { a } = couple;
-  await a.goto("/settings");
+  await a.goto("/settings?tab=account");
   await a.getByRole("button", { name: /^Email/ }).click();
   await a.getByLabel("New email").fill("not-an-email");
   await a.getByRole("button", { name: "Send confirmation" }).click();

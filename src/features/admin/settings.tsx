@@ -7,7 +7,16 @@ import { Toggle } from "@/components/ui/toggle";
 import { Textarea, Input, Label } from "@/components/ui/field";
 import { Segmented } from "@/components/ui/segmented";
 import { toast } from "@/components/ui/toast";
+import { NavTabs, TabPanel, useTab } from "@/components/ui/nav-tabs";
+import { Flag, Megaphone, UserCircle } from "@phosphor-icons/react";
+import { AdminAccountForm } from "./account";
 import { adminFetch } from "./fetch";
+
+const TABS = [
+  { value: "banner", label: "Banner", icon: <Megaphone size={16} weight="fill" aria-hidden /> },
+  { value: "flags", label: "Feature flags", icon: <Flag size={16} weight="fill" aria-hidden /> },
+  { value: "login", label: "Your login", icon: <UserCircle size={16} weight="fill" aria-hidden /> },
+] as const;
 
 interface Data {
   flags: Array<{ key: string; enabled: boolean; description: string | null }>;
@@ -20,7 +29,7 @@ interface Data {
   }>;
 }
 
-/** Feature flags, maintenance banner, announcement to all users. */
+/** Banner for everyone, feature flags, and your own admin login, one tab each. */
 export function AdminSettings() {
   const qc = useQueryClient();
   const { data } = useQuery({
@@ -31,47 +40,87 @@ export function AdminSettings() {
   const [body, setBody] = useState("");
   const [newFlag, setNewFlag] = useState("");
   const refresh = () => qc.invalidateQueries({ queryKey: ["admin-settings"] });
+  const tab = useTab(TABS);
+  const live = (data?.announcements ?? []).filter((a) => a.active);
   return (
     <div className="an-screen flex max-w-[760px] flex-col gap-6">
-      <Display size={36}>Settings</Display>
-      <section className="flex flex-col gap-3">
-        <h2 className="m-0 text-lg font-bold">Banner</h2>
-        <Segmented
-          label="Kind"
-          value={kind}
-          onChange={setKind}
-          options={[
-            { value: "announcement", label: "Announcement" },
-            { value: "maintenance", label: "Maintenance" },
-          ]}
-        />
-        <Textarea
-          aria-label="Banner text"
-          value={body}
-          maxLength={280}
-          placeholder={
-            kind === "maintenance"
-              ? "Clink is getting a tune-up tonight at 23:00 UTC. Back in 10 minutes."
-              : "New: a stargazing playlist for date night."
-          }
-          onChange={(e) => setBody(e.target.value)}
-        />
-        <Button
-          className="self-start"
-          disabled={!body.trim()}
-          onClick={async () => {
-            await adminFetch("/api/admin/settings", { body: { action: "announce", kind, body } });
-            setBody("");
-            toast("Live for everyone.");
-            void refresh();
-          }}
-        >
-          Publish
-        </Button>
-        <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
-          {(data?.announcements ?? [])
-            .filter((a) => a.active)
-            .map((a) => (
+      <div className="flex flex-col gap-1">
+        <Display size={36}>Settings</Display>
+        <p className="text-muted m-0 text-sm">
+          Talk to every couple at once, switch features on and off, and manage your admin login.
+        </p>
+      </div>
+      <NavTabs
+        label="Settings sections"
+        tabs={TABS.map((t) =>
+          t.value === "banner"
+            ? { ...t, count: live.length }
+            : t.value === "flags"
+              ? { ...t, count: data?.flags.length }
+              : t,
+        )}
+        className="self-start"
+      />
+      {tab === "banner" && (
+        <TabPanel key="banner" className="flex flex-col gap-4">
+          <p className="text-muted m-0 text-sm">
+            A banner shows at the top of the app for everyone until you take it down. Use
+            Maintenance for downtime notices.
+          </p>
+          <Segmented
+            label="Kind"
+            value={kind}
+            onChange={setKind}
+            options={[
+              { value: "announcement", label: "Announcement" },
+              { value: "maintenance", label: "Maintenance" },
+            ]}
+          />
+          <div className="rounded-card border-line overflow-hidden border" aria-hidden>
+            <div className="mono text-faint bg-s1 border-line border-b px-4 py-2 text-[11px] tracking-wide">
+              PREVIEW
+            </div>
+            <div
+              className={
+                kind === "maintenance"
+                  ? "bg-warning/15 text-text px-4 py-3 text-sm font-medium"
+                  : "text-text px-4 py-3 text-sm font-medium"
+              }
+              style={
+                kind === "maintenance"
+                  ? undefined
+                  : { background: "var(--brand-gradient)", color: "var(--on-accent)" }
+              }
+            >
+              {body.trim() || "Your message shows here."}
+            </div>
+          </div>
+          <Textarea
+            aria-label="Banner text"
+            value={body}
+            maxLength={280}
+            placeholder={
+              kind === "maintenance"
+                ? "Clink is getting a tune-up tonight at 23:00 UTC. Back in 10 minutes."
+                : "New: a stargazing playlist for date night."
+            }
+            onChange={(e) => setBody(e.target.value)}
+          />
+          <Button
+            className="self-start"
+            disabled={!body.trim()}
+            onClick={async () => {
+              await adminFetch("/api/admin/settings", { body: { action: "announce", kind, body } });
+              setBody("");
+              toast.ok("Live for everyone.");
+              void refresh();
+            }}
+          >
+            Publish
+          </Button>
+          {live.length > 0 && <h2 className="m-0 mt-2 text-base font-bold">Live now</h2>}
+          <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+            {live.map((a) => (
               <li
                 key={a.id}
                 className="rounded-input border-line bg-s1 flex items-center gap-3 border px-3 py-2 text-sm"
@@ -92,59 +141,74 @@ export function AdminSettings() {
                 </Button>
               </li>
             ))}
-        </ul>
-      </section>
-      <section className="flex flex-col gap-3">
-        <h2 className="m-0 text-lg font-bold">Feature flags</h2>
-        <div className="rounded-card border-line bg-s1 overflow-hidden border">
-          {(data?.flags ?? []).map((f, i, arr) => (
-            <Toggle
-              key={f.key}
-              label={f.key}
-              sub={f.description ?? undefined}
-              checked={f.enabled}
-              last={i === arr.length - 1}
-              onChange={async (v) => {
+          </ul>
+        </TabPanel>
+      )}
+      {tab === "flags" && (
+        <TabPanel key="flags" className="flex flex-col gap-4">
+          <p className="text-muted m-0 text-sm">
+            Flags switch unfinished features on for everyone, or off again, without a release. New
+            flags start off.
+          </p>
+          <div className="rounded-card border-line bg-s1 overflow-hidden border">
+            {(data?.flags ?? []).map((f, i, arr) => (
+              <Toggle
+                key={f.key}
+                label={f.key}
+                sub={f.description ?? undefined}
+                checked={f.enabled}
+                last={i === arr.length - 1}
+                onChange={async (v) => {
+                  await adminFetch("/api/admin/settings", {
+                    body: {
+                      action: "flag",
+                      key: f.key,
+                      enabled: v,
+                      description: f.description ?? undefined,
+                    },
+                  });
+                  void refresh();
+                }}
+              />
+            ))}
+            {!data?.flags.length && (
+              <p className="text-muted m-0 p-4 text-sm">No flags yet. Add one below.</p>
+            )}
+          </div>
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <Label htmlFor="flag">New flag key</Label>
+              <Input
+                id="flag"
+                value={newFlag}
+                placeholder="watch_party_beta"
+                onChange={(e) =>
+                  setNewFlag(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))
+                }
+              />
+            </div>
+            <Button
+              size="lg"
+              variant="secondary"
+              disabled={newFlag.length < 2}
+              onClick={async () => {
                 await adminFetch("/api/admin/settings", {
-                  body: {
-                    action: "flag",
-                    key: f.key,
-                    enabled: v,
-                    description: f.description ?? undefined,
-                  },
+                  body: { action: "flag", key: newFlag, enabled: false },
                 });
+                setNewFlag("");
                 void refresh();
               }}
-            />
-          ))}
-          {!data?.flags.length && <p className="text-muted m-0 p-4 text-sm">No flags yet.</p>}
-        </div>
-        <div className="flex items-end gap-2">
-          <div className="flex-1">
-            <Label htmlFor="flag">New flag key</Label>
-            <Input
-              id="flag"
-              value={newFlag}
-              placeholder="watch_party_beta"
-              onChange={(e) => setNewFlag(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
-            />
+            >
+              Add flag
+            </Button>
           </div>
-          <Button
-            size="lg"
-            variant="secondary"
-            disabled={newFlag.length < 2}
-            onClick={async () => {
-              await adminFetch("/api/admin/settings", {
-                body: { action: "flag", key: newFlag, enabled: false },
-              });
-              setNewFlag("");
-              void refresh();
-            }}
-          >
-            Add
-          </Button>
-        </div>
-      </section>
+        </TabPanel>
+      )}
+      {tab === "login" && (
+        <TabPanel key="login" className="border-line bg-s1 max-w-[520px] rounded-[24px] border p-5">
+          <AdminAccountForm />
+        </TabPanel>
+      )}
     </div>
   );
 }

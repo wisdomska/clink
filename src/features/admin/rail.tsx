@@ -13,6 +13,7 @@ import {
   X,
   SignOut,
 } from "@phosphor-icons/react";
+import { motion } from "motion/react";
 import { cn } from "@/components/ui/cn";
 import { Logo } from "@/components/brand/logo";
 
@@ -39,20 +40,31 @@ export function AdminRail({ name }: { name: string }) {
             onClick={() => setOpen(false)}
             aria-current={on ? "page" : undefined}
             className={cn(
-              "press flex h-11 items-center gap-3 rounded-full px-3 text-sm font-medium",
-              on ? "bg-s1 text-text hover:text-text" : "text-muted hover:bg-s1 hover:text-text",
+              "press group relative flex h-11 items-center gap-3 rounded-full px-3 text-sm font-medium",
+              on ? "text-text hover:text-text" : "text-muted hover:bg-s1 hover:text-text",
             )}
           >
+            {on && (
+              <motion.span
+                layoutId="admin-rail-active"
+                className="bg-s2 border-line absolute inset-0 rounded-full border"
+                transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                aria-hidden
+              />
+            )}
             <span
-              className="flex h-[28px] w-10 items-center justify-center rounded-full"
+              className={cn(
+                "relative flex h-[28px] w-10 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-110",
+                on && "shadow-[0_6px_18px_-6px_var(--accent)]",
+              )}
               style={{
-                background: on ? "var(--accent)" : "transparent",
+                background: on ? "var(--brand-gradient)" : "transparent",
                 color: on ? "var(--on-accent)" : "currentColor",
               }}
             >
-              <Icon size={20} aria-hidden />
+              <Icon size={20} weight={on ? "fill" : "regular"} aria-hidden />
             </span>
-            {label}
+            <span className="relative">{label}</span>
           </Link>
         );
       })}
@@ -61,8 +73,9 @@ export function AdminRail({ name }: { name: string }) {
   return (
     <>
       <div className="border-line bg-app sticky top-0 z-20 flex items-center justify-between border-b px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-2 lg:hidden">
-        <span className="display text-[24px]">
-          clink <span className="mono text-faint text-xs">ADMIN</span>
+        <span className="flex items-center gap-2">
+          <Logo size={22} />
+          <AdminChip />
         </span>
         <button
           type="button"
@@ -75,13 +88,15 @@ export function AdminRail({ name }: { name: string }) {
       </div>
       {open && <div className="border-line bg-app border-b p-3 lg:hidden">{nav}</div>}
       <aside className="border-line sticky top-0 hidden h-dvh flex-col border-r px-3 py-6 lg:flex">
-        <div className="mb-1 px-3">
+        <div className="mb-8 flex items-center gap-2 px-3">
           <Logo size={26} />
+          <AdminChip />
         </div>
-        <div className="mono text-faint mb-8 px-3 text-xs">ADMIN · CONTENT ACCESS IS LOGGED</div>
         {nav}
         <div className="mt-auto flex flex-col gap-2 px-3">
-          <div className="text-faint truncate text-xs">{name}</div>
+          <div className="text-faint truncate text-xs" title={name}>
+            Signed in as {name}
+          </div>
           <button
             type="button"
             onClick={async () => {
@@ -95,5 +110,13 @@ export function AdminRail({ name }: { name: string }) {
         </div>
       </aside>
     </>
+  );
+}
+
+function AdminChip() {
+  return (
+    <span className="mono border-accent/40 text-accent rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-[0.18em]">
+      ADMIN
+    </span>
   );
 }

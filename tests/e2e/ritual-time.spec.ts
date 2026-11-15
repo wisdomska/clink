@@ -5,12 +5,12 @@ import { admin } from "./helpers";
 // HOME-08: the ritual time changes only when both partners agree.
 test("ritual time needs both partners to agree", async ({ couple }) => {
   const { a, b, nia, theo } = couple;
-  await a.goto("/settings");
+  await a.goto("/settings?tab=account");
   await a.getByLabel(/Ritual time/).fill("20:30");
   await a.getByRole("button", { name: "Suggest" }).click();
   await expect(a.getByText(`You suggested 20:30. Waiting for ${theo.name}.`)).toBeVisible();
 
-  await b.goto("/settings");
+  await b.goto("/settings?tab=account");
   // Wait for the settled screen (a navigation can briefly overlap two renders).
   await expect(b.getByText(`${nia.name} suggested 20:30.`)).toHaveCount(1);
   await expect(b.getByText(`${nia.name} suggested 20:30.`)).toBeVisible();

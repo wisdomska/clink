@@ -28,6 +28,7 @@ import { GAME_META } from "@/features/play/meta";
 import type { GameType } from "@/features/play/engines/types";
 import { adminFetch } from "./fetch";
 import { useConfirm } from "./ui";
+import { NavTabs, TabPanel, useTab } from "@/components/ui/nav-tabs";
 import { AdminConversation } from "./conversation";
 
 interface Detail {
@@ -188,11 +189,19 @@ function Card({
   );
 }
 
+const TABS = [
+  { value: "overview", label: "Overview" },
+  { value: "profile", label: "Profile" },
+  { value: "conversation", label: "Conversation" },
+  { value: "history", label: "History" },
+] as const;
+
 /** One user, in detail: account, activity and (behind a logged reason) their chat. */
 export function UserDetail({ id }: { id: string }) {
   const router = useRouter();
   const qc = useQueryClient();
   const { ask, dialog } = useConfirm();
+  const tab = useTab(TABS);
   const {
     data: d,
     isLoading,
@@ -261,6 +270,9 @@ export function UserDetail({ id }: { id: string }) {
   const name = p?.display_name || "No name yet";
   const max = Math.max(1, ...d.chart.map((c) => c.n));
   const active = d.chart.filter((c) => c.n > 0).length;
+  const tabs = TABS.map((t) =>
+    t.value === "history" ? { ...t, count: d.reports.about.length + d.reports.by.length } : t,
+  );
   const status = p?.suspended_at ? "Suspended" : !d.account.confirmedAt ? "Unconfirmed" : "Active";
 
   return (
@@ -345,282 +357,308 @@ export function UserDetail({ id }: { id: string }) {
         </div>
       </header>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat
-          icon={<ChatCircle size={14} />}
-          label="Messages"
-          value={d.counts.messagesTotal}
-          sub={`${d.counts.messages7} this week · ${d.counts.messages30} in 30 days`}
-        />
-        <Stat
-          icon={<Wine size={14} />}
-          label="Clinks sent"
-          value={d.counts.clinksTotal}
-          sub={`${d.counts.clinks30} in 30 days`}
-        />
-        <Stat
-          icon={<GameController size={14} />}
-          label="Games finished"
-          value={d.couple?.games.finished ?? 0}
-          sub={d.couple ? `${d.couple.games.won} won` : "Not linked"}
-        />
-        <Stat
-          icon={<HardDrives size={14} />}
-          label="Storage"
-          value={bytes(d.storage.bytes)}
-          sub={`${d.storage.files} files`}
-        />
-      </div>
+      <NavTabs label="User sections" tabs={tabs} className="self-start" />
 
-      <Card title="Activity, last 30 days">
-        <div
-          className="flex h-28 items-end gap-[3px]"
-          role="img"
-          aria-label={`Active on ${active} of the last 30 days`}
-        >
-          {d.chart.map((c) => (
-            <div key={c.day} className="group relative flex h-full flex-1 items-end">
-              <div
-                className="bg-accent w-full rounded-t-[4px] transition-[height] duration-500"
-                style={{
-                  height: `${Math.max(c.n ? 6 : 2, (c.n / max) * 100)}%`,
-                  opacity: c.n ? 1 : 0.2,
-                }}
-              />
-              <span className="bg-s3 pointer-events-none absolute -top-8 left-1/2 z-10 hidden -translate-x-1/2 rounded-md px-2 py-1 text-[11px] whitespace-nowrap group-hover:block">
-                {c.day.slice(5)}: {c.n}
-              </span>
-            </div>
-          ))}
-        </div>
-        <div className="text-muted mt-2 flex justify-between text-xs">
-          <span>{d.chart[0]?.day.slice(5)}</span>
-          <span>Active on {active} of 30 days · messages and clinks</span>
-          <span>today</span>
-        </div>
-        {Object.keys(d.counts.msgTypes).length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {Object.entries(d.counts.msgTypes)
-              .sort((a, b) => b[1] - a[1])
-              .map(([t, n]) => (
-                <span key={t} className="bg-s2 rounded-full px-2.5 py-1 text-xs">
-                  {t} <span className="mono text-muted">{n}</span>
-                </span>
-              ))}
+      {tab === "overview" && (
+        <TabPanel key="overview" className="flex flex-col gap-5">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <Stat
+              icon={<ChatCircle size={14} />}
+              label="Messages"
+              value={d.counts.messagesTotal}
+              sub={`${d.counts.messages7} this week · ${d.counts.messages30} in 30 days`}
+            />
+            <Stat
+              icon={<Wine size={14} />}
+              label="Clinks sent"
+              value={d.counts.clinksTotal}
+              sub={`${d.counts.clinks30} in 30 days`}
+            />
+            <Stat
+              icon={<GameController size={14} />}
+              label="Games finished"
+              value={d.couple?.games.finished ?? 0}
+              sub={d.couple ? `${d.couple.games.won} won` : "Not linked"}
+            />
+            <Stat
+              icon={<HardDrives size={14} />}
+              label="Storage"
+              value={bytes(d.storage.bytes)}
+              sub={`${d.storage.files} files`}
+            />
           </div>
-        )}
-      </Card>
 
-      <div className="grid gap-5 lg:grid-cols-2">
-        <Card title="Account">
-          <Row k="Joined" v={when(d.account.createdAt)} />
-          <Row k="Email confirmed" v={when(d.account.confirmedAt)} />
-          <Row
-            k="Last sign-in"
-            v={`${when(d.account.lastSignInAt)} (${ago(d.account.lastSignInAt)})`}
-          />
-          <Row
-            k="Sign-in methods"
-            v={
-              <span className="flex items-center justify-end gap-1.5">
-                {d.account.providers.join(", ") || "email"}
-                {d.account.passkeys > 0 && (
-                  <>
-                    <Fingerprint size={14} aria-hidden /> {d.account.passkeys} passkey
-                    {d.account.passkeys > 1 ? "s" : ""}
-                  </>
-                )}
-              </span>
-            }
-          />
-          <Row
-            k="Temporary password"
-            v={d.account.mustChangePassword ? "Yes, must change" : "No"}
-          />
-          <Row
-            k="Push devices"
-            v={
-              <span className="flex items-center justify-end gap-1">
-                <DeviceMobile size={14} aria-hidden /> {d.pushDevices}
-              </span>
-            }
-          />
-          <Row k="Suspended" v={p?.suspended_at ? when(p.suspended_at) : "No"} />
-        </Card>
-
-        <Card title="Profile">
-          <Row k="Age" v={p?.age != null ? `${p.age} (18+ checked at sign-up)` : "Not given yet"} />
-          <Row
-            k="Home"
-            v={
-              <span className="flex items-center justify-end gap-1">
-                <MapPin size={14} aria-hidden />{" "}
-                {[p?.home_city, p?.country].filter(Boolean).join(", ") || "Not set"}
-              </span>
-            }
-          />
-          <Row k="Time zone" v={p?.timezone ?? "Not set"} />
-          <Row k="Onboarded" v={when(p?.onboarded_at)} />
-          <Row k="Status" v={d.presence?.status?.replace(/^custom:/, "") ?? "Unknown"} />
-          <Row
-            k="Quiet hours"
-            v={
-              p?.quiet_start ? `${p.quiet_start.slice(0, 5)} to ${p.quiet_end?.slice(0, 5)}` : "Off"
-            }
-          />
-          <Row k="Discreet mode" v={p?.discreet_mode ? "On" : "Off"} />
-        </Card>
-
-        <Card title="Couple">
-          {d.couple ? (
-            <>
-              <Row
-                k="Partner"
-                v={
-                  d.couple.partner ? (
-                    <Link
-                      href={`/admin/users/${d.couple.partner.id}`}
-                      className="text-accent hover:underline"
-                    >
-                      {d.couple.partner.name || "No name"} · {d.couple.partner.email}
-                    </Link>
-                  ) : (
-                    "Left"
-                  )
-                }
-              />
-              <Row k="Linked" v={when(d.couple.linkedAt)} />
-              <Row k="Together since" v={d.couple.startedOn ?? "Not set"} />
-              <Row k="Chat theme" v={d.couple.chatTheme ?? "clink"} />
-              <Row
-                k="Games played"
-                v={`${d.couple.games.total} started, ${d.couple.games.finished} finished, ${d.couple.games.won} won`}
-              />
-              <Row k="Last game" v={when(d.couple.games.last)} />
-              {Object.keys(d.couple.games.byType).length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {Object.entries(d.couple.games.byType).map(([t, n]) => (
+          <Card title="Activity, last 30 days">
+            <div
+              className="flex h-28 items-end gap-[3px]"
+              role="img"
+              aria-label={`Active on ${active} of the last 30 days`}
+            >
+              {d.chart.map((c) => (
+                <div key={c.day} className="group relative flex h-full flex-1 items-end">
+                  <div
+                    className="bg-accent w-full rounded-t-[4px] transition-[height] duration-500"
+                    style={{
+                      height: `${Math.max(c.n ? 6 : 2, (c.n / max) * 100)}%`,
+                      opacity: c.n ? 1 : 0.2,
+                    }}
+                  />
+                  <span className="bg-s3 pointer-events-none absolute -top-8 left-1/2 z-10 hidden -translate-x-1/2 rounded-md px-2 py-1 text-[11px] whitespace-nowrap group-hover:block">
+                    {c.day.slice(5)}: {c.n}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="text-muted mt-2 flex justify-between text-xs">
+              <span>{d.chart[0]?.day.slice(5)}</span>
+              <span>Active on {active} of 30 days · messages and clinks</span>
+              <span>today</span>
+            </div>
+            {Object.keys(d.counts.msgTypes).length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {Object.entries(d.counts.msgTypes)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([t, n]) => (
                     <span key={t} className="bg-s2 rounded-full px-2.5 py-1 text-xs">
-                      {GAME_META[t as GameType]?.name ?? t}{" "}
-                      <span className="mono text-muted">{n}</span>
+                      {t} <span className="mono text-muted">{n}</span>
                     </span>
                   ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <p className="text-muted m-0 text-sm">Not linked right now.</p>
-          )}
-          <Row k="Past couples" v={d.pastCouples} />
-        </Card>
-
-        <Card title="Keepsakes and features">
-          <Row
-            k={
-              <span className="flex items-center gap-1.5">
-                <Smiley size={14} aria-hidden /> Mood check-ins
-              </span>
-            }
-            v={d.counts.moodsTotal}
-          />
-          <Row k="Letters written" v={d.counts.letters} />
-          <Row k="Time capsules" v={d.counts.capsules} />
-          <Row k="Countdowns" v={d.counts.countdowns} />
-          <Row
-            k="Photos / videos / voice"
-            v={`${d.storage.images} / ${d.storage.videos} / ${d.storage.audio}`}
-          />
-          <Row
-            k={
-              <span className="flex items-center gap-1.5">
-                <Moon size={14} aria-hidden /> After Dark
-              </span>
-            }
-            v={
-              d.afterDark.optedIn
-                ? `On since ${when(d.afterDark.since)} · ${d.storage.private} private files`
-                : "Off"
-            }
-          />
-        </Card>
-      </div>
-
-      {d.couple && (
-        <Card title="Conversation">
-          <AdminConversation userId={id} />
-        </Card>
+              </div>
+            )}
+          </Card>
+        </TabPanel>
       )}
 
-      <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-        <Card title="Timeline">
-          {d.timeline.length ? (
-            <ol className="m-0 flex list-none flex-col p-0">
-              {d.timeline.map((t, i) => (
-                <li
-                  key={i}
-                  className="border-line flex items-start gap-3 border-b py-2.5 text-sm last:border-0"
-                >
-                  <span
-                    className={cn(
-                      "mt-1.5 h-2 w-2 flex-none rounded-full",
-                      t.byAdmin ? "bg-danger" : "bg-accent",
-                    )}
-                    aria-hidden
-                  />
-                  <span className="min-w-0 flex-1">
-                    {eventLabel(t.event)}
-                    {typeof t.meta?.reason === "string" && (
-                      <span className="text-muted block text-xs">Reason: {t.meta.reason}</span>
-                    )}
-                  </span>
-                  <span className="mono text-faint flex flex-none items-center gap-1 text-xs">
-                    <Clock size={12} aria-hidden /> {when(t.at)}
-                  </span>
-                </li>
-              ))}
-            </ol>
+      {tab === "profile" && (
+        <TabPanel key="profile" className="grid gap-5 lg:grid-cols-2">
+          <Card title="Account">
+            <Row k="Joined" v={when(d.account.createdAt)} />
+            <Row k="Email confirmed" v={when(d.account.confirmedAt)} />
+            <Row
+              k="Last sign-in"
+              v={`${when(d.account.lastSignInAt)} (${ago(d.account.lastSignInAt)})`}
+            />
+            <Row
+              k="Sign-in methods"
+              v={
+                <span className="flex items-center justify-end gap-1.5">
+                  {d.account.providers.join(", ") || "email"}
+                  {d.account.passkeys > 0 && (
+                    <>
+                      <Fingerprint size={14} aria-hidden /> {d.account.passkeys} passkey
+                      {d.account.passkeys > 1 ? "s" : ""}
+                    </>
+                  )}
+                </span>
+              }
+            />
+            <Row
+              k="Temporary password"
+              v={d.account.mustChangePassword ? "Yes, must change" : "No"}
+            />
+            <Row
+              k="Push devices"
+              v={
+                <span className="flex items-center justify-end gap-1">
+                  <DeviceMobile size={14} aria-hidden /> {d.pushDevices}
+                </span>
+              }
+            />
+            <Row k="Suspended" v={p?.suspended_at ? when(p.suspended_at) : "No"} />
+          </Card>
+
+          <Card title="Profile">
+            <Row
+              k="Age"
+              v={p?.age != null ? `${p.age} (18+ checked at sign-up)` : "Not given yet"}
+            />
+            <Row
+              k="Home"
+              v={
+                <span className="flex items-center justify-end gap-1">
+                  <MapPin size={14} aria-hidden />{" "}
+                  {[p?.home_city, p?.country].filter(Boolean).join(", ") || "Not set"}
+                </span>
+              }
+            />
+            <Row k="Time zone" v={p?.timezone ?? "Not set"} />
+            <Row k="Onboarded" v={when(p?.onboarded_at)} />
+            <Row k="Status" v={d.presence?.status?.replace(/^custom:/, "") ?? "Unknown"} />
+            <Row
+              k="Quiet hours"
+              v={
+                p?.quiet_start
+                  ? `${p.quiet_start.slice(0, 5)} to ${p.quiet_end?.slice(0, 5)}`
+                  : "Off"
+              }
+            />
+            <Row k="Discreet mode" v={p?.discreet_mode ? "On" : "Off"} />
+          </Card>
+
+          <Card title="Couple">
+            {d.couple ? (
+              <>
+                <Row
+                  k="Partner"
+                  v={
+                    d.couple.partner ? (
+                      <Link
+                        href={`/admin/users/${d.couple.partner.id}`}
+                        className="text-accent hover:underline"
+                      >
+                        {d.couple.partner.name || "No name"} · {d.couple.partner.email}
+                      </Link>
+                    ) : (
+                      "Left"
+                    )
+                  }
+                />
+                <Row k="Linked" v={when(d.couple.linkedAt)} />
+                <Row k="Together since" v={d.couple.startedOn ?? "Not set"} />
+                <Row k="Chat theme" v={d.couple.chatTheme ?? "clink"} />
+                <Row
+                  k="Games played"
+                  v={`${d.couple.games.total} started, ${d.couple.games.finished} finished, ${d.couple.games.won} won`}
+                />
+                <Row k="Last game" v={when(d.couple.games.last)} />
+                {Object.keys(d.couple.games.byType).length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {Object.entries(d.couple.games.byType).map(([t, n]) => (
+                      <span key={t} className="bg-s2 rounded-full px-2.5 py-1 text-xs">
+                        {GAME_META[t as GameType]?.name ?? t}{" "}
+                        <span className="mono text-muted">{n}</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-muted m-0 text-sm">Not linked right now.</p>
+            )}
+            <Row k="Past couples" v={d.pastCouples} />
+          </Card>
+
+          <Card title="Keepsakes and features">
+            <Row
+              k={
+                <span className="flex items-center gap-1.5">
+                  <Smiley size={14} aria-hidden /> Mood check-ins
+                </span>
+              }
+              v={d.counts.moodsTotal}
+            />
+            <Row k="Letters written" v={d.counts.letters} />
+            <Row k="Time capsules" v={d.counts.capsules} />
+            <Row k="Countdowns" v={d.counts.countdowns} />
+            <Row
+              k="Photos / videos / voice"
+              v={`${d.storage.images} / ${d.storage.videos} / ${d.storage.audio}`}
+            />
+            <Row
+              k={
+                <span className="flex items-center gap-1.5">
+                  <Moon size={14} aria-hidden /> After Dark
+                </span>
+              }
+              v={
+                d.afterDark.optedIn
+                  ? `On since ${when(d.afterDark.since)} · ${d.storage.private} private files`
+                  : "Off"
+              }
+            />
+          </Card>
+        </TabPanel>
+      )}
+
+      {tab === "conversation" && (
+        <TabPanel key="conversation">
+          {d.couple ? (
+            <Card title="Conversation">
+              <AdminConversation userId={id} />
+            </Card>
           ) : (
-            <p className="text-muted m-0 text-sm">No security events yet.</p>
+            <p className="text-muted m-0 text-sm">
+              Not linked, so there&apos;s no conversation to open.
+            </p>
           )}
-        </Card>
-        <Card title="Reports">
-          <div className="text-muted mb-1 flex items-center gap-1.5 text-xs font-medium">
-            <ShieldWarning size={14} aria-hidden /> About this user ({d.reports.about.length})
-          </div>
-          {d.reports.about.length ? (
-            d.reports.about.map((r) => (
-              <Row
-                key={r.id}
-                k={r.category.replace(/_/g, " ")}
-                v={
-                  <Link href={`/admin/reports?id=${r.id}`} className="text-accent hover:underline">
-                    {r.status} · {r.created_at.slice(0, 10)}
-                  </Link>
-                }
-              />
-            ))
-          ) : (
-            <p className="text-faint m-0 mb-3 text-sm">None.</p>
-          )}
-          <div className="text-muted mt-3 mb-1 flex items-center gap-1.5 text-xs font-medium">
-            <Heart size={14} aria-hidden /> Made by this user ({d.reports.by.length})
-          </div>
-          {d.reports.by.length ? (
-            d.reports.by.map((r) => (
-              <Row
-                key={r.id}
-                k={r.category.replace(/_/g, " ")}
-                v={`${r.status} · ${r.created_at.slice(0, 10)}`}
-              />
-            ))
-          ) : (
-            <p className="text-faint m-0 text-sm">None.</p>
-          )}
-        </Card>
-      </div>
+        </TabPanel>
+      )}
+
+      {tab === "history" && (
+        <TabPanel key="history" className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+          <Card title="Timeline">
+            {d.timeline.length ? (
+              <ol className="m-0 flex list-none flex-col p-0">
+                {d.timeline.map((t, i) => (
+                  <li
+                    key={i}
+                    className="border-line flex items-start gap-3 border-b py-2.5 text-sm last:border-0"
+                  >
+                    <span
+                      className={cn(
+                        "mt-1.5 h-2 w-2 flex-none rounded-full",
+                        t.byAdmin ? "bg-danger" : "bg-accent",
+                      )}
+                      aria-hidden
+                    />
+                    <span className="min-w-0 flex-1">
+                      {eventLabel(t.event)}
+                      {typeof t.meta?.reason === "string" && (
+                        <span className="text-muted block text-xs">Reason: {t.meta.reason}</span>
+                      )}
+                    </span>
+                    <span className="mono text-faint flex flex-none items-center gap-1 text-xs">
+                      <Clock size={12} aria-hidden /> {when(t.at)}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="text-muted m-0 text-sm">No security events yet.</p>
+            )}
+          </Card>
+          <Card title="Reports">
+            <div className="text-muted mb-1 flex items-center gap-1.5 text-xs font-medium">
+              <ShieldWarning size={14} aria-hidden /> About this user ({d.reports.about.length})
+            </div>
+            {d.reports.about.length ? (
+              d.reports.about.map((r) => (
+                <Row
+                  key={r.id}
+                  k={r.category.replace(/_/g, " ")}
+                  v={
+                    <Link
+                      href={`/admin/reports?id=${r.id}`}
+                      className="text-accent hover:underline"
+                    >
+                      {r.status} · {r.created_at.slice(0, 10)}
+                    </Link>
+                  }
+                />
+              ))
+            ) : (
+              <p className="text-faint m-0 mb-3 text-sm">None.</p>
+            )}
+            <div className="text-muted mt-3 mb-1 flex items-center gap-1.5 text-xs font-medium">
+              <Heart size={14} aria-hidden /> Made by this user ({d.reports.by.length})
+            </div>
+            {d.reports.by.length ? (
+              d.reports.by.map((r) => (
+                <Row
+                  key={r.id}
+                  k={r.category.replace(/_/g, " ")}
+                  v={`${r.status} · ${r.created_at.slice(0, 10)}`}
+                />
+              ))
+            ) : (
+              <p className="text-faint m-0 text-sm">None.</p>
+            )}
+          </Card>
+        </TabPanel>
+      )}
       <p className="text-faint m-0 text-xs">
-        Admins see account facts and activity counts only. Messages, letters, answers, photos and
-        After Dark content are never shown here.
+        Opening a conversation needs a reason and is written to the audit log. After Dark content is
+        never shown to admins.
       </p>
     </div>
   );

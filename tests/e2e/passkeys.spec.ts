@@ -16,7 +16,7 @@ test("register and remove a sign-in passkey", async ({ couple }) => {
     },
   });
 
-  await a.goto("/settings");
+  await a.goto("/settings?tab=account");
   await a.getByRole("button", { name: /Sign in with a passkey/ }).click();
   await expect(a.getByText(/Passkey added/)).toBeVisible();
   const remove = a.getByRole("button", { name: /^Remove / });

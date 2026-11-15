@@ -41,7 +41,7 @@ test("admin portal: own sign-in, forced password, change email and password, sep
 
   // Change the admin email in Settings.
   const newEmail = `boss2-${Date.now()}@clink.test`;
-  await p.goto("/admin/settings");
+  await p.goto("/admin/settings?tab=login");
   await expect(p.getByLabel("Admin email")).toHaveValue(email);
   await p.getByLabel("Admin email").fill(newEmail);
   await p.getByLabel("Current password").fill("Boss-Own-Pass-2026");
@@ -61,10 +61,11 @@ test("admin portal: own sign-in, forced password, change email and password, sep
   await p.goto(`/admin/users?q=${encodeURIComponent(nia.email)}`);
   await p.getByRole("link", { name: "Nia" }).click();
   await expect(p).toHaveURL(new RegExp(`/admin/users/${nia.id}`));
-  await expect(p.getByRole("region", { name: "Account" })).toBeVisible();
-  await expect(p.getByRole("region", { name: "Couple" }).getByText(/Theo/)).toBeVisible();
   await expect(p.getByText("Activity, last 30 days")).toBeVisible();
   await expect(p.getByText("Messages", { exact: true })).toBeVisible();
+  await p.getByRole("tab", { name: "Profile" }).click();
+  await expect(p.getByRole("region", { name: "Account" })).toBeVisible();
+  await expect(p.getByRole("region", { name: "Couple" }).getByText(/Theo/)).toBeVisible();
 
   // A Clink session gives no admin access.
   expect((await a.request.get("/api/admin/metrics")).status()).toBe(401);
