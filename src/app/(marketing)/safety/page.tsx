@@ -5,14 +5,7 @@ export const metadata: Metadata = { title: "Safety", robots: { index: true, foll
 
 export default function Safety() {
   return (
-    <LegalPage
-      title={
-        <>
-          Help and <em>safety</em>
-        </>
-      }
-      updated="13 NOV 2026"
-    >
+    <LegalPage title="Help and safety" updated="13 Nov 2026">
       <p>
         Clink is built on three rules: nothing private unlocks without both of you, the sender
         always controls their own media, and we never promise protection we can&apos;t give.

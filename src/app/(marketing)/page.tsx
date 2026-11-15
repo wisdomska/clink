@@ -31,11 +31,7 @@ export default function Landing() {
     <div className="an-screen bg-app min-h-dvh pt-[max(env(safe-area-inset-top),4px)] pb-8">
       <InstalledRedirect />
       <header className="mx-auto flex h-12 max-w-[1200px] items-center justify-between px-4 md:h-[72px] md:px-8">
-        <Link
-          href="/"
-          className="display text-text hover:text-text text-[28px]"
-          aria-label="Clink home"
-        >
+        <Link href="/" className="display text-text hover:text-text text-[28px]">
           <Logo size={26} />
         </Link>
         <Link
@@ -51,7 +47,7 @@ export default function Landing() {
         <section className="grid gap-0 px-4 pt-4 md:px-8 lg:grid-cols-[1fr_1.05fr] lg:items-center lg:gap-16 lg:pt-12">
           <div className="order-2 lg:order-1">
             <h1 className="display mt-7 mb-0 text-[48px] leading-[1.05] md:text-[64px] lg:mt-0">
-              Do things <em>together</em>, from apart.
+              Do things together, from apart.
             </h1>
             <p className="text-muted mt-3 mb-0 max-w-[46ch] text-base leading-normal text-pretty md:text-lg">
               Games, dates, dares and letters for two people in two places. One account links to

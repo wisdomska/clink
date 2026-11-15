@@ -69,7 +69,7 @@ function TrendsSection() {
         <div className="an-skel rounded-card bg-s2 h-40" />
       ) : (
         <div
-          className="grid grid-cols-2 gap-3 transition-opacity duration-200 md:grid-cols-3"
+          className="rounded-card border-line bg-line grid grid-cols-2 gap-px overflow-hidden border transition-opacity duration-200 md:grid-cols-3"
           style={{ opacity: isFetching ? 0.6 : 1 }}
         >
           {(Object.keys(TREND_LABELS) as TrendKey[]).map((k) => (
@@ -155,9 +155,9 @@ interface Data {
 
 function Stat({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="rounded-card border-line bg-s1 flex flex-col gap-1 border p-4">
+    <div className="bg-s1 flex flex-col gap-1 p-4">
       <div className="text-muted text-sm">{label}</div>
-      <div className="mono text-[32px] leading-none">{value}</div>
+      <div className="mono text-[28px] leading-none tabular-nums">{value}</div>
       {sub && <div className="text-faint text-xs">{sub}</div>}
     </div>
   );
@@ -179,15 +179,15 @@ function Usage({
   const pct = limit ? used / limit : 0;
   const color = pct >= 0.9 ? "var(--danger)" : pct >= 0.7 ? "var(--warning)" : "var(--accent)";
   return (
-    <div className="rounded-card border-line bg-s1 flex flex-col gap-2 border p-4">
+    <div className="bg-s1 flex flex-col gap-2 p-4">
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium">{label}</span>
-        <span className="mono text-muted">
+        <span className="mono text-muted tabular-nums">
           {bytes ? fmtBytes(used) : used} / {bytes ? fmtBytes(limit) : limit}
         </span>
       </div>
       <div
-        className="bg-s3 h-2 overflow-hidden rounded-full"
+        className="bg-s3 h-1.5 overflow-hidden rounded-full"
         role="meter"
         aria-valuenow={Math.round(pct * 100)}
         aria-valuemin={0}
@@ -236,7 +236,7 @@ export function AdminDashboard() {
       ) : (
         <>
           <section
-            className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6"
+            className="rounded-card border-line bg-line grid grid-cols-2 gap-px overflow-hidden border md:grid-cols-3 xl:grid-cols-6"
             aria-label="Growth"
           >
             <Stat label="Accounts" value={m.users ?? 0} sub={`${m.signups_7d} this week`} />
@@ -274,10 +274,10 @@ export function AdminDashboard() {
           <TrendsSection />
           <section aria-label="Activity mix" className="flex flex-col gap-3">
             <h2 className="m-0 text-lg font-bold">Activity mix, last 7 days</h2>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">
+            <div className="rounded-card border-line bg-s1 grid grid-cols-2 gap-y-1 border p-1 sm:grid-cols-4 lg:grid-cols-8">
               {Object.entries(m.activity_mix ?? {}).map(([k, v]) => (
-                <div key={k} className="rounded-input border-line bg-s1 border p-3">
-                  <div className="mono text-xl">{v}</div>
+                <div key={k} className="p-3">
+                  <div className="mono text-xl tabular-nums">{v}</div>
                   <div className="text-muted text-xs capitalize">{k.replace("_", " ")}</div>
                 </div>
               ))}
@@ -291,7 +291,7 @@ export function AdminDashboard() {
           </section>
           <section aria-label="Free tier usage" className="flex flex-col gap-3">
             <h2 className="m-0 text-lg font-bold">Free-tier usage</h2>
-            <div className="grid gap-3 md:grid-cols-3">
+            <div className="rounded-card border-line bg-line grid gap-px overflow-hidden border md:grid-cols-3">
               <Usage
                 label="Database"
                 used={data!.usage.db!.used}

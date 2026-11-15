@@ -8,6 +8,7 @@ import { Segmented } from "@/components/ui/segmented";
 import { toast } from "@/components/ui/toast";
 import { adminFetch } from "./fetch";
 import { usePrompt } from "./ui";
+import { cn } from "@/components/ui/cn";
 
 type Table = "dares" | "deck_cards" | "date_kits" | "challenge_templates" | "stickers" | "decks";
 type Row = Record<string, unknown> & { id: string | number; enabled: boolean; sort: number };
@@ -129,12 +130,12 @@ export function AdminContent() {
               role="radio"
               aria-checked={filter === t}
               onClick={() => setFilter(t)}
-              className="press h-10 cursor-pointer rounded-full border px-4 text-sm font-medium"
-              style={{
-                borderColor: filter === t ? "var(--accent)" : "var(--line)",
-                background: filter === t ? "var(--accent)" : "transparent",
-                color: filter === t ? "var(--on-accent)" : "var(--text)",
-              }}
+              className={cn(
+                "press h-9 cursor-pointer rounded-full border px-4 text-sm font-medium",
+                filter === t
+                  ? "border-line-strong bg-s3 text-text"
+                  : "border-line text-muted hover:text-text bg-transparent",
+              )}
             >
               {t}
             </button>
@@ -149,17 +150,22 @@ export function AdminContent() {
           <Plus size={16} aria-hidden /> Add item
         </Button>
       </div>
-      <ol className="m-0 flex list-none flex-col gap-1.5 p-0">
+      <ol
+        className={
+          rows.length
+            ? "rounded-card border-line bg-s1 divide-line m-0 flex list-none flex-col divide-y overflow-hidden border p-0"
+            : "hidden"
+        }
+      >
         {rows.map((r, i) => (
-          <li
-            key={String(r.id)}
-            className="rounded-input border-line bg-s1 flex items-center gap-2 border px-3 py-2"
-            style={{ opacity: r.enabled ? 1 : 0.55 }}
-          >
-            <span className="mono text-faint w-8 text-xs">{i + 1}</span>
+          <li key={String(r.id)} className="flex items-center gap-2 px-3 py-1.5">
+            <span className="mono text-faint w-8 text-xs tabular-nums">{i + 1}</span>
             <button
               type="button"
-              className="text-text flex-1 cursor-text bg-transparent text-left text-sm"
+              className={cn(
+                "flex-1 cursor-text bg-transparent text-left text-sm",
+                r.enabled ? "text-text" : "text-faint",
+              )}
               onClick={async () => {
                 const field = "text" in r ? "text" : "title" in r ? "title" : "label";
                 const v = await prompt.ask({ title: "Edit item", label: "Text", value: title(r) });

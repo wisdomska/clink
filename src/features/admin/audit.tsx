@@ -92,9 +92,9 @@ export function AdminAudit() {
           <Input id="fr" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
         </div>
       </div>
-      <div className="rounded-card border-line overflow-x-auto border">
+      <div className="rounded-card border-line bg-s1 overflow-x-auto border">
         <table className="w-full min-w-[720px] border-collapse text-left text-sm">
-          <thead className="bg-s1 text-muted text-xs">
+          <thead className="text-muted text-xs">
             <tr>
               {["When", "Event", "User", "Done by", "Details"].map((h) => (
                 <th key={h} scope="col" className="px-4 py-3 font-medium">
@@ -105,8 +105,11 @@ export function AdminAudit() {
           </thead>
           <tbody>
             {(data?.events ?? []).map((e) => (
-              <tr key={e.id} className="border-line border-t align-top">
-                <td className="mono text-muted px-4 py-2 text-xs whitespace-nowrap">
+              <tr
+                key={e.id}
+                className="border-line hover:bg-s2 border-t align-top transition-colors"
+              >
+                <td className="mono text-muted px-4 py-2 text-xs whitespace-nowrap tabular-nums">
                   {new Date(e.created_at).toLocaleString("en-GB")}
                 </td>
                 <td className="px-4 py-2 text-sm">

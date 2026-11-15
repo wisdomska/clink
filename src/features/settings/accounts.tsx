@@ -91,7 +91,7 @@ export function AccountRows() {
                     const ok = await switchTo(a.id, profile);
                     if (!ok) setBusyId(null);
                   }}
-                  className="press hover:bg-s2 flex min-h-16 flex-1 cursor-pointer items-center gap-3 rounded-2xl bg-transparent px-2 text-left disabled:cursor-default"
+                  className="press hover:bg-s2 rounded-input flex min-h-16 flex-1 cursor-pointer items-center gap-3 bg-transparent px-2 text-left disabled:cursor-default"
                 >
                   <Avatar name={a.name} side="me" size={44} ring={0} photoUrl={a.photoUrl} />
                   <span className="min-w-0 flex-1">

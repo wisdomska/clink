@@ -169,12 +169,12 @@ export function Onboarding({
           Skip
         </Button>
       </div>
-      <Mono className="mt-4">STEP {step} OF 3</Mono>
+      <Mono className="mt-4">Step {step} of 3</Mono>
 
       {step === 1 && (
         <div key="1" className="an-reveal">
           <Display size={36} className="mt-3">
-            What should we <em>call</em> you?
+            What should we call you?
           </Display>
           <Lead className="mt-2 mb-6">Your partner sees this. Nicknames welcome.</Lead>
           <Input
@@ -193,11 +193,11 @@ export function Onboarding({
       {step === 2 && (
         <div key="2" className="an-reveal">
           <Display size={36} className="mt-3">
-            Pick your <em>avatar</em>
+            Pick your avatar
           </Display>
           <Lead className="mt-2 mb-5">Your skin tone, your vibe. Or upload your own photo.</Lead>
           <div className="mb-5 flex items-center gap-4">
-            <div className="bg-s2 relative flex h-24 w-24 flex-none items-center justify-center overflow-hidden rounded-[30%] shadow-[0_10px_30px_-12px_var(--accent)]">
+            <div className="rounded-card border-line bg-s2 relative flex h-24 w-24 flex-none items-center justify-center overflow-hidden border">
               {photo ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={photo} alt="Your photo" className="h-full w-full object-cover" />
@@ -206,9 +206,9 @@ export function Onboarding({
                   key={icon}
                   src={avatarSrc(icon)}
                   alt=""
-                  initial={{ scale: 0.6, rotate: -8, opacity: 0.01 }}
-                  animate={{ scale: 1, rotate: 0, opacity: 1 }}
-                  transition={{ type: "spring", stiffness: 420, damping: 18 }}
+                  initial={{ scale: 0.9, opacity: 0.01 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 32 }}
                   className="h-[80%] w-[80%] object-contain drop-shadow-[0_6px_10px_rgba(0,0,0,.4)]"
                 />
               )}
@@ -255,7 +255,7 @@ export function Onboarding({
       {step === 3 && (
         <div key="3" className="an-reveal">
           <Display size={36} className="mt-3">
-            Where&apos;s <em>home</em>?
+            Where&apos;s home?
           </Display>
           <Lead className="mt-2 mb-6">
             For your clock and quiet hours. Never a precise location.
@@ -359,9 +359,8 @@ function DobStep({ onDone }: { onDone: () => void }) {
   }
   return (
     <div className="an-screen flex flex-1 flex-col">
-      <Mono className="mt-4">FIRST, ONE CHECK</Mono>
-      <Display size={36} className="mt-3">
-        When&apos;s your <em>birthday</em>?
+      <Display size={36} className="mt-6">
+        When&apos;s your birthday?
       </Display>
       <Lead className="mt-2 mb-6">Clink is 18+. Your partner never sees this.</Lead>
       <div className="grid grid-cols-[1fr_1fr_1.6fr] gap-2">

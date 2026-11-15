@@ -77,19 +77,14 @@ export function AdminSettings() {
             ]}
           />
           <div className="rounded-card border-line overflow-hidden border" aria-hidden>
-            <div className="mono text-faint bg-s1 border-line border-b px-4 py-2 text-[11px] tracking-wide">
-              PREVIEW
+            <div className="text-faint bg-s1 border-line border-b px-4 py-2 text-xs font-medium">
+              Preview
             </div>
             <div
               className={
                 kind === "maintenance"
                   ? "bg-warning/15 text-text px-4 py-3 text-sm font-medium"
-                  : "text-text px-4 py-3 text-sm font-medium"
-              }
-              style={
-                kind === "maintenance"
-                  ? undefined
-                  : { background: "var(--brand-gradient)", color: "var(--on-accent)" }
+                  : "bg-accent text-on-accent px-4 py-3 text-sm font-medium"
               }
             >
               {body.trim() || "Your banner text shows here."}
@@ -119,29 +114,28 @@ export function AdminSettings() {
             Publish banner
           </Button>
           {live.length > 0 && <h2 className="m-0 mt-2 text-base font-bold">Live now</h2>}
-          <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
-            {live.map((a) => (
-              <li
-                key={a.id}
-                className="rounded-input border-line bg-s1 flex items-center gap-3 border px-3 py-2 text-sm"
-              >
-                <span className="mono text-faint text-[11px]">{a.kind.toUpperCase()}</span>
-                <span className="flex-1">{a.body}</span>
-                <Button
-                  size="xs"
-                  variant="ghost"
-                  onClick={async () => {
-                    await adminFetch("/api/admin/settings", {
-                      body: { action: "retire", id: a.id },
-                    });
-                    void refresh();
-                  }}
-                >
-                  Take down
-                </Button>
-              </li>
-            ))}
-          </ul>
+          {live.length > 0 && (
+            <ul className="rounded-card border-line bg-s1 divide-line m-0 flex list-none flex-col divide-y overflow-hidden border p-0">
+              {live.map((a) => (
+                <li key={a.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
+                  <span className="text-faint w-24 flex-none text-xs capitalize">{a.kind}</span>
+                  <span className="flex-1">{a.body}</span>
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    onClick={async () => {
+                      await adminFetch("/api/admin/settings", {
+                        body: { action: "retire", id: a.id },
+                      });
+                      void refresh();
+                    }}
+                  >
+                    Take down
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
         </TabPanel>
       )}
       {tab === "flags" && (
@@ -205,7 +199,7 @@ export function AdminSettings() {
         </TabPanel>
       )}
       {tab === "login" && (
-        <TabPanel key="login" className="border-line bg-s1 max-w-[520px] rounded-[24px] border p-5">
+        <TabPanel key="login" className="rounded-card border-line bg-s1 max-w-[520px] border p-5">
           <AdminAccountForm />
         </TabPanel>
       )}

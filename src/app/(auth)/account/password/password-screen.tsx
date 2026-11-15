@@ -56,19 +56,11 @@ export function PasswordScreen({
         window.location.assign(next);
       }}
     >
-      <span className="bg-s2 text-accent flex h-14 w-14 items-center justify-center rounded-2xl">
-        <LockKey size={28} weight="duotone" aria-hidden />
+      <span className="border-line bg-s2 text-text rounded-input flex h-12 w-12 items-center justify-center border">
+        <LockKey size={24} aria-hidden />
       </span>
       <Display size={36} className="mt-5">
-        {forced ? (
-          <>
-            Choose your <em>own</em> password
-          </>
-        ) : (
-          <>
-            New <em>password</em>
-          </>
-        )}
+        {forced ? "Choose your own password" : "New password"}
       </Display>
       <Lead className="mt-2">
         {forced

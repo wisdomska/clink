@@ -53,29 +53,20 @@ export function AdminRail({ name }: { name: string }) {
             onClick={() => setOpen(false)}
             aria-current={on ? "page" : undefined}
             className={cn(
-              "press group relative flex h-11 items-center gap-3 rounded-full px-3 text-sm font-medium",
+              "press rounded-input relative flex h-10 items-center gap-3 px-3 text-sm font-medium",
               on ? "text-text hover:text-text" : "text-muted hover:bg-s1 hover:text-text",
             )}
           >
             {on && (
               <motion.span
                 layoutId="admin-rail-active"
-                className="bg-s2 border-line absolute inset-0 rounded-full border"
+                className="bg-s2 border-line rounded-input absolute inset-0 border"
                 transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 aria-hidden
               />
             )}
-            <span
-              className={cn(
-                "relative flex h-[28px] w-10 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-110",
-                on && "shadow-[0_6px_18px_-6px_var(--accent)]",
-              )}
-              style={{
-                background: on ? "var(--brand-gradient)" : "transparent",
-                color: on ? "var(--on-accent)" : "currentColor",
-              }}
-            >
-              <Icon size={20} weight={on ? "fill" : "regular"} aria-hidden />
+            <span className={cn("relative flex items-center", on && "text-accent")}>
+              <Icon size={18} weight={on ? "fill" : "regular"} aria-hidden />
             </span>
             <span className="relative">{label}</span>
           </Link>
@@ -128,8 +119,8 @@ export function AdminRail({ name }: { name: string }) {
 
 function AdminChip() {
   return (
-    <span className="mono border-accent/40 text-accent rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-[0.18em]">
-      ADMIN
+    <span className="border-line-strong text-muted rounded-full border px-2 py-0.5 text-xs font-medium">
+      Admin
     </span>
   );
 }

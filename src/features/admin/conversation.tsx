@@ -102,7 +102,7 @@ export function AdminConversation({ userId }: { userId: string }) {
           Load older messages
         </Button>
       )}
-      <div className="bg-app flex max-h-[560px] flex-col gap-1.5 overflow-y-auto rounded-[18px] p-3">
+      <div className="bg-app border-line rounded-input flex max-h-[560px] flex-col gap-1.5 overflow-y-auto border p-3">
         {msgs.length === 0 && (
           <p className="text-muted m-0 text-sm">
             No messages yet. They show here once this couple starts chatting.

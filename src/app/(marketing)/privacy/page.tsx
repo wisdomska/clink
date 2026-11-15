@@ -5,14 +5,7 @@ export const metadata: Metadata = { title: "Privacy", robots: { index: true, fol
 
 export default function Privacy() {
   return (
-    <LegalPage
-      title={
-        <>
-          Your <em>privacy</em>
-        </>
-      }
-      updated="13 NOV 2026"
-    >
+    <LegalPage title="Your privacy" updated="13 Nov 2026">
       <p>We collect only what Clink needs to work, and we never sell it.</p>
       <h2 className="text-text m-0 text-lg font-bold">What we keep</h2>
       <p>

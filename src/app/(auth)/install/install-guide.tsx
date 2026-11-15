@@ -82,7 +82,7 @@ export function InstallGuide({ identity = "clink" }: { identity?: Identity }) {
   return (
     <div className="an-screen flex flex-1 flex-col">
       <Display size={36} className="mt-4">
-        Put Clink on your <em>home screen</em>
+        Put Clink on your home screen
       </Display>
       <Lead className="mt-2 mb-5">So Clinks arrive like texts. Takes 20 seconds.</Lead>
       {tab !== "done" && (
@@ -108,7 +108,7 @@ export function InstallGuide({ identity = "clink" }: { identity?: Identity }) {
       />
       {tab !== "done" ? (
         <div key={tab} className="an-reveal">
-          <div className="stripe-dim rounded-card border-line text-faint mt-5 flex h-[180px] flex-none flex-col items-center justify-center gap-3 border">
+          <div className="rounded-card border-line bg-s1 text-muted mt-5 flex h-[180px] flex-none flex-col items-center justify-center gap-3 border">
             <div className="text-text flex items-center gap-3">
               <Shot size={40} aria-hidden />
               <ArrowRight size={20} className="text-faint" aria-hidden />
@@ -118,14 +118,14 @@ export function InstallGuide({ identity = "clink" }: { identity?: Identity }) {
                 <DownloadSimple size={40} aria-hidden />
               )}
             </div>
-            <span className="mono text-xs">
-              {tab === "iphone" ? "SHARE, THEN ADD TO HOME SCREEN" : "MENU, THEN INSTALL APP"}
+            <span className="text-sm">
+              {tab === "iphone" ? "Share, then Add to Home Screen" : "Menu, then Install app"}
             </span>
           </div>
           <ol className="m-0 mt-5 flex list-none flex-col gap-3.5 p-0">
             {steps.map(([n, t]) => (
               <li key={n} className="flex items-center gap-3">
-                <span className="mono border-line bg-s1 text-accent flex h-9 w-9 flex-none items-center justify-center rounded-full border text-sm">
+                <span className="mono border-line bg-s1 text-text flex h-8 w-8 flex-none items-center justify-center rounded-full border text-sm">
                   {n}
                 </span>
                 <span className="text-base leading-[1.4]">{t}</span>

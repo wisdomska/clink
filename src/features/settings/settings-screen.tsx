@@ -123,9 +123,11 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
     }
   }
 
-  const since = new Date(ctx.linkedAt)
-    .toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
-    .toUpperCase();
+  const since = new Date(ctx.linkedAt).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 
   return (
     <div className="screen an-screen flex max-w-[760px] flex-col gap-4">
@@ -292,7 +294,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
           <div className="rounded-card border-line bg-s1 overflow-hidden border">
             <Row>
               <span>Linked with {partner.name}</span>
-              <span className="mono text-muted text-[13px]">SINCE {since}</span>
+              <span className="text-muted text-sm font-normal">Since {since}</span>
             </Row>
             <div className="border-line flex min-h-14 items-center justify-between gap-3 border-b px-4 py-2.5">
               <label htmlFor="started" className="text-base font-medium">
@@ -378,7 +380,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
       >
         {unlink === 1 ? (
           <>
-            <div className="mono text-faint text-xs">STEP 1 OF 2</div>
+            <div className="mono text-faint text-xs">Step 1 of 2</div>
             <div className="display text-[28px] leading-[1.05]">Unlink from {partner.name}?</div>
             <div className="flex flex-col gap-2.5 text-base leading-[1.45]">
               <div className="flex gap-2.5">
@@ -415,7 +417,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
           </>
         ) : (
           <>
-            <div className="mono text-faint text-xs">STEP 2 OF 2</div>
+            <div className="mono text-faint text-xs">Step 2 of 2</div>
             <div className="display text-[28px] leading-[1.05]">
               Last check. This can&apos;t be undone.
             </div>

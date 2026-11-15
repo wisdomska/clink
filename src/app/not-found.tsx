@@ -8,9 +8,7 @@ export default function NotFound() {
   return (
     <main className="an-screen mx-auto flex min-h-dvh max-w-[480px] flex-col justify-center gap-4 px-5">
       <LogoMark size={56} title="Clink" />
-      <h1 className="display m-0 text-[36px] leading-[1.05]">
-        Nothing to clink <em>here</em>.
-      </h1>
+      <h1 className="display m-0 text-[36px] leading-[1.05]">Nothing to clink here.</h1>
       <p className="text-muted m-0 text-base leading-normal">
         That page has moved, or it never existed. Your partner is still where you left them.
       </p>

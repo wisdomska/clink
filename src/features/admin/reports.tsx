@@ -60,38 +60,44 @@ export function AdminReports() {
           }))}
         />
       </div>
-      <div className="flex flex-col gap-3">
-        {(data?.reports ?? []).length === 0 && (
-          <p className="text-muted">
-            No reports with this status. New reports from couples arrive in Open.
-          </p>
-        )}
+      {(data?.reports ?? []).length === 0 && (
+        <p className="text-muted m-0 text-sm">
+          No reports with this status. New reports from couples arrive in Open.
+        </p>
+      )}
+      <div
+        className={
+          (data?.reports ?? []).length
+            ? "rounded-card border-line bg-s1 divide-line flex flex-col divide-y overflow-hidden border"
+            : "hidden"
+        }
+      >
         {(data?.reports ?? []).map((r) => (
           <article
             key={r.id}
-            className="rounded-card bg-s1 flex flex-col gap-3 border p-4"
+            className="flex flex-col gap-3 border-l-2 p-4"
             style={{
-              borderColor:
+              borderLeftColor:
                 r.category === "minor_safety"
                   ? "var(--danger)"
                   : r.priority === "urgent"
                     ? "var(--warning)"
-                    : "var(--line)",
+                    : "transparent",
             }}
           >
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-bold">{LABEL[r.category]}</span>
               {r.from_after_dark && (
-                <span className="mono border-line text-ember rounded-full border px-2 text-[11px]">
-                  AFTER DARK
+                <span className="border-line text-ember rounded-full border px-2 text-xs font-medium">
+                  After Dark
                 </span>
               )}
               {r.priority === "urgent" && (
-                <span className="mono border-warning text-warning rounded-full border px-2 text-[11px]">
-                  URGENT
+                <span className="border-warning text-warning rounded-full border px-2 text-xs font-medium">
+                  Urgent
                 </span>
               )}
-              <span className="mono text-faint ml-auto text-xs">
+              <span className="mono text-faint ml-auto text-xs tabular-nums">
                 {new Date(r.created_at).toLocaleString("en-GB")}
               </span>
             </div>

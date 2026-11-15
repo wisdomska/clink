@@ -198,7 +198,7 @@ export function LinkScreen({
             <Sparks variant="spark-late" className="top-3.5 left-1/2 z-[2]" />
           </div>
           <Display size={48} className="mt-7">
-            You&apos;re <em>linked</em>.
+            You&apos;re linked.
           </Display>
           <Lead className="mt-3">
             {me} and {partner}. Two cities, one Clink.
@@ -223,7 +223,7 @@ export function LinkScreen({
         <ArrowLeft size={20} />
       </IconButton>
       <Display size={36} className="mt-6">
-        Link your <em>partner</em>
+        Link your partner
       </Display>
       <Lead className="mt-2">One account, one person. Send them this code, or enter theirs.</Lead>
       {archive && (

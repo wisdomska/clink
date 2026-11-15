@@ -15,7 +15,7 @@ export function AppearanceCard() {
   return (
     <section
       aria-labelledby="appearance-h"
-      className="border-line bg-s1 flex flex-col gap-4 rounded-[24px] border p-4"
+      className="rounded-card border-line bg-s1 flex flex-col gap-4 border p-4"
     >
       <h2 id="appearance-h" className="m-0 text-lg font-bold">
         Appearance
@@ -37,8 +37,8 @@ export function AppearanceCard() {
                   setAppearance({ accent: hex });
                 }}
                 className={cn(
-                  "flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-0 p-0 transition-transform",
-                  on && "scale-110",
+                  "flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-0 p-0 transition-shadow",
+                  on && "ring-text ring-offset-s1 ring-2 ring-offset-2",
                 )}
                 style={{ background: hex }}
               >
@@ -94,7 +94,10 @@ export function AppearanceCard() {
           ))}
         </div>
         {/* Live preview */}
-        <div className="bg-app mt-1 flex flex-col gap-1.5 rounded-2xl p-3" aria-hidden>
+        <div
+          className="bg-app border-line rounded-input mt-1 flex flex-col gap-1.5 border p-3"
+          aria-hidden
+        >
           <span
             className="bg-s1 border-line w-fit border px-3 py-1.5 text-[length:var(--chat-text)]"
             style={{

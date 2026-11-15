@@ -149,12 +149,12 @@ function Stat({
   sub?: string;
 }) {
   return (
-    <div className="border-line bg-s1 flex flex-col gap-1 rounded-[20px] border p-4">
+    <div className="bg-s1 flex flex-col gap-1 p-4">
       <span className="text-muted flex items-center gap-1.5 text-xs font-medium">
         {icon}
         {label}
       </span>
-      <span className="mono text-[26px] leading-none">{value}</span>
+      <span className="mono text-[26px] leading-none tabular-nums">{value}</span>
       {sub && <span className="text-faint text-xs">{sub}</span>}
     </div>
   );
@@ -180,7 +180,7 @@ function Card({
 }) {
   return (
     <section
-      className={cn("border-line bg-s1 rounded-[24px] border p-5", className)}
+      className={cn("rounded-card border-line bg-s1 border p-5", className)}
       aria-label={title}
     >
       <h2 className="m-0 mb-3 text-base font-bold">{title}</h2>
@@ -256,12 +256,8 @@ export function UserDetail({ id }: { id: string }) {
   if (isLoading)
     return (
       <div className="flex flex-col gap-4">
-        <div className="an-skel bg-s2 h-28 rounded-[24px]" />
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {Array.from({ length: 4 }, (_, i) => (
-            <div key={i} className="an-skel bg-s2 h-24 rounded-[20px]" />
-          ))}
-        </div>
+        <div className="an-skel rounded-card bg-s2 h-28" />
+        <div className="an-skel rounded-card bg-s2 h-24" />
       </div>
     );
   if (error || !d)
@@ -291,7 +287,7 @@ export function UserDetail({ id }: { id: string }) {
         <ArrowLeft size={16} aria-hidden /> All users
       </Link>
 
-      <header className="border-line bg-s1 flex flex-wrap items-center gap-4 rounded-[28px] border p-5">
+      <header className="rounded-card border-line bg-s1 flex flex-wrap items-center gap-4 border p-5">
         <Avatar
           name={name}
           side="me"
@@ -318,14 +314,14 @@ export function UserDetail({ id }: { id: string }) {
           <div className="mt-2 flex flex-wrap gap-1.5">
             <span
               className={cn(
-                "rounded-full px-2.5 py-1 text-xs font-bold",
+                "rounded-full px-2.5 py-1 text-xs font-semibold",
                 status === "Active" ? "bg-[#34C759]/15 text-[#34C759]" : "bg-danger/15 text-danger",
               )}
             >
               {status}
             </span>
             {p?.is_admin && (
-              <span className="bg-accent/15 text-accent rounded-full px-2.5 py-1 text-xs font-bold">
+              <span className="border-line-strong rounded-full border px-2.5 py-1 text-xs font-medium">
                 Admin
               </span>
             )}
@@ -367,7 +363,7 @@ export function UserDetail({ id }: { id: string }) {
 
       {tab === "overview" && (
         <TabPanel key="overview" className="flex flex-col gap-5">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="rounded-card border-line bg-line grid grid-cols-2 gap-px overflow-hidden border md:grid-cols-4">
             <Stat
               icon={<ChatCircle size={14} />}
               label="Messages"

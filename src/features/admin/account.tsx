@@ -64,16 +64,8 @@ export function AdminAccountForm({
       }}
     >
       <div>
-        <div className="display text-[30px] leading-[1.05]">
-          {forced ? (
-            <>
-              Choose your <em>own</em> password
-            </>
-          ) : (
-            <>
-              Your admin <em>login</em>
-            </>
-          )}
+        <div className="display text-[28px] leading-[1.1]">
+          {forced ? <>Choose your own password</> : <>Your admin login</>}
         </div>
         <p className="text-muted m-0 mt-1 text-sm">
           {forced

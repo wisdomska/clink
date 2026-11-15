@@ -147,11 +147,11 @@ export function AdminUsers() {
         <div className="an-skel rounded-card bg-s2 h-60" />
       ) : (
         <div
-          className="rounded-card border-line overflow-x-auto border transition-opacity duration-200"
+          className="rounded-card border-line bg-s1 overflow-x-auto border transition-opacity duration-200"
           style={{ opacity: isFetching ? 0.6 : 1 }}
         >
           <table className="w-full min-w-[860px] border-collapse text-left text-sm">
-            <thead className="bg-s1 text-muted text-xs">
+            <thead className="text-muted text-xs">
               <tr>
                 {["Account", "Joined", "Couple", "18+", "Status", ""].map((h) => (
                   <th key={h} scope="col" className="px-4 py-3 font-medium">
@@ -162,7 +162,10 @@ export function AdminUsers() {
             </thead>
             <tbody>
               {(data?.users ?? []).map((u) => (
-                <tr key={u.id} className="border-line border-t align-top">
+                <tr
+                  key={u.id}
+                  className="border-line hover:bg-s2 border-t align-top transition-colors"
+                >
                   <td className="px-4 py-3">
                     <Link
                       href={`/admin/users/${u.id}`}
@@ -171,7 +174,11 @@ export function AdminUsers() {
                       {u.name ?? "No name yet"}
                     </Link>
                     <div className="text-muted">{u.email}</div>
-                    {u.admin && <span className="mono text-accent text-[11px]">ADMIN</span>}
+                    {u.admin && (
+                      <span className="border-line-strong text-muted mt-1 inline-block rounded-full border px-2 text-xs font-medium">
+                        Admin
+                      </span>
+                    )}
                   </td>
                   <td className="mono text-muted px-4 py-3 text-xs">{u.createdAt.slice(0, 10)}</td>
                   <td className="text-muted px-4 py-3 text-xs">

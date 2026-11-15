@@ -5,14 +5,7 @@ export const metadata: Metadata = { title: "Terms", robots: { index: true, follo
 
 export default function Terms() {
   return (
-    <LegalPage
-      title={
-        <>
-          Terms of <em>use</em>
-        </>
-      }
-      updated="13 NOV 2026"
-    >
+    <LegalPage title="Terms of use" updated="13 Nov 2026">
       <p>
         Clink is a private space for two adults in a relationship. By using it you agree to these
         terms.
