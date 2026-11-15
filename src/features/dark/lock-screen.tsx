@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { X, Moon, LockKey } from "@phosphor-icons/react";
 import { startAuthentication } from "@simplewebauthn/browser";
@@ -15,6 +15,7 @@ export function LockScreen() {
   const next = params.get("next");
   const { data: state, refetch } = useDarkState();
   const [pin, setPin] = useState("");
+  const clearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [wrong, setWrong] = useState(false);
   const [tries, setTries] = useState<number | null>(null);
   const [lockedOverride, setLockedUntil] = useState<string | null | undefined>(undefined);
@@ -55,11 +56,17 @@ export function LockScreen() {
     setTries(d.triesLeft ?? 0);
     setWrong(true);
     navigator.vibrate?.([40, 40, 40]);
-    setTimeout(() => setPin(""), 450);
+    // Clear the red dots after the shake, unless they have already started typing again.
+    if (clearTimer.current) clearTimeout(clearTimer.current);
+    clearTimer.current = setTimeout(() => setPin(""), 450);
   }
 
   function key(k: string) {
     if (lockedUntil) return;
+    if (clearTimer.current) {
+      clearTimeout(clearTimer.current);
+      clearTimer.current = null;
+    }
     if (k === "del") {
       setPin((p) => p.slice(0, -1));
       setWrong(false);

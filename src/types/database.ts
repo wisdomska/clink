@@ -1180,6 +1180,9 @@ isOneToOne: false
 "svc_answer_latest_clink":
 { Args: { "p_answerer": string,"p_couple": string }; Returns: string
                            },
+"svc_apply_game_move":
+{ Args: { "p_current_turn_user": string,"p_expected_updated_at": string,"p_finished_at": string,"p_game_id": string,"p_is_draw": boolean,"p_scores": Json,"p_secrets": Json,"p_state": Json,"p_status": string,"p_winner_id": string }; Returns: boolean
+                           },
 "svc_desire_matches":
 { Args: { "p_couple": string }; Returns: {
               "item_id": string,"kind": string,"text": string,"tier": string

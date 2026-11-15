@@ -140,7 +140,7 @@ export function KnowMeRoom({ game }: { game: GameRow }) {
         </span>
       </div>
       <h2 className="display mt-3 mb-2 text-[36px] leading-[1.05]">
-        {fill(q.text, iAmSubject ? "you" : partner.name)}
+        {fill(q.text, iAmSubject ? me.name : partner.name)}
       </h2>
       <div className="flex flex-col gap-2">
         {q.options.map((o, i) => {

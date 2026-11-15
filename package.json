@@ -22,7 +22,7 @@
     "test:rls": "vitest run --config vitest.rls.config.mts",
     "test:e2e": "playwright test",
     "prepare": "husky",
-    "db:types": "supabase gen types typescript --schema public 2>/dev/null > src/types/database.ts",
+    "db:types": "supabase gen types typescript --schema public > src/types/database.ts.tmp 2>/dev/null && mv src/types/database.ts.tmp src/types/database.ts || (rm -f src/types/database.ts.tmp; echo \"db:types failed: is the local stack running?\"; exit 1)",
     "db:reset": "supabase db reset",
     "icons": "tsx scripts/make-icons.tsx",
     "seed:admin": "tsx scripts/seed-admin.ts",

@@ -15,41 +15,48 @@ export const POST = handler(async (req, ctx: { params: Promise<{ id: string }> }
   await rateLimit(`game-move:${user.id}`, 900, 3600);
   const { move } = await parseJson(req, schema);
   const admin = supabaseAdmin();
-  const { data: g } = await admin.from("games").select("*").eq("id", id).maybeSingle();
-  if (!g || g.couple_id !== coupleId) throw deny(404, "not_found", "Game not found.");
-  if (g.status !== "active")
-    throw deny(
-      409,
-      g.status === "invited" ? "not_started" : "over",
-      g.status === "invited" ? "Waiting for them to join." : "That game has finished.",
-    );
-  const { data: sec } = await admin.from("game_secrets").select("data").eq("game_id", id).single();
-  const p = await playersFor(coupleId, g.created_by);
-  const r = applyMove(g.type as GameType, p, g.state, sec?.data ?? {}, user.id, move);
-  if ("correct" in r && r.correct === false) return ok({ correct: false });
-
-  const patch = {
-    state: asJson(r.state),
-    current_turn_user: r.turn === undefined ? g.current_turn_user : r.turn,
-    status: r.finished ? ("finished" as const) : ("active" as const),
-    winner_id: r.finished ? (r.winnerId ?? null) : null,
-    is_draw: Boolean(r.finished && r.isDraw),
-    scores: asJson(r.scores ?? g.scores),
-    finished_at: r.finished ? new Date().toISOString() : null,
-  };
-  // Optimistic concurrency: only apply if nobody moved in between.
-  const { data: updated } = await admin
-    .from("games")
-    .update(patch)
-    .eq("id", id)
-    .eq("updated_at", g.updated_at)
-    .select("id")
-    .maybeSingle();
-  if (!updated) throw deny(409, "conflict", "They just moved. Try again.");
-  await admin
-    .from("game_secrets")
-    .update({ data: asJson(r.secrets) })
-    .eq("game_id", id);
+  // Both partners often answer at the same moment. Read, apply and save
+  // atomically; if someone else moved in between, re-read and apply again.
+  let attempt = 0;
+  let g;
+  let r;
+  for (;;) {
+    const { data: game } = await admin.from("games").select("*").eq("id", id).maybeSingle();
+    if (!game || game.couple_id !== coupleId) throw deny(404, "not_found", "Game not found.");
+    if (game.status !== "active")
+      throw deny(
+        409,
+        game.status === "invited" ? "not_started" : "over",
+        game.status === "invited" ? "Waiting for them to join." : "That game has finished.",
+      );
+    const { data: sec } = await admin
+      .from("game_secrets")
+      .select("data")
+      .eq("game_id", id)
+      .single();
+    const p = await playersFor(coupleId, game.created_by);
+    const res = applyMove(game.type as GameType, p, game.state, sec?.data ?? {}, user.id, move);
+    if ("correct" in res && res.correct === false) return ok({ correct: false });
+    const { data: saved, error } = await admin.rpc("svc_apply_game_move", {
+      p_game_id: id,
+      p_expected_updated_at: game.updated_at,
+      p_state: asJson(res.state),
+      p_secrets: asJson(res.secrets),
+      p_current_turn_user: (res.turn === undefined ? game.current_turn_user : res.turn) as string,
+      p_status: res.finished ? "finished" : "active",
+      p_winner_id: (res.finished ? (res.winnerId ?? null) : null) as string,
+      p_is_draw: Boolean(res.finished && res.isDraw),
+      p_scores: asJson(res.scores ?? game.scores),
+      p_finished_at: (res.finished ? new Date().toISOString() : null) as string,
+    });
+    if (error) throw error;
+    if (saved) {
+      g = game;
+      r = res;
+      break;
+    }
+    if (++attempt >= 5) throw deny(409, "conflict", "They just moved. Try again.");
+  }
   if (g.mode === "turn")
     await admin
       .from("game_moves")
