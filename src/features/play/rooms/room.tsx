@@ -4,6 +4,9 @@ import { KnowMeRoom, TriviaRoom, WyrRoom } from "./question-rooms";
 import { DrawRoom } from "./draw-room";
 import { WordRoom, StoryRoom } from "./turn-rooms";
 import { RoomHeader } from "./shared";
+import { GameReactions, StartCountdown } from "./live-extras";
+
+const LIVE = new Set(["know_me", "trivia", "wyr", "draw_guess"]);
 
 export function GameRoom({ id }: { id: string }) {
   const { data: game, isLoading, error } = useGame(id);
@@ -41,6 +44,12 @@ export function GameRoom({ id }: { id: string }) {
         ) : (
           <StoryRoom game={game} />
         ))}
+      {game && LIVE.has(game.type) && (
+        <>
+          <StartCountdown status={game.status} />
+          {game.status === "active" && <GameReactions gameId={game.id} />}
+        </>
+      )}
     </div>
   );
 }

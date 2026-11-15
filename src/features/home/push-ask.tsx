@@ -6,6 +6,7 @@ import { useCouple, useCoupleEvent } from "@/features/couple/context";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { enablePush } from "@/lib/pwa";
+import { useTopSlot } from "@/lib/top-slot";
 
 const KEY = "clink_push_ask_until";
 const COOLDOWN_MS = 7 * 24 * 3600 * 1000;
@@ -34,7 +35,8 @@ export function PushAsk() {
     setTimeout(() => setShow(true), 4600); // after the incoming clink overlay
   });
 
-  if (!show || path.startsWith("/dark")) return null;
+  const mine = useTopSlot("push", show && !path.startsWith("/dark"));
+  if (!mine) return null;
 
   const later = () => {
     try {

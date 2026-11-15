@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useClinkStore } from "./clink-store";
 import { feedback, flashTitle } from "@/lib/feedback";
+import { useTopSlot } from "@/lib/top-slot";
 import { useSendClink } from "./use-send-clink";
 import { HoldTogether } from "./hold-together";
 
@@ -37,6 +38,7 @@ export function IncomingClink() {
       setIncoming({ kind: "tap", at: Date.now() });
   }, [setIncoming]);
 
+  useTopSlot("clink", Boolean(incoming)); // highest priority: others wait while it shows
   return (
     <>
       {incoming && (

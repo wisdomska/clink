@@ -2,6 +2,14 @@
 
 All notable changes to Clink. Versions follow [Semantic Versioning](https://semver.org).
 
+## [Unreleased]
+
+### Added
+
+- Live games: a 3, 2, 1, Go countdown when the game starts, and reactions (❤️ 😂 😮 🔥 👏) that float up on both screens.
+- The top of the screen holds one card at a time: an incoming clink, then a game invite, then the notification offer, never stacked.
+- Google sign-in can be switched on for both projects with `pnpm setup:cloud` (see README).
+
 ## [1.1.0] - 2026-11-15
 
 A polish pass, informed by the author's Spil and Spuzl apps.

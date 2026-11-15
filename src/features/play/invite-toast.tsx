@@ -7,6 +7,7 @@ import { useCouple, useCoupleEvent } from "@/features/couple/context";
 import { Button } from "@/components/ui/button";
 import { GAME_META } from "./meta";
 import { feedback, flashTitle } from "@/lib/feedback";
+import { useTopSlot } from "@/lib/top-slot";
 import type { GameType } from "./engines/types";
 
 /** App-wide game invite (prototype "Invite pending"). The lobby shows its own list. */
@@ -25,7 +26,8 @@ export function GameInviteToast() {
     }
   });
 
-  if (!invite || path.startsWith("/play")) return null;
+  const mine = useTopSlot("invite", Boolean(invite) && !path.startsWith("/play"));
+  if (!invite || !mine) return null;
   const name = GAME_META[invite.type].name;
   return (
     <div
