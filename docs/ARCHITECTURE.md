@@ -14,7 +14,7 @@ Clink is one Next.js app on Vercel talking to one Supabase project per environme
             v                               |
    Supabase Postgres (RLS on every table) --+
    - pg_cron every 5 min and daily  --pg_net-->  /api/jobs/tick, /api/jobs/daily
-   - Auth: passwords, magic link, Google, passkeys, TOTP MFA for admins
+   - Auth: magic link, Google, passkeys
    Storage: Supabase Storage or Cloudflare R2 (STORAGE_DRIVER)
 ```
 
@@ -59,7 +59,7 @@ One private broadcast channel per couple (`couple:<id>`) carries clinks, typing,
 - After Dark, admin and media responses are `no-store`; After Dark and admin are `noindex`.
 - PIN: argon2id (hash-wasm), 5 attempts then a 15 minute lockout. The same rules apply to the optional app-open PIN (`/unlock`, `src/lib/server/app-lock.ts`); until it is entered the server renders no couple data. Its hash columns are hidden from clients by column-level grants.
 - Sign out everywhere: `app.session_live()` checks the token's `session_id` still exists in `auth.sessions`, inside `app.my_couple_id()` and `app.readable_couple_ids()`, so already-issued access tokens lose couple data the moment sessions are revoked.
-- Admin: `is_admin` granted only by `pnpm seed:admin` from `ADMIN_EMAILS`, TOTP required (`aal2`) on every admin page and API, every action in `audit_events`.
+- Admin: `is_admin` granted only by `pnpm seed:admin` from `ADMIN_EMAILS`, checked on every admin page and API (non-admins get a 404), every action in `audit_events`. Admins sign in like everyone else; two-factor was removed at the owner's request.
 - Sentry gets errors only, with bodies, cookies, users and breadcrumbs removed, and nothing from After Dark, media or admin. PostHog gets whitelisted event names only, cookieless, never on `/dark` or `/admin`.
 
 ## Environments

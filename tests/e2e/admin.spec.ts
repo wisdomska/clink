@@ -1,23 +1,8 @@
-import { createHmac } from "node:crypto";
 import { test, expect } from "./fixtures";
 import { admin, makeUser, signIn } from "./helpers";
 
-/** RFC 6238 TOTP (SHA-1, 30 s, 6 digits) from a base32 secret. */
-function totp(secret: string, at = Date.now()): string {
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-  let bits = "";
-  for (const c of secret.replace(/=+$/, "").toUpperCase())
-    bits += alphabet.indexOf(c).toString(2).padStart(5, "0");
-  const key = Buffer.from(bits.match(/.{8}/g)!.map((b) => parseInt(b, 2)));
-  const counter = Buffer.alloc(8);
-  counter.writeBigUInt64BE(BigInt(Math.floor(at / 1000 / 30)));
-  const h = createHmac("sha1", key).update(counter).digest();
-  const o = h[h.length - 1]! & 0xf;
-  return String((h.readUInt32BE(o) & 0x7fffffff) % 1_000_000).padStart(6, "0");
-}
-
 test.describe("Admin (/admin)", () => {
-  test("non-admins get a 404; admins must enrol TOTP; actions are audited; no private content is ever exposed", async ({
+  test("non-admins get a 404; admins go straight in; actions are audited; no private content is ever exposed", async ({
     couple,
     browser,
   }) => {
@@ -41,17 +26,6 @@ test.describe("Admin (/admin)", () => {
     const p = await ctx.newPage();
     await signIn(p, boss, "/admin");
     await p.goto("/admin");
-    await expect(p).toHaveURL(/\/admin\/mfa/);
-    expect((await p.request.get("/api/admin/metrics")).status()).toBe(401); // aal1 refused
-
-    await expect(p.getByAltText("QR code for your authenticator app")).toBeVisible({
-      timeout: 10000,
-    });
-    const secret = (await p.getByText(/Or enter this key:/).innerText())
-      .replace("Or enter this key: ", "")
-      .trim();
-    await p.getByLabel("6-digit code").fill(totp(secret));
-    await p.getByRole("button", { name: "Verify" }).click();
     await expect(p.getByRole("heading", { name: "Dashboard" })).toBeVisible({ timeout: 10000 });
     await expect(p.getByText("Free-tier usage")).toBeVisible();
 

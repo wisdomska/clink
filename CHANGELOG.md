@@ -17,7 +17,7 @@ First release.
 - After Dark: PIN lock, mutual opt-in, tiered consent with both partners' agreement, question decks, dare wheel, private vault with watermarked media, one-tap face blur, panic wipe.
 - Privacy: Discreet mode for everyone, optional PIN when Clink opens, a discreet app name and icon chosen at install.
 - Safety: reports, blocks (including from inside After Dark), quiet hours, discreet notifications.
-- Admin: TOTP-protected dashboard with aggregate metrics and free-tier usage, report queue, user tools, content editor, audit log.
+- Admin: dashboard with aggregate metrics and free-tier usage, report queue, user tools, content editor, audit log.
 - PWA: installable, offline shell, Web Push.
 - Ops: errors-only Sentry reporting that never sees private content; one-command Supabase cloud setup (`pnpm setup:cloud`); keep-alive workflow for Supabase Free.
 - QA: unit, RLS, end-to-end (two partners, three viewports), accessibility, visual regression and Lighthouse checks in CI.

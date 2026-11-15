@@ -74,7 +74,7 @@ It creates or reuses `clink-prod` and `clink-preview`, applies every migration a
 
 1. Sign up at https://clinkapp.vercel.app with an email listed in `ADMIN_EMAILS`.
 2. Run `pnpm seed:admin` against production.
-3. Open `/admin`. You are asked to enrol two-factor: scan the QR code with an authenticator app and enter the 6-digit code. Every later visit asks for a fresh code.
+3. Open `/admin`. Admins go straight in; access is checked against `is_admin` on every page and API.
 
 ## Contributing
 

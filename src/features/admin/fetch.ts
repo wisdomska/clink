@@ -14,7 +14,6 @@ export async function adminFetch<T>(
       : undefined,
   );
   const d = await r.json().catch(() => ({}));
-  if (r.status === 401 && d.error === "mfa_required") window.location.href = "/admin/mfa";
   if (!r.ok) throw new Error(d.message ?? "Request failed.");
   return d as T;
 }

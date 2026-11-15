@@ -47,7 +47,7 @@ Core flows (spec section 10):
 - 10.3 to 10.6 (After Dark): hidden until both opt in; PIN with lockout; the lower tier wins; Unhinged needs both verified; spin, pass, spin again; nude request with "Not right now", 12 h cooldown and no reminders; unlink wipes every sensitive item for both.
 - Accounts: passkeys added and removed; unlinked chat readable for 30 days and not writable; sign out everywhere cuts off already-issued tokens; ritual time changes only when both agree; PIN on open; discreet identity picked at install and applied to the manifest.
 - Data and safety: export zip holds only your own non-private data and expires in 48 h; account deletion removes the user and what they shared; call shortcuts use the saved number; mood check-in reaches the partner once a day; switching away hides After Dark media and logs it; blocking inside After Dark unlinks and wipes for both.
-- Admin: non-admins get 404; admins must enrol TOTP; actions are audited; no private content reaches admin screens.
+- Admin: non-admins get 404; admins go straight in; actions are audited; no private content reaches admin screens.
 
 Must-pass privacy checks, each also attempted directly against the API and the database with the partner's own token:
 
@@ -62,22 +62,22 @@ Must-pass privacy checks, each also attempted directly against the API and the d
 
 ## Security self-review (OWASP ASVS 4.0.3, Level 2)
 
-| Area                       | Status | Evidence                                                                                                                                                                  |
-| -------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| V1 Architecture            | Met    | Trust boundary is the API and Postgres RLS; the browser is never trusted for After Dark rules (`docs/ARCHITECTURE.md`)                                                    |
-| V2 Authentication          | Met    | Supabase Auth; passkeys; TOTP required for admins (`aal2`); email verification before linking; rate limits on auth and PIN routes                                         |
-| V3 Session management      | Met    | httpOnly, Secure, SameSite cookies; After Dark session slides on a 2 minute idle window; sign out everywhere revokes issued tokens (`app.session_live()`)                 |
-| V4 Access control          | Met    | RLS on every table, server checks on every route, admin routes 404 for non-admins; 64 RLS tests                                                                           |
-| V5 Validation and encoding | Met    | Zod on every request body; React escaping; no `dangerouslySetInnerHTML` with user content                                                                                 |
-| V6 Cryptography            | Met    | argon2id PINs (hash-wasm); HMAC-signed cookies with `APP_SECRET`; TLS everywhere (HSTS preload)                                                                           |
-| V7 Errors and logging      | Met    | Generic error bodies; audit events for sensitive actions; Sentry scrubs bodies, cookies, users and breadcrumbs and drops After Dark, media and admin errors (unit tested) |
-| V8 Data protection         | Met    | `no-store` and `noindex` on private routes; sensitive media streamed, never given a URL; watermarking; wipe jobs verify deletion                                          |
-| V9 Communications          | Met    | HTTPS only; HSTS; WebSocket over TLS                                                                                                                                      |
-| V10 Malicious code         | Met    | Dependency audit in CI; Dependabot; lockfile frozen                                                                                                                       |
-| V11 Business logic         | Met    | Server-side referee for games; consent maths in SQL; cooldowns and rate limits in Postgres                                                                                |
-| V12 Files                  | Met    | Size and type limits; images re-encoded server-side; uploads to private buckets via presigned URLs                                                                        |
-| V13 API                    | Met    | JSON only; CSRF covered by SameSite cookies and JSON content type                                                                                                         |
-| V14 Configuration          | Met    | Nonce CSP, no third parties on `/dark` and `/admin`; secrets only in environment variables; `.env.example` has no values                                                  |
+| Area                       | Status | Evidence                                                                                                                                                                            |
+| -------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| V1 Architecture            | Met    | Trust boundary is the API and Postgres RLS; the browser is never trusted for After Dark rules (`docs/ARCHITECTURE.md`)                                                              |
+| V2 Authentication          | Met    | Supabase Auth; passkeys; admin access checked server-side on every request (owner chose no admin two-factor); email verification before linking; rate limits on auth and PIN routes |
+| V3 Session management      | Met    | httpOnly, Secure, SameSite cookies; After Dark session slides on a 2 minute idle window; sign out everywhere revokes issued tokens (`app.session_live()`)                           |
+| V4 Access control          | Met    | RLS on every table, server checks on every route, admin routes 404 for non-admins; 64 RLS tests                                                                                     |
+| V5 Validation and encoding | Met    | Zod on every request body; React escaping; no `dangerouslySetInnerHTML` with user content                                                                                           |
+| V6 Cryptography            | Met    | argon2id PINs (hash-wasm); HMAC-signed cookies with `APP_SECRET`; TLS everywhere (HSTS preload)                                                                                     |
+| V7 Errors and logging      | Met    | Generic error bodies; audit events for sensitive actions; Sentry scrubs bodies, cookies, users and breadcrumbs and drops After Dark, media and admin errors (unit tested)           |
+| V8 Data protection         | Met    | `no-store` and `noindex` on private routes; sensitive media streamed, never given a URL; watermarking; wipe jobs verify deletion                                                    |
+| V9 Communications          | Met    | HTTPS only; HSTS; WebSocket over TLS                                                                                                                                                |
+| V10 Malicious code         | Met    | Dependency audit in CI; Dependabot; lockfile frozen                                                                                                                                 |
+| V11 Business logic         | Met    | Server-side referee for games; consent maths in SQL; cooldowns and rate limits in Postgres                                                                                          |
+| V12 Files                  | Met    | Size and type limits; images re-encoded server-side; uploads to private buckets via presigned URLs                                                                                  |
+| V13 API                    | Met    | JSON only; CSRF covered by SameSite cookies and JSON content type                                                                                                                   |
+| V14 Configuration          | Met    | Nonce CSP, no third parties on `/dark` and `/admin`; secrets only in environment variables; `.env.example` has no values                                                            |
 
 Open items: Lighthouse reports a Content Security Policy notice on `/login` without details (no violation appears in the browser console). Self-attested age is not proof of age (V2 does not cover this; recorded in `docs/LIMITS.md`).
 

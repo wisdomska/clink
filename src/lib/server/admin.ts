@@ -5,8 +5,8 @@ import { deny, rateLimit, audit } from "@/lib/server/api";
 import type { Json } from "@/types/database";
 
 /**
- * Every admin route and API goes through here: signed in, is_admin in the
- * database, and a TOTP-verified session (aal2). Admin rate limits are separate.
+ * Every admin route and API goes through here: signed in and is_admin in the
+ * database (granted only by scripts/seed-admin.ts). Admin rate limits are separate.
  */
 export async function requireAdmin(opts: { rate?: number } = {}) {
   const db = await supabaseServer();
@@ -20,9 +20,6 @@ export async function requireAdmin(opts: { rate?: number } = {}) {
     .eq("id", user.id)
     .single();
   if (!p?.is_admin) throw deny(404, "not_found", "Not found.");
-  const { data: aal } = await db.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (aal?.currentLevel !== "aal2")
-    throw deny(401, "mfa_required", "Two-factor verification required.");
   await rateLimit(`admin:${user.id}`, opts.rate ?? 600, 3600);
   return { user, name: p.display_name ?? user.email ?? "admin" };
 }
