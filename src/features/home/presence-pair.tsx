@@ -95,7 +95,6 @@ export function PresencePair({ now }: { now: Date }) {
             type="button"
             onClick={() => setOpen(true)}
             className="press text-text flex min-w-0 cursor-pointer flex-col items-center gap-2 border-0 bg-transparent"
-            aria-label={`You, ${statusLabel(myStatus)}. Change your status`}
           >
             <div className="relative">
               <Avatar
@@ -116,6 +115,7 @@ export function PresencePair({ now }: { now: Date }) {
               beHere ? Sparkle : iconFor(myStatus),
               true,
             )}
+            <span className="sr-only">Change your status</span>
           </button>
 
           {/* Heartbeat between you: pulses together, flat line when apart. */}

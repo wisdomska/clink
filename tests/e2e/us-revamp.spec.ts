@@ -13,7 +13,7 @@ test("Us: custom status, 3D moods, missed call card with call back, picture stic
   await b.goto("/us");
 
   // Write your own status; Theo sees it.
-  await a.getByRole("button", { name: /^You, .* Change your status/ }).click();
+  await a.getByRole("button", { name: /^You .*Change your status/ }).click();
   await a.getByLabel("Or write your own").fill("on the train");
   await a.getByRole("button", { name: "Set", exact: true }).click();
   await expect(b.getByText("on the train")).toBeVisible({ timeout: 10000 });

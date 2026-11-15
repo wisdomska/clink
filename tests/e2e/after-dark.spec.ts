@@ -48,7 +48,7 @@ async function asUser(u: TestUser) {
 }
 
 test.describe("After Dark (spec section 7 and the must-pass safety tests)", () => {
-  test("flow 10.3: entry visible, setup first, PIN lock with lockout, lower choice wins, Unhinged needs both verified", async ({
+  test("flow 10.3: entry visible, setup first, PIN lock with lockout, lower choice wins, one tap to Unhinged", async ({
     couple,
   }) => {
     const { a, b } = couple;
@@ -84,12 +84,7 @@ test.describe("After Dark (spec section 7 and the must-pass safety tests)", () =
       .eq("user_id", couple.theo.id);
     expect((await b.request.post("/api/dark/unlock", { data: { pin: "2611" } })).ok()).toBeTruthy();
 
-    // Unhinged refused without verification, for the caller and while the partner is unverified.
-    const refused = await a.request.post("/api/dark/consent", {
-      data: { tiers: ["Flirty", "Steamy", "Spicy", "Unhinged"] },
-    });
-    expect(refused.status()).toBe(403);
-    await verify(a);
+    // One tap to Unhinged: picking it records the 18+ declaration on the spot.
     expect(
       (
         await a.request.post("/api/dark/consent", {
@@ -97,13 +92,13 @@ test.describe("After Dark (spec section 7 and the must-pass safety tests)", () =
         })
       ).ok(),
     ).toBeTruthy();
-    expect(
-      (
-        await b.request.post("/api/dark/consent", {
-          data: { tiers: ["Flirty", "Steamy", "Spicy", "Unhinged"] },
-        })
-      ).status(),
-    ).toBe(403); // B unverified
+    const { data: aPriv } = await admin
+      .from("user_private")
+      .select("age_verified_at")
+      .eq("user_id", couple.nia.id)
+      .single();
+    expect(aPriv?.age_verified_at).toBeTruthy();
+    // The lower choice still wins: Theo at Spicy keeps Unhinged shut for both.
     expect(
       (
         await b.request.post("/api/dark/consent", {
@@ -111,7 +106,7 @@ test.describe("After Dark (spec section 7 and the must-pass safety tests)", () =
         })
       ).ok(),
     ).toBeTruthy();
-    expect((await (await a.request.get("/api/dark/state")).json()).rank).toBe(3); // Unhinged stays shut until both verify
+    expect((await (await a.request.get("/api/dark/state")).json()).rank).toBe(3); // Unhinged stays shut until both pick it
     const req = await a.request.post("/api/dark/requests", { data: {} });
     expect(req.status()).toBe(403);
 
