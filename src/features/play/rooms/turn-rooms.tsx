@@ -136,10 +136,10 @@ export function WordRoom({ game }: { game: GameRow }) {
       )}
       {myTurn && (
         <div className="grid grid-cols-[2fr_1fr] gap-2">
-          <Button disabled={busy || word.length < 3} onClick={() => play(false)}>
+          <Button loading={busy} disabled={word.length < 3} onClick={() => play(false)}>
             Play {word ? word.toUpperCase() : "word"}
           </Button>
-          <Button variant="secondary" disabled={busy} onClick={() => play(true)}>
+          <Button variant="secondary" loading={busy} onClick={() => play(true)}>
             Pass
           </Button>
         </div>

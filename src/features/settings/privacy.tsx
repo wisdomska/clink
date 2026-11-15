@@ -42,7 +42,7 @@ export function PrivacyCard() {
 
   return (
     <>
-      <h2 className="m-0 mt-1 text-lg font-bold">Privacy on this phone</h2>
+      <h2 className="m-0 mt-1 text-lg font-bold">Privacy on this device</h2>
       <div className="rounded-card border-line bg-s1 overflow-hidden border">
         <Toggle
           label="Discreet mode"

@@ -1,16 +1,35 @@
-import { siWhatsapp, siYoutube } from "simple-icons";
+import {
+  siWhatsapp,
+  siYoutube,
+  siInstagram,
+  siSnapchat,
+  siTelegram,
+  siMessenger,
+  siX,
+  siGmail,
+} from "simple-icons";
 import { cn } from "@/components/ui/cn";
 
 /**
  * Official third-party marks, never redrawn:
  * - Google: the four-colour "G" from Google's sign-in branding guidelines.
- * - WhatsApp, YouTube: Simple Icons (CC0), traced from each brand's official
- *   assets, shown in the official brand colour.
- * Each sits on a small white badge so it keeps its true colours on Clink's
- * dark and accent surfaces. There is deliberately no FaceTime mark: Apple
- * doesn't license its app icons, so FaceTime is shown by name only.
+ * - Everything else: Simple Icons (CC0), traced from each brand's official
+ *   assets, shown in the official brand colours.
+ * "badge" sits the mark on a small white circle so it keeps its true colours on
+ * Clink's dark surfaces. "tile" is the app-icon look used in the share menu
+ * (brand background, white mark), following each brand's own icon treatment.
+ * There is deliberately no FaceTime mark: Apple doesn't license its app icons.
  */
-export type Brand = "google" | "whatsapp" | "youtube";
+export type Brand =
+  | "google"
+  | "whatsapp"
+  | "youtube"
+  | "instagram"
+  | "snapchat"
+  | "telegram"
+  | "messenger"
+  | "x"
+  | "gmail";
 
 function GoogleG() {
   return (
@@ -35,31 +54,71 @@ function GoogleG() {
   );
 }
 
-const SIMPLE = { whatsapp: siWhatsapp, youtube: siYoutube } as const;
+const SIMPLE = {
+  whatsapp: siWhatsapp,
+  youtube: siYoutube,
+  instagram: siInstagram,
+  snapchat: siSnapchat,
+  telegram: siTelegram,
+  messenger: siMessenger,
+  x: siX,
+  gmail: siGmail,
+} as const;
+
+/** App-icon backgrounds, from each brand's own icon. */
+const TILE_BG: Partial<Record<Brand, string>> = {
+  whatsapp: "#25D366",
+  instagram:
+    "radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%)",
+  snapchat: "#FFFC00",
+  telegram: "#26A5E4",
+  messenger:
+    "radial-gradient(circle at 20% 100%, #0099FF 0%, #A033FF 60%, #FF5280 90%, #FF7061 100%)",
+  x: "#000000",
+  youtube: "#FFFFFF",
+  gmail: "#FFFFFF",
+  google: "#FFFFFF",
+};
 
 export function BrandLogo({
   brand,
   size = 24,
+  variant = "badge",
   className,
 }: {
   brand: Brand;
   size?: number;
+  variant?: "badge" | "tile";
   className?: string;
 }) {
+  const tile = variant === "tile";
+  const bg = tile ? (TILE_BG[brand] ?? "#fff") : "#fff";
+  const light = !tile || bg === "#FFFFFF" || bg === "#fff";
   return (
     <span
       aria-hidden
       className={cn(
-        "inline-flex flex-none items-center justify-center rounded-full bg-white",
+        "inline-flex flex-none items-center justify-center",
+        tile ? "rounded-[28%] shadow-[inset_0_0_0_1px_rgba(255,255,255,.08)]" : "rounded-full",
         className,
       )}
-      style={{ width: size, height: size }}
+      style={{ width: size, height: size, background: bg }}
     >
       {brand === "google" ? (
         <GoogleG />
       ) : (
-        <svg viewBox="0 0 24 24" className="h-[64%] w-[64%]" aria-hidden>
-          <path fill={`#${SIMPLE[brand].hex}`} d={SIMPLE[brand].path} />
+        <svg
+          viewBox="0 0 24 24"
+          className={tile ? "h-[58%] w-[58%]" : "h-[64%] w-[64%]"}
+          aria-hidden
+        >
+          <path
+            d={SIMPLE[brand].path}
+            fill={light ? `#${SIMPLE[brand].hex}` : "#FFFFFF"}
+            stroke={tile && brand === "snapchat" ? "#000" : undefined}
+            strokeWidth={tile && brand === "snapchat" ? 1.1 : undefined}
+            strokeLinejoin="round"
+          />
         </svg>
       )}
     </span>

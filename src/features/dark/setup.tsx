@@ -156,7 +156,7 @@ export function DarkSetup() {
           </div>
           <FieldError>{error}</FieldError>
           <div className="min-h-6 flex-1" />
-          <Button className="bg-ember" disabled={busy} onClick={finish}>
+          <Button className="bg-ember" loading={busy} onClick={finish}>
             Open After Dark
           </Button>
         </div>

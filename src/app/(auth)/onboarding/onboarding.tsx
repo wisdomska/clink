@@ -322,7 +322,8 @@ export function Onboarding({
       <div className="min-h-6 flex-1" />
       <Button
         className="flex-none"
-        disabled={busy || (step === 3 && !city && query.length > 0)}
+        loading={busy}
+        disabled={step === 3 && !city && query.length > 0}
         onClick={advance}
       >
         Continue
@@ -399,7 +400,7 @@ function DobStep({ onDone }: { onDone: () => void }) {
       </div>
       <FieldError>{error}</FieldError>
       <div className="min-h-6 flex-1" />
-      <Button disabled={busy || !day || !month || year.length < 4} onClick={save}>
+      <Button loading={busy} disabled={!day || !month || year.length < 4} onClick={save}>
         Continue
       </Button>
     </div>

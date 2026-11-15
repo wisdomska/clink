@@ -506,9 +506,24 @@ export function ChatScreen() {
           ) : (
             all.map((m, i) => {
               const prev = all[i - 1];
+              const next = all[i + 1];
               const gap =
                 !prev ||
                 new Date(m.sent_at).getTime() - new Date(prev.sent_at).getTime() > 30 * 60 * 1000;
+              // Runs from the same person within 2 minutes read as one block.
+              const joins = (x?: (typeof all)[number], y?: (typeof all)[number]) =>
+                Boolean(
+                  x &&
+                  y &&
+                  x.sender_id === y.sender_id &&
+                  x.type !== "clink" &&
+                  y.type !== "clink" &&
+                  Math.abs(new Date(y.sent_at).getTime() - new Date(x.sent_at).getTime()) <
+                    2 * 60 * 1000,
+                );
+              const withPrev = !gap && joins(prev, m);
+              const withNext = joins(m, next) && !(lastMine?.id === m.id);
+              const pos = withPrev ? (withNext ? "middle" : "last") : withNext ? "first" : "single";
               return (
                 <div key={m.id} className="contents">
                   {gap && (
@@ -517,6 +532,7 @@ export function ChatScreen() {
                     </div>
                   )}
                   <Bubble
+                    pos={pos}
                     m={m}
                     mine={m.sender_id === me.id}
                     partnerName={partner.name}

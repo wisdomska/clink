@@ -54,7 +54,7 @@ export const POST = handler(async (req) => {
     );
   }
 
-  let retention: Retention = body.sensitive ? (body.retention ?? "once") : "keep";
+  let retention: Retention = body.sensitive ? (body.retention ?? "vault") : "keep";
   if (retention === "vault" && !(await bothAllowSaved(caller.coupleId))) retention = "once"; // couple setting decides
   const id = randomUUID();
   const bucket = body.sensitive ? "sensitive" : "media";

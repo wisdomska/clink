@@ -20,6 +20,7 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
   const next = params.get("next") ?? (params.get("code") ? "/link?enter=1" : null);
   const [view, setView] = useState<View>(params.get("blocked") ? "blocked" : "form");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [day, setDay] = useState("");
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
@@ -106,6 +107,19 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
     if (!parsedEmail.success || !dobOk) return;
     setBusy(true);
     try {
+      if (password) {
+        const { error } = await supabaseBrowser().auth.signInWithPassword({ email, password });
+        if (error) {
+          setFormError(
+            error.status === 429
+              ? "Too many tries just now. Give it a minute."
+              : "That email and password don't match. Leave the password empty to get a link instead.",
+          );
+          return;
+        }
+        window.location.assign(next ?? "/us");
+        return;
+      }
       if (await sendLink()) {
         setView("sent");
         setResendIn(60);
@@ -198,6 +212,21 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
             placeholder="you@example.com"
           />
           <FieldError id="email-error">{emailError}</FieldError>
+          {mode === "login" && (
+            <div className="mt-4">
+              <Label htmlFor="password">
+                Password <span className="text-faint font-normal">(optional)</span>
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <Hint>Leave it empty and we&apos;ll email you a sign-in link.</Hint>
+            </div>
+          )}
           {mode === "signup" && (
             <fieldset className="m-0 mt-4 border-0 p-0">
               <legend className="text-muted mb-1.5 p-0 text-sm font-medium">Date of birth</legend>
@@ -252,8 +281,8 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
           )}
           <FieldError>{formError}</FieldError>
           <div className="min-h-6 flex-1" />
-          <Button type="submit" disabled={busy} className="mt-6 flex-none">
-            {busy ? "One sec" : "Continue"}
+          <Button type="submit" loading={busy} className="mt-6 flex-none">
+            {mode === "login" && password ? "Sign in" : "Continue"}
           </Button>
           <p className="text-muted mt-4 text-center text-sm">
             {mode === "signup" ? (
@@ -294,7 +323,7 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
             <Display size={36} className="mt-2">
               Check your <em>inbox</em>
             </Display>
-            <Lead>We sent a link to {email}. Tap it on this phone and you&apos;re in.</Lead>
+            <Lead>We sent a link to {email}. Tap it on this device and you&apos;re in.</Lead>
           </div>
           <div className="flex flex-col gap-2">
             <a

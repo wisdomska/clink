@@ -48,7 +48,7 @@ export function UnlockScreen({ next, fresh }: { next: string; fresh: boolean }) 
         {error}
       </p>
       <PinPad onKey={onKey} disabled={busy} />
-      <Button className="mt-8" disabled={busy || pin.length < 4} onClick={() => submit(pin)}>
+      <Button className="mt-8" loading={busy} disabled={pin.length < 4} onClick={() => submit(pin)}>
         Unlock
       </Button>
       {fresh ? (

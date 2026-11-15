@@ -148,3 +148,30 @@
 @keyframes shakeA { 0%, 100% { transform: none } 20% { transform: translateX(-6px) } 40% { transform: translateX(6px) } 60% { transform: translateX(-3px) } 80% { transform: translateX(3px) } }
 @keyframes shakeB { 0%, 100% { transform: none } 20% { transform: translateX(-6px) } 40% { transform: translateX(6px) } 60% { transform: translateX(-3px) } 80% { transform: translateX(3px) } }
 @keyframes barGrow { from { transform: scaleY(0) } }
+
+/* Loaders (task: animated busy states) */
+.ui-spinner {
+  border-radius: 9999px;
+  background: conic-gradient(from 0deg, transparent 0 18%, color-mix(in oklab, var(--accent) 35%, transparent) 40%, var(--accent) 88%, transparent 89%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--sp-w)), #000 calc(100% - var(--sp-w) + 0.5px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - var(--sp-w)), #000 calc(100% - var(--sp-w) + 0.5px));
+  animation: spinSweep 0.9s cubic-bezier(.55, .15, .45, .85) infinite;
+}
+.ui-dots i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: dotHop 1s cubic-bezier(.45, 0, .55, 1) infinite;
+}
+.ui-dots i:nth-child(2) { animation-delay: .14s }
+.ui-dots i:nth-child(3) { animation-delay: .28s }
+@keyframes spinSweep { to { transform: rotate(360deg) } }
+@keyframes dotHop { 0%, 60%, 100% { transform: translateY(0) scale(.8); opacity: .45 } 30% { transform: translateY(-5px) scale(1); opacity: 1 } }
+@media (prefers-reduced-motion: reduce) {
+  .ui-spinner { animation-duration: 2.4s }
+  .ui-dots i { animation: dots 1.4s ease-in-out infinite }
+}
+:root[data-motion="reduced"] .ui-spinner { animation-duration: 2.4s }
+:root[data-motion="reduced"] .ui-dots i { animation: dots 1.4s ease-in-out infinite }

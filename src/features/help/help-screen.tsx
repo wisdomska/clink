@@ -221,7 +221,7 @@ export function HelpScreen({
             Our team only ever sees what you attach here. We can&apos;t read your chats or media.
           </p>
           <FieldError>{error}</FieldError>
-          <Button disabled={busy} onClick={send}>
+          <Button loading={busy} onClick={send}>
             Send report
           </Button>
         </div>

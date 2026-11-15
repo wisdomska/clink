@@ -15,6 +15,22 @@ import { cn } from "@/components/ui/cn";
 
 export const STICKER_LABEL = new Map<string, string>();
 
+/** Where a message sits in a run from the same person (iMessage/WhatsApp grouping). */
+export type GroupPos = "single" | "first" | "middle" | "last";
+
+const R = 20; // outer corner
+const J = 6; // joined corner, toward the sender's side
+function radius(mine: boolean, pos: GroupPos) {
+  const top = pos === "middle" || pos === "last" ? J : R;
+  const bottom = pos === "first" || pos === "middle" || pos === "single" ? J : R;
+  // order: top-left top-right bottom-right bottom-left
+  return mine ? `${R}px ${top}px ${bottom}px ${R}px` : `${top}px ${R}px ${R}px ${bottom}px`;
+}
+
+function clock(iso: string) {
+  return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
 function mediaUrl(id: string) {
   return `/api/media/${id}/view`;
 }
@@ -79,7 +95,9 @@ export function Bubble({
   onLongPress,
   onSwipeReply,
   onRetry,
+  pos = "single",
 }: {
+  pos?: GroupPos;
   m: UiMessage;
   mine: boolean;
   partnerName: string;
@@ -229,7 +247,7 @@ export function Bubble({
     content = (
       <div
         className={cn(
-          "grid w-[70%] max-w-[420px] gap-1",
+          "grid w-[min(72vw,320px)] gap-1",
           items.length > 1 ? "grid-cols-2" : "grid-cols-1",
           side,
         )}
@@ -280,28 +298,47 @@ export function Bubble({
       </div>
     );
   } else {
-    content = (
-      <div
-        className="max-w-[78%] px-3.5 py-2.5 text-base leading-[1.4] break-words whitespace-pre-wrap"
-        style={{
-          borderRadius: mine ? "var(--r-bubble-out)" : "var(--r-bubble-in)",
-          background: mine ? "var(--surface-3)" : "var(--surface-1)",
-          border: mine ? "none" : "1px solid var(--line)",
-          opacity: m.local === "sending" ? 0.7 : 1,
-        }}
-      >
-        {replyTarget && (
-          <div className="mb-1.5">
-            <ReplyQuote
-              target={replyTarget}
-              targetMine={replyTarget.sender_id === m.sender_id ? mine : !mine}
-              media={media}
-            />
-          </div>
-        )}
-        {m.body}
-      </div>
-    );
+    // Short messages hug their text; long ones wrap at the column edge. The time
+    // floats in the last line (WhatsApp style) so it never forces a new line.
+    const emojiOnly =
+      /^(\p{Extended_Pictographic}|\p{Emoji_Component}|\s){1,8}$/u.test(m.body ?? "") &&
+      !/^[\d#*\s]+$/.test(m.body ?? "");
+    content =
+      emojiOnly && !replyTarget ? (
+        <div
+          className="px-1 text-[40px] leading-[1.15]"
+          style={{ opacity: m.local === "sending" ? 0.7 : 1 }}
+        >
+          {m.body}
+        </div>
+      ) : (
+        <div
+          className="w-fit max-w-full px-3.5 pt-2 pb-1.5 text-base leading-[1.35] [overflow-wrap:anywhere] whitespace-pre-wrap"
+          style={{
+            borderRadius: radius(mine, pos),
+            background: mine ? "var(--bubble-out, var(--surface-3))" : "var(--surface-1)",
+            border: mine ? "none" : "1px solid var(--line)",
+            opacity: m.local === "sending" ? 0.7 : 1,
+          }}
+        >
+          {replyTarget && (
+            <div className="mb-1.5">
+              <ReplyQuote
+                target={replyTarget}
+                targetMine={replyTarget.sender_id === m.sender_id ? mine : !mine}
+                media={media}
+              />
+            </div>
+          )}
+          {m.body}
+          <span
+            aria-hidden
+            className="mono text-faint relative top-[5px] float-right ml-2.5 text-[11px] leading-none select-none"
+          >
+            {m.local === "sending" ? "..." : clock(m.sent_at)}
+          </span>
+        </div>
+      );
   }
 
   return (
@@ -309,6 +346,7 @@ export function Bubble({
       className={cn(
         "relative flex flex-col",
         mine ? "items-end" : "items-start",
+        (pos === "middle" || pos === "last") && "-mt-1.5",
         reactions.length > 0 && "mb-3",
       )}
     >
@@ -324,7 +362,7 @@ export function Bubble({
         {...handlers}
       >
         {replyTarget && m.type !== "text" && (
-          <div className="mb-1 max-w-[78%]">
+          <div className="mb-1 max-w-[80%]">
             <ReplyQuote
               target={replyTarget}
               targetMine={replyTarget.sender_id === m.sender_id ? mine : !mine}
@@ -332,7 +370,7 @@ export function Bubble({
             />
           </div>
         )}
-        <div className="relative max-w-full">
+        <div className="relative max-w-[80%] md:max-w-[min(80%,560px)]">
           {content}
           <ReactionPill reactions={reactions} />
         </div>

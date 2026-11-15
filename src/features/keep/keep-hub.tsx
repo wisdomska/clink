@@ -493,7 +493,8 @@ function CapsuleSheet({
       </p>
       <FieldError>{error}</FieldError>
       <Button
-        disabled={busy || !!recorder || !title.trim() || !date || (!body.trim() && !file && !voice)}
+        loading={busy}
+        disabled={!!recorder || !title.trim() || !date || (!body.trim() && !file && !voice)}
         onClick={async () => {
           setBusy(true);
           setError(null);
@@ -595,7 +596,8 @@ function MomentSheet({
         />
       </label>
       <Button
-        disabled={busy || !title.trim() || !date}
+        loading={busy}
+        disabled={!title.trim() || !date}
         onClick={async () => {
           setBusy(true);
           try {

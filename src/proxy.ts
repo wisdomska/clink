@@ -2,7 +2,15 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 const APP_PREFIXES = ["/us", "/chat", "/play", "/plans", "/keep", "/settings", "/dark", "/admin"];
-const NEEDS_SESSION = [...APP_PREFIXES, "/onboarding", "/link", "/install", "/archive", "/unlock"];
+const NEEDS_SESSION = [
+  ...APP_PREFIXES,
+  "/onboarding",
+  "/link",
+  "/install",
+  "/archive",
+  "/unlock",
+  "/account",
+];
 const AUTH_PAGES = ["/login", "/signup"];
 
 function startsWithAny(path: string, list: string[]) {
@@ -58,6 +66,7 @@ export async function proxy(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   let signedIn = false;
+  let mustChangePassword = false;
 
   if (url && key) {
     const supabase = createServerClient(url, key, {
@@ -73,6 +82,18 @@ export async function proxy(request: NextRequest) {
     // Refreshes the session cookie when needed. Do not run code between client creation and this call.
     const { data } = await supabase.auth.getClaims();
     signedIn = Boolean(data?.claims?.sub);
+    const appMeta = (
+      data?.claims as { app_metadata?: { must_change_password?: boolean } } | undefined
+    )?.app_metadata;
+    mustChangePassword = Boolean(appMeta?.must_change_password);
+  }
+
+  // A temporary password must be replaced before anything else opens.
+  if (signedIn && mustChangePassword && !path.startsWith("/account/password")) {
+    const to = request.nextUrl.clone();
+    to.pathname = "/account/password";
+    to.search = `?forced=1&next=${encodeURIComponent(path)}`;
+    return withCsp(NextResponse.redirect(to), csp, response);
   }
 
   if (!signedIn && startsWithAny(path, NEEDS_SESSION)) {

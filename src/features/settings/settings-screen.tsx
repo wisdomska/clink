@@ -21,6 +21,7 @@ import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/cn";
 import { enablePush } from "@/lib/pwa";
 import { PasskeyRows } from "./passkeys";
+import { AccountRows } from "./accounts";
 import { RitualTimeRows } from "./ritual-time";
 import { PrivacyCard } from "./privacy";
 import { FeelCard } from "./feel";
@@ -280,6 +281,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
           />
         </div>
         <RitualTimeRows />
+        <AccountRows />
         <PasskeyRows />
         <Row href="/help">
           Help and safety
@@ -386,7 +388,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
             <Button
               variant="danger"
               size="lg"
-              disabled={busy}
+              loading={busy}
               onClick={async () => {
                 setBusy(true);
                 const r = await fetch("/api/couple/unlink", {

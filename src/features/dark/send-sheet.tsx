@@ -35,7 +35,9 @@ export function SendSheet({
   const qc = useQueryClient();
   const { data: s } = useDarkState();
   const [file, setFile] = useState<File | null>(null);
-  const [retention, setRetention] = useState<Retention>("once");
+  const [retention, setRetention] = useState<Retention>("vault");
+  // Vault is the default; fall back to View once if either of you turned saving off.
+  const effective: Retention = retention === "vault" && s && !s.allowSaved ? "once" : retention;
   const [expiry, setExpiry] = useState<"24h" | "7d">("24h");
   const [brush, setBrush] = useState(false);
   const [faceBlurred, setFaceBlurred] = useState(false);
@@ -133,7 +135,7 @@ export function SendSheet({
         );
         meta = { kind: "image", width: canvas.current!.width, height: canvas.current!.height };
       }
-      const ret = retention === "exp" ? expiry : retention;
+      const ret = effective === "exp" ? expiry : effective;
       const up = await uploadMedia(blob, { ...meta, sensitive: true, retention: ret }, (p) =>
         setProgress(0.5 + p * 0.5),
       );
@@ -159,9 +161,9 @@ export function SendSheet({
 
   if (!open) return null;
   const retNote =
-    retention === "once"
+    effective === "once"
       ? "Opens once, full screen. Gone within 60 s of closing."
-      : retention === "exp"
+      : effective === "exp"
         ? `Viewable until it expires in ${expiry === "24h" ? "24 h" : "7 days"}. Then deleted.`
         : "Stays in both vaults until you unsend it.";
   return (
@@ -259,9 +261,9 @@ export function SendSheet({
         >
           {(
             [
+              ["vault", "Keep in vault"],
               ["once", "View once"],
               ["exp", "Expires"],
-              ["vault", "Keep in vault"],
             ] as const
           ).map(([k, label]) => {
             const disabled = k === "vault" && !s?.allowSaved;
@@ -270,13 +272,13 @@ export function SendSheet({
                 key={k}
                 type="button"
                 role="radio"
-                aria-checked={retention === k}
+                aria-checked={effective === k}
                 disabled={disabled}
                 onClick={() => setRetention(k)}
                 className="press h-10 flex-1 cursor-pointer rounded-full border-0 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
                 style={{
-                  background: retention === k ? "var(--accent-dark)" : "transparent",
-                  color: retention === k ? "var(--on-accent)" : "var(--text)",
+                  background: effective === k ? "var(--accent-dark)" : "transparent",
+                  color: effective === k ? "var(--on-accent)" : "var(--text)",
                 }}
               >
                 {label}
@@ -284,7 +286,7 @@ export function SendSheet({
             );
           })}
         </div>
-        {retention === "exp" && (
+        {effective === "exp" && (
           <div className="flex gap-2" role="radiogroup" aria-label="Expiry">
             {(
               [
@@ -323,8 +325,8 @@ export function SendSheet({
             <div className="bg-ember h-full" style={{ width: `${progress * 100}%` }} />
           </div>
         )}
-        <Button disabled={!file || busy} onClick={send}>
-          {busy ? "Sending" : "Send"}
+        <Button disabled={!file} loading={busy} onClick={send}>
+          Send
         </Button>
       </div>
       {notice && (

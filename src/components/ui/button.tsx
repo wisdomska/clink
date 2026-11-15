@@ -1,5 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes, type MouseEvent } from "react";
 import { cn } from "./cn";
+import { LoadingDots } from "./spinner";
 
 type Variant =
   | "primary"
@@ -44,15 +45,6 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   softDisabled?: boolean;
 }
 
-function Spinner() {
-  return (
-    <span
-      aria-hidden
-      className="inline-block h-4 w-4 rounded-full border-2 border-current border-t-transparent motion-safe:animate-spin"
-    />
-  );
-}
-
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
     variant = "primary",
@@ -80,7 +72,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         onClick?.(e);
       }}
       className={cn(
-        "press inline-flex cursor-pointer items-center justify-center gap-2 rounded-full whitespace-nowrap transition-shadow duration-200 select-none disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50",
+        "press relative inline-flex cursor-pointer items-center justify-center gap-2 rounded-full whitespace-nowrap transition-shadow duration-200 select-none disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50",
         variants[variant],
         sizes[size],
         block && "w-full",
@@ -88,8 +80,18 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       )}
       {...rest}
     >
-      {loading && <Spinner />}
-      {children}
+      {loading ? (
+        <>
+          {/* The label keeps its space so the button never changes width. */}
+          <span className="invisible inline-flex items-center gap-2">{children}</span>
+          <span className="absolute inset-0 flex items-center justify-center">
+            <LoadingDots />
+          </span>
+          <span className="sr-only">Working</span>
+        </>
+      ) : (
+        children
+      )}
     </button>
   );
 });

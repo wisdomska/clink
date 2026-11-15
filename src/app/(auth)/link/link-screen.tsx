@@ -2,9 +2,16 @@
 import { feedback } from "@/lib/feedback";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Copy, Check, HourglassSimpleLow, Wine } from "@phosphor-icons/react";
+import {
+  ArrowLeft,
+  Copy,
+  Check,
+  HourglassSimpleLow,
+  ShareNetwork,
+  Wine,
+} from "@phosphor-icons/react";
 import { Button, IconButton } from "@/components/ui/button";
-import { BrandLogo } from "@/components/clink/brand-logo";
+import { ShareSheet } from "@/components/clink/share-sheet";
 import { Display, Lead } from "@/components/ui/heading";
 import { FieldError } from "@/components/ui/field";
 import { Sparks } from "@/components/clink/sparks";
@@ -169,6 +176,7 @@ export function LinkScreen({
   }
 
   const shareUrl = invite ? `${window.location.origin}/j/${invite.code}` : "";
+  const [shareOpen, setShareOpen] = useState(false);
   const shareText = invite ? `Link with me on Clink. Code ${invite.code}, or tap: ${shareUrl}` : "";
   const hoursLeft = invite
     ? Math.max(0, Math.ceil((new Date(invite.expires_at).getTime() - Date.now()) / 3600000))
@@ -273,23 +281,10 @@ export function LinkScreen({
           <div className="mt-6 flex flex-col gap-2">
             {!expired ? (
               <>
-                <a
-                  href={invite ? `https://wa.me/?text=${encodeURIComponent(shareText)}` : undefined}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-disabled={!invite}
-                  className="press bg-accent text-on-accent hover:text-on-accent flex h-14 items-center justify-center gap-2 rounded-full text-base font-bold"
-                  onClick={async (e) => {
-                    if (!invite) return e.preventDefault();
-                    if (navigator.share) {
-                      e.preventDefault();
-                      await navigator.share({ text: shareText }).catch(() => undefined);
-                    }
-                  }}
-                >
-                  <BrandLogo brand="whatsapp" size={28} />
-                  Share to WhatsApp
-                </a>
+                <Button disabled={!invite} onClick={() => setShareOpen(true)}>
+                  <ShareNetwork size={22} weight="bold" aria-hidden />
+                  Share link
+                </Button>
                 <Button
                   variant="secondary"
                   size="lg"
@@ -312,6 +307,14 @@ export function LinkScreen({
         </>
       )}
 
+      <ShareSheet
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        title="Share your link"
+        text={shareText}
+        url={shareUrl}
+      />
+
       <div className="text-faint mt-8 mb-3 flex items-center gap-3 text-sm font-medium">
         <span className="bg-line h-px flex-1" />
         Got their code?
@@ -324,7 +327,7 @@ export function LinkScreen({
             You can only link with one person. You can unlink later in Settings.
           </p>
           <div className="flex gap-2">
-            <Button size="md" onClick={accept} disabled={busy}>
+            <Button size="md" onClick={accept} loading={busy}>
               Link us
             </Button>
             <Button size="md" variant="ghost" onClick={() => setConfirmName(null)}>
