@@ -1,8 +1,147 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
-import { Warning } from "@phosphor-icons/react";
+import { useState } from "react";
+import Link from "next/link";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { DownloadSimple, Megaphone, ToggleRight, Warning } from "@phosphor-icons/react";
 import { Display } from "@/components/ui/heading";
+import { Button } from "@/components/ui/button";
+import { Segmented } from "@/components/ui/segmented";
 import { adminFetch, fmtBytes } from "./fetch";
+import { TrendCard, downloadCsv } from "./ui";
+
+type TrendKey = "signups" | "links" | "active_couples" | "clinks" | "messages" | "games";
+interface Trends {
+  days: number;
+  series: Array<Record<TrendKey, number> & { day: string }>;
+  totals: Record<TrendKey, { current: number; previous: number }>;
+}
+const TREND_LABELS: Record<TrendKey, string> = {
+  signups: "Sign-ups",
+  links: "Couples linked",
+  active_couples: "Active couples (peak day)",
+  clinks: "Clinks sent",
+  messages: "Messages",
+  games: "Games started",
+};
+
+/** Daily trends with change vs the previous period. Counts only. */
+function TrendsSection() {
+  const [days, setDays] = useState<"7" | "30">("7");
+  const { data, isFetching } = useQuery({
+    queryKey: ["admin-trends", days],
+    queryFn: () => adminFetch<Trends>(`/api/admin/trends?days=${days}`),
+    placeholderData: keepPreviousData,
+    refetchInterval: 5 * 60_000,
+  });
+  return (
+    <section aria-label="Trends" className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="m-0 text-lg font-bold">Trends</h2>
+        <div className="flex items-center gap-2">
+          <div className="w-[180px]">
+            <Segmented
+              label="Range"
+              value={days}
+              onChange={setDays}
+              options={[
+                { value: "7", label: "7 days" },
+                { value: "30", label: "30 days" },
+              ]}
+            />
+          </div>
+          <Button
+            size="xs"
+            variant="ghost"
+            softDisabled={!data}
+            onClick={() =>
+              data &&
+              downloadCsv(
+                `clink-trends-${data.days}d-${new Date().toISOString().slice(0, 10)}.csv`,
+                data.series,
+              )
+            }
+          >
+            <DownloadSimple size={16} aria-hidden /> CSV
+          </Button>
+        </div>
+      </div>
+      {!data ? (
+        <div className="an-skel rounded-card bg-s2 h-40" />
+      ) : (
+        <div
+          className="grid grid-cols-2 gap-3 transition-opacity duration-200 md:grid-cols-3"
+          style={{ opacity: isFetching ? 0.6 : 1 }}
+        >
+          {(Object.keys(TREND_LABELS) as TrendKey[]).map((k) => (
+            <TrendCard
+              key={k}
+              label={TREND_LABELS[k]}
+              current={data.totals[k].current}
+              previous={data.totals[k].previous}
+              days={data.days}
+              series={data.series.map((r) => ({ day: r.day, value: r[k] }))}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+/** Anything currently changing what couples see, so nothing stays on by accident. */
+function LiveSwitches() {
+  const { data } = useQuery({
+    queryKey: ["admin-settings"],
+    queryFn: () =>
+      adminFetch<{
+        flags: Array<{ key: string; enabled: boolean; description: string | null }>;
+        announcements: Array<{ id: string; kind: string; body: string; active: boolean }>;
+      }>("/api/admin/settings"),
+  });
+  if (!data) return null;
+  const live = [
+    ...data.announcements
+      .filter((a) => a.active)
+      .map((a) => ({
+        id: a.id,
+        icon: a.kind === "maintenance" ? Warning : Megaphone,
+        text: `${a.kind === "maintenance" ? "Maintenance banner" : "Announcement"}: ${a.body}`,
+        tone: a.kind === "maintenance" ? "var(--warning)" : "var(--accent)",
+      })),
+    ...data.flags
+      .filter((f) => f.enabled)
+      .map((f) => ({
+        id: f.key,
+        icon: ToggleRight,
+        text: `Flag on: ${f.description || f.key}`,
+        tone: "var(--partner-b)",
+      })),
+  ];
+  return (
+    <section aria-label="Live switches" className="rounded-card border-line bg-s1 border p-4">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="m-0 text-base font-bold">Live switches</h2>
+        <Link href="/admin/settings" className="text-accent text-sm font-medium">
+          Settings
+        </Link>
+      </div>
+      {live.length ? (
+        <ul className="m-0 mt-2 flex list-none flex-col gap-1.5 p-0">
+          {live.map(({ id, icon: Icon, text, tone }) => (
+            <li key={id} className="flex items-start gap-2 text-sm">
+              <Icon size={16} className="mt-0.5 flex-none" style={{ color: tone }} aria-hidden />
+              <span>{text}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-muted m-0 mt-1 text-sm">
+          Nothing switched on. Couples see the default app.
+        </p>
+      )}
+    </section>
+  );
+}
 
 type Metrics = Record<string, number> & {
   activity_mix: Record<string, number>;
@@ -128,6 +267,8 @@ export function AdminDashboard() {
               sub={`${m.reports_open} open`}
             />
           </section>
+          <LiveSwitches />
+          <TrendsSection />
           <section aria-label="Activity mix" className="flex flex-col gap-3">
             <h2 className="m-0 text-lg font-bold">Activity mix, last 7 days</h2>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">

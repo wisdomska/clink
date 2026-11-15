@@ -1,11 +1,13 @@
 "use client";
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MagnifyingGlass } from "@phosphor-icons/react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { DownloadSimple, MagnifyingGlass } from "@phosphor-icons/react";
 import { Display } from "@/components/ui/heading";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { adminFetch } from "./fetch";
+import { downloadCsv, useConfirm } from "./ui";
 
 interface U {
   id: string;
@@ -26,28 +28,55 @@ interface U {
 
 export function AdminUsers() {
   const qc = useQueryClient();
-  const [q, setQ] = useState("");
-  const [search, setSearch] = useState("");
-  const { data, isLoading } = useQuery({
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+  // The search lives in the URL, so reload, Back and shared links keep the view.
+  const search = params.get("q") ?? "";
+  const [q, setQ] = useState(search);
+  const { ask, dialog } = useConfirm();
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: ["admin-users", search],
     queryFn: () => adminFetch<{ users: U[] }>(`/api/admin/users?q=${encodeURIComponent(search)}`),
+    placeholderData: keepPreviousData,
   });
 
-  async function act(u: U, action: "suspend" | "unsuspend" | "force_unlink" | "delete") {
-    const copy = {
-      suspend: "Suspend this account? They're signed out everywhere.",
-      unsuspend: "Lift the suspension?",
-      force_unlink: "Force unlink? Private media is wiped for both within the hour.",
-      delete: "Delete this account? This can't be undone.",
-    }[action];
-    if (!window.confirm(copy)) return;
-    const reason =
-      action === "suspend"
-        ? (window.prompt("Reason (kept in the audit log)") ?? undefined)
-        : undefined;
+  const COPY = {
+    suspend: {
+      title: "Suspend this account?",
+      body: "They're signed out everywhere and can't sign back in until you lift it.",
+      confirm: "Suspend",
+      danger: true,
+      reason: "required" as const,
+    },
+    unsuspend: {
+      title: "Lift the suspension?",
+      body: "They can sign in again.",
+      confirm: "Lift it",
+    },
+    force_unlink: {
+      title: "Force unlink this couple?",
+      body: "Both go back to linking. Private media is wiped for both within the hour.",
+      confirm: "Force unlink",
+      danger: true,
+      reason: "required" as const,
+    },
+    delete: {
+      title: "Delete this account?",
+      body: "Everything they made is removed. This can't be undone.",
+      confirm: "Delete for good",
+      danger: true,
+      reason: "required" as const,
+      typed: "DELETE",
+    },
+  };
+
+  async function act(u: U, action: keyof typeof COPY) {
+    const answer = await ask(COPY[action]);
+    if (!answer) return;
     try {
-      await adminFetch(`/api/admin/users/${u.id}`, { body: { action, reason } });
-      toast("Done. Logged in the audit trail.");
+      await adminFetch(`/api/admin/users/${u.id}`, { body: { action, reason: answer.reason } });
+      toast.ok("Done. Logged in the audit trail.");
       void qc.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (e) {
       toast.err(e instanceof Error ? e.message : "Failed.");
@@ -64,7 +93,10 @@ export function AdminUsers() {
         className="rounded-input border-line bg-s2 focus-within:border-accent flex max-w-[520px] items-center gap-2 border px-4"
         onSubmit={(e) => {
           e.preventDefault();
-          setSearch(q);
+          const next = new URLSearchParams(params);
+          if (q.trim()) next.set("q", q.trim());
+          else next.delete("q");
+          router.replace(`${pathname}${next.size ? `?${next}` : ""}`, { scroll: false });
         }}
       >
         <MagnifyingGlass size={18} className="text-muted" aria-hidden />
@@ -76,10 +108,46 @@ export function AdminUsers() {
           className="text-text h-12 flex-1 bg-transparent text-base outline-none"
         />
       </form>
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-muted text-sm" role="status">
+          {data ? `${data.users.length} ${data.users.length === 1 ? "account" : "accounts"}` : ""}
+        </span>
+        <Button
+          size="xs"
+          variant="ghost"
+          softDisabled={!data?.users.length}
+          onClick={() =>
+            data?.users.length &&
+            downloadCsv(
+              `clink-accounts-${new Date().toISOString().slice(0, 10)}.csv`,
+              data.users.map((u) => ({
+                name: u.name ?? "",
+                email: u.email,
+                joined: u.createdAt.slice(0, 10),
+                last_sign_in: u.lastSignIn?.slice(0, 10) ?? "",
+                linked: u.coupleId ? (u.linkedAt?.slice(0, 10) ?? "yes") : "",
+                status: u.deleted
+                  ? "deleting"
+                  : u.suspended
+                    ? "suspended"
+                    : u.confirmed
+                      ? "active"
+                      : "unconfirmed",
+                admin: u.admin ? "yes" : "",
+              })),
+            )
+          }
+        >
+          <DownloadSimple size={16} aria-hidden /> Export CSV
+        </Button>
+      </div>
       {isLoading ? (
         <div className="an-skel rounded-card bg-s2 h-60" />
       ) : (
-        <div className="rounded-card border-line overflow-x-auto border">
+        <div
+          className="rounded-card border-line overflow-x-auto border transition-opacity duration-200"
+          style={{ opacity: isFetching ? 0.6 : 1 }}
+        >
           <table className="w-full min-w-[860px] border-collapse text-left text-sm">
             <thead className="bg-s1 text-muted text-xs">
               <tr>
@@ -141,8 +209,14 @@ export function AdminUsers() {
               ))}
             </tbody>
           </table>
+          {!data?.users.length && (
+            <p className="text-muted m-0 px-4 py-8 text-center text-sm">
+              {search ? `No accounts match "${search}".` : "No accounts yet."}
+            </p>
+          )}
         </div>
       )}
+      {dialog}
     </div>
   );
 }

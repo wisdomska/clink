@@ -1177,6 +1177,11 @@ isOneToOne: false
 "svc_admin_metrics":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"svc_admin_trends":
+{ Args: { "p_days": number }; Returns: {
+              "active_couples": number,"clinks": number,"day": string,"games": number,"links": number,"messages": number,"signups": number
+            }[]
+                           },
 "svc_answer_latest_clink":
 { Args: { "p_answerer": string,"p_couple": string }; Returns: string
                            },

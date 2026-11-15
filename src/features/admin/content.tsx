@@ -7,6 +7,7 @@ import { Button, IconButton } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/segmented";
 import { toast } from "@/components/ui/toast";
 import { adminFetch } from "./fetch";
+import { usePrompt } from "./ui";
 
 type Table = "dares" | "deck_cards" | "date_kits" | "challenge_templates" | "stickers" | "decks";
 type Row = Record<string, unknown> & { id: string | number; enabled: boolean; sort: number };
@@ -23,6 +24,7 @@ const title = (r: Row) => String(r.text ?? r.title ?? r.label ?? r.id);
 
 /** Content library: create, edit, reorder, enable or disable. */
 export function AdminContent() {
+  const prompt = usePrompt();
   const qc = useQueryClient();
   const [table, setTable] = useState<Table>("deck_cards");
   const [filter, setFilter] = useState("Flirty");
@@ -54,13 +56,15 @@ export function AdminContent() {
     await Promise.all([patch(a, { sort: b.sort }), patch(b, { sort: a.sort })]);
   }
   async function add() {
-    const text = window.prompt(
-      table === "stickers"
-        ? "Sticker label (10 characters max)"
-        : table === "date_kits" || table === "challenge_templates"
-          ? "Title"
-          : "Text",
-    );
+    const text = await prompt.ask({
+      title: "Add an item",
+      label:
+        table === "stickers"
+          ? "Sticker label (10 characters max)"
+          : table === "date_kits" || table === "challenge_templates"
+            ? "Title"
+            : "Text",
+    });
     if (!text) return;
     const nextSort = (rows[rows.length - 1]?.sort ?? 0) + 1;
     const slug = text
@@ -158,7 +162,7 @@ export function AdminContent() {
               className="text-text flex-1 cursor-text bg-transparent text-left text-sm"
               onClick={async () => {
                 const field = "text" in r ? "text" : "title" in r ? "title" : "label";
-                const v = window.prompt("Edit", title(r));
+                const v = await prompt.ask({ title: "Edit", label: "Text", value: title(r) });
                 if (v && v !== title(r)) {
                   try {
                     await patch(r, { [field]: v });
@@ -192,6 +196,7 @@ export function AdminContent() {
           </li>
         ))}
       </ol>
+      {prompt.dialog}
     </div>
   );
 }

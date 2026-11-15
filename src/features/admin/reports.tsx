@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/segmented";
 import { toast } from "@/components/ui/toast";
 import { adminFetch } from "./fetch";
+import { usePrompt } from "./ui";
 
 interface R {
   id: string;
@@ -31,6 +32,7 @@ const LABEL: Record<string, string> = {
 
 /** Reports queue: triage, assign, resolve, escalate. Only reporter-attached screenshots are visible. */
 export function AdminReports() {
+  const prompt = usePrompt();
   const qc = useQueryClient();
   const [status, setStatus] = useState<
     "open" | "triage" | "assigned" | "escalated" | "resolved" | "all"
@@ -134,8 +136,11 @@ export function AdminReports() {
               </Button>
               <Button
                 size="xs"
-                onClick={() => {
-                  const resolution = window.prompt("Resolution note");
+                onClick={async () => {
+                  const resolution = await prompt.ask({
+                    title: "Resolve this report",
+                    label: "Resolution note (kept with the report)",
+                  });
                   if (resolution !== null) void update(r.id, { status: "resolved", resolution });
                 }}
               >
@@ -146,6 +151,7 @@ export function AdminReports() {
           </article>
         ))}
       </div>
+      {prompt.dialog}
     </div>
   );
 }
