@@ -385,7 +385,7 @@ export function Bubble({
               mine ? "opacity-60" : "text-faint",
             )}
           >
-            {m.local === "sending" ? "..." : clock(m.sent_at)}
+            {m.local === "sending" ? "..." : `${m.edited_at ? "edited · " : ""}${clock(m.sent_at)}`}
           </span>
         </div>
       );
@@ -393,8 +393,9 @@ export function Bubble({
 
   return (
     <div
+      data-mid={m.id}
       className={cn(
-        "relative flex flex-col",
+        "relative flex flex-col rounded-2xl transition-colors duration-700",
         mine ? "items-end" : "items-start",
         (pos === "middle" || pos === "last") && "-mt-1.5",
         reactions.length > 0 && "mb-3",

@@ -1,4 +1,5 @@
 "use client";
+import { OnThisDay } from "./on-this-day";
 import { MissedCallCard } from "@/features/call/missed-call-card";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -96,6 +97,7 @@ export function UsScreen() {
         </div>
         <div className="flex min-w-0 flex-col gap-4">
           <MoodCard />
+          <OnThisDay />
           <CountdownCard now={now} />
           <RitualCard />
           <MilestoneMoment />

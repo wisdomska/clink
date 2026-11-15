@@ -35,7 +35,10 @@ test("edit your profile (avatar, about, love language, birthday) and see your pa
 
   // Theo taps Nia anywhere: Us, Chat, Play.
   await b.reload();
-  await b.getByRole("button", { name: "Nia's profile" }).first().click();
+  await b
+    .getByRole("button", { name: /Open Nia's profile/ })
+    .first()
+    .click();
   const profile = b.getByRole("dialog", { name: "Nia's profile" });
   await expect(profile.getByText("Coffee snob, terrible singer.")).toBeVisible();
   await expect(profile.getByText("Quality time")).toBeVisible();
@@ -44,7 +47,7 @@ test("edit your profile (avatar, about, love language, birthday) and see your pa
   await expect(profile.getByText(/days$/)).toBeVisible();
   await b.keyboard.press("Escape");
   await b.goto("/chat");
-  await b.getByRole("button", { name: "Nia's profile" }).click();
+  await b.getByRole("button", { name: /Open Nia's profile/ }).click();
   await expect(b.getByRole("dialog", { name: "Nia's profile" })).toBeVisible();
   await b.keyboard.press("Escape");
   await b.goto("/play");

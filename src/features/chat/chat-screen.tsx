@@ -1,11 +1,16 @@
 "use client";
 import { feedback, haptic } from "@/lib/feedback";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
   Phone,
   Camera,
+  PencilSimple,
+  MagnifyingGlass,
+  DotsThreeVertical,
+  ImagesSquare,
+  UserCircle,
   Palette,
   VideoCamera,
   Plus,
@@ -44,6 +49,7 @@ import { Bubble, STICKER_LABEL } from "./bubbles";
 import { StickerArt, STICKER_CAPTION } from "./sticker-art";
 import { MediaComposer } from "./media-composer";
 import { LiveWave } from "./live-wave";
+import { ChatSearch } from "./chat-search";
 import { CHAT_THEMES, WALLPAPERS, wallpaperSize, type ChatTheme, type Wallpaper } from "./themes";
 import { CameraCapture } from "./camera-capture";
 import { useCall } from "@/features/call/call-provider";
@@ -112,6 +118,23 @@ export function ChatScreen() {
   const [text, setText] = useState("");
   const [tray, setTray] = useState(false);
   const [composing, setComposing] = useState<File[] | null>(null);
+  const [editing, setEditing] = useState<UiMessage | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const router = useRouter();
+  const jumpTo = (id: string, at: string) => {
+    setSearchOpen(false);
+    const el = listRef.current?.querySelector<HTMLElement>(`[data-mid="${id}"]`);
+    if (!el) {
+      toast(
+        `That one's from ${new Date(at).toLocaleDateString()}. Scroll up to load older messages.`,
+      );
+      return;
+    }
+    el.scrollIntoView({ block: "center", behavior: "smooth" });
+    el.classList.add("bg-accent/15");
+    setTimeout(() => el.classList.remove("bg-accent/15"), 1600);
+  };
   const [replyTo, setReplyTo] = useState<UiMessage | null>(null);
   const [actionFor, setActionFor] = useState<UiMessage | null>(null);
   const [typing, setTyping] = useState(false);
@@ -189,6 +212,7 @@ export function ChatScreen() {
         delivered_at: null,
         read_at: null,
         removed_at: null,
+        edited_at: null,
         local: queue.failed[q.clientId] ? "failed" : "sending",
       }));
     const media = Object.values(pendingMedia).filter((p) => !ids.has(p.client_id));
@@ -281,6 +305,23 @@ export function ChatScreen() {
   async function sendText() {
     const body = text.trim();
     if (!body) return;
+    if (editing) {
+      const target = editing;
+      setEditing(null);
+      setText("");
+      if (body === target.body) return;
+      upsertLocal({ ...target, body, edited_at: new Date().toISOString() });
+      const r = await fetch(`/api/messages/${target.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body }),
+      });
+      if (!r.ok) {
+        upsertLocal(target);
+        toast.err((await r.json().catch(() => ({}))).message ?? "That edit didn't save.");
+      } else feedback("tap");
+      return;
+    }
     setText("");
     feedback("tap", "send");
     send("chat.typing", { typing: false });
@@ -311,6 +352,7 @@ export function ChatScreen() {
       delivered_at: null,
       read_at: null,
       removed_at: null,
+      edited_at: null,
       local: "sending",
       localMedia: list.map((f) => ({
         url: URL.createObjectURL(f),
@@ -491,7 +533,6 @@ export function ChatScreen() {
           <button
             type="button"
             onClick={openPartner}
-            aria-label={`${partner.name}'s profile`}
             className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 border-0 bg-transparent p-0 text-left text-[var(--text)]"
           >
             <Avatar
@@ -507,10 +548,11 @@ export function ChatScreen() {
                 {partner.name}
               </span>
               <span className="text-muted block truncate text-[13px]">{sub}</span>
+              <span className="sr-only">Open {partner.name}&apos;s profile.</span>
             </span>
           </button>
-          <IconButton label="Customise chat" tone="surface" onClick={() => setLookOpen(true)}>
-            <Palette size={20} />
+          <IconButton label="More" tone="surface" onClick={() => setMoreOpen(true)}>
+            <DotsThreeVertical size={22} weight="bold" />
           </IconButton>
           <IconButton label="Call" tone="surface" onClick={() => startCall(false)}>
             <Phone size={20} />
@@ -741,6 +783,22 @@ export function ChatScreen() {
           </div>
         )}
 
+        {editing && (
+          <div className="border-line bg-s1 flex flex-none items-center gap-2 border-t px-4 py-2 text-sm">
+            <PencilSimple size={16} className="text-accent" aria-hidden />
+            <span className="text-muted flex-1 truncate">Editing message</span>
+            <IconButton
+              label="Cancel edit"
+              dim={36}
+              onClick={() => {
+                setEditing(null);
+                setText("");
+              }}
+            >
+              <X size={16} />
+            </IconButton>
+          </div>
+        )}
         {replyTo && (
           <div className="border-line bg-s1 flex flex-none items-center gap-2 border-t px-4 py-2 text-sm">
             <ArrowBendUpLeft size={16} className="text-accent" aria-hidden />
@@ -964,6 +1022,21 @@ export function ChatScreen() {
                   }}
                 />
               )}
+              {actionFor.sender_id === me.id &&
+                actionFor.type === "text" &&
+                !actionFor.removed_at &&
+                now.getTime() - new Date(actionFor.sent_at).getTime() < 15 * 60 * 1000 && (
+                  <SheetAction
+                    icon={<PencilSimple size={20} />}
+                    label="Edit"
+                    onClick={() => {
+                      setEditing(actionFor);
+                      setReplyTo(null);
+                      setText(actionFor.body ?? "");
+                      setActionFor(null);
+                    }}
+                  />
+                )}
               {actionFor.sender_id === me.id && !actionFor.removed_at && (
                 <SheetAction
                   icon={<Trash size={20} />}
@@ -977,6 +1050,52 @@ export function ChatScreen() {
           </>
         )}
       </Sheet>
+
+      <Sheet open={moreOpen} onOpenChange={setMoreOpen} title="Chat options" handle>
+        <div className="rounded-card border-line bg-s2 overflow-hidden border">
+          <SheetAction
+            icon={<MagnifyingGlass size={20} />}
+            label="Search messages"
+            onClick={() => {
+              setMoreOpen(false);
+              setSearchOpen(true);
+            }}
+          />
+          <SheetAction
+            icon={<Palette size={20} />}
+            label="Customise chat"
+            onClick={() => {
+              setMoreOpen(false);
+              setLookOpen(true);
+            }}
+          />
+          <SheetAction
+            icon={<ImagesSquare size={20} />}
+            label="Photos and videos"
+            onClick={() => {
+              setMoreOpen(false);
+              router.push("/chat/media");
+            }}
+          />
+          <SheetAction
+            icon={<UserCircle size={20} />}
+            label={`${partner.name}'s profile`}
+            onClick={() => {
+              setMoreOpen(false);
+              openPartner();
+            }}
+            last
+          />
+        </div>
+      </Sheet>
+
+      <ChatSearch
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        meId={me.id}
+        partnerName={partner.name}
+        onJump={(h) => jumpTo(h.id, h.sent_at)}
+      />
 
       <Sheet open={lookOpen} onOpenChange={setLookOpen} title="Customise chat" handle>
         <div className="display text-[28px]">

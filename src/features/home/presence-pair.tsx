@@ -136,7 +136,6 @@ export function PresencePair({ now }: { now: Date }) {
           <button
             type="button"
             onClick={openPartner}
-            aria-label={`${partner.name}'s profile`}
             className="press flex min-w-0 cursor-pointer flex-col items-center gap-2 border-0 bg-transparent p-0 text-white"
           >
             <div className="relative">
@@ -157,6 +156,7 @@ export function PresencePair({ now }: { now: Date }) {
               )}
             </div>
             <span className="max-w-full truncate text-[15px] font-bold">{partner.name}</span>
+            <span className="sr-only">Open {partner.name}&apos;s profile.</span>
             {pill(
               theirStatus,
               online && !asleep ? emojiFor(presence.status) : asleep ? "😴" : "",

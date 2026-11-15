@@ -75,6 +75,26 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"bucket_items": {
+                  Row: {
+                    "category": string,"couple_id": string,"created_at": string,"created_by": string,"done_at": string | null,"done_by": string | null,"id": string,"text": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "category"?: string,"couple_id": string,"created_at"?: string,"created_by": string,"done_at"?: string | null,"done_by"?: string | null,"id"?: string,"text": string
+                  }
+                  Update: {
+                    "category"?: string,"couple_id"?: string,"created_at"?: string,"created_by"?: string,"done_at"?: string | null,"done_by"?: string | null,"id"?: string,"text"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "bucket_items_couple_id_fkey"
+      columns: ["couple_id"]
+isOneToOne: false
+      referencedRelation: "couples"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"capsule_contents": {
                   Row: {
                     "body": string | null,"capsule_id": string,"couple_id": string,"media_id": string | null
@@ -691,14 +711,14 @@ isOneToOne: false
                   ]
                 },"messages": {
                   Row: {
-                    "body": string | null,"client_id": string,"couple_id": string,"delivered_at": string | null,"id": string,"media_ids": (string)[],"read_at": string | null,"removed_at": string | null,"reply_to": string | null,"sender_id": string,"sent_at": string,"sticker_id": string | null,"type": string
+                    "body": string | null,"client_id": string,"couple_id": string,"delivered_at": string | null,"edited_at": string | null,"id": string,"media_ids": (string)[],"read_at": string | null,"removed_at": string | null,"reply_to": string | null,"sender_id": string,"sent_at": string,"sticker_id": string | null,"type": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "body"?: string | null,"client_id": string,"couple_id": string,"delivered_at"?: string | null,"id"?: string,"media_ids"?: (string)[],"read_at"?: string | null,"removed_at"?: string | null,"reply_to"?: string | null,"sender_id": string,"sent_at"?: string,"sticker_id"?: string | null,"type": string
+                    "body"?: string | null,"client_id": string,"couple_id": string,"delivered_at"?: string | null,"edited_at"?: string | null,"id"?: string,"media_ids"?: (string)[],"read_at"?: string | null,"removed_at"?: string | null,"reply_to"?: string | null,"sender_id": string,"sent_at"?: string,"sticker_id"?: string | null,"type": string
                   }
                   Update: {
-                    "body"?: string | null,"client_id"?: string,"couple_id"?: string,"delivered_at"?: string | null,"id"?: string,"media_ids"?: (string)[],"read_at"?: string | null,"removed_at"?: string | null,"reply_to"?: string | null,"sender_id"?: string,"sent_at"?: string,"sticker_id"?: string | null,"type"?: string
+                    "body"?: string | null,"client_id"?: string,"couple_id"?: string,"delivered_at"?: string | null,"edited_at"?: string | null,"id"?: string,"media_ids"?: (string)[],"read_at"?: string | null,"removed_at"?: string | null,"reply_to"?: string | null,"sender_id"?: string,"sent_at"?: string,"sticker_id"?: string | null,"type"?: string
                   }
                   Relationships: [
                     {

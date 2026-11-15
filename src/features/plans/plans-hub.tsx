@@ -9,6 +9,7 @@ import {
   TelevisionSimple,
   Scissors,
   MusicNotes,
+  ListChecks,
   Ticket as TicketIcon,
 } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
@@ -149,6 +150,14 @@ export function PlansHub() {
               </span>
             </button>
           </div>
+          <Link
+            href="/plans/list"
+            className="press rounded-card border-line bg-s1 text-text hover:text-text flex items-center gap-3 border px-4 py-3.5"
+          >
+            <ListChecks size={24} className="text-accent" aria-hidden />
+            <span className="flex-1 text-base font-bold">Our list</span>
+            <span className="text-muted text-sm">Things to do together</span>
+          </Link>
           <Link
             href="/plans/listen"
             className="press rounded-card border-line bg-s1 text-text hover:text-text flex items-center gap-3 border px-4 py-3.5"
