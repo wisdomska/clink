@@ -88,7 +88,7 @@ export function AdminUsers() {
     <div className="an-screen flex flex-col gap-5">
       <Display size={36}>Users and couples</Display>
       <p className="text-muted m-0 text-sm">
-        Account status only. Admins can never read messages, letters, capsules, answers or media.
+        Open a person for their full profile. Reading a conversation needs a reason and is logged.
       </p>
       <form
         className="rounded-input border-line bg-s2 focus-within:border-accent flex max-w-[520px] items-center gap-2 border px-4"

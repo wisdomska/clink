@@ -75,7 +75,7 @@ export function AdminRail({ name }: { name: string }) {
       {open && <div className="border-line bg-app border-b p-3 lg:hidden">{nav}</div>}
       <aside className="border-line sticky top-0 hidden h-dvh flex-col border-r px-3 py-6 lg:flex">
         <div className="display mb-1 px-3 text-[30px]">clink</div>
-        <div className="mono text-faint mb-8 px-3 text-xs">ADMIN · NO CONTENT ACCESS</div>
+        <div className="mono text-faint mb-8 px-3 text-xs">ADMIN · CONTENT ACCESS IS LOGGED</div>
         {nav}
         <div className="mt-auto flex flex-col gap-2 px-3">
           <div className="text-faint truncate text-xs">{name}</div>

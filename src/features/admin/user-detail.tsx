@@ -28,6 +28,7 @@ import { GAME_META } from "@/features/play/meta";
 import type { GameType } from "@/features/play/engines/types";
 import { adminFetch } from "./fetch";
 import { useConfirm } from "./ui";
+import { AdminConversation } from "./conversation";
 
 interface Detail {
   account: {
@@ -187,7 +188,7 @@ function Card({
   );
 }
 
-/** One user, in detail. Account facts and activity, never what they wrote or shared. */
+/** One user, in detail: account, activity and (behind a logged reason) their chat. */
 export function UserDetail({ id }: { id: string }) {
   const router = useRouter();
   const qc = useQueryClient();
@@ -543,6 +544,12 @@ export function UserDetail({ id }: { id: string }) {
           />
         </Card>
       </div>
+
+      {d.couple && (
+        <Card title="Conversation">
+          <AdminConversation userId={id} />
+        </Card>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
         <Card title="Timeline">

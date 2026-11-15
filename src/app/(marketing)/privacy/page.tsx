@@ -35,8 +35,10 @@ export default function Privacy() {
       </p>
       <h2 className="text-text m-0 text-lg font-bold">Who can see what</h2>
       <p>
-        Our team can&apos;t read your messages, letters, capsules, answers or media. If you report a
-        problem, we see only what you choose to attach.
+        Your chats are private between you two. A Clink admin can open a couple&apos;s chat only for
+        safety or legal reasons (for example, to investigate a report), must record why, and every
+        time it happens is logged. After Dark content (private photos and videos, decks, dares and
+        answers) is never available to our team.
       </p>
       <h2 className="text-text m-0 text-lg font-bold">Your rights</h2>
       <p>
