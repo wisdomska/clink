@@ -4,10 +4,20 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useCouple, useCoupleEvent } from "@/features/couple/context";
 import { PartnerMark } from "@/components/ui/heading";
+import { motion } from "motion/react";
+import { cn } from "@/components/ui/cn";
 import { localParts } from "@/lib/time";
 import { toast } from "@/components/ui/toast";
 
 export const MOODS = ["Cosy", "Missing you", "Wired", "Tired", "Flirty", "Low"] as const;
+const MOOD_ART: Record<string, string> = {
+  Cosy: "mood-cosy",
+  "Missing you": "mood-missing",
+  Wired: "mood-wired",
+  Tired: "mood-tired",
+  Flirty: "mood-flirty",
+  Low: "mood-low",
+};
 
 /** HOME-05: six coaster chips, optional line, once a day. */
 export function MoodCard() {
@@ -55,7 +65,7 @@ export function MoodCard() {
   return (
     <section
       aria-labelledby="mood-h"
-      className="rounded-card border-line bg-s1 flex flex-none flex-col gap-3 border p-4"
+      className="border-line bg-s1 flex flex-none flex-col gap-3 rounded-[28px] border p-4"
     >
       <div className="flex items-baseline justify-between">
         <h2 id="mood-h" className="m-0 text-lg font-bold">
@@ -64,9 +74,20 @@ export function MoodCard() {
         <div className="text-faint text-sm">Once a day</div>
       </div>
       {theirs ? (
-        <div className="text-muted flex items-center gap-2 text-sm">
-          <PartnerMark who="b" />
-          {partner.name} is {theirs.mood.toLowerCase()}.{theirs.note ? ` "${theirs.note}"` : ""}
+        <div className="bg-s2 flex items-center gap-3 rounded-2xl p-2.5 pr-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`/art/${MOOD_ART[theirs.mood] ?? "mood-cosy"}.webp`}
+            alt=""
+            aria-hidden
+            className="h-10 w-10 flex-none object-contain"
+          />
+          <span className="text-text min-w-0 text-sm">
+            <span className="font-bold">{partner.name}</span> is feeling {theirs.mood.toLowerCase()}
+            {theirs.note && (
+              <span className="text-muted block truncate">&ldquo;{theirs.note}&rdquo;</span>
+            )}
+          </span>
         </div>
       ) : (
         <div className="text-muted flex items-center gap-2 text-sm">
@@ -82,27 +103,32 @@ export function MoodCard() {
         {MOODS.map((m, i) => {
           const on = current === m;
           return (
-            <button
+            <motion.button
               key={m}
               type="button"
               role="radio"
               aria-checked={on}
               disabled={Boolean(mineToday) && !on}
               onClick={() => choose(m)}
-              className="press an-rise bg-s2 relative h-[72px] w-[72px] flex-none cursor-pointer rounded-full p-2 text-center text-[13px] leading-[1.15] font-medium disabled:cursor-default"
-              style={{
-                ["--i" as string]: i,
-                border: on ? "2px solid var(--accent)" : "1px solid var(--line)",
-                color: on ? "var(--text)" : "var(--text-muted)",
-              }}
+              whileTap={{ scale: 0.9, rotate: -6 }}
+              animate={on ? { y: [0, -6, 0] } : { y: 0 }}
+              transition={{ duration: 0.4 }}
+              className={cn(
+                "an-rise flex w-[76px] flex-none cursor-pointer flex-col items-center gap-1 rounded-[22px] border-0 px-1 pt-2 pb-2 text-center text-[12px] leading-[1.15] font-semibold transition-colors disabled:cursor-default disabled:opacity-40",
+                on ? "bg-accent/20 text-text" : "bg-s2 text-muted hover:bg-s3",
+              )}
+              style={{ ["--i" as string]: i }}
             >
-              <span
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/art/${MOOD_ART[m]}.webp`}
+                alt=""
                 aria-hidden
-                className="absolute rounded-full"
-                style={{ inset: "7px 5px 3px 9px", border: "2px solid rgba(173,166,178,.08)" }}
+                draggable={false}
+                className="h-11 w-11 object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,.4)]"
               />
               {m}
-            </button>
+            </motion.button>
           );
         })}
       </div>

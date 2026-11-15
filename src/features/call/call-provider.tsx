@@ -66,6 +66,27 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const pendingIce = useRef<RTCIceCandidateInit[]>([]);
   const ringTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ringTone = useRef<ReturnType<typeof setInterval> | null>(null);
+  const iCalled = useRef(false);
+
+  /** The caller writes the call into the chat once it's over. */
+  const logCall = (c: CallState | null, reason: string | null) => {
+    if (!c || !iCalled.current) return;
+    iCalled.current = false;
+    const seconds = c.startedAt ? Math.round((Date.now() - c.startedAt) / 1000) : 0;
+    const outcome =
+      seconds > 0
+        ? "ended"
+        : reason === "declined" || reason === "busy"
+          ? "declined"
+          : reason === "failed"
+            ? "failed"
+            : "missed";
+    void fetch("/api/calls/log", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ outcome, video: c.video, seconds }),
+    }).catch(() => undefined);
+  };
 
   const update = useCallback((p: Partial<CallState> | null) => {
     setCall((cur) => {
@@ -93,6 +114,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       setLocal(null);
       setRemote(null);
       if (!callRef.current) return;
+      if (reason !== "media") logCall(callRef.current, reason);
       if (reason && reason !== "local") {
         update({ phase: "ended", endReason: reason });
         setTimeout(() => {
@@ -164,6 +186,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       };
       callRef.current = base;
       setCall(base);
+      iCalled.current = true;
       try {
         await getMedia(video);
       } catch {
@@ -191,6 +214,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   /* ------------------------------------------------------------- incoming */
   useCoupleEvent("call:ring", (p) => {
     const id = String(p.id);
+    if (!callRef.current) iCalled.current = false;
     if (callRef.current) {
       send("call:end", { id, reason: "busy" });
       return;

@@ -12,7 +12,7 @@ export function Avatar({
   name,
   side,
   size = 56,
-  ring = 2,
+  ring = 0,
   photoUrl,
   icon,
   dim,

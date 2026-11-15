@@ -40,10 +40,12 @@ import { MAX_PER_SEND } from "@/lib/media-rules";
 import { useMessages, useReactions, useMediaInfo, useOutboxFlush, sendQueued } from "./use-chat";
 import { useQueue, newClientId, type QueuedPayload } from "./queue";
 import { Bubble, STICKER_LABEL } from "./bubbles";
+import { StickerArt, STICKER_CAPTION } from "./sticker-art";
 import { MediaComposer } from "./media-composer";
 import { LiveWave } from "./live-wave";
 import { CameraCapture } from "./camera-capture";
 import { useCall } from "@/features/call/call-provider";
+import { MissedCallCard } from "@/features/call/missed-call-card";
 import type { Message, UiMessage } from "./types";
 
 const REACTIONS = ["❤️", "😂", "😭", "🔥", "🥹", "👀"];
@@ -115,14 +117,17 @@ export function ChatScreen() {
     queryFn: async () => {
       const sb = supabaseBrowser();
       const [{ data: all }, { data: recent }] = await Promise.all([
-        sb.from("stickers").select("id, label, sort").order("sort"),
+        sb.from("stickers").select("id, label, sort, caption").eq("enabled", true).order("sort"),
         sb
           .from("sticker_recents")
           .select("sticker_id, used_at")
           .order("used_at", { ascending: false })
           .limit(8),
       ]);
-      (all ?? []).forEach((s) => STICKER_LABEL.set(s.id, s.label));
+      (all ?? []).forEach((s) => {
+        STICKER_LABEL.set(s.id, s.label);
+        STICKER_CAPTION.set(s.id, s.caption);
+      });
       return { all: all ?? [], recent: (recent ?? []).map((r) => r.sticker_id) };
     },
   });
@@ -436,7 +441,7 @@ export function ChatScreen() {
 
   const lastMine = [...all]
     .reverse()
-    .find((m) => m.sender_id === me.id && !m.local && m.type !== "clink");
+    .find((m) => m.sender_id === me.id && !m.local && m.type !== "clink" && m.type !== "system");
   const sub = presence.online
     ? `Online, ${formatClock(now, partner.timezone)} in ${partner.city}`
     : `Away, ${formatClock(now, partner.timezone)} in ${partner.city}`;
@@ -468,6 +473,9 @@ export function ChatScreen() {
           </IconButton>
         </header>
 
+        <div className="flex-none px-4 pt-2 empty:hidden">
+          <MissedCallCard />
+        </div>
         <div
           ref={listRef}
           onScroll={onScroll}
@@ -535,7 +543,9 @@ export function ChatScreen() {
                   y &&
                   x.sender_id === y.sender_id &&
                   x.type !== "clink" &&
+                  x.type !== "system" &&
                   y.type !== "clink" &&
+                  y.type !== "system" &&
                   Math.abs(new Date(y.sent_at).getTime() - new Date(x.sent_at).getTime()) <
                     2 * 60 * 1000,
                 );
@@ -602,7 +612,7 @@ export function ChatScreen() {
         {tray && (
           <div className="an-sheet border-line bg-s1 flex-none border-t px-4 py-3">
             <div className="mono text-faint mb-2.5 text-xs">
-              {stickers?.recent.length ? "RECENT · CLINK STARTER PACK" : "CLINK STARTER PACK"}
+              {stickers?.recent.length ? "RECENT · STICKERS" : "STICKERS"}
             </div>
             <div className="no-scrollbar grid max-h-[230px] grid-cols-4 gap-2.5 overflow-y-auto sm:grid-cols-6 lg:grid-cols-8">
               {[
@@ -615,10 +625,10 @@ export function ChatScreen() {
                   type="button"
                   onClick={() => sendSticker(id)}
                   aria-label={`Send sticker ${STICKER_LABEL.get(id)}`}
-                  className="press display border-line bg-s2 text-text aspect-square cursor-pointer rounded-full border text-[15px] tracking-normal"
-                  style={{ transform: `rotate(${i % 2 ? 6 : -6}deg)` }}
+                  className="press hover:bg-s2 flex aspect-square cursor-pointer items-center justify-center rounded-2xl border-0 bg-transparent p-0 transition-transform hover:scale-110"
+                  style={{ ["--i" as string]: i }}
                 >
-                  {STICKER_LABEL.get(id)}
+                  <StickerArt id={id} label={STICKER_LABEL.get(id) ?? ""} size={72} />
                 </button>
               ))}
             </div>

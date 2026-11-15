@@ -989,14 +989,14 @@ isOneToOne: false
                   ]
                 },"stickers": {
                   Row: {
-                    "enabled": boolean,"id": string,"label": string,"pack": string,"sort": number
+                    "caption": boolean,"enabled": boolean,"id": string,"label": string,"pack": string,"sort": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "enabled"?: boolean,"id": string,"label": string,"pack"?: string,"sort"?: number
+                    "caption"?: boolean,"enabled"?: boolean,"id": string,"label": string,"pack"?: string,"sort"?: number
                   }
                   Update: {
-                    "enabled"?: boolean,"id"?: string,"label"?: string,"pack"?: string,"sort"?: number
+                    "caption"?: boolean,"enabled"?: boolean,"id"?: string,"label"?: string,"pack"?: string,"sort"?: number
                   }
                   Relationships: [
                     

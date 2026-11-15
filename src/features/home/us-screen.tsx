@@ -1,4 +1,5 @@
 "use client";
+import { MissedCallCard } from "@/features/call/missed-call-card";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -87,6 +88,7 @@ export function UsScreen() {
       {/* Phones: one column in the prototype order. Desktop: the Clink side and the day side. */}
       <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-4 lg:mt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-8">
         <div className="flex min-w-0 flex-col gap-4">
+          <MissedCallCard />
           <PresencePair now={now} />
           <DualClock now={now} />
           <AsleepCard now={now} />

@@ -1,16 +1,32 @@
 "use client";
 import { useState } from "react";
+import { motion } from "motion/react";
+import { PencilSimple } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
 import { Avatar } from "@/components/ui/avatar";
 import { Sheet } from "@/components/ui/sheet";
 import { Toggle } from "@/components/ui/toggle";
 import { Display } from "@/components/ui/heading";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
-import type { PresenceStatus } from "@/features/couple/types";
-import { diffLabel } from "@/lib/time";
+import { statusLabel, type PresenceStatus } from "@/features/couple/types";
+import { feedback } from "@/lib/feedback";
 import { useAmbient } from "./ambient";
 
-const STATUSES: PresenceStatus[] = ["free", "studying", "cooking", "working", "sleeping"];
+const STATUSES: Array<{ key: PresenceStatus; emoji: string }> = [
+  { key: "free", emoji: "🌿" },
+  { key: "studying", emoji: "📚" },
+  { key: "cooking", emoji: "🍳" },
+  { key: "working", emoji: "💻" },
+  { key: "sleeping", emoji: "😴" },
+];
+const SUGGESTIONS = [
+  "at the gym",
+  "on the train",
+  "thinking of you",
+  "in a meeting",
+  "out with friends",
+];
 
 function ago(iso: string | null, now: Date): string {
   if (!iso) return "away";
@@ -21,94 +37,194 @@ function ago(iso: string | null, now: Date): string {
   return h < 24 ? `away · ${h} h` : "away";
 }
 
-/** Presence pair (HOME-04): two avatars joined by a thread that glows when both are here and sags when not. */
+function emojiFor(s: string) {
+  return STATUSES.find((x) => x.key === s)?.emoji ?? (s.startsWith("custom:") ? "💬" : "");
+}
+
+/**
+ * The Us hero (HOME-04): both of you, big, side by side on a soft glow. A
+ * heartbeat line between you pulses when you're both here and goes flat and
+ * dim when one of you is away. Tap yourself to set a status, or write your own.
+ */
 export function PresencePair({ now }: { now: Date }) {
   const { me, partner, presence, myStatus, setMyStatus } = useCouple();
   const [open, setOpen] = useState(false);
   const [beHere, setBeHere] = useState(false);
+  const [custom, setCustom] = useState(myStatus.startsWith("custom:") ? statusLabel(myStatus) : "");
   const ambient = useAmbient();
   const online = presence.online;
   const asleep = presence.status === "sleeping";
-  const theirStatus = asleep ? "asleep" : online ? presence.status : ago(presence.lastSeen, now);
+  const theirStatus = asleep
+    ? "asleep"
+    : online
+      ? statusLabel(presence.status)
+      : ago(presence.lastSeen, now);
+
+  const pill = (text: string, emoji: string, live: boolean) => (
+    <span
+      className={cn(
+        "inline-flex max-w-full items-center gap-1 truncate rounded-full px-2.5 py-1 text-xs font-semibold",
+        live ? "bg-white/10 text-white" : "bg-black/20 text-white/60",
+      )}
+    >
+      {emoji && <span aria-hidden>{emoji}</span>}
+      <span className="truncate">{text}</span>
+    </span>
+  );
 
   return (
     <>
-      <div className="grid flex-none grid-cols-[84px_1fr_84px] items-start">
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="press text-text flex cursor-pointer flex-col items-center gap-1.5 bg-transparent"
-          aria-label={`You, ${myStatus}. Change your status`}
-        >
-          <Avatar name={me.name} side="me" photoUrl={me.avatarUrl} icon={me.avatarIcon} />
-          <div className="text-center text-sm leading-[1.3] font-medium">
-            You
-            <br />
-            <span className="text-muted">{beHere ? "just here" : myStatus}</span>
-          </div>
-        </button>
-        <div className="relative h-14" aria-hidden>
-          {online && !asleep ? (
-            <div
-              className="bg-accent absolute top-[27px] -right-3.5 -left-3.5 h-0.5 rounded-sm"
-              style={{ boxShadow: "0 0 10px var(--accent-glow)", transition: "opacity 320ms" }}
-            />
-          ) : (
-            <div
-              className="border-faint absolute top-1.5 -right-3.5 -left-3.5 h-10 border-b-[1.5px]"
-              style={{ borderRadius: "0 0 50% 50%" }}
-            />
-          )}
-          <div className="mono text-faint absolute top-16 right-0 left-0 text-center text-xs">
-            {diffLabel(now, me.timezone, partner.timezone)}
-          </div>
-        </div>
-        <div className="flex flex-col items-center gap-1.5">
-          <Avatar
-            name={partner.name}
-            side="partner"
-            photoUrl={partner.avatarUrl}
-            icon={partner.avatarIcon}
-            dim={!online || asleep}
+      <section
+        aria-label="You two"
+        className="relative flex-none overflow-hidden rounded-[30px] px-4 pt-5 pb-4"
+        style={{
+          background:
+            "radial-gradient(90% 80% at 15% 0%, color-mix(in oklab, var(--partner-a) 30%, transparent), transparent 60%), radial-gradient(90% 80% at 85% 100%, color-mix(in oklab, var(--partner-b) 24%, transparent), transparent 60%), linear-gradient(160deg, var(--surface-2), var(--surface-1))",
+        }}
+      >
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="press flex min-w-0 cursor-pointer flex-col items-center gap-2 border-0 bg-transparent text-white"
+            aria-label={`You, ${statusLabel(myStatus)}. Change your status`}
           >
-            {online && !asleep && (
-              <span
-                aria-hidden
-                className="an-dot border-app bg-accent absolute -right-0.5 -bottom-0.5 h-3.5 w-3.5 rounded-full border-[3px]"
+            <motion.div whileHover={{ rotate: -4, scale: 1.04 }} className="relative">
+              <Avatar
+                name={me.name}
+                side="me"
+                size={84}
+                ring={0}
+                photoUrl={me.avatarUrl}
+                icon={me.avatarIcon}
               />
+              <span className="bg-accent text-on-accent absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full shadow-md">
+                <PencilSimple size={14} weight="bold" aria-hidden />
+              </span>
+            </motion.div>
+            <span className="text-[15px] font-bold">You</span>
+            {pill(
+              beHere ? "just here" : statusLabel(myStatus),
+              beHere ? "✨" : emojiFor(myStatus),
+              true,
             )}
-          </Avatar>
-          <div className="text-center text-sm leading-[1.3] font-medium">
-            {partner.name}
-            <br />
-            <span className="text-muted">{theirStatus}</span>
+          </button>
+
+          {/* Heartbeat between you: pulses together, flat line when apart. */}
+          <svg viewBox="0 0 80 32" className="h-8 w-16 sm:w-20" aria-hidden>
+            <motion.path
+              d={online ? "M0 16 H22 L28 6 L34 26 L40 10 L45 20 L50 16 H80" : "M0 16 H80"}
+              fill="none"
+              stroke={online ? "var(--accent)" : "var(--text-faint)"}
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={{ pathLength: 0.01 }}
+              animate={
+                online
+                  ? { pathLength: [0.01, 1, 1], opacity: [1, 1, 0.35] }
+                  : { pathLength: 1, opacity: 0.5 }
+              }
+              transition={
+                online ? { duration: 1.6, repeat: Infinity, ease: "easeInOut" } : { duration: 0.4 }
+              }
+            />
+          </svg>
+
+          <div className="flex min-w-0 flex-col items-center gap-2 text-white">
+            <div className="relative">
+              <Avatar
+                name={partner.name}
+                side="partner"
+                size={84}
+                ring={0}
+                photoUrl={partner.avatarUrl}
+                icon={partner.avatarIcon}
+                dim={!online}
+              />
+              {online && (
+                <span
+                  aria-hidden
+                  className="an-dot absolute right-1 bottom-1 h-4 w-4 rounded-full bg-[#34C759] shadow-[0_0_0_3px_var(--surface-2)]"
+                />
+              )}
+            </div>
+            <span className="max-w-full truncate text-[15px] font-bold">{partner.name}</span>
+            {pill(
+              theirStatus,
+              online && !asleep ? emojiFor(presence.status) : asleep ? "😴" : "",
+              online,
+            )}
           </div>
         </div>
-      </div>
+      </section>
+
       <Sheet open={open} onOpenChange={setOpen} title="Your status" handle>
         <Display as="h2" size={28}>
           What are you <em>up to</em>?
         </Display>
         <p className="text-muted m-0 text-sm">{partner.name} sees this beside your face on Us.</p>
         <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Status">
-          {STATUSES.map((s) => (
+          {STATUSES.map(({ key, emoji }) => (
             <button
-              key={s}
+              key={key}
               type="button"
               role="radio"
-              aria-checked={myStatus === s}
-              onClick={() => setMyStatus(s)}
+              aria-checked={myStatus === key}
+              onClick={() => {
+                feedback("select");
+                setMyStatus(key);
+              }}
               className={cn(
-                "press h-11 cursor-pointer rounded-full border px-4 text-sm font-medium capitalize",
-                myStatus === s
-                  ? "border-accent bg-accent text-on-accent"
-                  : "border-line text-text bg-transparent",
+                "press flex h-11 cursor-pointer items-center gap-1.5 rounded-full border-0 px-4 text-sm font-semibold capitalize",
+                myStatus === key ? "bg-accent text-on-accent" : "bg-s2 text-text",
               )}
             >
-              {s}
+              <span aria-hidden>{emoji}</span>
+              {key}
             </button>
           ))}
         </div>
+        <form
+          className="flex flex-col gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const t = custom.trim().slice(0, 40);
+            if (!t) return;
+            feedback("success");
+            setMyStatus(`custom:${t}`);
+            setOpen(false);
+          }}
+        >
+          <label htmlFor="custom-status" className="text-muted text-sm font-medium">
+            Or write your own
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="custom-status"
+              maxLength={40}
+              value={custom}
+              onChange={(e) => setCustom(e.target.value)}
+              placeholder="e.g. stuck in traffic"
+              className="rounded-input bg-s2 text-text h-11 min-w-0 flex-1 border-0 px-3.5 text-base"
+            />
+            <Button type="submit" size="sm" disabled={!custom.trim()}>
+              Set
+            </Button>
+          </div>
+          <div className="no-scrollbar flex gap-1.5 overflow-x-auto">
+            {SUGGESTIONS.map((sug) => (
+              <button
+                key={sug}
+                type="button"
+                onClick={() => setCustom(sug)}
+                className="bg-s2 text-muted hover:text-text flex-none cursor-pointer rounded-full border-0 px-3 py-1.5 text-xs font-medium"
+              >
+                {sug}
+              </button>
+            ))}
+          </div>
+        </form>
         <div className="rounded-card border-line bg-s2 overflow-hidden border">
           <Toggle
             label="Just be here"

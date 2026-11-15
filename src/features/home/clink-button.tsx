@@ -1,6 +1,6 @@
 "use client";
+import { motion } from "motion/react";
 import { useRef } from "react";
-import { Wine } from "@phosphor-icons/react";
 import { Sparks } from "@/components/clink/sparks";
 import { useSendClink } from "./use-send-clink";
 import { useHold } from "./hold-together";
@@ -37,9 +37,16 @@ export function ClinkButton({ streak }: { streak: number | null }) {
       <div className="relative h-[188px] w-[188px]">
         {clinking && (
           <>
-            <div
+            <motion.div
               aria-hidden
-              className="an-ripple border-accent absolute inset-0 rounded-full border-2"
+              className="absolute inset-0 rounded-[64px]"
+              style={{
+                background:
+                  "radial-gradient(circle, color-mix(in oklab, var(--accent) 70%, transparent), transparent 70%)",
+              }}
+              initial={{ scale: 0.8, opacity: 0.9 }}
+              animate={{ scale: 1.7, opacity: 0 }}
+              transition={{ duration: 0.9, ease: "easeOut" }}
             />
             <Sparks variant="spark-btn" length={12} className="top-1/2 left-1/2" />
           </>
@@ -57,29 +64,26 @@ export function ClinkButton({ streak }: { streak: number | null }) {
             }
           }}
           aria-label="Send a Clink. Hold to glow together."
-          className="press bg-accent absolute inset-0 flex cursor-pointer touch-none items-center justify-center rounded-full border-0 select-none focus-visible:outline-offset-4 active:scale-[.96]"
+          className="press absolute inset-0 flex cursor-pointer touch-none items-center justify-center rounded-[64px] border-0 select-none focus-visible:outline-offset-4 active:scale-[.96]"
+          style={{
+            background:
+              "radial-gradient(90% 70% at 30% 20%, rgba(255,255,255,.35), transparent 55%), linear-gradient(145deg, color-mix(in oklab, var(--accent) 92%, white), color-mix(in oklab, var(--accent) 75%, #6b2fa0))",
+            boxShadow:
+              "0 24px 50px -18px var(--accent), inset 0 -8px 20px rgba(0,0,0,.18), inset 0 2px 0 rgba(255,255,255,.3)",
+          }}
         >
-          <Wine
+          <motion.img
+            src="/stickers/clink.webp"
+            alt=""
             aria-hidden
-            size={72}
-            className={clinking ? "an-btnL" : ""}
-            style={{
-              color: "var(--on-accent)",
-              marginRight: -14,
-              transformOrigin: "50% 90%",
-              transform: "rotate(-14deg)",
-            }}
-          />
-          <Wine
-            aria-hidden
-            size={72}
-            className={clinking ? "an-btnR" : ""}
-            style={{
-              color: "var(--on-accent)",
-              marginLeft: -14,
-              transformOrigin: "50% 90%",
-              transform: "rotate(14deg)",
-            }}
+            draggable={false}
+            className="pointer-events-none h-[112px] w-[112px] object-contain drop-shadow-[0_10px_12px_rgba(0,0,0,.35)] select-none"
+            animate={
+              clinking
+                ? { rotate: [0, -14, 12, -8, 0], scale: [1, 1.15, 1] }
+                : { rotate: 0, scale: 1 }
+            }
+            transition={{ duration: 0.6 }}
           />
         </button>
       </div>

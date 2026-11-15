@@ -11,9 +11,8 @@ test("mood check-in reaches the partner, once a day", async ({ couple }) => {
   await moods.getByRole("radio", { name: "Missing you" }).click();
   await expect(a.getByText(/Sent\. Theo sees it on Us\./)).toBeVisible();
 
-  await expect(b.getByText('Nia is missing you. "train delayed again"')).toBeVisible({
-    timeout: 10000,
-  });
+  await expect(b.getByText(/Nia is feeling missing you/)).toBeVisible({ timeout: 10000 });
+  await expect(b.getByText("“train delayed again”")).toBeVisible();
 
   // Today's answer is locked in.
   await a.reload();

@@ -66,7 +66,7 @@ export function RitualCard() {
   return (
     <section
       aria-labelledby="ritual-h"
-      className="rounded-card bg-s2 flex flex-none flex-col gap-3 px-4 py-5"
+      className="bg-s2 flex flex-none flex-col gap-3 rounded-[28px] px-4 py-5"
       style={{ transform: "rotate(-1deg)" }}
     >
       <div className="text-muted text-sm font-medium">Today&apos;s ritual, {when}</div>

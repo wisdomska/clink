@@ -53,7 +53,7 @@ export function DualClock({ now }: { now: Date }) {
   return (
     <div
       role="group"
-      className="rounded-card border-line grid flex-none grid-cols-2 overflow-hidden border"
+      className="border-line grid flex-none grid-cols-2 overflow-hidden rounded-[28px] border"
       aria-label="Your clocks"
     >
       <Half p={me} now={now} side="me" />

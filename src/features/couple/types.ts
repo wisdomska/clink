@@ -42,7 +42,13 @@ export interface CoupleContextValue {
   };
 }
 
-export type PresenceStatus = "free" | "studying" | "cooking" | "working" | "sleeping" | "away";
+export type PresenceStatus =
+  "free" | "studying" | "cooking" | "working" | "sleeping" | "away" | `custom:${string}`;
+
+/** What a status reads as: presets as-is, your own words for custom ones. */
+export function statusLabel(s: PresenceStatus | string): string {
+  return s.startsWith("custom:") ? s.slice(7) : s;
+}
 
 export interface PartnerPresence {
   online: boolean;

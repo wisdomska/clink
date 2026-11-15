@@ -11,6 +11,8 @@ import {
 } from "@phosphor-icons/react";
 import type { MediaInfo, Reaction, UiMessage } from "./types";
 import { VoicePlayer } from "./voice-player";
+import { CallLogRow } from "@/features/call/call-log-row";
+import { StickerArt } from "./sticker-art";
 import { cn } from "@/components/ui/cn";
 
 export const STICKER_LABEL = new Map<string, string>();
@@ -115,6 +117,10 @@ export function Bubble({
   });
   const el = useRef<HTMLDivElement>(null);
 
+  if (m.type === "system" && m.body?.startsWith("call:")) {
+    return <CallLogRow body={m.body} mine={mine} partnerName={partnerName} at={m.sent_at} />;
+  }
+
   if (m.type === "clink") {
     const time = new Date(m.sent_at).toLocaleTimeString("en-GB", {
       hour: "2-digit",
@@ -217,13 +223,15 @@ export function Bubble({
   } else if (m.type === "sticker") {
     content = (
       <div
-        className={cn(
-          "display border-line bg-s1 text-accent flex h-24 w-24 items-center justify-center rounded-full border text-[22px]",
-          side,
-        )}
-        style={{ transform: "rotate(-8deg)" }}
+        className={cn("an-pop", side)}
+        role="img"
+        aria-label={`Sticker: ${STICKER_LABEL.get(m.sticker_id ?? "") ?? ""}`}
       >
-        {STICKER_LABEL.get(m.sticker_id ?? "") ?? "clink!"}
+        <StickerArt
+          id={m.sticker_id ?? ""}
+          label={STICKER_LABEL.get(m.sticker_id ?? "") ?? ""}
+          size={128}
+        />
       </div>
     );
   } else if (m.type === "voice") {

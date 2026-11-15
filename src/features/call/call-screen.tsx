@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
+  CaretDown,
   CameraRotate,
   Microphone,
   MicrophoneSlash,
@@ -107,12 +108,45 @@ export function CallScreen({
   const { call, local, remote, accept, decline, hangUp, toggleMute, toggleCamera, flipCamera } =
     useCall();
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [mini, setMini] = useState(false);
   useEffect(() => {
     if (audioRef.current && audioRef.current.srcObject !== remote)
       audioRef.current.srcObject = remote;
-  }, [remote]);
+  }, [remote, mini]);
   if (!call) return null;
   const live = call.phase === "live";
+
+  // Minimised: a floating pill over the app, so you can chat or play mid-call.
+  if (mini && call.phase !== "incoming" && call.phase !== "ended") {
+    return (
+      <motion.div
+        role="status"
+        aria-label={`On a call with ${partnerName}`}
+        className="fixed top-[calc(env(safe-area-inset-top)+8px)] left-1/2 z-[90] flex -translate-x-1/2 items-center gap-1 rounded-full bg-[#34C759] p-1 pl-1 text-white shadow-[0_10px_30px_-8px_rgba(52,199,89,.7)]"
+        initial={{ y: -40, opacity: 0.01 }}
+        animate={{ y: 0, opacity: 1 }}
+      >
+        <audio ref={audioRef} autoPlay />
+        <button
+          type="button"
+          onClick={() => setMini(false)}
+          className="flex h-9 cursor-pointer items-center gap-2 rounded-full border-0 bg-transparent px-3 text-sm font-bold text-white"
+        >
+          {call.video ? <VideoCamera size={18} weight="fill" /> : <Phone size={18} weight="fill" />}
+          {partnerName}
+          {live && call.startedAt ? <Elapsed since={call.startedAt} /> : <LoadingDots />}
+        </button>
+        <button
+          type="button"
+          aria-label="End call"
+          onClick={hangUp}
+          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-0 bg-[#FF3B30] text-white"
+        >
+          <PhoneDisconnect size={18} weight="fill" />
+        </button>
+      </motion.div>
+    );
+  }
   const showRemoteVideo = call.video && live && remote && !call.remoteCameraOff;
 
   const status =
@@ -142,6 +176,16 @@ export function CallScreen({
       }}
     >
       <audio ref={audioRef} autoPlay />
+      {call.phase !== "incoming" && call.phase !== "ended" && (
+        <button
+          type="button"
+          aria-label="Minimise call"
+          onClick={() => setMini(true)}
+          className="absolute top-[calc(env(safe-area-inset-top)+12px)] left-4 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 bg-white/15 text-white backdrop-blur-md"
+        >
+          <CaretDown size={22} weight="bold" />
+        </button>
+      )}
       {showRemoteVideo && <Video stream={remote} className="absolute inset-0 h-full w-full" />}
       {showRemoteVideo && (
         <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/60 to-transparent" />

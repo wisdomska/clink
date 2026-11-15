@@ -51,7 +51,7 @@ export function CountdownCard({ now }: { now: Date }) {
   return (
     <section
       aria-labelledby="cd-h"
-      className="rounded-card border-line bg-s1 flex flex-none flex-col gap-3.5 border p-4"
+      className="border-line bg-s1 flex flex-none flex-col gap-3.5 rounded-[28px] border p-4"
     >
       <div className="flex items-center justify-between gap-3">
         <h2 id="cd-h" className="m-0 text-lg font-bold">
