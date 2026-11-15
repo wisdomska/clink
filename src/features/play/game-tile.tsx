@@ -32,12 +32,13 @@ export function GameTile({
       type="button"
       onClick={onClick}
       initial={{ opacity: 0.01, y: 14 }}
-      animate={{ opacity: dim ? 0.5 : 1, y: 0 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, type: "spring", stiffness: 380, damping: 30 }}
       whileTap={{ scale: 0.97 }}
       className={cn(
         "group rounded-card bg-s1 text-text hover:bg-s2 relative flex cursor-pointer overflow-hidden border text-left transition-colors",
         highlight ? "border-accent border-[1.5px]" : "border-line",
+        dim && "bg-app border-dashed",
         hero
           ? "col-span-2 min-h-[150px] items-center gap-4 p-5"
           : "min-h-[176px] flex-col justify-end p-4",
@@ -52,6 +53,7 @@ export function GameTile({
         className={cn(
           "pointer-events-none object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,.4)] select-none",
           hero ? "order-2 ml-auto h-24 w-24 flex-none" : "absolute top-3 right-3 h-[72px] w-[72px]",
+          dim && "opacity-40 grayscale",
         )}
       />
       <span className={cn("relative flex min-w-0 flex-col gap-1", hero && "order-1")}>
