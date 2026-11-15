@@ -24,6 +24,8 @@ export interface CoupleContextValue {
   ritualTime: string;
   ritualProposal: { time: string; byMe: boolean } | null;
   darkVisible: boolean;
+  /** Both partners have set up After Dark. */
+  darkBoth: boolean;
   discreet: boolean;
   appLock: boolean;
   /** Server render time (ms). Clocks start here so hydration matches the server HTML. */

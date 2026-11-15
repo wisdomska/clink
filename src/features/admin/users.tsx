@@ -105,7 +105,7 @@ export function AdminUsers() {
           placeholder="Search by email or name"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          className="text-text h-12 flex-1 bg-transparent text-base outline-none"
+          className="text-text h-12 flex-1 bg-transparent text-base outline-none focus-visible:shadow-none"
         />
       </form>
       <div className="flex items-center justify-between gap-3">

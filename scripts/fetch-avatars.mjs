@@ -53,3 +53,40 @@ for (const [k, p] of Object.entries(list)) {
     .toFile(`${out}/${k}.webp`);
   console.log("ok", k);
 }
+
+// Game and feature art, same source and licence.
+const art = {
+  know_me: S("Thinking face", "thinking_face"),
+  draw_guess: S("Artist palette", "artist_palette"),
+  trivia: S("Light bulb", "light_bulb"),
+  wyr: S("Balance scale", "balance_scale"),
+  word: S("Abacus", "abacus"),
+  story: S("Open book", "open_book"),
+  rps: tone("Victory hand", "victory_hand", "Default"),
+  snap: S("Camera with flash", "camera_with_flash"),
+  zoom: S("Magnifying glass tilted left", "magnifying_glass_tilted_left"),
+  memory: S("Framed picture", "framed_picture"),
+  slot: S("Slot machine", "slot_machine"),
+  rock: tone("Raised fist", "raised_fist", "Default"),
+  paper: tone("Raised hand", "raised_hand", "Default"),
+  scissors: tone("Victory hand", "victory_hand", "Default"),
+  telephone: S("Telephone receiver", "telephone_receiver"),
+  video: S("Video camera", "video_camera"),
+  fire: S("Fire", "fire"),
+  sparkling_heart: S("Sparkling heart", "sparkling_heart"),
+  party: S("Party popper", "party_popper"),
+  trophy: S("Trophy", "trophy"),
+};
+for (const [k, p] of Object.entries(art)) {
+  const url = base + p.split("/").map(encodeURIComponent).join("/");
+  const r = await fetch(url);
+  if (!r.ok) {
+    console.log("MISS", k, r.status, p);
+    continue;
+  }
+  const buf = Buffer.from(await r.arrayBuffer());
+  await sharp(buf)
+    .resize(256, 256, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .webp({ quality: 82 })
+    .toFile(`public/art/${k}.webp`);
+}

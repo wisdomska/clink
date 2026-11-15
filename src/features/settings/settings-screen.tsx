@@ -165,7 +165,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
         />
         <Toggle
           label="After Dark"
-          sub="Always generic text"
+          sub='Says only "New moment in Clink", so your lock screen gives nothing away'
           checked={notify.dark === true}
           onChange={(v) => tog("dark", v)}
         />

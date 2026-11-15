@@ -677,7 +677,7 @@ export function ChatScreen() {
                   value={text}
                   maxLength={4000}
                   onChange={(e) => onType(e.target.value)}
-                  className="text-text min-w-0 flex-1 bg-transparent text-base outline-none"
+                  className="text-text min-w-0 flex-1 bg-transparent text-base outline-none focus-visible:shadow-none"
                 />
                 <button
                   type="button"

@@ -19,6 +19,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { GAME_META, startGame } from "./meta";
+import { GameTile } from "./game-tile";
 import { subscribeAuthed } from "@/lib/realtime";
 import type { GameType } from "./engines/types";
 
@@ -170,46 +171,23 @@ export function Lobby() {
               </button>
             ))}
 
-          <div className="grid grid-cols-2 gap-x-3.5 pb-5 sm:gap-x-6 md:grid-cols-4 md:gap-x-4 lg:grid-cols-2 lg:gap-x-6">
-            {LIVE.map(({ type, Icon }, i) => {
+          <div className="grid grid-cols-2 gap-3 pb-5">
+            {LIVE.map(({ type }, i) => {
               const pending = invites.some((g) => g.type === type && g.created_by === me.id);
               const meta = GAME_META[type];
               return (
-                <button
+                <GameTile
                   key={type}
-                  type="button"
+                  type={type}
+                  index={i}
+                  hero={i === 0}
+                  name={meta.name}
+                  meta={online ? meta.meta : "Needs you both"}
+                  dim={!online}
+                  highlight={pending}
+                  badge={pending ? "Invite sent" : undefined}
                   onClick={() => (type === "wyr" ? setDeckOpen(true) : play(type))}
-                  className="press an-rise bg-s1 text-text relative flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-full p-[22px] text-center"
-                  style={{
-                    ["--i" as string]: i,
-                    marginTop: i % 2 ? 44 : 0,
-                    opacity: online ? 1 : 0.45,
-                    border: pending ? "2px solid var(--accent)" : "1px solid var(--line)",
-                  }}
-                >
-                  <span
-                    aria-hidden
-                    className="absolute inset-[9px] rounded-full border border-[rgba(244,240,245,.06)]"
-                  />
-                  <span
-                    aria-hidden
-                    className="absolute rounded-full"
-                    style={{
-                      inset: "24px 10px 4px 30px",
-                      border: "3px solid rgba(173,166,178,.06)",
-                    }}
-                  />
-                  <Icon size={28} className="text-accent" aria-hidden />
-                  <span className="text-[15px] leading-[1.2] font-bold">{meta.name}</span>
-                  <span className="mono text-muted text-[11px]">
-                    {online ? meta.meta : "Needs you both"}
-                  </span>
-                  {pending && (
-                    <span className="bg-accent text-on-accent absolute top-0.5 -right-1 rounded-full px-2.5 py-1 text-xs font-bold">
-                      Invite sent
-                    </span>
-                  )}
-                </button>
+                />
               );
             })}
           </div>
@@ -229,14 +207,19 @@ export function Lobby() {
                 g.type === "word"
                   ? `Turn ${(st.plays?.length ?? 0) + 1} of 16 · ${(st.scores?.[me.id] ?? 0) >= (st.scores?.[partner.id] ?? 0) ? "you lead" : `${partner.name} leads`} ${st.scores?.[me.id] ?? 0} to ${st.scores?.[partner.id] ?? 0}`
                   : `Line ${(st.lines?.length ?? 0) + 1} of 40${st.lines?.length ? ` · "${st.lines[st.lines.length - 1]!.text.slice(0, 24)}"` : ""}`;
-              const Icon = g.type === "word" ? GridFour : BookOpenText;
               return (
                 <Link
                   key={g.id}
                   href={`/play/${g.type}/${g.id}`}
                   className="press rounded-card border-line bg-s1 text-text hover:text-text flex items-center gap-3 border px-4 py-3.5"
                 >
-                  <Icon size={24} className="text-muted" aria-hidden />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/art/${g.type}.webp`}
+                    alt=""
+                    aria-hidden
+                    className="h-10 w-10 flex-none object-contain"
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="text-base font-bold">{GAME_META[g.type as GameType].name}</div>
                     <div className="text-muted truncate text-sm">{sub}</div>
@@ -259,7 +242,13 @@ export function Lobby() {
                 onClick={() => play("word")}
                 className="press rounded-card border-line text-text flex cursor-pointer items-center gap-3 border border-dashed bg-transparent px-4 py-3.5 text-left"
               >
-                <GridFour size={24} className="text-muted" aria-hidden />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/art/word.webp"
+                  alt=""
+                  aria-hidden
+                  className="h-10 w-10 flex-none object-contain"
+                />
                 <span className="flex-1 text-base font-bold">Start a word game</span>
                 <Plus size={18} className="text-accent" aria-hidden />
               </button>
@@ -270,7 +259,13 @@ export function Lobby() {
                 onClick={() => play("story")}
                 className="press rounded-card border-line text-text flex cursor-pointer items-center gap-3 border border-dashed bg-transparent px-4 py-3.5 text-left"
               >
-                <BookOpenText size={24} className="text-muted" aria-hidden />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/art/story.webp"
+                  alt=""
+                  aria-hidden
+                  className="h-10 w-10 flex-none object-contain"
+                />
                 <span className="flex-1 text-base font-bold">Start a story</span>
                 <Plus size={18} className="text-accent" aria-hidden />
               </button>

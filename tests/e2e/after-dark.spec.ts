@@ -48,12 +48,14 @@ async function asUser(u: TestUser) {
 }
 
 test.describe("After Dark (spec section 7 and the must-pass safety tests)", () => {
-  test("flow 10.3: hidden until both opt in, PIN lock with lockout, lower choice wins, Unhinged needs both verified", async ({
+  test("flow 10.3: entry visible, setup first, PIN lock with lockout, lower choice wins, Unhinged needs both verified", async ({
     couple,
   }) => {
     const { a, b } = couple;
+    // The entry is always there; opening it before setup goes to setup.
     await a.goto("/us");
-    await expect(a.getByRole("link", { name: "After Dark" })).toHaveCount(0);
+    await a.getByRole("link", { name: "After Dark" }).first().click();
+    await expect(a).toHaveURL(/\/dark\/setup/);
     await setUp(a, ["Flirty", "Steamy", "Spicy"]);
     expect((await (await a.request.get("/api/dark/state")).json()).rank).toBe(0);
     await setUp(b, ["Flirty", "Steamy"]);

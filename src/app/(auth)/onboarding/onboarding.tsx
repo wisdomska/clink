@@ -300,7 +300,7 @@ export function Onboarding({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Start typing a city"
-              className="text-text h-full min-w-0 flex-1 bg-transparent text-base outline-none"
+              className="text-text h-full min-w-0 flex-1 bg-transparent text-base outline-none focus-visible:shadow-none"
             />
           </div>
           {query.trim().length >= 2 && results.length > 0 && (

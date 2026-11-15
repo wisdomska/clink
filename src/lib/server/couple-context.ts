@@ -80,7 +80,10 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
     ritualProposal: c?.ritual_time_proposed
       ? { time: c.ritual_time_proposed.slice(0, 5), byMe: c.ritual_time_proposed_by === user.id }
       : null,
-    darkVisible: darkBoth,
+    // Owner decision: the After Dark entry shows for every couple. Opening it
+    // still needs your own 18+ setup, PIN and tiers, and content needs you both.
+    darkVisible: true,
+    darkBoth,
     discreet: meRow.discreet_mode,
     appLock,
     renderedAt: Date.now(),
