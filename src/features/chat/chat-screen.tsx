@@ -1,5 +1,6 @@
 "use client";
 import { feedback, haptic } from "@/lib/feedback";
+import { BrandLogo } from "@/components/clink/brand-logo";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -16,7 +17,6 @@ import {
   ArrowBendUpLeft,
   Copy,
   Trash,
-  WhatsappLogo,
   Stop,
 } from "@phosphor-icons/react";
 import Link from "next/link";
@@ -779,13 +779,13 @@ export function ChatScreen() {
               rel="noopener noreferrer"
               className="press bg-accent text-on-accent hover:text-on-accent flex h-[52px] items-center justify-center gap-2 rounded-full font-bold"
             >
-              <WhatsappLogo size={20} aria-hidden /> WhatsApp
+              <BrandLogo brand="whatsapp" size={26} /> WhatsApp
             </a>
             <a
               href={`facetime:${digits}`}
               className="press border-line bg-s2 text-text hover:text-text flex h-[52px] items-center justify-center gap-2 rounded-full border font-medium"
             >
-              <VideoCamera size={20} aria-hidden /> FaceTime
+              FaceTime
             </a>
             <a
               href={`tel:${digits}`}

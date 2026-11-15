@@ -8,6 +8,7 @@ import { useCouple } from "@/features/couple/context";
 import { Button, IconButton } from "@/components/ui/button";
 import { Display, Lead } from "@/components/ui/heading";
 import { Input, Label, FieldError } from "@/components/ui/field";
+import { BrandLogo } from "@/components/clink/brand-logo";
 
 export function WatchStart() {
   const router = useRouter();
@@ -65,7 +66,12 @@ export function WatchStart() {
         }}
       >
         <div>
-          <Label htmlFor="yt">YouTube link</Label>
+          <Label htmlFor="yt">
+            <span className="inline-flex items-center gap-2">
+              <BrandLogo brand="youtube" size={22} />
+              YouTube link
+            </span>
+          </Label>
           <Input
             id="yt"
             inputMode="url"

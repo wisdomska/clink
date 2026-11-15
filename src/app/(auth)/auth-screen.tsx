@@ -2,7 +2,8 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Fingerprint, GoogleLogo, Check } from "@phosphor-icons/react";
+import { ArrowLeft, Fingerprint, Check } from "@phosphor-icons/react";
+import { BrandLogo } from "@/components/clink/brand-logo";
 import { Button, IconButton } from "@/components/ui/button";
 import { Input, Label, FieldError, Hint } from "@/components/ui/field";
 import { Display, Lead } from "@/components/ui/heading";
@@ -175,7 +176,7 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
               Continue with a passkey
             </Button>
             <Button variant="secondary" size="lg" onClick={google}>
-              <GoogleLogo size={22} aria-hidden />
+              <BrandLogo brand="google" size={26} />
               Continue with Google
             </Button>
           </div>

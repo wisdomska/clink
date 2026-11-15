@@ -11,6 +11,7 @@ import { FieldError } from "@/components/ui/field";
 import { youtubeId } from "@/lib/youtube";
 import { SyncedPlayer } from "./watch-room";
 import { subscribeAuthed } from "@/lib/realtime";
+import { BrandLogo } from "@/components/clink/brand-logo";
 
 /** TOG-02 listen together: shared YouTube audio queue, either partner can add, synced playback. */
 export function ListenTogether() {
@@ -97,12 +98,13 @@ export function ListenTogether() {
         </div>
       )}
       <form
-        className="flex gap-2"
+        className="flex items-center gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           void add();
         }}
       >
+        <BrandLogo brand="youtube" size={32} />
         <input
           aria-label="YouTube link"
           placeholder="Paste a YouTube link"

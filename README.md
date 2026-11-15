@@ -72,9 +72,9 @@ It creates or reuses `clink-prod` and `clink-preview`, applies every migration a
 
 ## Becoming an admin
 
-1. Sign up at https://clinkapp.vercel.app with an email listed in `ADMIN_EMAILS`.
-2. Run `pnpm seed:admin` against production.
-3. Open `/admin`. Admins go straight in; access is checked against `is_admin` on every page and API.
+`wisdomska@gmail.com` is the admin. Sign in at https://clinkapp.vercel.app/login (Continue with Google, a passkey, or an email link) and open `/admin`. Admin access is checked on every admin page and API; non-admins get a 404. To add another admin, run `pnpm seed:admin` with `ADMIN_EMAILS` and the production keys in `.env.local`.
+
+The remaining owner-only steps (publishing the Google app, a Gmail sender, branch protection, optional Sentry and PostHog) are in [`docs/OWNER_SETUP.md`](docs/OWNER_SETUP.md).
 
 ## Contributing
 

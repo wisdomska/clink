@@ -177,6 +177,10 @@ async function main() {
         mailer_autoconfirm: false,
         mfa_totp_enroll_enabled: true,
         mfa_totp_verify_enabled: true,
+        // Clink is passwordless; this only guards direct API sign-ups.
+        password_min_length: 12,
+        password_required_characters:
+          "abcdefghijklmnopqrstuvwxyz:ABCDEFGHIJKLMNOPQRSTUVWXYZ:0123456789",
         passkey_enabled: true,
         webauthn_rp_id: new URL(env.site).hostname,
         webauthn_rp_origins: env.site,

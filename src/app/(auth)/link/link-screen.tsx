@@ -2,15 +2,9 @@
 import { feedback } from "@/lib/feedback";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  WhatsappLogo,
-  Copy,
-  Check,
-  HourglassSimpleLow,
-  Wine,
-} from "@phosphor-icons/react";
+import { ArrowLeft, Copy, Check, HourglassSimpleLow, Wine } from "@phosphor-icons/react";
 import { Button, IconButton } from "@/components/ui/button";
+import { BrandLogo } from "@/components/clink/brand-logo";
 import { Display, Lead } from "@/components/ui/heading";
 import { FieldError } from "@/components/ui/field";
 import { Sparks } from "@/components/clink/sparks";
@@ -293,7 +287,7 @@ export function LinkScreen({
                     }
                   }}
                 >
-                  <WhatsappLogo size={22} aria-hidden />
+                  <BrandLogo brand="whatsapp" size={28} />
                   Share to WhatsApp
                 </a>
                 <Button
