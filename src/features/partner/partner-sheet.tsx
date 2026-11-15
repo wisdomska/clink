@@ -23,6 +23,7 @@ import { useWeather } from "@/features/home/dual-clock";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { formatClock } from "@/lib/time";
 import { cn } from "@/components/ui/cn";
+import { moodChip } from "@/features/home/mood-card";
 
 export const LOVE_LANGUAGES: Record<string, string> = {
   words: "Words of affirmation",
@@ -154,7 +155,7 @@ export function PartnerSheetProvider({ children }: { children: React.ReactNode }
             </span>
             {mood && (
               <span className="bg-s2 rounded-full px-3 py-1 text-xs font-semibold">
-                Feeling {mood.mood.toLowerCase()}
+                {moodChip(mood.mood)}
               </span>
             )}
           </div>

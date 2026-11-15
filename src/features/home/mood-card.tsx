@@ -39,7 +39,7 @@ const ART: Record<string, string> = {
 };
 
 /** How each mood reads after a name: "Senya is missing you", "Theo is feeling cosy". */
-const PHRASE: Record<string, string> = {
+export const PHRASE: Record<string, string> = {
   Happy: "is happy",
   Loved: "is feeling loved",
   Cosy: "is feeling cosy",
@@ -58,6 +58,14 @@ const PHRASE: Record<string, string> = {
   Angry: "is angry",
   "Need space": "needs a little space",
 };
+/** "Feeling cosy", "Missing you", "Needs space": a mood as a short chip. */
+export function moodChip(mood: string): string {
+  const p = PHRASE[mood];
+  if (!p) return `Feeling ${mood.toLowerCase()}`;
+  const t = p.replace(/^is /, "").replace(/^needs a little space$/, "needs space");
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
 const HARD = new Set<string>(MOOD_GROUPS[2].moods);
 
 const since = (iso: string) => {

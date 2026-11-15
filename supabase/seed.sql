@@ -108,7 +108,8 @@ insert into public.stickers (id, pack, label, sort) values
   ('xoxo', 'starter', 'xoxo', 37),
   ('come-here', 'starter', 'come here', 38),
   ('hiii', 'starter', 'hiii', 39),
-  ('love-u', 'starter', 'love u', 40);
+  ('love-u', 'starter', 'love u', 40)
+on conflict (id) do nothing;
 
 -- How Well Do You Know Me.
 insert into public.know_me_questions (text, options, sort) values
