@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Compass } from "@phosphor-icons/react/dist/ssr";
+import { LogoMark } from "@/components/brand/logo";
 
 export const metadata: Metadata = { title: "Not found", robots: { index: false } };
 
 export default function NotFound() {
   return (
     <main className="an-screen mx-auto flex min-h-dvh max-w-[480px] flex-col justify-center gap-4 px-5">
-      <Compass size={44} className="text-accent" aria-hidden />
+      <LogoMark size={56} title="Clink" />
       <h1 className="display m-0 text-[36px] leading-[1.05]">
-        Nothing <em>here</em>.
+        Nothing to clink <em>here</em>.
       </h1>
       <p className="text-muted m-0 text-base leading-normal">
         That page has moved, or it never existed. Your partner is still where you left them.

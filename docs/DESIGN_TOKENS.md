@@ -12,23 +12,25 @@ Source: `design/claude-design/Clink Prototype v2.dc.html`. Values are copied ver
 
 Everything else is unchanged.
 
+**November 2026 rebrand:** surfaces moved to plum-tinted values and the accent to Rouge. The tables below show the current values. See [BRAND.md](BRAND.md) for the full brand guide (logo, palette, type, motion, voice).
+
 ## Colour
 
 | Role                                           | Token                                      | Value                             |
 | ---------------------------------------------- | ------------------------------------------ | --------------------------------- |
-| Page (outside the app column)                  | `--bg-page`                                | `#09080A`                         |
-| App canvas, on-accent text                     | `--bg-app`                                 | `#0F0E11`                         |
-| Night half of the dual clock                   | `--bg-night`                               | `#0B0A0D`                         |
-| Cards, sheets, rows                            | `--surface-1`                              | `#18161B`                         |
-| Placeholder stripe partner                     | `--surface-1b`                             | `#1C1A20`                         |
-| Inputs, raised, secondary buttons              | `--surface-2`                              | `#211E25`                         |
-| Partner B avatar, sent bubble, toast, selected | `--surface-3`                              | `#2C2830`                         |
-| Device bezel                                   | `--bezel`                                  | `#1B191E`                         |
-| Lines                                          | `--line` / `--line-strong`                 | `#36313B` / `#4A4450`             |
-| Text                                           | `--text` / `--text-muted` / `--text-faint` | `#F4F0F5` / `#ADA6B2` / `#8B8590` |
-| Accent (main app)                              | `--accent`                                 | `#E68AF5`                         |
+| Page (outside the app column)                  | `--bg-page`                                | `#0A0609`                         |
+| App canvas, on-accent text                     | `--bg-app`                                 | `#120C10`                         |
+| Night half of the dual clock                   | `--bg-night`                               | `#0C080B`                         |
+| Cards, sheets, rows                            | `--surface-1`                              | `#1B1318`                         |
+| Placeholder stripe partner                     | `--surface-1b`                             | `#20161C`                         |
+| Inputs, raised, secondary buttons              | `--surface-2`                              | `#251A21`                         |
+| Partner B avatar, sent bubble, toast, selected | `--surface-3`                              | `#31232C`                         |
+| Device bezel                                   | `--bezel`                                  | `#1C1419`                         |
+| Lines                                          | `--line` / `--line-strong`                 | `#3D2C36` / `#57404C`             |
+| Text                                           | `--text` / `--text-muted` / `--text-faint` | `#FBF3F6` / `#BBA9B3` / `#A08D98` |
+| Accent (main app)                              | `--accent`                                 | `#FF4F7B` (Rouge)                 |
 | Accent (After Dark, Ember)                     | `--accent-dark`                            | `#FF5A3C`                         |
-| Partner A (circle) / B (square)                | `--partner-a` / `--partner-b`              | `#E68AF5` / `#8FD9C8`             |
+| Partner A (circle) / B (square)                | `--partner-a` / `--partner-b`              | `#FF4F7B` / `#B9A4FF`             |
 | Danger / warning                               | `--danger` / `--warning`                   | `#FF7A6B` / `#F2B84B`             |
 | Matchbook striker                              | `--striker-1` / `--striker-2`              | `#3A1A12` / `#5A2A1E`             |
 

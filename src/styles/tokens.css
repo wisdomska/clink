@@ -24,7 +24,7 @@
   /* Text */
   --text: #fbf3f6;
   --text-muted: #bba9b3;
-  --text-faint: #9a8792; /* prototype #7C7581 lifted for WCAG AA 4.5:1 on app, s1 and s2 */
+  --text-faint: #a08d98; /* prototype #7C7581 lifted for WCAG AA 4.5:1 on app, s1 and s2 */
 
   /* Accents */
   --accent: #ff4f7b; /* Rouge: the Clink brand colour */
