@@ -20,10 +20,10 @@ test("admin portal: own sign-in, forced password, change email and password, sep
   await p.goto("/admin");
   await expect(p).toHaveURL(/\/admin\/login/);
   await p.getByLabel("Admin email").fill(email);
-  await p.getByLabel("Password").fill("wrong-password-123");
+  await p.getByLabel("Password", { exact: true }).fill("wrong-password-123");
   await p.getByRole("button", { name: "Sign in to admin" }).click();
   await expect(p.getByText("That email and password don't match.")).toBeVisible();
-  await p.getByLabel("Password").fill("Temp-Admin-Pass-1");
+  await p.getByLabel("Password", { exact: true }).fill("Temp-Admin-Pass-1");
   await p.getByRole("button", { name: "Sign in to admin" }).click();
 
   // Temporary password: must choose one first; the API refuses until then.
@@ -53,7 +53,7 @@ test("admin portal: own sign-in, forced password, change email and password, sep
   await ctx.clearCookies();
   await p.goto("/admin/login");
   await p.getByLabel("Admin email").fill(newEmail);
-  await p.getByLabel("Password").fill("Boss-Own-Pass-2026");
+  await p.getByLabel("Password", { exact: true }).fill("Boss-Own-Pass-2026");
   await p.getByRole("button", { name: "Sign in to admin" }).click();
   await expect(p.getByRole("heading", { name: "Dashboard" })).toBeVisible({ timeout: 15000 });
 
