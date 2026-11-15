@@ -19,6 +19,7 @@ import {
   PaperPlaneRight,
   X,
   Coffee,
+  Pepper,
   Wine,
   ArrowBendUpLeft,
   Copy,
@@ -673,7 +674,7 @@ export function ChatScreen() {
                 <div className="display text-[28px] leading-[1.05]">
                   Say something.
                   <br />
-                  Or just send a <em>Clink</em>.
+                  Or just send a Clink.
                 </div>
                 <Link
                   href="/us"
@@ -792,7 +793,7 @@ export function ChatScreen() {
               {(
                 [
                   ["all", "Stickers"],
-                  ["spicy", "Spicy 🌶️"],
+                  ["spicy", "Spicy"],
                 ] as const
               ).map(([k, label]) => (
                 <button
@@ -802,7 +803,7 @@ export function ChatScreen() {
                   aria-selected={stickerTab === k}
                   onClick={() => setStickerTab(k)}
                   className={cn(
-                    "h-8 cursor-pointer rounded-full border-0 px-3 text-xs font-bold",
+                    "flex h-8 cursor-pointer items-center gap-1 rounded-full border-0 px-3 text-xs font-bold",
                     stickerTab === k
                       ? k === "spicy"
                         ? "bg-ember text-on-accent"
@@ -810,6 +811,7 @@ export function ChatScreen() {
                       : "bg-s2 text-muted",
                   )}
                 >
+                  {k === "spicy" && <Pepper size={14} weight="bold" aria-hidden />}
                   {label}
                 </button>
               ))}
@@ -842,7 +844,7 @@ export function ChatScreen() {
                     type="button"
                     onClick={() => sendSticker(id)}
                     aria-label={`Send sticker ${STICKER_LABEL.get(id)}`}
-                    className="press hover:bg-s2 flex aspect-square cursor-pointer items-center justify-center rounded-2xl border-0 bg-transparent p-0 transition-transform hover:scale-110"
+                    className="press hover:bg-s2 flex aspect-square cursor-pointer items-center justify-center rounded-2xl border-0 bg-transparent p-0"
                     style={{ ["--i" as string]: i }}
                   >
                     <StickerArt id={id} label={STICKER_LABEL.get(id) ?? ""} size={72} />
@@ -1159,11 +1161,9 @@ export function ChatScreen() {
       />
 
       <Sheet open={lookOpen} onOpenChange={setLookOpen} title="Customise chat" handle>
-        <div className="display text-[28px]">
-          Make it <em>yours</em>
-        </div>
+        <div className="display text-[28px]">Make it yours</div>
         <p className="text-muted m-0 text-sm">{partner.name} sees the same look.</p>
-        <div className="mono text-faint text-xs">BUBBLES</div>
+        <div className="text-muted text-sm font-semibold">Bubbles</div>
         <div className="grid grid-cols-4 gap-3" role="radiogroup" aria-label="Chat theme">
           {(Object.keys(CHAT_THEMES) as ChatTheme[]).map((k) => (
             <button
@@ -1176,8 +1176,8 @@ export function ChatScreen() {
             >
               <span
                 className={cn(
-                  "flex h-14 w-full items-end justify-end rounded-2xl p-1.5 transition-transform",
-                  look.theme === k && "scale-105 shadow-[0_0_0_2px_var(--accent)]",
+                  "flex h-14 w-full items-end justify-end rounded-2xl p-1.5",
+                  look.theme === k && "shadow-[0_0_0_2px_var(--accent)]",
                 )}
                 style={{ background: CHAT_THEMES[k].swatch }}
               >
@@ -1196,7 +1196,7 @@ export function ChatScreen() {
             </button>
           ))}
         </div>
-        <div className="mono text-faint text-xs">WALLPAPER</div>
+        <div className="text-muted text-sm font-semibold">Wallpaper</div>
         <div className="grid grid-cols-4 gap-3" role="radiogroup" aria-label="Chat wallpaper">
           {(Object.keys(WALLPAPERS) as Wallpaper[])
             .filter((k) => k !== "custom")
@@ -1211,8 +1211,8 @@ export function ChatScreen() {
               >
                 <span
                   className={cn(
-                    "bg-app block h-16 w-full rounded-2xl transition-transform",
-                    look.wallpaper === k && "scale-105 shadow-[0_0_0_2px_var(--accent)]",
+                    "bg-app block h-16 w-full rounded-2xl",
+                    look.wallpaper === k && "shadow-[0_0_0_2px_var(--accent)]",
                   )}
                   style={{ backgroundImage: WALLPAPERS[k].css, backgroundSize: wallpaperSize(k) }}
                 />
@@ -1341,8 +1341,8 @@ function ReactRow({ current, onPick }: { current: string | null; onPick: (e: str
             aria-label={on ? `Remove your ${e} reaction` : `React ${e}`}
             aria-pressed={on}
             className={cn(
-              "press flex aspect-square max-w-[52px] flex-1 cursor-pointer items-center justify-center rounded-full border-0 text-[22px] transition-transform",
-              on ? "bg-accent/30 scale-110" : "bg-s2",
+              "press flex aspect-square max-w-[52px] flex-1 cursor-pointer items-center justify-center rounded-full border-0 text-[22px]",
+              on ? "bg-accent/10 shadow-[inset_0_0_0_1.5px_var(--accent)]" : "bg-s2",
             )}
           >
             {e}

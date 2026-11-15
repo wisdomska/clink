@@ -57,17 +57,17 @@ export function OnThisDay() {
     >
       <Link
         href={`/chat/media/${data.id}`}
-        className="group border-line relative block h-44 overflow-hidden rounded-[28px] border"
+        className="group border-line rounded-card relative block h-44 overflow-hidden border"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`/api/media/${data.id}/view`}
           alt="A photo you shared"
-          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
         />
         <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
         <span className="absolute bottom-3 left-4 flex flex-col text-white">
-          <span className="mono text-[11px] tracking-wide opacity-80">ON THIS DAY</span>
+          <span className="text-sm font-medium text-white/85">On this day</span>
           <span className="display text-[22px] leading-tight">{data.label}</span>
         </span>
       </Link>

@@ -66,8 +66,7 @@ export function RitualCard() {
   return (
     <section
       aria-labelledby="ritual-h"
-      className="bg-s2 flex flex-none flex-col gap-3 rounded-[28px] px-4 py-5"
-      style={{ transform: "rotate(-1deg)" }}
+      className="rounded-card border-line bg-s1 flex flex-none flex-col gap-3 border px-4 py-5"
     >
       <div className="text-muted text-sm font-medium">Today&apos;s ritual, {when}</div>
       <h2 id="ritual-h" className="display m-0 text-[22px] leading-[1.15]">
@@ -75,14 +74,14 @@ export function RitualCard() {
       </h2>
       {mine && theirs ? (
         <div className="an-reveal grid grid-cols-2 gap-1.5">
-          <div className="bg-s1 flex flex-col gap-2 rounded-[20px_6px_6px_20px] p-3.5">
-            <span className="mono text-muted flex items-center gap-1.5 text-xs">
-              <PartnerMark who="a" /> YOU
+          <div className="bg-s2 flex flex-col gap-2 rounded-[14px] p-3.5">
+            <span className="text-muted flex items-center gap-1.5 text-xs font-semibold">
+              <PartnerMark who="a" /> You
             </span>
             <span className="text-base leading-[1.4]">{mine.answer}</span>
           </div>
-          <div className="bg-s1 flex flex-col gap-2 rounded-[6px_20px_20px_6px] p-3.5">
-            <span className="mono text-muted flex items-center gap-1.5 text-xs uppercase">
+          <div className="bg-s2 flex flex-col gap-2 rounded-[14px] p-3.5">
+            <span className="text-muted flex items-center gap-1.5 text-xs font-semibold">
               <PartnerMark who="b" /> {partner.name}
             </span>
             <span className="text-base leading-[1.4]">{theirs.answer}</span>

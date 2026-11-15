@@ -150,7 +150,7 @@ export function MediaComposer({
   };
 
   const toolBtn =
-    "press flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 bg-black/45 text-white backdrop-blur";
+    "press flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 bg-s2 text-text";
 
   return (
     <motion.div
@@ -268,7 +268,7 @@ export function MediaComposer({
                   className={cn(
                     "h-14 w-14 rounded-xl object-cover transition-transform",
                     it.filter === f.key
-                      ? "scale-105 outline-2 outline-offset-2 outline-[var(--accent)] outline-solid"
+                      ? "outline-2 outline-offset-2 outline-[var(--accent)] outline-solid"
                       : "",
                   )}
                   style={{ filter: f.css }}
@@ -293,7 +293,7 @@ export function MediaComposer({
               value={it.text}
               onChange={(e) => patch({ text: e.target.value })}
               placeholder="Say it on the photo. Drag to move."
-              className="w-full resize-none rounded-2xl border-0 bg-white/10 px-4 py-3 text-base text-white outline-none placeholder:text-white/50 focus-visible:shadow-none"
+              className="rounded-input border-line bg-s2 text-text placeholder:text-faint w-full resize-none border px-4 py-3 text-base outline-none focus-visible:shadow-none"
             />
             <div className="flex gap-2" role="radiogroup" aria-label="Text colour">
               {TEXT_COLOURS.map((c) => (
@@ -304,10 +304,11 @@ export function MediaComposer({
                   aria-checked={it.textColour === c}
                   aria-label={`Colour ${c}`}
                   onClick={() => patch({ textColour: c })}
-                  className="h-8 w-8 cursor-pointer rounded-full border-0 transition-transform"
+                  className="h-8 w-8 cursor-pointer rounded-full border-0 transition-shadow"
                   style={{
                     background: c,
-                    transform: it.textColour === c ? "scale(1.2)" : undefined,
+                    boxShadow:
+                      it.textColour === c ? "0 0 0 2px #000, 0 0 0 4px var(--accent)" : undefined,
                   }}
                 />
               ))}
@@ -327,7 +328,7 @@ export function MediaComposer({
               className={cn(
                 "block h-14 w-14 cursor-pointer overflow-hidden rounded-xl border-0 p-0 transition-transform",
                 i === active
-                  ? "scale-105 outline-2 outline-offset-2 outline-[var(--accent)] outline-solid"
+                  ? "outline-2 outline-offset-2 outline-[var(--accent)] outline-solid"
                   : "opacity-70",
               )}
             >
@@ -408,7 +409,7 @@ export function MediaComposer({
           maxLength={1000}
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
-          className="h-12 min-w-0 flex-1 rounded-full border-0 bg-white/10 px-4 text-base text-white outline-none placeholder:text-white/50 focus-visible:shadow-none"
+          className="border-line bg-s2 text-text placeholder:text-faint h-12 min-w-0 flex-1 rounded-full border px-4 text-base outline-none focus-visible:shadow-none"
         />
         <button
           type="submit"

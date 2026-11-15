@@ -141,7 +141,7 @@ export function MoodCard() {
   return (
     <section
       aria-labelledby="mood-h"
-      className="border-line bg-s1 flex flex-none flex-col gap-3 rounded-[28px] border p-4"
+      className="border-line bg-s1 rounded-card flex flex-none flex-col gap-3 border p-4"
     >
       <div className="flex items-baseline justify-between">
         <h2 id="mood-h" className="m-0 text-lg font-bold">
@@ -153,7 +153,7 @@ export function MoodCard() {
       {theirs ? (
         <div
           className={cn(
-            "flex items-center gap-3 rounded-2xl p-2.5 pr-3",
+            "flex items-center gap-3 rounded-[14px] p-2.5 pr-3",
             HARD.has(theirs.mood) ? "bg-danger/10" : "bg-s2",
           )}
         >
@@ -215,7 +215,7 @@ export function MoodCard() {
         <>
           {MOOD_GROUPS.map((g) => (
             <div key={g.label} className="flex flex-col gap-1.5">
-              <div className="mono text-faint text-[11px] tracking-wide uppercase">{g.label}</div>
+              <div className="text-faint text-xs font-semibold">{g.label}</div>
               <div
                 className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pt-0.5 pb-1"
                 role="radiogroup"
@@ -231,10 +231,12 @@ export function MoodCard() {
                       aria-checked={on}
                       disabled={busy}
                       onClick={() => choose(m)}
-                      whileTap={{ scale: 0.9, rotate: -6 }}
+                      whileTap={{ scale: 0.97 }}
                       className={cn(
-                        "an-rise flex w-[76px] flex-none cursor-pointer flex-col items-center gap-1 rounded-[22px] border-0 px-1 pt-2 pb-2 text-center text-[12px] leading-[1.15] font-semibold transition-colors",
-                        on ? "bg-accent/20 text-text" : "bg-s2 text-muted hover:bg-s3",
+                        "an-rise flex w-[76px] flex-none cursor-pointer flex-col items-center gap-1 rounded-[14px] border-0 px-1 pt-2 pb-2 text-center text-[12px] leading-[1.15] font-semibold transition-colors",
+                        on
+                          ? "bg-accent/10 text-text shadow-[inset_0_0_0_1.5px_var(--accent)]"
+                          : "bg-s2 text-muted hover:bg-s3",
                       )}
                       style={{ ["--i" as string]: i }}
                     >

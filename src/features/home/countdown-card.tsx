@@ -51,7 +51,7 @@ export function CountdownCard({ now }: { now: Date }) {
   return (
     <section
       aria-labelledby="cd-h"
-      className="border-line bg-s1 flex flex-none flex-col gap-3.5 rounded-[28px] border p-4"
+      className="border-line bg-s1 rounded-card flex flex-none flex-col gap-3.5 border p-4"
     >
       <div className="flex items-center justify-between gap-3">
         <h2 id="cd-h" className="m-0 text-lg font-bold">
@@ -59,11 +59,7 @@ export function CountdownCard({ now }: { now: Date }) {
             {next?.title ?? "Next visit"}
           </Link>
         </h2>
-        {next?.subtitle && (
-          <div className="mono text-muted truncate text-xs tracking-[.06em] uppercase">
-            {next.subtitle}
-          </div>
-        )}
+        {next?.subtitle && <div className="text-muted truncate text-sm">{next.subtitle}</div>}
       </div>
       {isLoading ? (
         <div className="an-skel rounded-flap bg-s2 h-[78px]" />

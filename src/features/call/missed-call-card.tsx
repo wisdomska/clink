@@ -75,7 +75,7 @@ export function MissedCallCard() {
           exit={{ opacity: 0, y: -10, height: 0 }}
           className="flex-none overflow-hidden"
         >
-          <div className="bg-danger/12 flex items-center gap-3 rounded-[22px] p-2.5 pl-3">
+          <div className="rounded-card border-danger/30 bg-danger/10 flex items-center gap-3 border p-2.5 pl-3">
             <span className="bg-danger/20 text-danger flex h-10 w-10 flex-none items-center justify-center rounded-full">
               <PhoneIncoming size={20} weight="fill" aria-hidden />
             </span>

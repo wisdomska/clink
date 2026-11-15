@@ -220,27 +220,18 @@ export function Bubble({
   const side = mine ? "self-end" : "self-start";
   const removed = Boolean(m.removed_at);
   if (m.type === "sensitive") {
-    // SAF-02: private media is only ever a blurred card in chat; it opens in After Dark.
+    // SAF-02: private media is only ever a covered card in chat; it opens in After Dark.
     return (
       <Link
         href={`/dark/view/${m.media_ids[0]}`}
         className={cn(
-          "press rounded-thumb text-text hover:text-text relative flex h-[120px] w-[180px] flex-col items-center justify-center gap-1 overflow-hidden",
+          "press rounded-thumb border-line bg-s2 text-text hover:text-text relative flex h-[120px] w-[180px] flex-col items-center justify-center gap-1 overflow-hidden border",
           side,
         )}
         aria-label="Private. Open in After Dark"
       >
-        <span
-          aria-hidden
-          className="absolute -inset-4"
-          style={{
-            background:
-              "radial-gradient(circle at 30% 40%,rgba(255,90,60,.55),transparent 45%),#251A21",
-            filter: "blur(14px)",
-          }}
-        />
-        <EyeSlash size={20} className="relative" aria-hidden />
-        <span className="relative text-xs font-medium">
+        <EyeSlash size={20} className="text-muted" aria-hidden />
+        <span className="text-xs font-medium">
           {mine ? "You sent something private" : "Something private"}
         </span>
       </Link>

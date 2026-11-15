@@ -45,7 +45,7 @@ export function CallLogRow({
   return (
     <div
       className={cn(
-        "bg-s1 border-line flex w-[min(78vw,300px)] items-center gap-3 rounded-[20px] border py-2.5 pr-2 pl-3",
+        "bg-s1 border-line rounded-card flex w-[min(78vw,300px)] items-center gap-3 border py-2.5 pr-2 pl-3",
         mine ? "self-end" : "self-start",
       )}
     >

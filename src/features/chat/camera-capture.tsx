@@ -153,7 +153,7 @@ export function CameraCapture({
           type="button"
           aria-label="Close camera"
           onClick={onClose}
-          className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 bg-black/40 text-white backdrop-blur"
+          className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 bg-black/60 text-white"
         >
           <X size={22} />
         </button>
@@ -193,7 +193,7 @@ export function CameraCapture({
           type="button"
           aria-label={recording ? "Stop recording" : "Take photo (hold for video)"}
           disabled={!ready}
-          whileTap={{ scale: 0.9 }}
+          whileTap={{ scale: 0.97 }}
           onPointerDown={() => {
             holdTimer.current = setTimeout(() => {
               holdTimer.current = null;
@@ -209,7 +209,7 @@ export function CameraCapture({
           }}
           onPointerCancel={() => recording && stopVideo()}
           onContextMenu={(e) => e.preventDefault()}
-          className="relative flex h-20 w-20 cursor-pointer touch-none items-center justify-center rounded-full border-0 bg-white/25 p-0 backdrop-blur select-none"
+          className="relative flex h-20 w-20 cursor-pointer touch-none items-center justify-center rounded-full border-[3px] border-solid border-white bg-transparent p-0 select-none"
         >
           <motion.span
             className={cn("block rounded-full", recording ? "bg-danger" : "bg-white")}
@@ -229,7 +229,7 @@ export function CameraCapture({
             setReady(false);
             setFacing((f) => (f === "user" ? "environment" : "user"));
           }}
-          className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border-0 bg-black/40 text-white backdrop-blur disabled:opacity-40"
+          className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border-0 bg-black/60 text-white disabled:opacity-40"
         >
           <CameraRotate size={24} />
         </button>

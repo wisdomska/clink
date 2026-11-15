@@ -61,9 +61,9 @@ export function DarkHub() {
   return (
     <main className="an-screen mx-auto flex min-h-dvh w-full max-w-[1100px] flex-col gap-5 px-4 pt-[calc(env(safe-area-inset-top)+4px)] pb-10 md:px-8 md:pt-8">
       <div className="flex h-11 items-center justify-between">
-        <div className="mono text-ember flex items-center gap-1.5 text-xs">
+        <div className="text-ember flex items-center gap-1.5 text-xs font-medium">
           <Moon size={16} aria-hidden />
-          PRIVATE · YOU AND {partner.name.toUpperCase()}
+          Private · you and {partner.name}
         </div>
         <Button
           variant="ghost"
@@ -77,9 +77,7 @@ export function DarkHub() {
         </Button>
       </div>
       <div>
-        <Display size={48}>
-          After <em>Dark</em>
-        </Display>
+        <Display size={48}>After Dark</Display>
         <Lead className="mt-1.5">Only you two can see this. The lower choice always wins.</Lead>
       </div>
       {s && !s.partner.optedIn && (
@@ -89,8 +87,12 @@ export function DarkHub() {
         </div>
       )}
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-10">
-        <div className="flex flex-col px-1.5 py-1" role="group" aria-label="Tiers">
-          {TIERS.map((t, i) => {
+        <div
+          className="rounded-card border-line bg-s1 divide-line flex flex-col divide-y self-start overflow-hidden border"
+          role="group"
+          aria-label="Tiers"
+        >
+          {TIERS.map((t) => {
             const st = s
               ? tierStatus(t, s.me.tiers, s.partner.tiers, s.me.verified, s.partner.verified)
               : "waiting_on_both";
@@ -112,37 +114,20 @@ export function DarkHub() {
                     return setVerifyOpen(true);
                   router.push("/dark/consent");
                 }}
-                className="press rounded-card border-line bg-s2 text-text relative flex h-[104px] cursor-pointer items-start justify-between gap-2.5 overflow-hidden border px-[18px] pt-4 pb-[26px] text-left"
-                style={{
-                  zIndex: i + 1,
-                  marginTop: i ? -22 : 0,
-                  transform: `rotate(${[-2, 1.5, -1, 2][i]}deg)`,
-                  boxShadow: "var(--shadow-matchbook)",
-                }}
+                className="text-text hover:bg-s2 flex min-h-[72px] cursor-pointer items-center justify-between gap-2.5 border-0 bg-transparent px-[18px] py-3.5 text-left transition-colors"
               >
-                <span className="display text-[28px]">{t}</span>
+                <span className="flex items-center gap-2.5">
+                  {open ? (
+                    <span className="bg-ember h-2.5 w-2.5 flex-none rounded-full" aria-hidden />
+                  ) : (
+                    <LockSimple size={16} className="text-faint flex-none" aria-hidden />
+                  )}
+                  <span className={`display text-[24px] ${open ? "" : "text-muted"}`}>{t}</span>
+                </span>
                 <span className="flex flex-col items-end gap-0.5 text-right">
                   <span className="text-sm font-medium">{STATUS_COPY[st]}</span>
                   {sub && <span className="text-muted text-xs">{sub}</span>}
                 </span>
-                <span
-                  aria-hidden
-                  className="border-line absolute inset-x-0 bottom-0 h-4 border-t"
-                  style={{
-                    background:
-                      "repeating-linear-gradient(90deg,rgba(255,90,60,.5) 0 2px,#251A21 2px 5px)",
-                  }}
-                />
-                {!open && (
-                  <span
-                    aria-hidden
-                    className="rounded-card absolute inset-0 border border-[rgba(251,243,246,.2)]"
-                    style={{
-                      background:
-                        "repeating-linear-gradient(115deg,rgba(251,243,246,.07) 0 2px,transparent 2px 16px)",
-                    }}
-                  />
-                )}
               </button>
             );
           })}
@@ -295,9 +280,7 @@ export function VerifySheet({
   });
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title="Age verification" handle>
-      <div className="display text-[28px] leading-[1.05]">
-        Unhinged needs you <em>both</em> verified
-      </div>
+      <div className="display text-[28px] leading-[1.05]">Unhinged needs you both verified</div>
       <div className="flex flex-col gap-3 text-base font-medium">
         <div className="flex items-center gap-2.5">
           <CheckCircle size={22} className="text-ember" aria-hidden /> Date of birth, done at

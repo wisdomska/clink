@@ -58,7 +58,7 @@ export function UsScreen() {
           onPointerLeave={wordUp}
           className="m-0 flex items-center gap-1.5 select-none"
         >
-          <LogoMark size={30} />
+          <LogoMark size={30} decorative />
           <Wordmark size={28} />
         </h1>
         <div className="flex gap-2">

@@ -14,7 +14,7 @@ export const useHold = create<{ holding: boolean; start: () => void; stop: () =>
 }));
 
 /**
- * HOME-03: both partners hold the Clink button at once. Screens glow and count
+ * HOME-03: both partners hold the Clink button at once. Screens light up and count
  * seconds held together. Lifting the finger anywhere, or "Let go", ends it.
  */
 export function HoldTogether() {
@@ -86,9 +86,7 @@ export function HoldTogether() {
       aria-labelledby="hold-title"
       className="an-fade-slow bg-app fixed inset-0 z-[32] flex touch-none flex-col items-center justify-center gap-5 px-6 text-center select-none"
       style={{
-        boxShadow: together
-          ? "inset 0 0 140px var(--accent-glow-45)"
-          : "inset 0 0 60px var(--accent-halo)",
+        boxShadow: together ? "inset 0 0 0 3px var(--accent)" : "inset 0 0 0 1px var(--line)",
         transition: "box-shadow 320ms ease",
       }}
     >
@@ -113,15 +111,7 @@ export function HoldTogether() {
         />
       </div>
       <div id="hold-title" className="display text-[28px]">
-        {together ? (
-          <>
-            Holding <em>together</em>
-          </>
-        ) : (
-          <>
-            Hold <em>on</em>
-          </>
-        )}
+        {together ? <>Holding together</> : <>Hold on</>}
       </div>
       <div className="mono text-accent text-[64px]" aria-live="off">
         {mm}:{ss}

@@ -106,11 +106,7 @@ export function CountdownsScreen() {
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <h2 className="m-0 text-lg font-bold">{c.title}</h2>
-                    {c.subtitle && (
-                      <div className="mono text-muted mt-0.5 text-xs tracking-[.06em] uppercase">
-                        {c.subtitle}
-                      </div>
-                    )}
+                    {c.subtitle && <div className="text-muted mt-0.5 text-sm">{c.subtitle}</div>}
                   </div>
                   <IconButton label={`Remove ${c.title}`} dim={40} onClick={() => remove(c.id!)}>
                     <Trash size={18} />
@@ -144,7 +140,7 @@ export function CountdownsScreen() {
       )}
       <Sheet open={open} onOpenChange={setOpen} title="New countdown" handle>
         <Display as="h2" size={28}>
-          What are we <em>counting</em> to?
+          What are we counting to?
         </Display>
         <div>
           <Label htmlFor="cd-title">Name</Label>

@@ -75,13 +75,13 @@ function RoundBtn({
         type="button"
         aria-label={label}
         aria-pressed={on}
-        whileTap={{ scale: 0.9 }}
+        whileTap={{ scale: 0.97 }}
         onClick={onClick}
         className={cn(
           "flex h-16 w-16 cursor-pointer items-center justify-center rounded-full border-0 text-white",
           tone === "danger" && "bg-[#FF3B30]",
           tone === "go" && "bg-[#34C759]",
-          tone === "glass" && (on ? "bg-white text-black" : "bg-white/15 backdrop-blur-md"),
+          tone === "glass" && (on ? "bg-white text-black" : "bg-s3"),
         )}
       >
         {children}
@@ -122,7 +122,7 @@ export function CallScreen({
       <motion.div
         role="status"
         aria-label={`On a call with ${partnerName}`}
-        className="fixed top-[calc(env(safe-area-inset-top)+8px)] left-1/2 z-[90] flex -translate-x-1/2 items-center gap-1 rounded-full bg-[#34C759] p-1 pl-1 text-white shadow-[0_10px_30px_-8px_rgba(52,199,89,.7)]"
+        className="fixed top-[calc(env(safe-area-inset-top)+8px)] left-1/2 z-[90] flex -translate-x-1/2 items-center gap-1 rounded-full bg-[#34C759] p-1 pl-1 text-white shadow-[0_8px_24px_rgba(0,0,0,.35)]"
         initial={{ y: -40, opacity: 0.01 }}
         animate={{ y: 0, opacity: 1 }}
       >
@@ -167,13 +167,9 @@ export function CallScreen({
       role="dialog"
       aria-modal="true"
       aria-label={`${call.video ? "Video" : "Voice"} call with ${partnerName}`}
-      className="fixed inset-0 z-[90] flex flex-col overflow-hidden text-white"
+      className="bg-app fixed inset-0 z-[90] flex flex-col overflow-hidden text-white"
       initial={{ opacity: 0.01, scale: 1.03 }}
       animate={{ opacity: 1, scale: 1 }}
-      style={{
-        background:
-          "radial-gradient(120% 70% at 50% 0%, color-mix(in oklab, var(--accent) 38%, #0d0b10), #0d0b10 70%)",
-      }}
     >
       <audio ref={audioRef} autoPlay />
       {call.phase !== "incoming" && call.phase !== "ended" && (
@@ -181,7 +177,7 @@ export function CallScreen({
           type="button"
           aria-label="Minimise call"
           onClick={() => setMini(true)}
-          className="absolute top-[calc(env(safe-area-inset-top)+12px)] left-4 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 bg-white/15 text-white backdrop-blur-md"
+          className="bg-s3 absolute top-[calc(env(safe-area-inset-top)+12px)] left-4 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 text-white"
         >
           <CaretDown size={22} weight="bold" />
         </button>
@@ -205,7 +201,7 @@ export function CallScreen({
                 : { scale: 1 }
             }
             transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-            className="rounded-full shadow-[0_20px_60px_-10px_var(--accent)]"
+            className="rounded-full"
           >
             <Avatar
               name={partnerName}
@@ -244,7 +240,7 @@ export function CallScreen({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             className={cn(
-              "absolute overflow-hidden rounded-[22px] shadow-[0_10px_30px_rgba(0,0,0,.5)]",
+              "absolute overflow-hidden rounded-[14px] shadow-[0_8px_24px_rgba(0,0,0,.35)]",
               live
                 ? "top-[calc(env(safe-area-inset-top)+16px)] right-4 h-44 w-28 cursor-grab"
                 : "inset-0 rounded-none opacity-40",

@@ -1,7 +1,17 @@
 "use client";
 import { useState } from "react";
 import { motion } from "motion/react";
-import { PencilSimple } from "@phosphor-icons/react";
+import {
+  Books,
+  ChatCircle,
+  CookingPot,
+  Laptop,
+  Leaf,
+  Moon,
+  PencilSimple,
+  Sparkle,
+  type Icon,
+} from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
 import { Avatar } from "@/components/ui/avatar";
 import { Sheet } from "@/components/ui/sheet";
@@ -14,12 +24,12 @@ import { feedback } from "@/lib/feedback";
 import { useAmbient } from "./ambient";
 import { useOpenPartner } from "@/features/partner/partner-sheet";
 
-const STATUSES: Array<{ key: PresenceStatus; emoji: string }> = [
-  { key: "free", emoji: "🌿" },
-  { key: "studying", emoji: "📚" },
-  { key: "cooking", emoji: "🍳" },
-  { key: "working", emoji: "💻" },
-  { key: "sleeping", emoji: "😴" },
+const STATUSES: Array<{ key: PresenceStatus; icon: Icon }> = [
+  { key: "free", icon: Leaf },
+  { key: "studying", icon: Books },
+  { key: "cooking", icon: CookingPot },
+  { key: "working", icon: Laptop },
+  { key: "sleeping", icon: Moon },
 ];
 const SUGGESTIONS = [
   "at the gym",
@@ -38,12 +48,12 @@ function ago(iso: string | null, now: Date): string {
   return h < 24 ? `away · ${h} h` : "away";
 }
 
-function emojiFor(s: string) {
-  return STATUSES.find((x) => x.key === s)?.emoji ?? (s.startsWith("custom:") ? "💬" : "");
+function iconFor(s: string): Icon | null {
+  return STATUSES.find((x) => x.key === s)?.icon ?? (s.startsWith("custom:") ? ChatCircle : null);
 }
 
 /**
- * The Us hero (HOME-04): both of you, big, side by side on a soft glow. A
+ * The Us hero (HOME-04): both of you, big, side by side on one card. A
  * heartbeat line between you pulses when you're both here and goes flat and
  * dim when one of you is away. Tap yourself to set a status, or write your own.
  */
@@ -62,14 +72,14 @@ export function PresencePair({ now }: { now: Date }) {
       ? statusLabel(presence.status)
       : ago(presence.lastSeen, now);
 
-  const pill = (text: string, emoji: string, live: boolean) => (
+  const pill = (text: string, PillIcon: Icon | null, live: boolean) => (
     <span
       className={cn(
         "inline-flex max-w-full items-center gap-1 truncate rounded-full px-2.5 py-1 text-xs font-semibold",
-        live ? "bg-white/10 text-white" : "bg-black/20 text-white/60",
+        live ? "bg-s3 text-text" : "bg-s2 text-muted",
       )}
     >
-      {emoji && <span aria-hidden>{emoji}</span>}
+      {PillIcon && <PillIcon size={13} weight="bold" aria-hidden className="flex-none" />}
       <span className="truncate">{text}</span>
     </span>
   );
@@ -78,20 +88,16 @@ export function PresencePair({ now }: { now: Date }) {
     <>
       <section
         aria-label="You two"
-        className="relative flex-none overflow-hidden rounded-[30px] px-4 pt-5 pb-4"
-        style={{
-          background:
-            "radial-gradient(90% 80% at 15% 0%, color-mix(in oklab, var(--partner-a) 30%, transparent), transparent 60%), radial-gradient(90% 80% at 85% 100%, color-mix(in oklab, var(--partner-b) 24%, transparent), transparent 60%), linear-gradient(160deg, var(--surface-2), var(--surface-1))",
-        }}
+        className="rounded-card border-line bg-s1 relative flex-none overflow-hidden border px-4 pt-5 pb-4"
       >
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="press flex min-w-0 cursor-pointer flex-col items-center gap-2 border-0 bg-transparent text-white"
+            className="press text-text flex min-w-0 cursor-pointer flex-col items-center gap-2 border-0 bg-transparent"
             aria-label={`You, ${statusLabel(myStatus)}. Change your status`}
           >
-            <motion.div whileHover={{ rotate: -4, scale: 1.04 }} className="relative">
+            <div className="relative">
               <Avatar
                 name={me.name}
                 side="me"
@@ -100,14 +106,14 @@ export function PresencePair({ now }: { now: Date }) {
                 photoUrl={me.avatarUrl}
                 icon={me.avatarIcon}
               />
-              <span className="bg-accent text-on-accent absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full shadow-md">
+              <span className="bg-accent text-on-accent absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full shadow-[0_0_0_3px_var(--surface-1)]">
                 <PencilSimple size={14} weight="bold" aria-hidden />
               </span>
-            </motion.div>
+            </div>
             <span className="text-[15px] font-bold">You</span>
             {pill(
               beHere ? "just here" : statusLabel(myStatus),
-              beHere ? "✨" : emojiFor(myStatus),
+              beHere ? Sparkle : iconFor(myStatus),
               true,
             )}
           </button>
@@ -136,7 +142,7 @@ export function PresencePair({ now }: { now: Date }) {
           <button
             type="button"
             onClick={openPartner}
-            className="press flex min-w-0 cursor-pointer flex-col items-center gap-2 border-0 bg-transparent p-0 text-white"
+            className="press text-text flex min-w-0 cursor-pointer flex-col items-center gap-2 border-0 bg-transparent p-0"
           >
             <div className="relative">
               <Avatar
@@ -151,7 +157,7 @@ export function PresencePair({ now }: { now: Date }) {
               {online && (
                 <span
                   aria-hidden
-                  className="an-dot absolute right-1 bottom-1 h-4 w-4 rounded-full bg-[#34C759] shadow-[0_0_0_3px_var(--surface-2)]"
+                  className="an-dot absolute right-1 bottom-1 h-4 w-4 rounded-full bg-[#34C759] shadow-[0_0_0_3px_var(--surface-1)]"
                 />
               )}
             </div>
@@ -159,7 +165,7 @@ export function PresencePair({ now }: { now: Date }) {
             <span className="sr-only">Open {partner.name}&apos;s profile.</span>
             {pill(
               theirStatus,
-              online && !asleep ? emojiFor(presence.status) : asleep ? "😴" : "",
+              online && !asleep ? iconFor(presence.status) : asleep ? Moon : null,
               online,
             )}
           </button>
@@ -168,11 +174,11 @@ export function PresencePair({ now }: { now: Date }) {
 
       <Sheet open={open} onOpenChange={setOpen} title="Your status" handle>
         <Display as="h2" size={28}>
-          What are you <em>up to</em>?
+          What are you up to?
         </Display>
         <p className="text-muted m-0 text-sm">{partner.name} sees this beside your face on Us.</p>
         <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Status">
-          {STATUSES.map(({ key, emoji }) => (
+          {STATUSES.map(({ key, icon: StatusIcon }) => (
             <button
               key={key}
               type="button"
@@ -187,7 +193,7 @@ export function PresencePair({ now }: { now: Date }) {
                 myStatus === key ? "bg-accent text-on-accent" : "bg-s2 text-text",
               )}
             >
-              <span aria-hidden>{emoji}</span>
+              <StatusIcon size={16} weight="bold" aria-hidden />
               {key}
             </button>
           ))}

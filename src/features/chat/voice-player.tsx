@@ -2,7 +2,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { Play, Pause } from "@phosphor-icons/react";
-import { useReducedMotion } from "@/lib/feedback";
 
 const SPEEDS = [1, 1.5, 2] as const;
 const BARS = 30;
@@ -13,8 +12,7 @@ function fmt(s: number) {
 }
 
 /**
- * CHAT-02 playback. The waveform fills as it plays, the bars near the
- * playhead dance, and the play button breathes while audio runs.
+ * CHAT-02 playback. The waveform fills as it plays.
  * 1x / 1.5x / 2x. Fixed width so nothing ever spills past the bubble.
  */
 export function VoicePlayer({
@@ -33,7 +31,6 @@ export function VoicePlayer({
   const [t, setT] = useState(0);
   const [meta, setMeta] = useState(0);
   const [speed, setSpeed] = useState<(typeof SPEEDS)[number]>(1);
-  const reduced = useReducedMotion();
   const raw =
     waveform && waveform.length
       ? waveform
@@ -96,10 +93,8 @@ export function VoicePlayer({
         type="button"
         aria-label={playing ? "Pause voice note" : "Play voice note"}
         onClick={() => (playing ? audio.current?.pause() : void audio.current?.play())}
-        whileTap={{ scale: 0.88 }}
-        animate={playing && !reduced ? { scale: [1, 1.08, 1] } : { scale: 1 }}
-        transition={playing ? { duration: 1.1, repeat: Infinity, ease: "easeInOut" } : {}}
-        className="bg-accent text-on-accent flex h-10 w-10 flex-none cursor-pointer items-center justify-center rounded-full border-0 shadow-[0_6px_16px_-6px_var(--accent)]"
+        whileTap={{ scale: 0.97 }}
+        className="bg-accent text-on-accent flex h-10 w-10 flex-none cursor-pointer items-center justify-center rounded-full border-0"
       >
         {playing ? (
           <Pause size={17} weight="fill" />
@@ -123,24 +118,15 @@ export function VoicePlayer({
         {bars.map((h, i) => {
           const base = Math.max(4, Math.round((h / 100) * 28));
           const played = i < head;
-          const near = playing && !reduced && Math.abs(i - head) <= 2;
           return (
-            <motion.span
+            <span
               key={i}
-              className="block min-w-[2px] flex-1 rounded-full"
-              animate={{
-                height: near ? [base, Math.min(32, base * 1.6), base] : base,
+              className="block min-w-[2px] flex-1 rounded-full transition-colors duration-150"
+              style={{
+                height: base,
                 backgroundColor:
                   played || (playing && i === head) ? "var(--accent)" : "var(--text-faint)",
               }}
-              transition={
-                near
-                  ? {
-                      height: { duration: 0.45, repeat: Infinity, delay: (i % 3) * 0.08 },
-                      backgroundColor: { duration: 0.15 },
-                    }
-                  : { duration: 0.2 }
-              }
             />
           );
         })}

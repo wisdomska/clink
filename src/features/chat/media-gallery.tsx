@@ -39,9 +39,7 @@ export function MediaGallery() {
         <IconButton label="Back" onClick={() => router.push("/chat")}>
           <ArrowLeft size={20} />
         </IconButton>
-        <Display size={28}>
-          Photos and <em>videos</em>
-        </Display>
+        <Display size={28}>Photos and videos</Display>
       </div>
       {isLoading ? (
         <div className="grid grid-cols-3 gap-1 md:grid-cols-5">
