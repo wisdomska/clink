@@ -1,61 +1,58 @@
 "use client";
-import { useEffect, useState } from "react";
-import { ArrowsClockwise } from "@phosphor-icons/react";
-import { LoadingDots } from "@/components/ui/spinner";
+import { useEffect } from "react";
 
-/** Registers the service worker and shows the update-available banner. */
+/**
+ * Registers the service worker and keeps Clink current without asking:
+ * new versions install and take over on their own (skipWaiting), so a
+ * refresh always shows the latest. An open tab isn't reloaded under you;
+ * it switches over quietly the next time you come back to the app.
+ */
 export function ServiceWorker() {
-  const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
-  const [updating, setUpdating] = useState(false);
   useEffect(() => {
     if (!("serviceWorker" in navigator) || process.env.NODE_ENV !== "production") return;
-    // Only reload when a new worker replaces an existing one (an update the user accepted).
-    // The very first install also fires controllerchange (clientsClaim) and must not reload.
-    let reloading = false;
     let hadController = Boolean(navigator.serviceWorker.controller);
+    let pending = false;
+    const reloadIfPending = () => {
+      if (pending && document.visibilityState === "visible") window.location.reload();
+    };
     navigator.serviceWorker.addEventListener("controllerchange", () => {
+      // The very first install also fires this; nothing to refresh then.
       if (!hadController) {
         hadController = true;
         return;
       }
-      if (reloading) return;
-      reloading = true;
-      window.location.reload();
+      pending = true;
+      if (document.visibilityState === "hidden") window.location.reload();
     });
+    document.addEventListener("visibilitychange", reloadIfPending);
+
+    // A stale tab can ask for code the new version no longer has: reload once.
+    const onChunkError = (e: PromiseRejectionEvent | ErrorEvent) => {
+      const msg = String(("reason" in e ? e.reason?.message : e.message) ?? "");
+      if (/ChunkLoadError|Loading chunk|Failed to fetch dynamically imported module/.test(msg)) {
+        if (!sessionStorage.getItem("clink.chunkReload")) {
+          sessionStorage.setItem("clink.chunkReload", "1");
+          window.location.reload();
+        }
+      }
+    };
+    window.addEventListener("unhandledrejection", onChunkError);
+    window.addEventListener("error", onChunkError);
+
+    let timer: ReturnType<typeof setInterval> | undefined;
     navigator.serviceWorker.register("/sw.js", { scope: "/" }).then((reg) => {
-      if (reg.waiting && navigator.serviceWorker.controller) setWaiting(reg.waiting);
-      reg.addEventListener("updatefound", () => {
-        const sw = reg.installing;
-        sw?.addEventListener("statechange", () => {
-          if (sw.state === "installed" && navigator.serviceWorker.controller) setWaiting(sw);
-        });
+      void reg.update().catch(() => undefined);
+      timer = setInterval(() => reg.update().catch(() => undefined), 15 * 60 * 1000);
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") void reg.update().catch(() => undefined);
       });
-      const t = setInterval(() => reg.update().catch(() => undefined), 30 * 60 * 1000);
-      return () => clearInterval(t);
     });
+    return () => {
+      if (timer) clearInterval(timer);
+      document.removeEventListener("visibilitychange", reloadIfPending);
+      window.removeEventListener("unhandledrejection", onChunkError);
+      window.removeEventListener("error", onChunkError);
+    };
   }, []);
-  if (!waiting) return null;
-  return (
-    <div
-      role="status"
-      className="an-slide-down rounded-card border-line bg-s1 fixed inset-x-3 top-[calc(env(safe-area-inset-top)+8px)] z-[75] mx-auto flex max-w-[480px] items-center gap-3 border px-4 py-3"
-      style={{ boxShadow: "var(--shadow-float)" }}
-    >
-      <ArrowsClockwise size={20} className="text-accent" aria-hidden />
-      <span className="flex-1 text-sm font-medium">A fresh version of Clink is ready.</span>
-      <button
-        type="button"
-        onClick={() => {
-          setUpdating(true);
-          waiting.postMessage({ type: "SKIP_WAITING" });
-          // If the new version doesn't take over quickly, reload anyway.
-          setTimeout(() => window.location.reload(), 4000);
-        }}
-        disabled={updating}
-        className="press bg-accent text-on-accent h-11 cursor-pointer rounded-full border-0 px-4 text-sm font-bold"
-      >
-        {updating ? <LoadingDots /> : "Update"}
-      </button>
-    </div>
-  );
+  return null;
 }

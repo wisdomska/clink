@@ -9,7 +9,7 @@ export interface Appearance {
 }
 
 export const ACCENTS = [
-  ["#E68AF5", "Clink pink"],
+  ["#E68AF5", "Pink"],
   ["#FF8A7A", "Coral"],
   ["#FFC857", "Gold"],
   ["#5ED3B3", "Mint"],

@@ -22,7 +22,8 @@ const NEVER_CACHE = [
 
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
-  skipWaiting: false,
+  // New versions take over straight away: a refresh always gets the latest.
+  skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: [
