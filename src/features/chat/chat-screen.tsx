@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Phone,
   Camera,
+  Palette,
   VideoCamera,
   Plus,
   Sticker,
@@ -43,6 +44,7 @@ import { Bubble, STICKER_LABEL } from "./bubbles";
 import { StickerArt, STICKER_CAPTION } from "./sticker-art";
 import { MediaComposer } from "./media-composer";
 import { LiveWave } from "./live-wave";
+import { CHAT_THEMES, WALLPAPERS, wallpaperSize, type ChatTheme, type Wallpaper } from "./themes";
 import { CameraCapture } from "./camera-capture";
 import { useCall } from "@/features/call/call-provider";
 import { MissedCallCard } from "@/features/call/missed-call-card";
@@ -76,7 +78,28 @@ function dayLabel(d: Date, tz: string) {
 }
 
 export function ChatScreen() {
-  const { me, partner, presence, coupleId, send, discreet } = useCouple();
+  const { me, partner, presence, coupleId, send, discreet, chatTheme, chatWallpaper } = useCouple();
+  const [look, setLook] = useState({
+    theme: (chatTheme in CHAT_THEMES ? chatTheme : "clink") as ChatTheme,
+    wallpaper: (chatWallpaper in WALLPAPERS ? chatWallpaper : "none") as Wallpaper,
+  });
+  const [lookOpen, setLookOpen] = useState(false);
+  useCoupleEvent("chat.look", (p) =>
+    setLook((cur) => ({
+      theme: (String(p.theme) in CHAT_THEMES ? p.theme : cur.theme) as ChatTheme,
+      wallpaper: (String(p.wallpaper) in WALLPAPERS ? p.wallpaper : cur.wallpaper) as Wallpaper,
+    })),
+  );
+  const saveLook = async (next: { theme: ChatTheme; wallpaper: Wallpaper }) => {
+    setLook(next);
+    haptic("select");
+    send("chat.look", next);
+    await fetch("/api/couple", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_theme: next.theme, chat_wallpaper: next.wallpaper }),
+    });
+  };
   const now = useCoupleNow(30_000);
   const params = useSearchParams();
   const { messages, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, upsertLocal } =
@@ -465,6 +488,9 @@ export function ChatScreen() {
             <h1 className="m-0 text-lg font-bold">{partner.name}</h1>
             <div className="text-muted truncate text-[13px]">{sub}</div>
           </div>
+          <IconButton label="Customise chat" tone="surface" onClick={() => setLookOpen(true)}>
+            <Palette size={20} />
+          </IconButton>
           <IconButton label="Call" tone="surface" onClick={() => startCall(false)}>
             <Phone size={20} />
           </IconButton>
@@ -480,7 +506,16 @@ export function ChatScreen() {
           ref={listRef}
           onScroll={onScroll}
           className="no-scrollbar relative flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-4"
-          style={{ filter: blurred ? "blur(14px)" : undefined }}
+          style={
+            {
+              filter: blurred ? "blur(14px)" : undefined,
+              backgroundImage: WALLPAPERS[look.wallpaper].css,
+              backgroundSize: wallpaperSize(look.wallpaper),
+              backgroundAttachment: "local",
+              "--bubble-out": CHAT_THEMES[look.theme].bg,
+              "--bubble-out-fg": CHAT_THEMES[look.theme].fg,
+            } as React.CSSProperties
+          }
           onClick={() => blurred && setBlurred(false)}
           aria-live="polite"
         >
@@ -569,6 +604,11 @@ export function ChatScreen() {
                     replyTarget={m.reply_to ? byId.get(m.reply_to) : undefined}
                     onLongPress={(x) => !x.local && setActionFor(x)}
                     onSwipeReply={(x) => !x.local && setReplyTo(x)}
+                    onDoubleTap={(x) => {
+                      if (x.local) return;
+                      haptic("select");
+                      void react(x, "❤️");
+                    }}
                     onRetry={() => void flush()}
                   />
                   {lastMine?.id === m.id && (
@@ -870,6 +910,68 @@ export function ChatScreen() {
             </div>
           </>
         )}
+      </Sheet>
+
+      <Sheet open={lookOpen} onOpenChange={setLookOpen} title="Customise chat" handle>
+        <div className="display text-[28px]">
+          Make it <em>yours</em>
+        </div>
+        <p className="text-muted m-0 text-sm">{partner.name} sees the same look.</p>
+        <div className="mono text-faint text-xs">BUBBLES</div>
+        <div className="grid grid-cols-4 gap-3" role="radiogroup" aria-label="Chat theme">
+          {(Object.keys(CHAT_THEMES) as ChatTheme[]).map((k) => (
+            <button
+              key={k}
+              type="button"
+              role="radio"
+              aria-checked={look.theme === k}
+              onClick={() => void saveLook({ ...look, theme: k })}
+              className="flex cursor-pointer flex-col items-center gap-1.5 border-0 bg-transparent p-0 text-xs font-medium text-[var(--text-muted)]"
+            >
+              <span
+                className={cn(
+                  "flex h-14 w-full items-end justify-end rounded-2xl p-1.5 transition-transform",
+                  look.theme === k && "scale-105 shadow-[0_0_0_2px_var(--accent)]",
+                )}
+                style={{ background: CHAT_THEMES[k].swatch }}
+              >
+                <span
+                  className="rounded-[10px_10px_3px_10px] px-2 py-0.5 text-[10px] font-bold"
+                  style={{
+                    background: CHAT_THEMES[k].bg,
+                    color: CHAT_THEMES[k].fg,
+                    boxShadow: "0 0 0 1px rgba(255,255,255,.15)",
+                  }}
+                >
+                  hey
+                </span>
+              </span>
+              {CHAT_THEMES[k].label}
+            </button>
+          ))}
+        </div>
+        <div className="mono text-faint text-xs">WALLPAPER</div>
+        <div className="grid grid-cols-4 gap-3" role="radiogroup" aria-label="Chat wallpaper">
+          {(Object.keys(WALLPAPERS) as Wallpaper[]).map((k) => (
+            <button
+              key={k}
+              type="button"
+              role="radio"
+              aria-checked={look.wallpaper === k}
+              onClick={() => void saveLook({ ...look, wallpaper: k })}
+              className="flex cursor-pointer flex-col items-center gap-1.5 border-0 bg-transparent p-0 text-xs font-medium text-[var(--text-muted)]"
+            >
+              <span
+                className={cn(
+                  "bg-app block h-16 w-full rounded-2xl transition-transform",
+                  look.wallpaper === k && "scale-105 shadow-[0_0_0_2px_var(--accent)]",
+                )}
+                style={{ backgroundImage: WALLPAPERS[k].css, backgroundSize: wallpaperSize(k) }}
+              />
+              {WALLPAPERS[k].label}
+            </button>
+          ))}
+        </div>
       </Sheet>
 
       {camera && (

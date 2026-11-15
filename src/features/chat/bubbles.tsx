@@ -97,8 +97,10 @@ export function Bubble({
   onLongPress,
   onSwipeReply,
   onRetry,
+  onDoubleTap,
   pos = "single",
 }: {
+  onDoubleTap?: (m: UiMessage) => void;
   pos?: GroupPos;
   m: UiMessage;
   mine: boolean;
@@ -166,6 +168,7 @@ export function Bubble({
       if (press.current.t) clearTimeout(press.current.t);
       if (el.current) el.current.style.transform = "";
     },
+    onDoubleClick: () => onDoubleTap?.(m),
     onContextMenu: (e: React.MouseEvent) => {
       e.preventDefault();
       onLongPress(m);
@@ -377,7 +380,10 @@ export function Bubble({
           {m.body}
           <span
             aria-hidden
-            className="mono text-faint relative top-[5px] float-right ml-2.5 text-[11px] leading-none select-none"
+            className={cn(
+              "mono relative top-[5px] float-right ml-2.5 text-[11px] leading-none select-none",
+              mine ? "opacity-60" : "text-faint",
+            )}
           >
             {m.local === "sending" ? "..." : clock(m.sent_at)}
           </span>

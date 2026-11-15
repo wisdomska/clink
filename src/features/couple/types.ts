@@ -24,6 +24,8 @@ export interface CoupleContextValue {
   ritualTime: string;
   ritualProposal: { time: string; byMe: boolean } | null;
   darkVisible: boolean;
+  chatTheme: string;
+  chatWallpaper: string;
   /** Both partners have set up After Dark. */
   darkBoth: boolean;
   discreet: boolean;
