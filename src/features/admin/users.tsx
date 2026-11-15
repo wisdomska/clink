@@ -51,20 +51,20 @@ export function AdminUsers() {
       reason: "required" as const,
     },
     unsuspend: {
-      title: "Lift the suspension?",
-      body: "They can sign in again.",
-      confirm: "Lift it",
+      title: "Lift this suspension?",
+      body: "They can sign in again straight away.",
+      confirm: "Lift suspension",
     },
     force_unlink: {
       title: "Force unlink this couple?",
-      body: "Both go back to linking. Private media is wiped for both within the hour.",
+      body: "Both people are unlinked and go back to the linking screen. Private media is wiped for both within an hour.",
       confirm: "Force unlink",
       danger: true,
       reason: "required" as const,
     },
     delete: {
       title: "Delete this account?",
-      body: "Everything they made is removed. This can't be undone.",
+      body: "Their account and everything they made are removed. This can't be undone.",
       confirm: "Delete for good",
       danger: true,
       reason: "required" as const,
@@ -77,10 +77,10 @@ export function AdminUsers() {
     if (!answer) return;
     try {
       await adminFetch(`/api/admin/users/${u.id}`, { body: { action, reason: answer.reason } });
-      toast.ok("Done. Logged in the audit trail.");
+      toast.ok("Saved. Added to the audit log.");
       void qc.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (e) {
-      toast.err(e instanceof Error ? e.message : "Failed.");
+      toast.err(e instanceof Error ? e.message : "Couldn't do that. Try again.");
     }
   }
 
@@ -88,7 +88,8 @@ export function AdminUsers() {
     <div className="an-screen flex flex-col gap-5">
       <Display size={36}>Users and couples</Display>
       <p className="text-muted m-0 text-sm">
-        Open a person for their full profile. Reading a conversation needs a reason and is logged.
+        Open a person to see their full profile. Reading a conversation needs a reason, and every
+        look is logged.
       </p>
       <form
         className="rounded-input border-line bg-s2 focus-within:border-accent flex max-w-[520px] items-center gap-2 border px-4"
@@ -176,7 +177,9 @@ export function AdminUsers() {
                   <td className="text-muted px-4 py-3 text-xs">
                     {u.coupleId ? `Linked ${u.linkedAt?.slice(0, 10)}` : "Not linked"}
                   </td>
-                  <td className="px-4 py-3 text-xs">{u.ageVerified ? "Declared" : "DOB only"}</td>
+                  <td className="px-4 py-3 text-xs">
+                    {u.ageVerified ? "Declared 18+" : "Birth date only"}
+                  </td>
                   <td className="px-4 py-3 text-xs">
                     {u.deleted ? (
                       <span className="text-danger">Deleting</span>
@@ -192,7 +195,7 @@ export function AdminUsers() {
                     <div className="flex flex-wrap justify-end gap-1.5">
                       {u.suspended ? (
                         <Button size="xs" variant="ghost" onClick={() => act(u, "unsuspend")}>
-                          Unsuspend
+                          Lift suspension
                         </Button>
                       ) : (
                         <Button size="xs" variant="ghost" onClick={() => act(u, "suspend")}>
@@ -217,7 +220,9 @@ export function AdminUsers() {
           </table>
           {!data?.users.length && (
             <p className="text-muted m-0 px-4 py-8 text-center text-sm">
-              {search ? `No accounts match "${search}".` : "No accounts yet."}
+              {search
+                ? `No accounts match "${search}". Try part of an email or name.`
+                : "No accounts yet. People show up here once they sign up."}
             </p>
           )}
         </div>

@@ -1,4 +1,7 @@
 "use client";
+/** Thrown by adminFetch. Any one nobody catches is shown as a toast by the admin rail. */
+export class AdminFetchError extends Error {}
+
 export async function adminFetch<T>(
   url: string,
   init?: { method?: string; body?: unknown },
@@ -14,7 +17,7 @@ export async function adminFetch<T>(
       : undefined,
   );
   const d = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(d.message ?? "Request failed.");
+  if (!r.ok) throw new AdminFetchError(d.message ?? "Couldn't do that. Try again.");
   return d as T;
 }
 export const fmtBytes = (n: number) =>

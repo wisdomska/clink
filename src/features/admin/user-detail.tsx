@@ -221,20 +221,20 @@ export function UserDetail({ id }: { id: string }) {
         reason: "required" as const,
       },
       unsuspend: {
-        title: "Lift the suspension?",
-        body: "They can sign in again.",
-        confirm: "Lift it",
+        title: "Lift this suspension?",
+        body: "They can sign in again straight away.",
+        confirm: "Lift suspension",
       },
       force_unlink: {
         title: "Force unlink this couple?",
-        body: "Both go back to linking. Private media is wiped for both within the hour.",
+        body: "Both people are unlinked and go back to the linking screen. Private media is wiped for both within an hour.",
         confirm: "Force unlink",
         danger: true,
         reason: "required" as const,
       },
       delete: {
         title: "Delete this account?",
-        body: "Everything they made is removed. This can't be undone.",
+        body: "Their account and everything they made are removed. This can't be undone.",
         confirm: "Delete for good",
         danger: true,
         reason: "required" as const,
@@ -245,11 +245,11 @@ export function UserDetail({ id }: { id: string }) {
     if (!answer) return;
     try {
       await adminFetch(`/api/admin/users/${id}`, { body: { action, reason: answer.reason } });
-      toast.ok("Done. Logged in the audit trail.");
+      toast.ok("Saved. Added to the audit log.");
       if (action === "delete") return router.push("/admin/users");
       void qc.invalidateQueries({ queryKey: ["admin-user", id] });
     } catch (e) {
-      toast.err(e instanceof Error ? e.message : "Failed.");
+      toast.err(e instanceof Error ? e.message : "Couldn't do that. Try again.");
     }
   }
 
@@ -264,7 +264,13 @@ export function UserDetail({ id }: { id: string }) {
         </div>
       </div>
     );
-  if (error || !d) return <p className="text-muted">That user isn&apos;t here any more.</p>;
+  if (error || !d)
+    return (
+      <p className="text-muted">
+        Couldn&apos;t load this user. They may have been deleted. Go back to All users and search
+        again.
+      </p>
+    );
 
   const p = d.profile;
   const name = p?.display_name || "No name yet";
@@ -412,7 +418,7 @@ export function UserDetail({ id }: { id: string }) {
             <div className="text-muted mt-2 flex justify-between text-xs">
               <span>{d.chart[0]?.day.slice(5)}</span>
               <span>Active on {active} of 30 days · messages and clinks</span>
-              <span>today</span>
+              <span>Today</span>
             </div>
             {Object.keys(d.counts.msgTypes).length > 0 && (
               <div className="mt-3 flex flex-wrap gap-1.5">
@@ -442,7 +448,7 @@ export function UserDetail({ id }: { id: string }) {
               k="Sign-in methods"
               v={
                 <span className="flex items-center justify-end gap-1.5">
-                  {d.account.providers.join(", ") || "email"}
+                  {d.account.providers.join(", ") || "Email"}
                   {d.account.passkeys > 0 && (
                     <>
                       <Fingerprint size={14} aria-hidden /> {d.account.passkeys} passkey
@@ -454,7 +460,7 @@ export function UserDetail({ id }: { id: string }) {
             />
             <Row
               k="Temporary password"
-              v={d.account.mustChangePassword ? "Yes, must change" : "No"}
+              v={d.account.mustChangePassword ? "Yes, must change it at next sign-in" : "No"}
             />
             <Row
               k="Push devices"
@@ -482,8 +488,8 @@ export function UserDetail({ id }: { id: string }) {
               }
             />
             <Row k="Time zone" v={p?.timezone ?? "Not set"} />
-            <Row k="Onboarded" v={when(p?.onboarded_at)} />
-            <Row k="Status" v={d.presence?.status?.replace(/^custom:/, "") ?? "Unknown"} />
+            <Row k="Finished onboarding" v={when(p?.onboarded_at)} />
+            <Row k="Presence" v={d.presence?.status?.replace(/^custom:/, "") ?? "Unknown"} />
             <Row
               k="Quiet hours"
               v={
@@ -506,16 +512,16 @@ export function UserDetail({ id }: { id: string }) {
                         href={`/admin/users/${d.couple.partner.id}`}
                         className="text-accent hover:underline"
                       >
-                        {d.couple.partner.name || "No name"} · {d.couple.partner.email}
+                        {d.couple.partner.name || "No name yet"} · {d.couple.partner.email}
                       </Link>
                     ) : (
-                      "Left"
+                      "Partner has left"
                     )
                   }
                 />
                 <Row k="Linked" v={when(d.couple.linkedAt)} />
                 <Row k="Together since" v={d.couple.startedOn ?? "Not set"} />
-                <Row k="Chat theme" v={d.couple.chatTheme ?? "clink"} />
+                <Row k="Chat theme" v={d.couple.chatTheme ?? "Clink (default)"} />
                 <Row
                   k="Games played"
                   v={`${d.couple.games.total} started, ${d.couple.games.finished} finished, ${d.couple.games.won} won`}
@@ -614,7 +620,7 @@ export function UserDetail({ id }: { id: string }) {
                 ))}
               </ol>
             ) : (
-              <p className="text-muted m-0 text-sm">No security events yet.</p>
+              <p className="text-muted m-0 text-sm">Nothing logged for this user yet.</p>
             )}
           </Card>
           <Card title="Reports">
@@ -637,10 +643,10 @@ export function UserDetail({ id }: { id: string }) {
                 />
               ))
             ) : (
-              <p className="text-faint m-0 mb-3 text-sm">None.</p>
+              <p className="text-faint m-0 mb-3 text-sm">No reports about this user.</p>
             )}
             <div className="text-muted mt-3 mb-1 flex items-center gap-1.5 text-xs font-medium">
-              <Heart size={14} aria-hidden /> Made by this user ({d.reports.by.length})
+              <Heart size={14} aria-hidden /> Filed by this user ({d.reports.by.length})
             </div>
             {d.reports.by.length ? (
               d.reports.by.map((r) => (
@@ -651,7 +657,7 @@ export function UserDetail({ id }: { id: string }) {
                 />
               ))
             ) : (
-              <p className="text-faint m-0 text-sm">None.</p>
+              <p className="text-faint m-0 text-sm">No reports from this user.</p>
             )}
           </Card>
         </TabPanel>

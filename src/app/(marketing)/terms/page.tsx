@@ -27,12 +27,12 @@ export default function Terms() {
       <p>
         Only send images of yourself. Only send images of adults. Never share anything from Clink
         outside the app, and never send anything your partner hasn&apos;t agreed to receive.
-        Breaking any of these rules leads to account removal.
+        Breaking any of these rules gets your account removed.
       </p>
       <h2 className="text-text m-0 text-lg font-bold">One person</h2>
       <p>
-        One account links to exactly one other person. Either of you can unlink at any time; private
-        media is wiped for both of you within an hour.
+        One account links to exactly one other person. Either of you can unlink at any time. Private
+        media is then wiped for both of you within an hour.
       </p>
       <h2 className="text-text m-0 text-lg font-bold">What we can&apos;t promise</h2>
       <p>
@@ -45,7 +45,7 @@ export default function Terms() {
         to break it, or use it for anything unlawful. We may suspend accounts that put other people
         at risk.
       </p>
-      <p>Questions? Use Help and safety in the app.</p>
+      <p>Questions? Open Help and safety in the app.</p>
     </LegalPage>
   );
 }

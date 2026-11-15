@@ -57,7 +57,7 @@ export function AdminContent() {
   }
   async function add() {
     const text = await prompt.ask({
-      title: "Add an item",
+      title: "Add item",
       label:
         table === "stickers"
           ? "Sticker label (10 characters max)"
@@ -103,12 +103,12 @@ export function AdminContent() {
       await adminFetch(`/api/admin/content/${table}`, { body });
       toast(
         table === "date_kits" || table === "challenge_templates"
-          ? "Added, disabled until you finish editing it."
-          : "Added.",
+          ? "Added and switched off. Enable it when it's ready."
+          : "Added to the end of the list.",
       );
       void qc.invalidateQueries({ queryKey: key });
     } catch (e) {
-      toast.err(e instanceof Error ? e.message : "Couldn't add.");
+      toast.err(e instanceof Error ? e.message : "Couldn't add that. Try again.");
     }
   }
 
@@ -146,7 +146,7 @@ export function AdminContent() {
           {rows.length} items, {rows.filter((r) => r.enabled).length} live
         </div>
         <Button size="sm" onClick={add}>
-          <Plus size={16} aria-hidden /> Add
+          <Plus size={16} aria-hidden /> Add item
         </Button>
       </div>
       <ol className="m-0 flex list-none flex-col gap-1.5 p-0">
@@ -162,13 +162,13 @@ export function AdminContent() {
               className="text-text flex-1 cursor-text bg-transparent text-left text-sm"
               onClick={async () => {
                 const field = "text" in r ? "text" : "title" in r ? "title" : "label";
-                const v = await prompt.ask({ title: "Edit", label: "Text", value: title(r) });
+                const v = await prompt.ask({ title: "Edit item", label: "Text", value: title(r) });
                 if (v && v !== title(r)) {
                   try {
                     await patch(r, { [field]: v });
                     toast("Saved.");
                   } catch (e) {
-                    toast.err(e instanceof Error ? e.message : "Couldn't save.");
+                    toast.err(e instanceof Error ? e.message : "Couldn't save that. Try again.");
                   }
                 }
               }}

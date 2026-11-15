@@ -119,7 +119,9 @@ export function AdminLogin({ next }: { next: string }) {
             if (!r.ok) {
               setBusy(false);
               setLocked(r.status === 429);
-              setError(d.message ?? "That didn't work. Try again.");
+              setError(
+                d.message ?? "Couldn't sign you in. Check your email and password, then try again.",
+              );
               setShake((n) => n + 1);
               feedback("error");
               return;
@@ -154,7 +156,8 @@ export function AdminLogin({ next }: { next: string }) {
               className="bg-danger/12 text-danger flex items-start gap-2 rounded-2xl p-3 text-sm"
             >
               <LockKey size={18} className="mt-0.5 flex-none" aria-hidden />
-              This login is paused for 15 minutes after too many tries. Every attempt is logged.
+              Too many tries, so this login is paused for 15 minutes. Try again after that. Every
+              attempt is logged.
             </div>
           )}
 

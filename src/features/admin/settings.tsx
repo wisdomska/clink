@@ -64,11 +64,11 @@ export function AdminSettings() {
       {tab === "banner" && (
         <TabPanel key="banner" className="flex flex-col gap-4">
           <p className="text-muted m-0 text-sm">
-            A banner shows at the top of the app for everyone until you take it down. Use
+            A banner shows at the top of the app for everyone until you take it down. Choose
             Maintenance for downtime notices.
           </p>
           <Segmented
-            label="Kind"
+            label="Banner type"
             value={kind}
             onChange={setKind}
             options={[
@@ -92,7 +92,7 @@ export function AdminSettings() {
                   : { background: "var(--brand-gradient)", color: "var(--on-accent)" }
               }
             >
-              {body.trim() || "Your message shows here."}
+              {body.trim() || "Your banner text shows here."}
             </div>
           </div>
           <Textarea
@@ -112,11 +112,11 @@ export function AdminSettings() {
             onClick={async () => {
               await adminFetch("/api/admin/settings", { body: { action: "announce", kind, body } });
               setBody("");
-              toast.ok("Live for everyone.");
+              toast.ok("Banner is live for everyone.");
               void refresh();
             }}
           >
-            Publish
+            Publish banner
           </Button>
           {live.length > 0 && <h2 className="m-0 mt-2 text-base font-bold">Live now</h2>}
           <ul className="m-0 flex list-none flex-col gap-1.5 p-0">

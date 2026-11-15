@@ -79,11 +79,11 @@ export function AdminAudit() {
           />
         </div>
         <div>
-          <Label htmlFor="us">User id</Label>
+          <Label htmlFor="us">User ID</Label>
           <Input
             id="us"
             value={user}
-            placeholder="uuid"
+            placeholder="Full user ID"
             onChange={(e) => setUser(e.target.value.trim())}
           />
         </div>
@@ -96,7 +96,7 @@ export function AdminAudit() {
         <table className="w-full min-w-[720px] border-collapse text-left text-sm">
           <thead className="bg-s1 text-muted text-xs">
             <tr>
-              {["When", "Event", "Subject", "Actor", "Details"].map((h) => (
+              {["When", "Event", "User", "Done by", "Details"].map((h) => (
                 <th key={h} scope="col" className="px-4 py-3 font-medium">
                   {h}
                 </th>

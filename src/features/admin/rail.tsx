@@ -1,7 +1,9 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "@/components/ui/toast";
+import { AdminFetchError } from "./fetch";
 import {
   ChartBar,
   Users,
@@ -29,6 +31,17 @@ const ITEMS = [
 export function AdminRail({ name }: { name: string }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  // Admin actions that fail without their own handler still tell you why.
+  useEffect(() => {
+    const on = (e: PromiseRejectionEvent) => {
+      if (e.reason instanceof AdminFetchError) {
+        e.preventDefault();
+        toast.err(e.reason.message);
+      }
+    };
+    window.addEventListener("unhandledrejection", on);
+    return () => window.removeEventListener("unhandledrejection", on);
+  }, []);
   const nav = (
     <nav aria-label="Admin" className="flex flex-col gap-1">
       {ITEMS.map(({ href, label, Icon }) => {

@@ -25,7 +25,7 @@ interface R {
 const LABEL: Record<string, string> = {
   image_misuse: "Image misuse",
   harassment: "Harassment",
-  minor_safety: "Possible minor",
+  minor_safety: "Possible minor (under 18)",
   broken: "Something broke",
   other: "Something else",
 };
@@ -43,7 +43,7 @@ export function AdminReports() {
   });
   async function update(id: string, body: Record<string, unknown>) {
     await adminFetch(`/api/admin/reports/${id}`, { method: "PATCH", body });
-    toast("Updated.");
+    toast("Report updated.");
     void qc.invalidateQueries({ queryKey: ["admin-reports"] });
   }
   return (
@@ -61,7 +61,11 @@ export function AdminReports() {
         />
       </div>
       <div className="flex flex-col gap-3">
-        {(data?.reports ?? []).length === 0 && <p className="text-muted">Nothing here.</p>}
+        {(data?.reports ?? []).length === 0 && (
+          <p className="text-muted">
+            No reports with this status. New reports from couples arrive in Open.
+          </p>
+        )}
         {(data?.reports ?? []).map((r) => (
           <article
             key={r.id}
@@ -98,7 +102,7 @@ export function AdminReports() {
               </p>
             )}
             <p className="text-muted m-0 text-sm whitespace-pre-wrap">
-              {r.details || "No details given."}
+              {r.details || "The reporter didn't add any details."}
             </p>
             {r.attachments.filter(Boolean).length > 0 && (
               <div className="flex flex-wrap gap-2">
@@ -122,7 +126,7 @@ export function AdminReports() {
             )}
             <div className="flex flex-wrap gap-1.5">
               <Button size="xs" variant="ghost" onClick={() => update(r.id, { status: "triage" })}>
-                Triage
+                Move to triage
               </Button>
               <Button size="xs" variant="ghost" onClick={() => update(r.id, { assignToMe: true })}>
                 Assign to me

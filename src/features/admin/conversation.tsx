@@ -45,7 +45,7 @@ export function AdminConversation({ userId }: { userId: string }) {
       setMsgs((cur) => (before && cur ? [...d.messages, ...cur] : d.messages));
       setMore(d.more);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't open it.");
+      setError(e instanceof Error ? e.message : "Couldn't open this conversation. Try again.");
     } finally {
       setBusy(false);
     }
@@ -73,7 +73,7 @@ export function AdminConversation({ userId }: { userId: string }) {
             maxLength={300}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="e.g. Report #123 says they were harassed; checking the messages it mentions"
+            placeholder="For example: report #123 mentions harassment, so I'm checking those messages"
           />
         </div>
         <FieldError>{error}</FieldError>
@@ -99,11 +99,15 @@ export function AdminConversation({ userId }: { userId: string }) {
           className="self-center"
           onClick={() => load(msgs[0]?.sent_at)}
         >
-          Load older
+          Load older messages
         </Button>
       )}
       <div className="bg-app flex max-h-[560px] flex-col gap-1.5 overflow-y-auto rounded-[18px] p-3">
-        {msgs.length === 0 && <p className="text-muted m-0 text-sm">No messages.</p>}
+        {msgs.length === 0 && (
+          <p className="text-muted m-0 text-sm">
+            No messages yet. They show here once this couple starts chatting.
+          </p>
+        )}
         {msgs.map((m) => {
           const subject = m.sender_id === userId;
           return (
@@ -115,7 +119,7 @@ export function AdminConversation({ userId }: { userId: string }) {
               )}
             >
               <span className="text-faint text-[11px]">
-                {people[m.sender_id] ?? "?"} ·{" "}
+                {people[m.sender_id] ?? "Unknown"} ·{" "}
                 {new Date(m.sent_at).toLocaleString([], { dateStyle: "short", timeStyle: "short" })}
               </span>
               <div

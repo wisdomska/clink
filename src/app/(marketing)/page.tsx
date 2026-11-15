@@ -87,7 +87,7 @@ export default function Landing() {
                   Dares, one match at a time.
                 </h3>
                 <p className="text-muted mt-1.5 mb-0 text-base leading-normal">
-                  Spin, strike, reveal. Pass is always free.
+                  Spin, strike, reveal. Passing is always free, no questions asked.
                 </p>
               </div>
             </div>
@@ -105,7 +105,7 @@ export default function Landing() {
               <div>
                 <h3 className="display m-0 text-[22px] leading-[1.1]">Letters for later.</h3>
                 <p className="text-muted mt-1.5 mb-0 text-base leading-normal">
-                  Open when you can&apos;t sleep. Sealed until they need it.
+                  Write one for the night they can&apos;t sleep. It stays sealed until they need it.
                 </p>
               </div>
             </div>
@@ -113,10 +113,10 @@ export default function Landing() {
               <MiniBoard />
               <div>
                 <h3 className="display m-0 text-[22px] leading-[1.1]">
-                  The countdown to arrivals.
+                  A countdown to your next kiss.
                 </h3>
                 <p className="text-muted mt-1.5 mb-0 text-base leading-normal">
-                  Your next visit, flipping down on a departure board.
+                  Your next visit, ticking down on a departure board.
                 </p>
               </div>
             </div>
@@ -128,8 +128,8 @@ export default function Landing() {
             18+
           </div>
           <p className="text-muted m-0 text-base leading-normal">
-            Clink is for adults in a relationship. After Dark, the private space, only opens when
-            you both say yes.
+            Clink is for adults in a relationship. After Dark, your private space for the spicier
+            stuff, only opens when you both say yes.
           </p>
         </section>
       </main>

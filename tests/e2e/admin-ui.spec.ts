@@ -29,7 +29,7 @@ test("admin: trends, live switches and in-app confirmations", async ({ couple, b
   await expect(dlg.getByText("Add a short reason.")).toBeVisible();
   await dlg.getByLabel("Reason").fill("Test suspension");
   await dlg.getByRole("button", { name: "Suspend", exact: true }).click();
-  await expect(p.getByText("Done. Logged in the audit trail.")).toBeVisible();
+  await expect(p.getByText("Saved. Added to the audit log.")).toBeVisible();
   await expect(p.getByText(/Suspended: Test suspension/)).toBeVisible();
 
   // Delete stays blocked until DELETE is typed; cancel leaves the account alone.

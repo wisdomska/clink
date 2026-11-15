@@ -61,7 +61,7 @@ function TrendsSection() {
               )
             }
           >
-            <DownloadSimple size={16} aria-hidden /> CSV
+            <DownloadSimple size={16} aria-hidden /> Export CSV
           </Button>
         </div>
       </div>
@@ -113,7 +113,7 @@ function LiveSwitches() {
       .map((f) => ({
         id: f.key,
         icon: ToggleRight,
-        text: `Flag on: ${f.description || f.key}`,
+        text: `Feature flag on: ${f.description || f.key}`,
         tone: "var(--partner-b)",
       })),
   ];
@@ -136,7 +136,8 @@ function LiveSwitches() {
         </ul>
       ) : (
         <p className="text-muted m-0 mt-1 text-sm">
-          Nothing switched on. Couples see the default app.
+          Nothing is switched on, so couples see the default app. Banners and flags you turn on in
+          Settings show here.
         </p>
       )}
     </section>
@@ -201,7 +202,9 @@ function Usage({
       {pct >= 0.7 && (
         <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color }}>
           <Warning size={14} aria-hidden />
-          {pct >= 0.9 ? "Over 90%. Upgrade or clean up now." : "Over 70%. Plan the next step."}
+          {pct >= 0.9
+            ? "Over 90% used. Upgrade the plan or free up space now."
+            : "Over 70% used. Plan an upgrade or a cleanup soon."}
         </div>
       )}
       {note && <div className="text-faint text-xs">{note}</div>}
@@ -245,7 +248,7 @@ export function AdminDashboard() {
             <Stat
               label="Activation"
               value={pct(m.activated, m.couples_active)}
-              sub="Shared activity within 24 h"
+              sub="Did something together within 24 h"
             />
             <Stat
               label="Weekly retention"
@@ -280,10 +283,10 @@ export function AdminDashboard() {
               ))}
             </div>
             <div className="text-muted text-sm">
-              Dare pass rate: {passRate}. Shared activity ratio:{" "}
+              Dare pass rate: {passRate}. Shared activities to messages:{" "}
               {m.activity_mix?.messages
                 ? `1 : ${Math.round(m.activity_mix.messages / Math.max(1, (m.activity_mix.games ?? 0) + (m.activity_mix.dates ?? 0) + (m.activity_mix.watch ?? 0) + (m.activity_mix.letters ?? 0) + (m.activity_mix.capsules ?? 0) + (m.activity_mix.challenge_days ?? 0)))}`
-                : "n/a"}
+                : "no messages yet"}
             </div>
           </section>
           <section aria-label="Free tier usage" className="flex flex-col gap-3">

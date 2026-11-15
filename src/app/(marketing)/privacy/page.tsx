@@ -16,9 +16,9 @@ export default function Privacy() {
       <p>We collect only what Clink needs to work, and we never sell it.</p>
       <h2 className="text-text m-0 text-lg font-bold">What we keep</h2>
       <p>
-        Your email, name, home city and time zone, your date of birth (never shown to your partner),
-        what you create together, and the media you send. Photos are stripped of location and camera
-        data on your phone and again on our servers.
+        We keep your email, name, home city and time zone, your date of birth (never shown to your
+        partner), what you create together, and the media you send. Photos are stripped of location
+        and camera data on your phone and again on our servers.
       </p>
       <h2 className="text-text m-0 text-lg font-bold">Private media</h2>
       <p>
@@ -29,9 +29,9 @@ export default function Privacy() {
       </p>
       <h2 className="text-text m-0 text-lg font-bold">What we measure</h2>
       <p>
-        Cookie-free product analytics that count actions, never content. No message text, media,
-        dares or desire answers are ever sent to analytics. There&apos;s no session replay and no
-        advertising tracking.
+        We use cookie-free product analytics that count actions, never content. No message text,
+        media, dares or desire answers are ever sent to analytics. There&apos;s no session replay
+        and no advertising tracking.
       </p>
       <h2 className="text-text m-0 text-lg font-bold">Who can see what</h2>
       <p>
@@ -46,7 +46,7 @@ export default function Privacy() {
         Data Protection Act 2012 and the GDPR for people in the EU and UK.
       </p>
       <h2 className="text-text m-0 text-lg font-bold">Cookies</h2>
-      <p>Only the ones needed to keep you signed in and to remember your app icon choice.</p>
+      <p>We only use cookies to keep you signed in and to remember your app icon choice.</p>
     </LegalPage>
   );
 }

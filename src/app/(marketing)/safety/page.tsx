@@ -32,7 +32,7 @@ export default function Safety() {
       <h2 className="text-text m-0 text-lg font-bold">Leaving safely</h2>
       <p>
         You can unlink or block at any time, including from inside After Dark. Your partner gets a
-        short, neutral notice and private media is wiped for both of you within an hour.
+        short, neutral notice, and private media is wiped for both of you within an hour.
       </p>
       <h2 className="text-text m-0 text-lg font-bold">In danger right now?</h2>
       <p>Call your local emergency number. In the UK, call 999. In Ghana, call 112.</p>

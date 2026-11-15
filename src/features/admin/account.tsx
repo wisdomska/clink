@@ -54,7 +54,7 @@ export function AdminAccountForm({
         });
         const d = await r.json().catch(() => ({}));
         setBusy(false);
-        if (!r.ok) return setError(d.message ?? "That didn't save.");
+        if (!r.ok) return setError(d.message ?? "Couldn't save your changes. Try again.");
         toast.ok("Admin account saved.");
         setCurrent("");
         setPw("");
@@ -77,7 +77,7 @@ export function AdminAccountForm({
         </div>
         <p className="text-muted m-0 mt-1 text-sm">
           {forced
-            ? "You signed in with a temporary password. Set yours to open the portal."
+            ? "You signed in with a temporary password. Choose your own to open the portal."
             : "Only for the admin portal. Your Clink account keeps its own email and password."}
         </p>
       </div>
@@ -114,7 +114,7 @@ export function AdminAccountForm({
           value={pw}
           onChange={(e) => setPw(e.target.value)}
         />
-        <Hint>12+ characters with upper and lower case and a number.</Hint>
+        <Hint>At least 12 characters, with upper and lower case letters and a number.</Hint>
       </div>
       {pw && (
         <div>
