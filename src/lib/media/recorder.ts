@@ -66,7 +66,41 @@ export class VoiceRecorder {
   private started = 0;
   private stream: MediaStream | null = null;
   private timer: ReturnType<typeof setTimeout> | null = null;
+  private ctx: AudioContext | null = null;
+  private analyser: AnalyserNode | null = null;
+  private buf: Uint8Array<ArrayBuffer> | null = null;
   onAutoStop?: () => void;
+
+  /** Live input level, 0..1, for the recording waveform. */
+  level(): number {
+    if (!this.analyser || !this.buf) return 0;
+    this.analyser.getByteTimeDomainData(this.buf);
+    let sum = 0;
+    for (const v of this.buf) sum += ((v - 128) / 128) ** 2;
+    return Math.min(1, Math.sqrt(sum / this.buf.length) * 3.2);
+  }
+
+  private meter(stream: MediaStream) {
+    try {
+      const AC =
+        window.AudioContext ??
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      this.ctx = new AC();
+      const src = this.ctx.createMediaStreamSource(stream);
+      this.analyser = this.ctx.createAnalyser();
+      this.analyser.fftSize = 512;
+      this.buf = new Uint8Array(new ArrayBuffer(this.analyser.fftSize));
+      src.connect(this.analyser);
+    } catch {
+      /* no meter: the waveform just idles */
+    }
+  }
+
+  private unmeter() {
+    void this.ctx?.close().catch(() => undefined);
+    this.ctx = null;
+    this.analyser = null;
+  }
 
   async start() {
     if (typeof MediaRecorder === "undefined" || !navigator.mediaDevices?.getUserMedia)
@@ -94,6 +128,7 @@ export class VoiceRecorder {
     } catch {
       this.rec = new MediaRecorder(this.stream); // let the browser pick its own format
     }
+    this.meter(this.stream);
     this.chunks = [];
     this.rec.ondataavailable = (e) => e.data.size && this.chunks.push(e.data);
     this.rec.start(250);
@@ -112,6 +147,7 @@ export class VoiceRecorder {
     const done = new Promise<void>((res) => (rec.onstop = () => res()));
     rec.stop();
     await done;
+    this.unmeter();
     this.stream?.getTracks().forEach((t) => t.stop());
     const durationS = Math.min(VOICE_MAX_S, (performance.now() - this.started) / 1000);
     this.rec = null;
@@ -128,6 +164,7 @@ export class VoiceRecorder {
     } catch {
       /* already stopped */
     }
+    this.unmeter();
     this.stream?.getTracks().forEach((t) => t.stop());
     this.rec = null;
   }

@@ -1,15 +1,22 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { motion } from "motion/react";
 import { Play, Pause } from "@phosphor-icons/react";
+import { useReducedMotion } from "@/lib/feedback";
 
 const SPEEDS = [1, 1.5, 2] as const;
+const BARS = 30;
 
 function fmt(s: number) {
   const m = Math.floor(s / 60);
   return `${m}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 }
 
-/** CHAT-02 playback: waveform, 1x / 1.5x / 2x. */
+/**
+ * CHAT-02 playback. The waveform fills as it plays, the bars near the
+ * playhead dance, and the play button breathes while audio runs.
+ * 1x / 1.5x / 2x. Fixed width so nothing ever spills past the bubble.
+ */
 export function VoicePlayer({
   src,
   duration,
@@ -24,20 +31,45 @@ export function VoicePlayer({
   const audio = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
   const [t, setT] = useState(0);
+  const [meta, setMeta] = useState(0);
   const [speed, setSpeed] = useState<(typeof SPEEDS)[number]>(1);
-  const bars =
+  const reduced = useReducedMotion();
+  const raw =
     waveform && waveform.length
       ? waveform
-      : Array.from({ length: 28 }, (_, i) => [8, 14, 22, 12, 26, 18, 10, 24, 30, 16][i % 10]! * 3);
+      : Array.from(
+          { length: BARS },
+          (_, i) => [8, 14, 22, 12, 26, 18, 10, 24, 30, 16][i % 10]! * 3,
+        );
+  // Resample to a fixed bar count so every note looks consistent.
+  const bars = Array.from(
+    { length: BARS },
+    (_, i) => raw[Math.floor((i / BARS) * raw.length)] ?? 20,
+  );
 
   useEffect(() => {
     if (audio.current) audio.current.playbackRate = speed;
   }, [speed]);
 
-  const progress = duration ? t / duration : 0;
+  // Smooth progress (timeupdate only fires ~4 times a second).
+  useEffect(() => {
+    if (!playing) return;
+    let raf = 0;
+    const tick = () => {
+      if (audio.current) setT(audio.current.currentTime);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [playing]);
+
+  const total = duration || meta;
+  const progress = total ? Math.min(1, t / total) : 0;
+  const head = Math.floor(progress * BARS);
+
   return (
     <div
-      className="flex w-[78%] max-w-[360px] items-center gap-2.5 px-3 py-2.5"
+      className="flex w-[min(74vw,300px)] items-center gap-2.5 py-2 pr-2.5 pl-2"
       style={{
         borderRadius: mine ? "var(--r-bubble-out)" : "var(--r-bubble-in)",
         background: mine ? "var(--surface-3)" : "var(--surface-1)",
@@ -49,6 +81,10 @@ export function VoicePlayer({
         src={src}
         preload="none"
         onTimeUpdate={(e) => setT(e.currentTarget.currentTime)}
+        onLoadedMetadata={(e) => {
+          const d = e.currentTarget.duration;
+          if (Number.isFinite(d)) setMeta(d);
+        }}
         onEnded={() => {
           setPlaying(false);
           setT(0);
@@ -56,35 +92,72 @@ export function VoicePlayer({
         onPause={() => setPlaying(false)}
         onPlay={() => setPlaying(true)}
       />
-      <button
+      <motion.button
         type="button"
         aria-label={playing ? "Pause voice note" : "Play voice note"}
         onClick={() => (playing ? audio.current?.pause() : void audio.current?.play())}
-        className="press bg-accent text-on-accent flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-full border-0"
+        whileTap={{ scale: 0.88 }}
+        animate={playing && !reduced ? { scale: [1, 1.08, 1] } : { scale: 1 }}
+        transition={playing ? { duration: 1.1, repeat: Infinity, ease: "easeInOut" } : {}}
+        className="bg-accent text-on-accent flex h-10 w-10 flex-none cursor-pointer items-center justify-center rounded-full border-0 shadow-[0_6px_16px_-6px_var(--accent)]"
       >
-        {playing ? <Pause size={16} weight="fill" /> : <Play size={16} weight="fill" />}
-      </button>
-      <div className="flex h-8 flex-1 items-center gap-0.5" aria-hidden>
-        {bars.slice(0, 28).map((h, i) => (
-          <span
-            key={i}
-            className="flex-1 rounded-sm"
-            style={{
-              height: `${Math.max(8, Math.round((h / 100) * 30))}px`,
-              background: i / bars.length < progress ? "var(--accent)" : "var(--text-muted)",
-            }}
-          />
-        ))}
-      </div>
-      <span className="mono text-muted text-xs">{fmt(playing || t ? t : duration)}</span>
+        {playing ? (
+          <Pause size={17} weight="fill" />
+        ) : (
+          <Play size={17} weight="fill" className="ml-0.5" />
+        )}
+      </motion.button>
       <button
         type="button"
-        aria-label={`Playback speed ${speed}x`}
-        onClick={() => setSpeed(SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length]!)}
-        className="mono border-line-strong text-muted cursor-pointer rounded-full border bg-transparent px-1.5 py-0.5 text-[11px]"
+        aria-label="Seek"
+        onClick={(e) => {
+          const el = audio.current;
+          if (!el || !total) return;
+          const b = e.currentTarget.getBoundingClientRect();
+          el.currentTime = ((e.clientX - b.left) / b.width) * total;
+          setT(el.currentTime);
+          if (!playing) void el.play();
+        }}
+        className="flex h-9 min-w-0 flex-1 cursor-pointer items-center gap-[2px] border-0 bg-transparent p-0"
       >
-        {speed}x
+        {bars.map((h, i) => {
+          const base = Math.max(4, Math.round((h / 100) * 28));
+          const played = i < head;
+          const near = playing && !reduced && Math.abs(i - head) <= 2;
+          return (
+            <motion.span
+              key={i}
+              className="block min-w-[2px] flex-1 rounded-full"
+              animate={{
+                height: near ? [base, Math.min(32, base * 1.6), base] : base,
+                backgroundColor:
+                  played || (playing && i === head) ? "var(--accent)" : "var(--text-faint)",
+              }}
+              transition={
+                near
+                  ? {
+                      height: { duration: 0.45, repeat: Infinity, delay: (i % 3) * 0.08 },
+                      backgroundColor: { duration: 0.15 },
+                    }
+                  : { duration: 0.2 }
+              }
+            />
+          );
+        })}
       </button>
+      <div className="flex flex-none flex-col items-end gap-0.5">
+        <span className="mono text-muted text-[11px] leading-none">
+          {fmt(playing || t ? t : total)}
+        </span>
+        <button
+          type="button"
+          aria-label={`Playback speed ${speed}x`}
+          onClick={() => setSpeed(SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length]!)}
+          className="mono bg-s2 text-muted cursor-pointer rounded-full border-0 px-1.5 py-0.5 text-[10px] leading-none"
+        >
+          {speed}x
+        </button>
+      </div>
     </div>
   );
 }

@@ -51,7 +51,7 @@ test("tap to record, then send", async ({ couple }) => {
   const { a, nia } = couple;
   await a.goto("/chat");
   await a.getByRole("button", { name: "Hold to record a voice note" }).click();
-  await expect(a.getByText("Tap send when you're done")).toBeVisible();
+  await expect(a.getByRole("status", { name: /Tap send when you're done/ })).toBeVisible();
   await a.waitForTimeout(1500);
   await a.getByRole("button", { name: "Send voice note" }).click();
   await expect

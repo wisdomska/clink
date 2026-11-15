@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
   Phone,
+  Camera,
   VideoCamera,
   Plus,
   Sticker,
@@ -40,6 +41,8 @@ import { useMessages, useReactions, useMediaInfo, useOutboxFlush, sendQueued } f
 import { useQueue, newClientId, type QueuedPayload } from "./queue";
 import { Bubble, STICKER_LABEL } from "./bubbles";
 import { MediaComposer } from "./media-composer";
+import { LiveWave } from "./live-wave";
+import { CameraCapture } from "./camera-capture";
 import { useCall } from "@/features/call/call-provider";
 import type { Message, UiMessage } from "./types";
 
@@ -91,7 +94,14 @@ export function ChatScreen() {
   const [blurred, setBlurred] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const captureRef = useRef<HTMLInputElement>(null);
+  const [camera, setCamera] = useState(false);
+  const cameraFallback = useCallback(() => {
+    setCamera(false);
+    captureRef.current?.click();
+  }, []);
   const recorder = useRef<VoiceRecorder | null>(null);
+  const micLevel = useCallback(() => recorder.current?.level() ?? 0, []);
   const [holding, setHolding] = useState(false);
   const fingerDown = useRef(false);
   const heldSince = useRef(0);
@@ -645,15 +655,19 @@ export function ChatScreen() {
                 <X size={20} />
               </IconButton>
               <div
-                className="rounded-input border-accent bg-s2 flex h-11 flex-1 items-center gap-2.5 border px-3.5"
+                className="rounded-input bg-s2 flex h-11 min-w-0 flex-1 items-center gap-2.5 px-3.5 shadow-[inset_0_0_0_1.5px_var(--accent)]"
                 role="status"
+                aria-label={
+                  holding ? "Recording. Release to send" : "Recording. Tap send when you're done"
+                }
               >
-                <span className="an-dot bg-accent h-2.5 w-2.5 rounded-full" aria-hidden />
-                <span className="mono text-sm">
+                <span className="an-dot bg-danger h-2.5 w-2.5 flex-none rounded-full" aria-hidden />
+                <span className="mono flex-none text-sm">
                   {Math.floor(recSecs / 60)}:{String(recSecs % 60).padStart(2, "0")}
                 </span>
-                <span className="text-muted truncate text-sm">
-                  {holding ? "Release to send" : "Tap send when you're done"}
+                <LiveWave level={micLevel} />
+                <span className="text-muted hidden flex-none text-xs sm:inline">
+                  {holding ? "Release to send" : "Tap send"}
                 </span>
               </div>
               <IconButton label="Send voice note" tone="accent" onClick={() => stopRecording(true)}>
@@ -671,7 +685,20 @@ export function ChatScreen() {
                 <Plus size={20} />
               </IconButton>
               <input
+                ref={captureRef}
+                type="file"
+                accept="image/*,video/*"
+                capture="environment"
+                hidden
+                data-testid="camera-fallback"
+                onChange={(e) => {
+                  if (e.target.files?.length) setComposing(Array.from(e.target.files));
+                  e.target.value = "";
+                }}
+              />
+              <input
                 ref={fileRef}
+                data-testid="attach-input"
                 type="file"
                 accept="image/*,video/*"
                 multiple
@@ -690,6 +717,16 @@ export function ChatScreen() {
                   onChange={(e) => onType(e.target.value)}
                   className="text-text min-w-0 flex-1 bg-transparent text-base outline-none focus-visible:shadow-none"
                 />
+                {!text && (
+                  <button
+                    type="button"
+                    onClick={() => setCamera(true)}
+                    aria-label="Camera"
+                    className="text-muted hover:text-text flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent"
+                  >
+                    <Camera size={22} />
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setTray(!tray)}
@@ -825,6 +862,16 @@ export function ChatScreen() {
         )}
       </Sheet>
 
+      {camera && (
+        <CameraCapture
+          onClose={() => setCamera(false)}
+          onFallback={cameraFallback}
+          onShot={(f) => {
+            setCamera(false);
+            setComposing([f]);
+          }}
+        />
+      )}
       {composing && (
         <MediaComposer
           files={composing}

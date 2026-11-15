@@ -66,8 +66,7 @@ test.describe("Chat (CHAT-01 to CHAT-05)", () => {
     await a.goto("/chat");
     await b.goto("/chat");
     await a
-      .locator('input[type="file"]')
-      .first()
+      .getByTestId("attach-input")
       .setInputFiles({ name: "proof.jpg", mimeType: "image/jpeg", buffer: jpeg });
     await a.getByRole("button", { name: /^Send to / }).click();
     await expect(b.getByRole("link", { name: "Open media" })).toBeVisible({ timeout: 20000 });

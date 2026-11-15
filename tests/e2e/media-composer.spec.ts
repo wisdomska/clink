@@ -13,13 +13,10 @@ test("compose: edit, add more, caption, send as one grid", async ({ couple }) =>
   const { a, b, nia } = couple;
   await b.goto("/chat");
   await a.goto("/chat");
-  await a
-    .locator('input[type="file"]')
-    .first()
-    .setInputFiles([
-      { name: "one.jpg", mimeType: "image/jpeg", buffer: await photo(230, 138, 245) },
-      { name: "two.jpg", mimeType: "image/jpeg", buffer: await photo(80, 200, 190) },
-    ]);
+  await a.getByTestId("attach-input").setInputFiles([
+    { name: "one.jpg", mimeType: "image/jpeg", buffer: await photo(230, 138, 245) },
+    { name: "two.jpg", mimeType: "image/jpeg", buffer: await photo(80, 200, 190) },
+  ]);
   const editor = a.getByRole("dialog", { name: "Edit before sending" });
   await expect(editor).toBeVisible();
 
@@ -54,4 +51,24 @@ test("compose: edit, add more, caption, send as one grid", async ({ couple }) =>
     .single();
   expect(data?.body).toBe("our weekend");
   expect(data?.media_ids).toHaveLength(3);
+});
+
+test("instant camera: tap the shutter, the shot opens in the editor", async ({ couple }) => {
+  const { a, b } = couple;
+  await b.goto("/chat");
+  await a.goto("/chat");
+  await a.getByRole("button", { name: "Camera" }).click();
+  const cam = a.getByRole("dialog", { name: "Camera" });
+  await expect(cam).toBeVisible();
+  const shutter = cam.getByRole("button", { name: /Take photo/ });
+  await expect(shutter).toBeEnabled({ timeout: 10000 });
+  await expect
+    .poll(() => a.evaluate(() => document.querySelector("video")?.videoWidth ?? 0))
+    .toBeGreaterThan(0);
+  await shutter.click();
+  const editor = a.getByRole("dialog", { name: "Edit before sending" });
+  await expect(editor).toBeVisible();
+  await expect(editor.getByRole("button", { name: /^Show photo/ })).toHaveCount(1);
+  await editor.getByRole("button", { name: /^Send to / }).click();
+  await expect(b.getByRole("link", { name: "Open media" })).toBeVisible({ timeout: 20000 });
 });
