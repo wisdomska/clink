@@ -48,23 +48,4 @@ test.describe("Account data (SET-03, ACC-08, TOG-03)", () => {
     const { data: profile } = await admin.from("profiles").select("id").eq("id", theo.id);
     expect(profile).toEqual([]);
   });
-
-  test("TOG-03: call shortcuts use the partner's saved number", async ({ couple }) => {
-    const { a, theo } = couple;
-    await admin.from("profiles").update({ phone: "+233 20 123 4567" }).eq("id", theo.id);
-    await a.goto("/chat");
-    await a.getByRole("button", { name: "Call", exact: true }).click();
-    await expect(a.getByRole("link", { name: /WhatsApp/ })).toHaveAttribute(
-      "href",
-      "https://wa.me/233201234567",
-    );
-    await expect(a.getByRole("link", { name: /FaceTime/ })).toHaveAttribute(
-      "href",
-      "facetime:+233201234567",
-    );
-    await expect(a.getByRole("link", { name: /Phone/ })).toHaveAttribute(
-      "href",
-      "tel:+233201234567",
-    );
-  });
 });

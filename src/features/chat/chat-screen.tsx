@@ -1,6 +1,5 @@
 "use client";
 import { feedback, haptic } from "@/lib/feedback";
-import { BrandLogo } from "@/components/clink/brand-logo";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -41,6 +40,7 @@ import { useMessages, useReactions, useMediaInfo, useOutboxFlush, sendQueued } f
 import { useQueue, newClientId, type QueuedPayload } from "./queue";
 import { Bubble, STICKER_LABEL } from "./bubbles";
 import { MediaComposer } from "./media-composer";
+import { useCall } from "@/features/call/call-provider";
 import type { Message, UiMessage } from "./types";
 
 const REACTIONS = ["❤️", "😂", "😭", "🔥", "🥹", "👀"];
@@ -84,7 +84,7 @@ export function ChatScreen() {
   const [replyTo, setReplyTo] = useState<UiMessage | null>(null);
   const [actionFor, setActionFor] = useState<UiMessage | null>(null);
   const [typing, setTyping] = useState(false);
-  const [callSheet, setCallSheet] = useState(false);
+  const { start: startCall } = useCall();
   const [recording, setRecording] = useState(false);
   const [recSecs, setRecSecs] = useState(0);
   const [pendingMedia, setPendingMedia] = useState<Record<string, UiMessage>>({});
@@ -430,7 +430,6 @@ export function ChatScreen() {
   const sub = presence.online
     ? `Online, ${formatClock(now, partner.timezone)} in ${partner.city}`
     : `Away, ${formatClock(now, partner.timezone)} in ${partner.city}`;
-  const digits = partner.phone?.replace(/[^\d+]/g, "") ?? "";
 
   return (
     <div className="an-screen flex h-[calc(100dvh-var(--chrome-bottom))] flex-col lg:flex-row">
@@ -451,10 +450,10 @@ export function ChatScreen() {
             <h1 className="m-0 text-lg font-bold">{partner.name}</h1>
             <div className="text-muted truncate text-[13px]">{sub}</div>
           </div>
-          <IconButton label="Call" tone="surface" onClick={() => setCallSheet(true)}>
+          <IconButton label="Call" tone="surface" onClick={() => startCall(false)}>
             <Phone size={20} />
           </IconButton>
-          <IconButton label="Video call" tone="surface" onClick={() => setCallSheet(true)}>
+          <IconButton label="Video call" tone="surface" onClick={() => startCall(true)}>
             <VideoCamera size={20} />
           </IconButton>
         </header>
@@ -837,44 +836,6 @@ export function ChatScreen() {
           }}
         />
       )}
-
-      <Sheet open={callSheet} onOpenChange={setCallSheet} title={`Call ${partner.name}`} handle>
-        <div className="display text-[28px]">Call {partner.name}</div>
-        {digits ? (
-          <div className="flex flex-col gap-2">
-            <a
-              href={`https://wa.me/${digits.replace("+", "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="press bg-accent text-on-accent hover:text-on-accent flex h-[52px] items-center justify-center gap-2 rounded-full font-bold"
-            >
-              <BrandLogo brand="whatsapp" size={26} /> WhatsApp
-            </a>
-            <a
-              href={`facetime:${digits}`}
-              className="press border-line bg-s2 text-text hover:text-text flex h-[52px] items-center justify-center gap-2 rounded-full border font-medium"
-            >
-              FaceTime
-            </a>
-            <a
-              href={`tel:${digits}`}
-              className="press border-line text-text hover:text-text flex h-[52px] items-center justify-center gap-2 rounded-full border bg-transparent font-medium"
-            >
-              <Phone size={20} aria-hidden /> Phone
-            </a>
-          </div>
-        ) : (
-          <>
-            <p className="text-muted m-0 text-base">
-              {partner.name} hasn&apos;t saved a number yet. They can add one in Settings, under
-              Profile.
-            </p>
-            <Button variant="secondary" size="lg" onClick={() => setCallSheet(false)}>
-              Okay
-            </Button>
-          </>
-        )}
-      </Sheet>
     </div>
   );
 }
