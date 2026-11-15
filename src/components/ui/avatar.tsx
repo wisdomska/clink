@@ -1,9 +1,8 @@
-import { Moon, Plant, Cat, Coffee, Sparkle } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "./cn";
+import { AVATAR_KEYS, avatarSrc, type AvatarKey } from "@/lib/avatars";
 
-const ICONS = { moon: Moon, plant: Plant, cat: Cat, coffee: Coffee, sparkle: Sparkle } as const;
-export type AvatarIcon = keyof typeof ICONS;
-export const AVATAR_ICONS = Object.keys(ICONS) as AvatarIcon[];
+export type AvatarIcon = AvatarKey;
+export const AVATAR_ICONS = AVATAR_KEYS;
 
 /**
  * Partner avatars from the prototype: you = surface-2 with accent ring,
@@ -31,7 +30,7 @@ export function Avatar({
   children?: React.ReactNode;
 }) {
   const initial = (name.trim()[0] ?? "?").toUpperCase();
-  const Icon = icon ? ICONS[icon] : null;
+  const known = icon && (AVATAR_KEYS as readonly string[]).includes(icon);
   const ringColor = side === "me" ? "var(--partner-a)" : dim ? "var(--line)" : "var(--partner-b)";
   return (
     <div
@@ -51,9 +50,15 @@ export function Avatar({
       {photoUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={photoUrl} alt="" className="h-full w-full rounded-full object-cover" />
-      ) : Icon && size >= 40 ? (
+      ) : known ? (
         <>
-          <Icon aria-hidden size={Math.round(size * 0.5)} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={avatarSrc(icon!)}
+            alt=""
+            draggable={false}
+            className="h-[78%] w-[78%] object-contain drop-shadow-[0_3px_6px_rgba(0,0,0,.35)]"
+          />
           <span className="sr-only">{initial}</span>
         </>
       ) : (

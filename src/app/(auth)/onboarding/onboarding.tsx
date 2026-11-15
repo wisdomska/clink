@@ -1,16 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Camera,
-  Check,
-  MagnifyingGlass,
-  Moon,
-  Plant,
-  Cat,
-  Coffee,
-  Sparkle,
-} from "@phosphor-icons/react";
+import { Camera, Check, MagnifyingGlass } from "@phosphor-icons/react";
+import { motion } from "motion/react";
+import { AVATARS, avatarSrc, type AvatarKey } from "@/lib/avatars";
 import { Button } from "@/components/ui/button";
 import { Input, FieldError, Hint } from "@/components/ui/field";
 import { Display, Lead, Mono } from "@/components/ui/heading";
@@ -18,14 +11,7 @@ import { cn } from "@/components/ui/cn";
 import { toast } from "@/components/ui/toast";
 import { formatClock } from "@/lib/time";
 
-const ICONS = [
-  ["moon", Moon],
-  ["plant", Plant],
-  ["cat", Cat],
-  ["coffee", Coffee],
-  ["sparkle", Sparkle],
-] as const;
-type IconKey = (typeof ICONS)[number][0];
+type IconKey = AvatarKey;
 
 interface City {
   city: string;
@@ -61,7 +47,7 @@ export function Onboarding({
   const [dobDone, setDobDone] = useState(!needsDob);
   const [step, setStep] = useState(editing ? 2 : 1);
   const [name, setName] = useState(initialName);
-  const [icon, setIcon] = useState<IconKey>((initialIcon as IconKey) ?? "moon");
+  const [icon, setIcon] = useState<IconKey>((initialIcon as IconKey) ?? "woman_medium");
   const [photo, setPhoto] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<City[]>([]);
@@ -208,24 +194,45 @@ export function Onboarding({
           <Display size={36} className="mt-3">
             Pick a <em>face</em>
           </Display>
-          <Lead className="mt-2 mb-6">A photo, or one of ours.</Lead>
-          <div className="grid grid-cols-3 gap-4" role="radiogroup" aria-label="Avatar">
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="press border-faint text-muted flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 overflow-hidden rounded-full border-[1.5px] border-dashed bg-transparent text-sm font-medium"
-              style={photo ? { border: "3px solid var(--accent)", padding: 0 } : undefined}
-            >
+          <Lead className="mt-2 mb-5">Your own photo, or one of these.</Lead>
+          <div className="mb-5 flex items-center gap-4">
+            <div className="bg-s2 relative flex h-24 w-24 flex-none items-center justify-center overflow-hidden rounded-[30%] shadow-[0_10px_30px_-12px_var(--accent)]">
               {photo ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={photo} alt="Your photo" className="h-full w-full object-cover" />
               ) : (
-                <>
-                  <Camera size={26} aria-hidden />
-                  Photo
-                </>
+                <motion.img
+                  key={icon}
+                  src={avatarSrc(icon)}
+                  alt=""
+                  initial={{ scale: 0.6, rotate: -8, opacity: 0.01 }}
+                  animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 18 }}
+                  className="h-[80%] w-[80%] object-contain drop-shadow-[0_6px_10px_rgba(0,0,0,.4)]"
+                />
               )}
-            </button>
+            </div>
+            <div className="flex min-w-0 flex-col gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                loading={busy && step === 2}
+                onClick={() => fileRef.current?.click()}
+              >
+                <Camera size={18} aria-hidden />
+                {photo ? "Change photo" : "Upload a photo"}
+              </Button>
+              {photo && (
+                <Button
+                  variant="text"
+                  size="xs"
+                  className="text-muted"
+                  onClick={() => setPhoto(null)}
+                >
+                  Use a 3D face instead
+                </Button>
+              )}
+            </div>
             <input
               ref={fileRef}
               type="file"
@@ -233,26 +240,46 @@ export function Onboarding({
               hidden
               onChange={(e) => e.target.files?.[0] && uploadPhoto(e.target.files[0])}
             />
-            {ICONS.map(([key, Icon]) => (
-              <button
-                key={key}
-                type="button"
-                role="radio"
-                aria-checked={!photo && icon === key}
-                aria-label={key}
-                onClick={() => {
-                  setIcon(key);
-                  setPhoto(null);
-                }}
-                className="press bg-s2 text-text flex aspect-square cursor-pointer items-center justify-center rounded-full"
-                style={{
-                  border:
-                    !photo && icon === key ? "3px solid var(--accent)" : "1px solid var(--line)",
-                }}
-              >
-                <Icon size={34} aria-hidden />
-              </button>
-            ))}
+          </div>
+          <div
+            className="grid grid-cols-4 gap-2.5 sm:grid-cols-7"
+            role="radiogroup"
+            aria-label="Avatar"
+          >
+            {AVATARS.map(([key, label]) => {
+              const on = !photo && icon === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  aria-label={label}
+                  onClick={() => {
+                    setIcon(key);
+                    setPhoto(null);
+                  }}
+                  className={cn(
+                    "press relative flex aspect-square cursor-pointer items-center justify-center rounded-[30%] border-0 transition-[background,transform] duration-200",
+                    on ? "bg-accent/25 scale-[1.04]" : "bg-s2 hover:bg-s3",
+                  )}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={avatarSrc(key)}
+                    alt=""
+                    loading="lazy"
+                    draggable={false}
+                    className="h-[72%] w-[72%] object-contain"
+                  />
+                  {on && (
+                    <span className="bg-accent text-on-accent absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full">
+                      <Check size={12} weight="bold" aria-hidden />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

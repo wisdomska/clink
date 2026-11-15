@@ -1,3 +1,4 @@
+import { AVATAR_KEYS } from "./avatars";
 import { z } from "zod";
 
 /** Zod schemas shared by client forms and server routes. */
@@ -15,7 +16,7 @@ export const emailSchema = z
 
 export const profileSchema = z.object({
   display_name: z.string().trim().min(1, "Give us something to call you.").max(40),
-  avatar_icon: z.enum(["moon", "plant", "cat", "coffee", "sparkle"]).optional(),
+  avatar_icon: z.enum(AVATAR_KEYS).optional(),
   home_city: z.string().trim().min(1).max(80).optional(),
   country: z.string().trim().max(80).optional(),
   timezone: z.string().trim().min(1).max(64).optional(),

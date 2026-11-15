@@ -11,6 +11,8 @@ export const PATCH = handler(async (req: NextRequest) => {
     ...body,
     phone: body.phone === "" ? null : body.phone,
   };
+  // Picking one of the 3D faces switches back from a photo.
+  if (body.avatar_icon) patch.avatar_kind = "icon";
   if (finish) patch.onboarded_at = new Date().toISOString();
   const { data, error } = await db
     .from("profiles")
