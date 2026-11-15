@@ -18,6 +18,16 @@ All results below come from the local Supabase stack (same migrations and seed a
 | Lighthouse (production, desktop) | `lhci collect`                         | `/login`: performance 99, accessibility 100, best practices 96, LCP 0.7 s, CLS 0. `/` and `/privacy`: accessibility 100, best practices 100, SEO 100                                                                                |
 | Dependencies                     | `pnpm audit --prod --audit-level high` | No known vulnerabilities                                                                                                                                                                                                            |
 
+**Against the live preview** (`BASE_URL=https://clinkapp-preview.vercel.app`, cloud Supabase in London, Vercel functions in `lhr1`): 36 end-to-end flows passed on the phone viewport, 1 skipped by design. The four tests that sign cron calls with the local secret are excluded there, because the live site correctly rejects that secret.
+
+Bugs found by the live-site run and fixed:
+
+- **Simultaneous answers were rejected.** In live games both partners answer at once; the second answer got "They just moved" and was dropped. Moves now save state and hidden answers atomically (`svc_apply_game_move`) and retry automatically (`tests/e2e/simultaneous-moves.spec.ts`).
+- **A missed or out-of-order live update could leave a player waiting.** Game rooms now ignore older updates and re-check every 4 s while a game is live.
+- **The PIN pad dropped digits typed straight after a wrong PIN**, because a delayed clear wiped them.
+- **Functions ran in Washington while the database is in London.** Moving them to London cut database calls from about 420 ms to about 30 ms.
+- **Question copy read "What's you's...".** The person answering about themselves now sees their own name.
+
 Bugs found by the suite and fixed before release:
 
 - **Hydration mismatch on live clocks** (React error 418). Under load the clock minute could change between the server render and hydration, so screens with clocks (Us, Chat header, countdowns) occasionally failed to hydrate. Clocks now start from the server's render time (`useCoupleNow`) and tick after mount. Reproduction under 4 parallel workers went from 3 errors in 18 runs to 0 in 24.
