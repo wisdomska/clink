@@ -28,10 +28,36 @@ export function Deck({ tier }: { tier: string }) {
   const [answer, setAnswer] = useState("");
   const [seenReveal, setSeenReveal] = useState<string | null>(null);
   const key = ["deck", tier];
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: key,
     queryFn: () => darkFetch<DeckData>(`/api/dark/decks/${tier}`),
+    retry: false,
   });
+  const idx = (TIERS as readonly string[]).indexOf(tier);
+  const locked = Boolean(error) || (s ? idx >= s.rank : false);
+  // What's still missing before this tier opens, in plain words.
+  const missing: Array<{ text: string; href?: string; action?: string }> = [];
+  if (s && locked) {
+    if (tier === "Unhinged" && !s.me.verified)
+      missing.push({
+        text: "Sign the 18+ declaration",
+        href: "/dark/consent?verify=1",
+        action: "Verify",
+      });
+    if (tier === "Unhinged" && !s.partner.verified)
+      missing.push({ text: `${partner.name} signs the 18+ declaration too` });
+    if (!s.me.tiers.includes(tier))
+      missing.push({
+        text: `Turn on ${tier} in your tiers`,
+        href: "/dark/consent",
+        action: "Your tiers",
+      });
+    if (!s.partner.tiers.includes(tier)) missing.push({ text: `${partner.name} turns on ${tier}` });
+    if (idx > 0 && s.rank < idx)
+      missing.push({
+        text: `Every tier before it is open for you both (${TIERS.slice(0, idx).join(", ")})`,
+      });
+  }
   useCoupleEvent("dark.deck", () => qc.invalidateQueries({ queryKey: key }));
   const reveal = data?.reveal && data.reveal.cardId !== seenReveal ? data.reveal : null;
   const open = TIERS.slice(0, s?.rank ?? 0);
@@ -84,7 +110,31 @@ export function Deck({ tier }: { tier: string }) {
           ))}
         </div>
       )}
-      {isLoading ? (
+      {locked && !isLoading ? (
+        <div className="an-reveal mt-4 flex flex-col gap-4">
+          <div className="display text-[32px] leading-[1.05]">
+            {tier} isn&apos;t <em>open</em> yet
+          </div>
+          <p className="text-muted m-0 text-base">
+            A tier opens only when you both choose it
+            {tier === "Unhinged" ? ", and Unhinged needs you both verified" : ""}. Here&apos;s
+            what&apos;s left:
+          </p>
+          <ul className="m-0 flex list-none flex-col gap-2 p-0">
+            {(missing.length ? missing : [{ text: "Waiting on you both to agree" }]).map((m) => (
+              <li key={m.text} className="bg-s2 flex items-center gap-3 rounded-2xl p-3.5">
+                <span className="bg-ember h-2.5 w-2.5 flex-none rounded-full" aria-hidden />
+                <span className="flex-1 text-sm">{m.text}</span>
+                {m.href && (
+                  <Button size="xs" onClick={() => router.push(m.href!)}>
+                    {m.action}
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : isLoading ? (
         <div className="an-skel rounded-card bg-s2 mt-2 h-[220px]" />
       ) : reveal ? (
         <>

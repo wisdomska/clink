@@ -33,25 +33,27 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
   const couple = (await activeCouple(user.id))!;
   const admin = supabaseAdmin();
   const cols =
-    "id, display_name, avatar_kind, avatar_icon, avatar_path, home_city, country, timezone, latitude, longitude, partner_nickname, phone, discreet_mode, app_icon, notify, quiet_start, quiet_end, suspended_at, is_admin";
-  const [{ data: people }, { data: c }, { data: members }, { data: dark }] = await Promise.all([
-    admin.from("profiles").select(cols).in("id", [user.id, couple.partnerId]),
-    admin
-      .from("couples")
-      .select(
-        "id, started_on, linked_at, chat_theme, chat_wallpaper, ritual_time, ritual_time_proposed, ritual_time_proposed_by, dark_opened_at",
-      )
-      .eq("id", couple.coupleId)
-      .single(),
-    admin
-      .from("couple_members")
-      .select("user_id, role, allow_saved_spicy")
-      .eq("couple_id", couple.coupleId),
-    admin
-      .from("dark_settings")
-      .select("user_id, opted_in_at")
-      .in("user_id", [user.id, couple.partnerId]),
-  ]);
+    "id, display_name, avatar_kind, avatar_icon, avatar_path, home_city, country, timezone, latitude, longitude, partner_nickname, phone, discreet_mode, app_icon, notify, quiet_start, quiet_end, suspended_at, is_admin, bio, love_language, share_birthday";
+  const [{ data: people }, { data: c }, { data: members }, { data: dark }, { data: dobs }] =
+    await Promise.all([
+      admin.from("profiles").select(cols).in("id", [user.id, couple.partnerId]),
+      admin
+        .from("couples")
+        .select(
+          "id, started_on, linked_at, chat_theme, chat_wallpaper, ritual_time, ritual_time_proposed, ritual_time_proposed_by, dark_opened_at",
+        )
+        .eq("id", couple.coupleId)
+        .single(),
+      admin
+        .from("couple_members")
+        .select("user_id, role, allow_saved_spicy")
+        .eq("couple_id", couple.coupleId),
+      admin
+        .from("dark_settings")
+        .select("user_id, opted_in_at")
+        .in("user_id", [user.id, couple.partnerId]),
+      admin.from("user_private").select("user_id, dob").in("user_id", [user.id, couple.partnerId]),
+    ]);
   const meRow = people!.find((p) => p.id === user.id)!;
   const pRow = people!.find((p) => p.id === couple.partnerId)!;
   const toPerson = async (p: typeof meRow, role: "a" | "b"): Promise<Person> => ({
@@ -67,6 +69,14 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
     lon: p.longitude === null ? null : Number(p.longitude),
     nickname: p.partner_nickname,
     phone: p.phone,
+    bio: p.bio,
+    loveLanguage: p.love_language,
+    shareBirthday: p.share_birthday,
+    // Day and month only, and only when they chose to share it (or it's you).
+    birthday:
+      p.share_birthday || p.id === user.id
+        ? (dobs?.find((d) => d.user_id === p.id)?.dob?.slice(5, 10) ?? null)
+        : null,
   });
   const roleOf = (id: string) => (members!.find((m) => m.user_id === id)?.role ?? "a") as "a" | "b";
   const darkBoth = (dark ?? []).filter((d) => d.opted_in_at).length === 2;

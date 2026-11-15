@@ -12,6 +12,7 @@ import { cn } from "@/components/ui/cn";
 import { statusLabel, type PresenceStatus } from "@/features/couple/types";
 import { feedback } from "@/lib/feedback";
 import { useAmbient } from "./ambient";
+import { useOpenPartner } from "@/features/partner/partner-sheet";
 
 const STATUSES: Array<{ key: PresenceStatus; emoji: string }> = [
   { key: "free", emoji: "🌿" },
@@ -52,6 +53,7 @@ export function PresencePair({ now }: { now: Date }) {
   const [beHere, setBeHere] = useState(false);
   const [custom, setCustom] = useState(myStatus.startsWith("custom:") ? statusLabel(myStatus) : "");
   const ambient = useAmbient();
+  const openPartner = useOpenPartner();
   const online = presence.online;
   const asleep = presence.status === "sleeping";
   const theirStatus = asleep
@@ -131,7 +133,12 @@ export function PresencePair({ now }: { now: Date }) {
             />
           </svg>
 
-          <div className="flex min-w-0 flex-col items-center gap-2 text-white">
+          <button
+            type="button"
+            onClick={openPartner}
+            aria-label={`${partner.name}'s profile`}
+            className="press flex min-w-0 cursor-pointer flex-col items-center gap-2 border-0 bg-transparent p-0 text-white"
+          >
             <div className="relative">
               <Avatar
                 name={partner.name}
@@ -155,7 +162,7 @@ export function PresencePair({ now }: { now: Date }) {
               online && !asleep ? emojiFor(presence.status) : asleep ? "😴" : "",
               online,
             )}
-          </div>
+          </button>
         </div>
       </section>
 

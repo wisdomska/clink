@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import { Serwist, NetworkOnly } from "serwist";
+import { Serwist, NetworkOnly, NetworkFirst } from "serwist";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -36,6 +36,13 @@ const serwist = new Serwist({
         /supabase\.co|r2\.cloudflarestorage\.com|127\.0\.0\.1:54321/.test(url.host),
       handler: new NetworkOnly(),
     },
+    {
+      // Pages and their data always come from the network when it's there, so a
+      // new version shows straight away; the cache is only for going offline.
+      matcher: ({ request, sameOrigin }) =>
+        sameOrigin && (request.mode === "navigate" || request.headers.get("RSC") === "1"),
+      handler: new NetworkFirst({ cacheName: "pages-v2", networkTimeoutSeconds: 4 }),
+    },
     ...defaultCache,
   ],
   fallbacks: {
@@ -44,6 +51,20 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+// A new version starts clean: drop every runtime cache from the old one (the
+// precache manages itself), so no stale page or script survives an update.
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys.filter((k) => !k.startsWith("serwist-precache")).map((k) => caches.delete(k)),
+        ),
+      ),
+  );
+});
 
 // The update-available banner asks the waiting worker to take over.
 self.addEventListener("message", (event) => {

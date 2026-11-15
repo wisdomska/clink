@@ -13,6 +13,11 @@ export interface Person {
   lon: number | null;
   nickname: string | null;
   phone: string | null;
+  bio: string | null;
+  loveLanguage: string | null;
+  shareBirthday: boolean;
+  /** "MM-DD", when shared. */
+  birthday: string | null;
 }
 
 export interface CoupleContextValue {

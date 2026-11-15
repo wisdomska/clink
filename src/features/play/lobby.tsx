@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { GAME_META, startGame } from "./meta";
 import { GameTile } from "./game-tile";
+import { useOpenPartner } from "@/features/partner/partner-sheet";
 import { subscribeAuthed } from "@/lib/realtime";
 import type { GameType } from "./engines/types";
 
@@ -68,6 +69,7 @@ export function useGames() {
 
 export function Lobby() {
   const { me, partner, presence, send } = useCouple();
+  const openPartner = useOpenPartner();
   const router = useRouter();
   const { data: games = [] } = useGames();
   const [deckOpen, setDeckOpen] = useState(false);
@@ -83,7 +85,7 @@ export function Lobby() {
         ? "Dead level. Settle it."
         : "No wins yet. Someone has to go first."
       : mine > theirs
-        ? `${me.name} leads. For now.`
+        ? "You lead. For now."
         : `${partner.name} leads. For now.`;
   const online = presence.online;
   const invites = games.filter((g) => g.status === "invited");
@@ -124,13 +126,19 @@ export function Lobby() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <PartnerMark who={me.role} size={12} />
-                <span className="text-base font-medium">{me.name}</span>
+                <span className="text-base font-medium">You</span>
                 <span className="mono text-[28px]">{mine}</span>
               </div>
               <div className="mono text-faint text-xs">LIFETIME</div>
               <div className="flex items-center gap-2">
                 <span className="mono text-[28px]">{theirs}</span>
-                <span className="text-base font-medium">{partner.name}</span>
+                <button
+                  type="button"
+                  onClick={openPartner}
+                  className="text-text cursor-pointer border-0 bg-transparent p-0 text-base font-medium hover:underline"
+                >
+                  {partner.name}
+                </button>
                 <PartnerMark who={partner.role} size={12} />
               </div>
             </div>

@@ -23,6 +23,9 @@ export const profileSchema = z.object({
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
   partner_nickname: z.string().trim().max(40).optional(),
+  bio: z.string().trim().max(160).optional(),
+  love_language: z.enum(["words", "touch", "time", "gifts", "acts"]).nullable().optional(),
+  share_birthday: z.boolean().optional(),
   phone: z
     .string()
     .trim()

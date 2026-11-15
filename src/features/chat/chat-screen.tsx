@@ -47,6 +47,7 @@ import { LiveWave } from "./live-wave";
 import { CHAT_THEMES, WALLPAPERS, wallpaperSize, type ChatTheme, type Wallpaper } from "./themes";
 import { CameraCapture } from "./camera-capture";
 import { useCall } from "@/features/call/call-provider";
+import { useOpenPartner } from "@/features/partner/partner-sheet";
 import { MissedCallCard } from "@/features/call/missed-call-card";
 import type { Message, UiMessage } from "./types";
 
@@ -113,6 +114,7 @@ export function ChatScreen() {
   const [actionFor, setActionFor] = useState<UiMessage | null>(null);
   const [typing, setTyping] = useState(false);
   const { start: startCall } = useCall();
+  const openPartner = useOpenPartner();
   const [recording, setRecording] = useState(false);
   const [recSecs, setRecSecs] = useState(0);
   const [pendingMedia, setPendingMedia] = useState<Record<string, UiMessage>>({});
@@ -476,18 +478,27 @@ export function ChatScreen() {
         aria-label={`Chat with ${partner.name}`}
       >
         <header className="border-line flex flex-none items-center gap-3 border-b px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-3">
-          <Avatar
-            name={partner.name}
-            side="partner"
-            size={44}
-            photoUrl={partner.avatarUrl}
-            icon={partner.avatarIcon}
-            dim={!presence.online}
-          />
-          <div className="min-w-0 flex-1">
-            <h1 className="m-0 text-lg font-bold">{partner.name}</h1>
-            <div className="text-muted truncate text-[13px]">{sub}</div>
-          </div>
+          <button
+            type="button"
+            onClick={openPartner}
+            aria-label={`${partner.name}'s profile`}
+            className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 border-0 bg-transparent p-0 text-left text-[var(--text)]"
+          >
+            <Avatar
+              name={partner.name}
+              side="partner"
+              size={44}
+              photoUrl={partner.avatarUrl}
+              icon={partner.avatarIcon}
+              dim={!presence.online}
+            />
+            <span className="min-w-0 flex-1">
+              <span role="heading" aria-level={1} className="block text-lg font-bold">
+                {partner.name}
+              </span>
+              <span className="text-muted block truncate text-[13px]">{sub}</span>
+            </span>
+          </button>
           <IconButton label="Customise chat" tone="surface" onClick={() => setLookOpen(true)}>
             <Palette size={20} />
           </IconButton>

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
@@ -19,7 +19,8 @@ export function Consent() {
   const { data: s } = useDarkState();
   const [draft, setTiers] = useState<string[] | null>(null);
   const tiers = draft ?? s?.me.tiers ?? [];
-  const [verifyOpen, setVerifyOpen] = useState(false);
+  const params = useSearchParams();
+  const [verifyOpen, setVerifyOpen] = useState(params.get("verify") === "1");
   const theirs = contiguousRank(s?.partner.tiers ?? []);
   return (
     <main className="an-screen mx-auto flex min-h-dvh max-w-[560px] flex-col gap-5 px-5 pt-[calc(env(safe-area-inset-top)+12px)] pb-10 md:pt-10">
@@ -54,7 +55,7 @@ export function Consent() {
               <span className="text-muted flex items-center gap-2 text-sm">
                 {theirs > i && (
                   <>
-                    <PartnerMark who={partner.role} /> {partner.name}
+                    <PartnerMark who={partner.role} /> {partner.name}: yes ·
                   </>
                 )}
                 {unhingedLocked ? "Verify first" : on ? "You: yes" : "You: not yet"}

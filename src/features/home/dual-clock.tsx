@@ -5,7 +5,7 @@ import { useCouple } from "@/features/couple/context";
 import { formatClock, isNight } from "@/lib/time";
 import type { Person } from "@/features/couple/types";
 
-function useWeather(p: Person) {
+export function useWeather(p: Person) {
   return useQuery({
     queryKey: ["weather", p.lat, p.lon],
     enabled: p.lat !== null && p.lon !== null,

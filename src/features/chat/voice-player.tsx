@@ -69,7 +69,7 @@ export function VoicePlayer({
 
   return (
     <div
-      className="flex w-[min(74vw,300px)] items-center gap-2.5 py-2 pr-2.5 pl-2"
+      className="flex w-[min(80vw,320px)] items-center gap-2 py-1.5 pr-1 pl-2"
       style={{
         borderRadius: mine ? "var(--r-bubble-out)" : "var(--r-bubble-in)",
         background: mine ? "var(--surface-3)" : "var(--surface-1)",
@@ -145,19 +145,19 @@ export function VoicePlayer({
           );
         })}
       </button>
-      <div className="flex flex-none flex-col items-end gap-0.5">
-        <span className="mono text-muted text-[11px] leading-none">
-          {fmt(playing || t ? t : total)}
-        </span>
-        <button
-          type="button"
-          aria-label={`Playback speed ${speed}x`}
-          onClick={() => setSpeed(SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length]!)}
-          className="mono bg-s2 text-muted cursor-pointer rounded-full border-0 px-1.5 py-0.5 text-[10px] leading-none"
-        >
+      <span className="mono text-muted w-9 flex-none text-right text-[11px]">
+        {fmt(playing || t ? t : total)}
+      </span>
+      <button
+        type="button"
+        aria-label={`Playback speed ${speed}x. Tap to change`}
+        onClick={() => setSpeed(SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length]!)}
+        className="flex h-11 w-11 flex-none cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0"
+      >
+        <span className="mono bg-s2 text-text flex h-7 min-w-9 items-center justify-center rounded-full px-1.5 text-xs font-bold">
           {speed}x
-        </button>
-      </div>
+        </span>
+      </button>
     </div>
   );
 }

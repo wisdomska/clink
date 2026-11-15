@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { loadCoupleContext } from "@/lib/server/couple-context";
 import { CoupleProvider } from "@/features/couple/context";
 import { CallProvider } from "@/features/call/call-provider";
+import { PartnerSheetProvider } from "@/features/partner/partner-sheet";
 import { AppShell } from "@/features/couple/app-shell";
 import { AppRelock } from "@/features/couple/app-relock";
 import { QueryProvider } from "@/features/couple/query-provider";
@@ -21,7 +22,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <CoupleProvider value={ctx}>
         {ctx.appLock && <AppRelock />}
         <CallProvider>
-          <AppShell banners={banners ?? []}>{children}</AppShell>
+          <PartnerSheetProvider>
+            <AppShell banners={banners ?? []}>{children}</AppShell>
+          </PartnerSheetProvider>
         </CallProvider>
       </CoupleProvider>
     </QueryProvider>

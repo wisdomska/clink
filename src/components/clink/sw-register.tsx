@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { ArrowsClockwise } from "@phosphor-icons/react";
+import { LoadingDots } from "@/components/ui/spinner";
 
 /** Registers the service worker and shows the update-available banner. */
 export function ServiceWorker() {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
+  const [updating, setUpdating] = useState(false);
   useEffect(() => {
     if (!("serviceWorker" in navigator) || process.env.NODE_ENV !== "production") return;
     // Only reload when a new worker replaces an existing one (an update the user accepted).
@@ -43,10 +45,16 @@ export function ServiceWorker() {
       <span className="flex-1 text-sm font-medium">A fresh version of Clink is ready.</span>
       <button
         type="button"
-        onClick={() => waiting.postMessage({ type: "SKIP_WAITING" })}
+        onClick={() => {
+          setUpdating(true);
+          waiting.postMessage({ type: "SKIP_WAITING" });
+          // If the new version doesn't take over quickly, reload anyway.
+          setTimeout(() => window.location.reload(), 4000);
+        }}
+        disabled={updating}
         className="press bg-accent text-on-accent h-11 cursor-pointer rounded-full border-0 px-4 text-sm font-bold"
       >
-        Update
+        {updating ? <LoadingDots /> : "Update"}
       </button>
     </div>
   );

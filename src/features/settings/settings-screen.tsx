@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -9,13 +9,14 @@ import {
   ChatCircle,
   BellSimple,
   BellRinging,
+  Camera,
 } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, type AvatarIcon } from "@/components/ui/avatar";
 import { Button, IconButton } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { Sheet } from "@/components/ui/sheet";
-import { Input, Label, FieldError } from "@/components/ui/field";
+import { Input, Label, FieldError, Textarea } from "@/components/ui/field";
 import { Display } from "@/components/ui/heading";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/cn";
@@ -27,6 +28,8 @@ import { PrivacyCard } from "./privacy";
 import { FeelCard } from "./feel";
 import { IdentityPicker } from "@/components/clink/identity-picker";
 import { asIdentity } from "@/lib/app-identity";
+import { AVATARS, avatarSrc } from "@/lib/avatars";
+import { LOVE_LANGUAGES } from "@/features/partner/partner-sheet";
 
 async function patchSettings(body: Record<string, unknown>) {
   const r = await fetch("/api/me/settings", {
@@ -124,7 +127,14 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
       </div>
 
       <div className="flex items-center gap-3.5 py-1">
-        <Avatar name={me.name} side="me" size={64} photoUrl={me.avatarUrl} icon={me.avatarIcon} />
+        <button
+          type="button"
+          onClick={() => setEdit(true)}
+          aria-label="Change your picture"
+          className="cursor-pointer rounded-full border-0 bg-transparent p-0"
+        >
+          <Avatar name={me.name} side="me" size={64} photoUrl={me.avatarUrl} icon={me.avatarIcon} />
+        </button>
         <div className="min-w-0 flex-1">
           <div className="text-lg font-bold">{me.name}</div>
           <div className="text-muted truncate text-sm">
@@ -133,7 +143,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
           </div>
         </div>
         <Button variant="secondary" size="xs" onClick={() => setEdit(true)}>
-          Edit
+          Edit profile
         </Button>
       </div>
 
@@ -500,10 +510,92 @@ function ProfileSheet({
   const [name, setName] = useState(me.name);
   const [nick, setNick] = useState(me.nickname ?? "");
   const [phone, setPhone] = useState(me.phone ?? "");
+  const [bio, setBio] = useState(me.bio ?? "");
+  const [love, setLove] = useState<string | null>(me.loveLanguage);
+  const [shareBday, setShareBday] = useState(me.shareBirthday);
+  const [icon, setIcon] = useState<string>(me.avatarIcon);
+  const [photo, setPhoto] = useState<string | null>(me.avatarUrl);
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title="Edit profile" handle>
       <div className="display text-[28px]">You</div>
+      <div className="flex items-center gap-4">
+        <Avatar
+          name={name}
+          side="me"
+          size={84}
+          photoUrl={photo}
+          icon={(photo ? me.avatarIcon : icon) as AvatarIcon}
+        />
+        <div className="flex flex-col gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            loading={uploading}
+            onClick={() => fileRef.current?.click()}
+          >
+            <Camera size={18} aria-hidden />
+            {photo ? "Change photo" : "Upload a photo"}
+          </Button>
+          {photo && (
+            <Button size="xs" variant="text" className="text-muted" onClick={() => setPhoto(null)}>
+              Use a 3D face instead
+            </Button>
+          )}
+        </div>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          hidden
+          data-testid="profile-photo"
+          onChange={async (e) => {
+            const f = e.target.files?.[0];
+            e.target.value = "";
+            if (!f) return;
+            setUploading(true);
+            try {
+              const { uploadAvatar } = await import("@/lib/media/avatar");
+              setPhoto(await uploadAvatar(f));
+              toast.ok("Photo updated.");
+              router.refresh();
+            } catch (err) {
+              toast.err(err instanceof Error ? err.message : "That photo didn't upload.");
+            } finally {
+              setUploading(false);
+            }
+          }}
+        />
+      </div>
+      {!photo && (
+        <div
+          className="no-scrollbar -mx-1 flex flex-none gap-2 overflow-x-auto px-1 pb-1"
+          role="radiogroup"
+          aria-label="3D avatar"
+        >
+          {AVATARS.map(([k, label]) => (
+            <button
+              key={k}
+              type="button"
+              role="radio"
+              aria-checked={icon === k}
+              aria-label={label}
+              onClick={() => setIcon(k)}
+              className={cn(
+                "flex h-14 w-14 flex-none cursor-pointer items-center justify-center rounded-[30%] border-0 p-0 transition-colors",
+                icon === k ? "bg-accent/25" : "bg-s2",
+              )}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={avatarSrc(k)} alt="" className="h-[72%] w-[72%] object-contain" />
+            </button>
+          ))}
+        </div>
+      )}
       <div>
         <Label htmlFor="pn">Your name</Label>
         <Input id="pn" value={name} maxLength={40} onChange={(e) => setName(e.target.value)} />
@@ -519,7 +611,51 @@ function ProfileSheet({
         />
       </div>
       <div>
-        <Label htmlFor="ph">Your number, for call shortcuts</Label>
+        <Label htmlFor="bio">About you</Label>
+        <Textarea
+          id="bio"
+          value={bio}
+          maxLength={160}
+          rows={2}
+          placeholder={`A line for ${partner.name}: what you're into, what you're up to`}
+          onChange={(e) => setBio(e.target.value)}
+        />
+      </div>
+      <div>
+        <div className="text-muted mb-1.5 text-sm font-medium">Your love language</div>
+        <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Love language">
+          {Object.entries(LOVE_LANGUAGES).map(([k, label]) => (
+            <button
+              key={k}
+              type="button"
+              role="radio"
+              aria-checked={love === k}
+              onClick={() => setLove(love === k ? null : k)}
+              className={cn(
+                "h-9 cursor-pointer rounded-full border-0 px-3 text-xs font-semibold",
+                love === k ? "bg-accent text-on-accent" : "bg-s2 text-text",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="rounded-card border-line flex-none overflow-hidden border">
+        <Toggle
+          label="Show my birthday to them"
+          sub={
+            me.birthday
+              ? "Day and month only, never the year."
+              : "Uses the date of birth you gave at sign-up."
+          }
+          checked={shareBday}
+          onChange={setShareBday}
+          last
+        />
+      </div>
+      <div>
+        <Label htmlFor="ph">Your number (optional)</Label>
         <Input
           id="ph"
           type="tel"
@@ -532,23 +668,35 @@ function ProfileSheet({
       </div>
       <FieldError>{error}</FieldError>
       <Button
+        loading={saving}
         onClick={async () => {
           setError(null);
+          setSaving(true);
+          const body: Record<string, unknown> = {
+            display_name: name,
+            partner_nickname: nick,
+            phone,
+            bio,
+            love_language: love,
+            share_birthday: shareBday,
+          };
+          if (!photo && (icon !== me.avatarIcon || me.avatarUrl)) body.avatar_icon = icon;
           const r = await fetch("/api/me/profile", {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ display_name: name, partner_nickname: nick, phone }),
+            body: JSON.stringify(body),
           });
+          setSaving(false);
           if (!r.ok) return setError((await r.json()).message);
           onOpenChange(false);
-          toast("Saved.");
+          toast.ok("Profile saved.");
           router.refresh();
         }}
       >
         Save
       </Button>
-      <Link href="/onboarding?edit=1" className="text-center text-sm font-medium">
-        Change photo or home city
+      <Link href="/onboarding?edit=1" className="text-muted text-center text-sm font-medium">
+        Change home city
       </Link>
     </Sheet>
   );

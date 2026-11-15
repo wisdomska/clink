@@ -51,6 +51,17 @@ const moods = {
   "mood-tired": S("Yawning face", "yawning_face"),
   "mood-flirty": S("Smirking face", "smirking_face"),
   "mood-low": S("Cloud with rain", "cloud_with_rain"),
+  "mood-happy": S("Smiling face with smiling eyes", "smiling_face_with_smiling_eyes"),
+  "mood-loved": S("Smiling face with hearts", "smiling_face_with_hearts"),
+  "mood-excited": S("Star-struck", "star-struck"),
+  "mood-grateful": "Folded hands/Default/3D/folded_hands_3d_default.png",
+  "mood-anxious": S("Anxious face with sweat", "anxious_face_with_sweat"),
+  "mood-stressed": S("Grimacing face", "grimacing_face"),
+  "mood-sad": S("Crying face", "crying_face"),
+  "mood-hurt": S("Broken heart", "broken_heart"),
+  "mood-jealous": S("Unamused face", "unamused_face"),
+  "mood-angry": S("Pouting face", "pouting_face"),
+  "mood-space": S("Face exhaling", "face_exhaling"),
 };
 async function save(list, dir) {
   for (const [k, p] of Object.entries(list)) {

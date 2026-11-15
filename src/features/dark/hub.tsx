@@ -63,7 +63,7 @@ export function DarkHub() {
       <div className="flex h-11 items-center justify-between">
         <div className="mono text-ember flex items-center gap-1.5 text-xs">
           <Moon size={16} aria-hidden />
-          PRIVATE · {me.name.toUpperCase()} AND {partner.name.toUpperCase()}
+          PRIVATE · YOU AND {partner.name.toUpperCase()}
         </div>
         <Button
           variant="ghost"
