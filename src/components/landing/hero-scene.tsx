@@ -10,12 +10,14 @@ import { cn } from "@/components/ui/cn";
 const PEOPLE = [
   {
     zone: "Africa/Accra",
+    place: "Accra",
     name: "Ama",
     mood: "Feeling flirty",
     avatar: "/avatars/woman_dark.webp",
   },
   {
-    zone: "Europe/London",
+    zone: "America/New_York",
+    place: "New York",
     name: "Theo",
     mood: "Thinking of you",
     avatar: "/avatars/man_light.webp",
@@ -23,7 +25,8 @@ const PEOPLE = [
 ] as const;
 
 /**
- * Hero visual: two people side by side, each with their mood and local time.
+ * Hero visual: two people side by side: where they are and their local time on
+ * top, the person (avatar, name, mood) at the bottom.
  * Two flutes swing in from either side and clink in the middle, and the toast
  * lands on the other side. Holds the resting pose for reduced motion.
  */
@@ -34,7 +37,7 @@ export function HeroScene() {
   return (
     <figure
       className="rounded-card border-line relative m-0 grid h-[380px] grid-cols-2 overflow-hidden border sm:h-[460px] lg:h-[min(620px,calc(100dvh-180px))] lg:min-h-[480px]"
-      aria-label="Ama and Theo clinking glasses."
+      aria-label="Ama in Accra and Theo in New York clinking glasses."
     >
       {PEOPLE.map((c, i) => {
         const right = i === 1;
@@ -47,24 +50,29 @@ export function HeroScene() {
               right ? "bg-s1 items-end text-right" : "items-start bg-[var(--bg-night)]",
             )}
           >
-            <div className={cn("flex flex-col gap-3", right && "items-end")}>
+            <div className={cn("flex flex-col gap-1", right && "items-end")}>
+              <span className="display text-text text-[24px] leading-none sm:text-[32px] lg:text-[40px]">
+                {c.place}
+              </span>
+              <span className="mono text-muted text-sm sm:text-base">
+                {minute === null ? "--:--" : clockIn(minute, c.zone)}
+              </span>
+            </div>
+            <div className={cn("flex flex-col gap-2", right && "items-end")}>
               <Image
                 src={c.avatar}
                 alt=""
-                width={72}
-                height={72}
-                className="bg-s2 h-14 w-14 rounded-full sm:h-[72px] sm:w-[72px]"
+                width={64}
+                height={64}
+                className="bg-s2 h-12 w-12 rounded-full sm:h-16 sm:w-16"
               />
-              <div className="display text-text text-[34px] leading-none sm:text-[52px] lg:text-[64px]">
+              <div className="text-text text-[20px] leading-none font-bold sm:text-[26px] lg:text-[30px]">
                 {c.name}
               </div>
               <span className="border-line bg-s2 text-text rounded-full border px-3 py-1 text-xs font-semibold sm:text-sm">
                 {c.mood}
               </span>
             </div>
-            <span className="mono text-faint text-xs sm:text-sm">
-              {minute === null ? "--:--" : clockIn(minute, c.zone)} their time
-            </span>
           </div>
         );
       })}
@@ -82,7 +90,7 @@ export function HeroScene() {
       {/* Lands on Theo's side just after the glasses touch. */}
       <motion.div
         aria-hidden
-        className="bg-s3 border-line text-text absolute right-3 bottom-[64px] flex items-center gap-1.5 rounded-full border py-1.5 pr-3 pl-2 text-xs font-medium sm:right-6 sm:bottom-[84px] sm:text-sm lg:right-8 lg:bottom-[96px]"
+        className="bg-s3 border-line text-text absolute top-[84px] right-3 flex items-center gap-1.5 rounded-full border py-1.5 pr-3 pl-2 text-xs font-medium sm:top-[108px] sm:right-6 sm:text-sm lg:top-[128px] lg:right-8"
         initial={still ? false : { opacity: 0, y: 10 }}
         animate={
           still ? { opacity: 1, y: 0 } : { opacity: [0, 0, 1, 1, 0, 0], y: [10, 10, 0, 0, 0, 10] }

@@ -19,10 +19,12 @@ test.describe("landing", () => {
       "/signup",
     );
     await expect(main.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
-    // Accra and London share a clock in November.
+    // Accra is five hours ahead of New York in November.
     const scene = page.getByRole("figure");
-    await expect(scene).toContainText("21:14 their time");
+    await expect(scene).toContainText("Accra");
+    await expect(scene).toContainText("New York");
     await expect(scene).toContainText("21:14");
+    await expect(scene).toContainText("16:14");
     await expectNoHorizontalScroll(page);
   });
 
