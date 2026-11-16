@@ -39,7 +39,10 @@ export const useQueue = create<QueueState>()(
       setFailed: (id, v) => set((s) => ({ failed: { ...s.failed, [id]: v } })),
     }),
     {
-      name: "clink_outbox",
+      // Renamed to "clink_outbox:<user id>" and rehydrated by AccountScope, so
+      // a message queued on one account is never sent from another.
+      name: "clink_outbox:pending",
+      skipHydration: true,
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({
         items: s.items.filter((i) => i.type === "text" || i.type === "sticker"),

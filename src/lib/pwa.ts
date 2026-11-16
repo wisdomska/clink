@@ -45,3 +45,26 @@ export async function enablePush(): Promise<"granted" | "denied" | "unsupported"
   });
   return "granted";
 }
+
+/**
+ * A device has one push subscription. With several accounts on it, it belongs
+ * to whichever account is open: re-save it for the signed-in account so alerts
+ * (and their previews) only ever arrive for the account in use.
+ */
+export async function claimPush(): Promise<void> {
+  try {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+    if (Notification.permission !== "granted") return;
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (!sub) return;
+    const json = sub.toJSON();
+    await fetch("/api/push/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ endpoint: json.endpoint, keys: json.keys }),
+    });
+  } catch {
+    /* best effort */
+  }
+}

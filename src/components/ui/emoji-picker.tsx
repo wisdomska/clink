@@ -4,12 +4,13 @@ import { motion } from "motion/react";
 import { MagnifyingGlass, ClockCounterClockwise, X } from "@phosphor-icons/react";
 import { cn } from "./cn";
 import { EMOJI_GROUPS } from "./emoji-data";
+import { scoped } from "@/lib/account-scope";
 
 const RECENT_KEY = "clink.recentEmoji.v1";
 
 function readRecent(): string[] {
   try {
-    return JSON.parse(localStorage.getItem(RECENT_KEY) ?? "[]") as string[];
+    return JSON.parse(localStorage.getItem(scoped(RECENT_KEY)) ?? "[]") as string[];
   } catch {
     return [];
   }
@@ -17,7 +18,7 @@ function readRecent(): string[] {
 function pushRecent(e: string) {
   try {
     const next = [e, ...readRecent().filter((x) => x !== e)].slice(0, 24);
-    localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+    localStorage.setItem(scoped(RECENT_KEY), JSON.stringify(next));
   } catch {
     /* storage blocked */
   }

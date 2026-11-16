@@ -11,7 +11,10 @@ declare global {
 declare const self: ServiceWorkerGlobalScope;
 
 // Sensitive and private routes are never cached (spec 14.1 Client).
+// Every API response is someone's data: never cached, so with several
+// accounts on one device nothing from one can be served to another.
 const NEVER_CACHE = [
+  /^\/api\//,
   /^\/api\/media\//,
   /^\/api\/dark\//,
   /^\/dark(\/|$)/,
@@ -53,7 +56,10 @@ const serwist = new Serwist({
       // a stalled network falls back to the cached copy after 3 s (not 4).
       matcher: ({ request, sameOrigin }) =>
         sameOrigin && (request.mode === "navigate" || request.headers.get("RSC") === "1"),
-      handler: new NetworkFirst({ cacheName: "pages-v2", networkTimeoutSeconds: 3 }),
+      // No network timeout: a slow network waits for this account's page rather
+      // than showing a cached one (which could be another account's). The cache
+      // is only used when truly offline, and is wiped on any account change.
+      handler: new NetworkFirst({ cacheName: "pages-v3" }),
     },
     ...defaultCache,
   ],

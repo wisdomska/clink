@@ -1,5 +1,6 @@
 "use client";
 import { supabaseBrowser } from "@/lib/supabase/client";
+import { clearUserCaches } from "@/lib/account-scope";
 
 /**
  * Several Clink accounts signed in on one device (like Instagram's account
@@ -64,6 +65,8 @@ export function forget(id: string) {
 }
 
 async function park() {
+  // Nothing cached for this account may be shown to the next one.
+  await clearUserCaches();
   await fetch("/api/auth/park", { method: "POST" });
 }
 

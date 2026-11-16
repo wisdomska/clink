@@ -20,6 +20,7 @@ import { AppearanceCard } from "./appearance";
 import { IdentityPicker } from "@/components/clink/identity-picker";
 import { InstallCard } from "./install-card";
 import { DateField, TimeField } from "@/components/ui/pickers";
+import { clearUserCaches } from "@/lib/account-scope";
 import { messageToneOn, setMessageTone, playMessageTone } from "@/lib/tones";
 import { asIdentity } from "@/lib/app-identity";
 import { ProfileCard } from "./profile";
@@ -373,6 +374,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
               </Row>
               <Row
                 onClick={async () => {
+                  await clearUserCaches();
                   await fetch("/api/auth/signout", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -385,6 +387,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
               </Row>
               <Row
                 onClick={async () => {
+                  await clearUserCaches();
                   await fetch("/api/auth/signout", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },

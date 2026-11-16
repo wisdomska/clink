@@ -10,6 +10,10 @@ import { GameInviteToast } from "@/features/play/invite-toast";
 import { PushAsk } from "@/features/home/push-ask";
 import { SearchShortcut } from "@/features/search/search-shortcut";
 import { useCouple } from "@/features/couple/context";
+import { enterAccount, scopeUser } from "@/lib/account-scope";
+import { useQueue } from "@/features/chat/queue";
+import { loadAppearanceFor } from "@/lib/appearance";
+import { claimPush } from "@/lib/pwa";
 import { MessageTone } from "@/features/chat/message-tone";
 import { SoloHome, SoloGate, SOLO_OPEN } from "@/features/couple/solo";
 
@@ -23,7 +27,16 @@ export function AppShell({
   banners: Array<{ id: string; kind: string; body: string }>;
 }) {
   const path = usePathname();
-  const { solo } = useCouple();
+  const { solo, me } = useCouple();
+  // Scope this device's storage to the signed-in account before anything below
+  // reads it (children render after this line), then hydrate account state.
+  if (typeof window !== "undefined" && scopeUser() !== me.id) enterAccount(me.id);
+  useEffect(() => {
+    useQueue.persist.setOptions({ name: `clink_outbox:${me.id}` });
+    void useQueue.persist.rehydrate();
+    loadAppearanceFor();
+    void claimPush();
+  }, [me.id]);
   const tabs = !HIDE_TABS.some((r) => r.test(path));
   // Not linked yet: Us becomes the invite home, partner-only screens ask you to link.
   const body = !solo ? (
@@ -36,7 +49,7 @@ export function AppShell({
     <SoloGate path={path} />
   );
   const online = useOnline();
-  const [dismissedRaw, setDismissedRaw] = useStoredString("clink_banners", "[]");
+  const [dismissedRaw, setDismissedRaw] = useStoredString(`clink_banners:${me.id}`, "[]");
   let dismissed: string[] = [];
   try {
     dismissed = JSON.parse(dismissedRaw) as string[];

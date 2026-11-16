@@ -7,11 +7,12 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 import { useCouple, useCoupleEvent } from "@/features/couple/context";
 import { parseCallBody } from "./call-log-row";
 import { useCall } from "./call-provider";
+import { scoped } from "@/lib/account-scope";
 
 const KEY = "clink.missedSeen";
 const seenId = () => {
   try {
-    return localStorage.getItem(KEY);
+    return localStorage.getItem(scoped(KEY));
   } catch {
     return null;
   }
@@ -58,7 +59,7 @@ export function MissedCallCard() {
   const hide = () => {
     if (!data) return;
     try {
-      localStorage.setItem(KEY, data.id);
+      localStorage.setItem(scoped(KEY), data.id);
     } catch {
       /* fine */
     }

@@ -1,5 +1,6 @@
 "use client";
 import { useSyncExternalStore } from "react";
+import { scoped } from "@/lib/account-scope";
 
 /** Per-device look: accent colour, chat text size, bubble shape. */
 export interface Appearance {
@@ -24,17 +25,22 @@ const DEFAULT: Appearance = { accent: "#FF4F7B", text: "m", bubble: "round" };
 let current: Appearance = DEFAULT;
 const listeners = new Set<() => void>();
 
-function load(): Appearance {
+function load(key: string = KEY): Appearance {
   try {
-    return {
-      ...DEFAULT,
-      ...(JSON.parse(localStorage.getItem(KEY) ?? "{}") as Partial<Appearance>),
-    };
+    const raw = localStorage.getItem(key) ?? localStorage.getItem(KEY);
+    return { ...DEFAULT, ...(JSON.parse(raw ?? "{}") as Partial<Appearance>) };
   } catch {
     return DEFAULT;
   }
 }
 if (typeof window !== "undefined") current = load();
+
+/** Each account keeps its own look: load and apply the signed-in account's. */
+export function loadAppearanceFor() {
+  current = load(scoped(KEY));
+  applyAppearance(current);
+  listeners.forEach((l) => l());
+}
 
 function rgba(hex: string, a: number) {
   const n = parseInt(hex.slice(1), 16);
@@ -64,6 +70,8 @@ export function applyAppearance(a: Appearance = current) {
 export function setAppearance(p: Partial<Appearance>) {
   current = { ...current, ...p };
   try {
+    localStorage.setItem(scoped(KEY), JSON.stringify(current));
+    // The device default is what loads first (before an account is known).
     localStorage.setItem(KEY, JSON.stringify(current));
   } catch {
     /* storage blocked: applies for this visit only */
