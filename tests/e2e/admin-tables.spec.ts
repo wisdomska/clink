@@ -61,7 +61,9 @@ test("admin tables: pages, sizes, sorting and filters live in the URL; CSV expor
   await expect(p).not.toHaveURL(/page=2/);
   await p.getByRole("button", { name: /^Joined/ }).click();
   await expect(p).toHaveURL(/sort=joined/);
-  await expect(p.getByText(/^Showing \d+-\d+ of \d+ accounts$|^No accounts$/)).toBeVisible();
+  await expect(
+    p.getByText(/^Showing [\d,]+-[\d,]+ of [\d,]+ accounts?$|^No accounts$/),
+  ).toBeVisible();
   await p.getByLabel("Per page").selectOption("50");
   await expect(p).toHaveURL(/size=50/);
   await p.reload();

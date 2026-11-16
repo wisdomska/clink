@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { requireAdmin, adminAudit, revokeUserSessions } from "@/lib/server/admin";
 import { isUuid } from "@/lib/server/admin-list";
 import { endCouple } from "@/lib/server/wipe";
+import { hardDeleteUser } from "@/lib/server/jobs";
 
 const schema = z.object({
   action: z.enum([
@@ -111,6 +112,10 @@ export const POST = handler(async (req, ctx: { params: Promise<{ id: string }> }
       .update({ deleted_at: new Date().toISOString(), display_name: null, phone: null })
       .eq("id", id);
     await signOutEverywhere(id);
+    // An admin delete happens now, not at the next scheduled run.
+    await adminAudit(a.user.id, action, { reason: reason ?? null }, id);
+    await hardDeleteUser(id);
+    return ok({ ok: true, deleted: true });
   }
   await adminAudit(a.user.id, action, { reason: reason ?? null }, id);
   return ok({ ok: true });

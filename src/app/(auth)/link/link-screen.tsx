@@ -18,6 +18,8 @@ import { Sparks } from "@/components/clink/sparks";
 import { toast } from "@/components/ui/toast";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { subscribeAuthed } from "@/lib/realtime";
+import { MemojiArt } from "@/components/clink/memoji-art";
+import { parseMemoji } from "@/lib/avatars";
 
 type Invite = { code: string; expires_at: string };
 
@@ -183,20 +185,10 @@ export function LinkScreen({
     : 0;
 
   if (linked) {
-    const a = (me.trim()[0] ?? "Y").toUpperCase();
-    const b = (partner.trim()[0] ?? "?").toUpperCase();
     return (
       <div className="an-screen flex flex-1 flex-col">
         <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <div className="relative flex h-[150px] items-center justify-center" aria-hidden>
-            <div className="an-linkL display border-pa bg-s2 relative z-[1] -mr-3.5 flex h-28 w-28 items-center justify-center rounded-full border-[3px] text-[44px]">
-              {a}
-            </div>
-            <div className="an-linkR display border-pb bg-s3 -ml-3.5 flex h-28 w-28 items-center justify-center rounded-full border-[3px] text-[44px]">
-              {b}
-            </div>
-            <Sparks variant="spark-late" className="top-3.5 left-1/2 z-[2]" />
-          </div>
+          <LinkedPair />
           <Display size={48} className="mt-7">
             You&apos;re linked.
           </Display>
@@ -367,6 +359,43 @@ export function LinkScreen({
         </form>
       )}
       <FieldError>{error}</FieldError>
+    </div>
+  );
+}
+
+/** The two of you as memoji: you blowing a kiss, them with heart hands. */
+function LinkedPair() {
+  const [pair, setPair] = useState<{ mine: string; theirs: string } | null>(null);
+  useEffect(() => {
+    let live = true;
+    void fetch("/api/me/state")
+      .then((r) => r.json())
+      .then((s: { myAvatar?: string | null; partnerAvatar?: string | null }) => {
+        const person = (k?: string | null, fallback = "p15") =>
+          parseMemoji(k ?? "")?.person ?? fallback;
+        if (live) setPair({ mine: person(s.myAvatar), theirs: person(s.partnerAvatar, "p12") });
+      })
+      .catch(() => live && setPair({ mine: "p15", theirs: "p12" }));
+    return () => {
+      live = false;
+    };
+  }, []);
+  return (
+    <div className="relative flex h-[150px] items-end justify-center" aria-hidden>
+      {pair && (
+        <>
+          <MemojiArt person={pair.mine} pose="kiss" size={132} tilt={-4} />
+          <MemojiArt
+            person={pair.theirs}
+            pose="heart"
+            size={132}
+            tilt={4}
+            delay={0.12}
+            className="-ml-4"
+          />
+        </>
+      )}
+      <Sparks variant="spark-late" className="top-0 left-1/2 z-[2]" />
     </div>
   );
 }

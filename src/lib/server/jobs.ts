@@ -151,39 +151,47 @@ export async function capsuleUnlock() {
   return { notified: data?.length ?? 0 };
 }
 
-/** account-deletion: hard-delete accounts 30 days after the request, media first. */
-export async function accountDeletion() {
+/**
+ * Delete one account for good: their media files first, then the auth user,
+ * which cascades every row they own. Used by the job and by admin "Delete".
+ */
+export async function hardDeleteUser(userId: string) {
   const admin = supabaseAdmin();
   const s = await storage();
+  const { data: media } = await admin
+    .from("media")
+    .select("bucket, storage_path")
+    .eq("owner_id", userId);
+  for (const bucket of ["media", "sensitive"] as const) {
+    const paths = (media ?? []).filter((m) => m.bucket === bucket).map((m) => m.storage_path);
+    for (let i = 0; i < paths.length; i += 100)
+      await s.remove(bucket, paths.slice(i, i + 100)).catch(() => undefined);
+  }
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("avatar_path")
+    .eq("id", userId)
+    .maybeSingle();
+  if (profile?.avatar_path) await s.remove("media", [profile.avatar_path]).catch(() => undefined);
+  await admin
+    .from("deletion_requests")
+    .update({ done_at: new Date().toISOString() })
+    .eq("user_id", userId);
+  const { error } = await admin.auth.admin.deleteUser(userId); // cascades every row the user owns
+  if (error) throw error;
+  await audit("account_deleted", null, { user: userId.slice(0, 8) });
+}
+
+/** account-deletion: hard-delete accounts whose grace period has passed (30 days for self-service). */
+export async function accountDeletion() {
+  const admin = supabaseAdmin();
   const { data } = await admin
     .from("deletion_requests")
     .select("user_id")
     .lte("execute_after", new Date().toISOString())
     .is("done_at", null)
     .limit(50);
-  for (const r of data ?? []) {
-    const { data: media } = await admin
-      .from("media")
-      .select("bucket, storage_path")
-      .eq("owner_id", r.user_id);
-    for (const bucket of ["media", "sensitive"] as const) {
-      const paths = (media ?? []).filter((m) => m.bucket === bucket).map((m) => m.storage_path);
-      for (let i = 0; i < paths.length; i += 100)
-        await s.remove(bucket, paths.slice(i, i + 100)).catch(() => undefined);
-    }
-    const { data: profile } = await admin
-      .from("profiles")
-      .select("avatar_path")
-      .eq("id", r.user_id)
-      .maybeSingle();
-    if (profile?.avatar_path) await s.remove("media", [profile.avatar_path]).catch(() => undefined);
-    await admin
-      .from("deletion_requests")
-      .update({ done_at: new Date().toISOString() })
-      .eq("user_id", r.user_id);
-    await admin.auth.admin.deleteUser(r.user_id); // cascades every row the user owns
-    await audit("account_deleted", null, { user: r.user_id.slice(0, 8) });
-  }
+  for (const r of data ?? []) await hardDeleteUser(r.user_id);
   return { deleted: data?.length ?? 0 };
 }
 
