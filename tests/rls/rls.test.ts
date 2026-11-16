@@ -92,6 +92,7 @@ const SERVER_ONLY = [
   "game_secrets",
   "notification_log",
   "admin_accounts",
+  "report_notes",
 ] as const;
 const PARTNER_VISIBLE = ["presence"] as const;
 const SELF_ONLY = [
