@@ -18,7 +18,7 @@ export default async function ArchivePage() {
   const {
     data: { user },
   } = await db.auth.getUser();
-  if (!user) redirect("/login?next=/archive");
+  if (!user) redirect("/auth/reset?next=/archive");
   if (await activeCouple(user.id)) redirect("/chat");
   const archive = await readOnlyArchive(user.id);
   if (!archive) redirect("/link");

@@ -19,7 +19,7 @@ export default async function LinkPage({
   const {
     data: { user },
   } = await db.auth.getUser();
-  if (!user) redirect("/login?next=/link");
+  if (!user) redirect("/auth/reset?next=/link");
   const sp = await searchParams;
   const step = await journeyStep(user.id);
   if (step === "dob" || step === "profile")

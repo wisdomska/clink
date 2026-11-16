@@ -16,7 +16,7 @@ export default async function OnboardingPage({
   const {
     data: { user },
   } = await db.auth.getUser();
-  if (!user) redirect("/login?next=/onboarding");
+  if (!user) redirect("/auth/reset?next=/onboarding");
   const step = await journeyStep(user.id);
   const { next, edit } = await searchParams;
   const editing = Boolean(edit) && step !== "dob";

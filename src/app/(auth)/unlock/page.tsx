@@ -21,7 +21,7 @@ export default async function UnlockPage({
   const {
     data: { user },
   } = await db.auth.getUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent(next)}`);
+  if (!user) redirect(`/auth/reset?next=${encodeURIComponent(next)}`);
   if (!(await appLockEnabled(user.id)) || (await isAppUnlocked(user.id))) redirect(next);
   // Just signed in again (proved who they are): allow turning a forgotten PIN off.
   const fresh = signedInRecently(user.last_sign_in_at);

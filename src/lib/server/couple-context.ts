@@ -24,7 +24,7 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
   const {
     data: { user },
   } = await db.auth.getUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent(nextPath)}`);
+  if (!user) redirect(`/auth/reset?next=${encodeURIComponent(nextPath)}`);
   const step = await journeyStep(user.id);
   if (step !== "app") redirect(pathFor(step));
   // CHAT-07: optional PIN on open. Nothing is loaded until it is entered.
