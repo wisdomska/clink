@@ -10,6 +10,8 @@ test("ritual time needs both partners to agree", async ({ couple }) => {
   await a.getByRole("button", { name: "Suggest" }).click();
   await expect(a.getByText(`You suggested 20:30. Waiting for ${theo.name}.`)).toBeVisible();
 
+  // The suggestion shows instantly; wait until it is saved before Theo looks.
+  await a.waitForLoadState("networkidle");
   await b.goto("/settings?tab=account");
   // Wait for the settled screen (a navigation can briefly overlap two renders).
   await expect(b.getByText(`${nia.name} suggested 20:30.`)).toHaveCount(1);

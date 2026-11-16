@@ -3,7 +3,7 @@ import { admin } from "./helpers";
 
 // KEEP-02: a time capsule can hold a voice note, sealed until its date.
 test("seal a voice note in a capsule and open it on the day", async ({ couple }) => {
-  const { a, b } = couple;
+  const { a, b, nia } = couple;
   await a.goto("/keep");
   await a.getByRole("button", { name: "Seal one" }).click();
   await a.getByLabel("Name it").fill("Our song, hummed");
@@ -16,13 +16,16 @@ test("seal a voice note in a capsule and open it on the day", async ({ couple })
   await a.getByRole("button", { name: "Cork it" }).click();
   await expect(a.getByText("Corked. See you then.")).toBeVisible();
 
-  const { data: cap } = await admin
-    .from("capsules")
-    .select("id, capsule_contents(media_id, media(kind))")
-    .eq("title", "Our song, hummed")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .single();
+  // The toast is optimistic: wait for this couple's capsule to be saved.
+  const find = () =>
+    admin
+      .from("capsules")
+      .select("id, capsule_contents(media_id, media(kind))")
+      .eq("title", "Our song, hummed")
+      .eq("author_id", nia.id)
+      .maybeSingle();
+  await expect.poll(async () => (await find()).data?.id ?? null, { timeout: 15000 }).not.toBeNull();
+  const { data: cap } = await find();
   const content = cap!.capsule_contents as unknown as { media: { kind: string } | null };
   expect(content.media?.kind).toBe("audio");
 

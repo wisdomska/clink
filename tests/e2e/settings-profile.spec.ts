@@ -6,7 +6,7 @@ test("account row in the rail opens the Profile tab", async ({ couple }) => {
   const { a, nia } = couple;
   await a.setViewportSize({ width: 1280, height: 800 });
   await a.goto("/us");
-  const account = a.getByRole("link", { name: `${nia.name}, profile and settings` });
+  const account = a.getByRole("link", { name: new RegExp(`${nia.name}.*Profile and settings`) });
   await expect(account).toBeVisible();
   await account.click();
   await expect(a).toHaveURL(/\/settings\?tab=profile/);

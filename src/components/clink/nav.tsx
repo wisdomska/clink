@@ -201,7 +201,6 @@ function AccountRow({ on }: { on: boolean }) {
       href="/settings?tab=profile"
       prefetch
       title={`${me.name}: profile and settings`}
-      aria-label={`${me.name}, profile and settings`}
       aria-current={on ? "page" : undefined}
       className={cn(
         "press text-text hover:text-text mt-3 flex min-h-14 items-center gap-3 rounded-full border px-2 py-1.5",
@@ -220,6 +219,7 @@ function AccountRow({ on }: { on: boolean }) {
           </span>
         )}
       </span>
+      <span className="sr-only">Profile and settings</span>
       <GearSix size={18} aria-hidden className="rail-full text-faint mr-2 flex-none" />
     </Link>
   );
