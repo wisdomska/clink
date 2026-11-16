@@ -131,14 +131,15 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
   return (
     <div className="screen an-screen">
       <div className="mx-auto flex w-full max-w-[720px] flex-col gap-4">
-        <div className="flex items-center gap-3">
-          <IconButton label="Back" onClick={() => router.push("/us")}>
-            <ArrowLeft size={20} />
-          </IconButton>
-          <Display size={36}>Settings</Display>
+        <div className="app-topbar flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <IconButton label="Back" onClick={() => router.push("/us")}>
+              <ArrowLeft size={20} />
+            </IconButton>
+            <Display size={36}>Settings</Display>
+          </div>
+          <NavTabs label="Settings sections" tabs={SETTINGS_TABS} />
         </div>
-
-        <NavTabs label="Settings sections" tabs={SETTINGS_TABS} />
 
         {tab === "profile" && (
           <TabPanel key="profile">

@@ -57,7 +57,7 @@ export function UsScreen() {
 
   return (
     <div className="screen an-screen">
-      <div className="flex h-11 flex-none items-center justify-between lg:hidden">
+      <div className="app-topbar flex h-11 flex-none items-center justify-between lg:hidden">
         <h1
           onPointerDown={wordDown}
           onPointerUp={wordUp}
