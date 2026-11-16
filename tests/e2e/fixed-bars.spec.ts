@@ -2,7 +2,9 @@ import { test, expect } from "./fixtures";
 
 test("top bar and tab bar stay on screen while the page scrolls", async ({ couple }) => {
   const { a } = couple;
-  const vh = a.viewportSize()!.height;
+  // A short window, so every device size has something to scroll.
+  await a.setViewportSize({ width: a.viewportSize()!.width, height: 560 });
+  const vh = 560;
   await a.goto("/settings?tab=look");
   const tabs = a.getByRole("tablist", { name: "Settings sections" });
   await expect(tabs).toBeVisible();
@@ -14,7 +16,7 @@ test("top bar and tab bar stay on screen while the page scrolls", async ({ coupl
 
   await a.goto("/us");
   await a.mouse.wheel(0, 2000);
-  const settings = a.getByRole("link", { name: "Settings" });
+  const settings = a.getByRole("link", { name: "Settings", exact: true });
   const nav = a.getByRole("navigation", { name: "Main" });
   const sBox = await settings.boundingBox();
   if (sBox) expect(sBox.y).toBeGreaterThanOrEqual(0);
