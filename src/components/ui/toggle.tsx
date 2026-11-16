@@ -35,11 +35,11 @@ export function Toggle({
       </span>
       <span
         aria-hidden
-        className="h-7 w-12 flex-none rounded-full p-[3px] transition-[background] duration-200"
+        className="h-7 w-12 flex-none rounded-full p-[3px] transition-[background] duration-150"
         style={{ background: checked ? "var(--accent)" : "var(--surface-3)" }}
       >
         <span
-          className="bg-app block h-[22px] w-[22px] rounded-full transition-transform duration-200"
+          className="bg-app block h-[22px] w-[22px] rounded-full transition-transform duration-150"
           style={{ transform: `translateX(${checked ? 20 : 0}px)` }}
         />
       </span>

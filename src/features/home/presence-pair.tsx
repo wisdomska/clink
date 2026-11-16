@@ -1,15 +1,21 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import {
   Books,
+  CaretRight,
   ChatCircle,
   CookingPot,
   Laptop,
   Leaf,
   Moon,
   PencilSimple,
+  Phone,
   Sparkle,
+  UserCircle,
+  VideoCamera,
+  Wine,
   type Icon,
 } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
@@ -21,8 +27,11 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import { statusLabel, type PresenceStatus } from "@/features/couple/types";
 import { feedback } from "@/lib/feedback";
+import { useLongPress } from "@/lib/hooks";
 import { useAmbient } from "./ambient";
 import { useOpenPartner } from "@/features/partner/partner-sheet";
+import { useCall } from "@/features/call/call-provider";
+import { useSendClink } from "./use-send-clink";
 
 const STATUSES: Array<{ key: PresenceStatus; icon: Icon }> = [
   { key: "free", icon: Leaf },
@@ -64,6 +73,22 @@ export function PresencePair({ now }: { now: Date }) {
   const [custom, setCustom] = useState(myStatus.startsWith("custom:") ? statusLabel(myStatus) : "");
   const ambient = useAmbient();
   const openPartner = useOpenPartner();
+  const router = useRouter();
+  const { start } = useCall();
+  const { sendClink } = useSendClink();
+  // Long-press (or right-click) your partner for quick actions, iMessage style.
+  const [quick, setQuick] = useState(false);
+  const partnerPress = useLongPress(() => {
+    router.prefetch("/chat");
+    setQuick(true);
+  });
+  const quickActions: Array<{ label: string; icon: Icon; run: () => void }> = [
+    { label: "Message", icon: ChatCircle, run: () => router.push("/chat") },
+    { label: "Send a Clink", icon: Wine, run: () => void sendClink("tap") },
+    { label: "Voice call", icon: Phone, run: () => start(false) },
+    { label: "Video call", icon: VideoCamera, run: () => start(true) },
+    { label: "View profile", icon: UserCircle, run: openPartner },
+  ];
   const online = presence.online;
   const asleep = presence.status === "sleeping";
   const theirStatus = asleep
@@ -142,7 +167,9 @@ export function PresencePair({ now }: { now: Date }) {
           <button
             type="button"
             onClick={openPartner}
-            className="press text-text flex min-w-0 cursor-pointer flex-col items-center gap-2 border-0 bg-transparent p-0"
+            {...partnerPress}
+            aria-haspopup="dialog"
+            className="press text-text flex min-w-0 cursor-pointer flex-col items-center gap-2 border-0 bg-transparent p-0 select-none"
           >
             <div className="relative">
               <Avatar
@@ -162,7 +189,9 @@ export function PresencePair({ now }: { now: Date }) {
               )}
             </div>
             <span className="max-w-full truncate text-[15px] font-bold">{partner.name}</span>
-            <span className="sr-only">Open {partner.name}&apos;s profile.</span>
+            <span className="sr-only">
+              Open {partner.name}&apos;s profile. Long-press for quick actions.
+            </span>
             {pill(
               theirStatus,
               online && !asleep ? iconFor(presence.status) : asleep ? Moon : null,
@@ -171,6 +200,58 @@ export function PresencePair({ now }: { now: Date }) {
           </button>
         </div>
       </section>
+
+      <Sheet
+        open={quick}
+        onOpenChange={setQuick}
+        title={`Quick actions for ${partner.name}`}
+        handle
+      >
+        <div className="flex items-center gap-3">
+          <Avatar
+            name={partner.name}
+            side="partner"
+            size={44}
+            ring={0}
+            photoUrl={partner.avatarUrl}
+            icon={partner.avatarIcon}
+            dim={!online}
+          />
+          <div className="min-w-0">
+            <div className="truncate text-lg font-bold">{partner.name}</div>
+            <div className="text-muted text-sm">{theirStatus}</div>
+          </div>
+        </div>
+        <div
+          role="menu"
+          aria-label={`Quick actions for ${partner.name}`}
+          className="rounded-card border-line bg-s2 divide-line flex flex-col divide-y overflow-hidden border"
+        >
+          {quickActions.map(({ label, icon: ActionIcon, run }) => (
+            <button
+              key={label}
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                // Close first, act second: the sheet never waits on the action.
+                setQuick(false);
+                feedback("tap");
+                run();
+              }}
+              className="press text-text hover:bg-s3 flex h-14 w-full cursor-pointer items-center gap-3 border-0 bg-transparent px-4 text-left text-base font-medium"
+            >
+              <ActionIcon
+                size={20}
+                weight="regular"
+                aria-hidden
+                className="text-accent flex-none"
+              />
+              <span className="flex-1">{label}</span>
+              <CaretRight size={20} aria-hidden className="text-faint flex-none" />
+            </button>
+          ))}
+        </div>
+      </Sheet>
 
       <Sheet open={open} onOpenChange={setOpen} title="Your status" handle>
         <Display as="h2" size={28}>
@@ -193,7 +274,7 @@ export function PresencePair({ now }: { now: Date }) {
                 myStatus === key ? "bg-accent text-on-accent" : "bg-s2 text-text",
               )}
             >
-              <StatusIcon size={16} weight="bold" aria-hidden />
+              <StatusIcon size={20} weight="bold" aria-hidden />
               {key}
             </button>
           ))}
@@ -231,7 +312,7 @@ export function PresencePair({ now }: { now: Date }) {
                 key={sug}
                 type="button"
                 onClick={() => setCustom(sug)}
-                className="bg-s2 text-muted hover:text-text flex-none cursor-pointer rounded-full border-0 px-3 py-1.5 text-xs font-medium"
+                className="press bg-s2 text-muted hover:text-text h-11 flex-none cursor-pointer rounded-full border-0 px-3.5 text-sm font-medium"
               >
                 {sug}
               </button>

@@ -6,38 +6,71 @@ import { haptic } from "@/lib/feedback";
 import { cn } from "./cn";
 
 type Kind = "plain" | "ok" | "err" | "info";
-interface Action {
+export interface ToastAction {
   label: string;
   onClick: () => void;
+}
+export interface ToastOptions {
+  /** A button in the toast, e.g. `{ label: "Undo", onClick }`. Toasts with one stay 5 s. */
+  action?: ToastAction;
+  kind?: Kind;
+  /** Called when the toast leaves without its action being pressed (timeout or replaced). */
+  onDismiss?: () => void;
+  /** Override how long it stays, in ms. */
+  duration?: number;
 }
 interface ToastState {
   message: string;
   kind: Kind;
-  action: Action | null;
+  action: ToastAction | null;
+  onDismiss: (() => void) | null;
+  duration: number | null;
   id: number;
-  show: (m: string, kind?: Kind, action?: Action | null) => void;
+  show: (m: string, kind?: Kind, action?: ToastAction | null, opts?: ToastOptions) => void;
   clear: () => void;
 }
 
-export const useToast = create<ToastState>((set) => ({
+export const useToast = create<ToastState>((set, get) => ({
   message: "",
   kind: "plain",
   action: null,
+  onDismiss: null,
+  duration: null,
   id: 0,
-  show: (message, kind = "plain", action = null) =>
-    set((s) => ({ message, kind, action, id: s.id + 1 })),
-  clear: () => set({ message: "", action: null }),
+  show: (message, kind = "plain", action = null, opts) => {
+    // A toast that gets replaced counts as dismissed (an Undo window closes).
+    get().onDismiss?.();
+    set((s) => ({
+      message,
+      kind,
+      action,
+      onDismiss: opts?.onDismiss ?? null,
+      duration: opts?.duration ?? null,
+      id: s.id + 1,
+    }));
+  },
+  clear: () => {
+    get().onDismiss?.();
+    set({ message: "", action: null, onDismiss: null, duration: null });
+  },
 }));
 
-/** `toast("Saved.")` stays the default; kinds add an icon, `withAction` adds a button (Undo). */
-export const toast = Object.assign((m: string) => useToast.getState().show(m), {
-  ok: (m: string) => useToast.getState().show(m, "ok"),
-  err: (m: string) => {
-    haptic("error");
-    useToast.getState().show(m, "err");
-  },
-  info: (m: string) => useToast.getState().show(m, "info"),
-  withAction: (m: string, action: Action) => useToast.getState().show(m, "plain", action),
+function show(m: string, kind: Kind, opts?: ToastOptions) {
+  if (kind === "err") haptic("error");
+  useToast.getState().show(m, opts?.kind ?? kind, opts?.action ?? null, opts);
+}
+
+/**
+ * `toast("Saved.")` stays the default; kinds add an icon. Reversible actions get
+ * an Undo instead of a confirm dialog:
+ * `toast("Removed.", { action: { label: "Undo", onClick: restore }, onDismiss: commit })`.
+ */
+export const toast = Object.assign((m: string, opts?: ToastOptions) => show(m, "plain", opts), {
+  ok: (m: string, opts?: ToastOptions) => show(m, "ok", opts),
+  err: (m: string, opts?: ToastOptions) => show(m, "err", opts),
+  info: (m: string, opts?: ToastOptions) => show(m, "info", opts),
+  /** Kept for existing callers: same as `toast(m, { action })`. */
+  withAction: (m: string, action: ToastAction) => show(m, "plain", { action }),
 });
 
 const ICON = { ok: CheckCircle, err: WarningCircle, info: Info } as const;
@@ -45,12 +78,12 @@ const COLOUR = { ok: "text-accent", err: "text-danger", info: "text-muted" } as 
 
 /** Pill toast above the tab bar on phones, bottom-right on desktop. Re-showing restarts the timer. */
 export function Toaster() {
-  const { message, kind, action, id, clear } = useToast();
+  const { message, kind, action, duration, id, clear } = useToast();
   useEffect(() => {
     if (!message) return;
-    const t = setTimeout(clear, action ? 5000 : 2600);
+    const t = setTimeout(clear, duration ?? (action ? 5000 : 2600));
     return () => clearTimeout(t);
-  }, [message, id, clear, action]);
+  }, [message, id, clear, action, duration]);
   const Icon = kind === "plain" ? null : ICON[kind];
   return (
     <div
@@ -81,10 +114,13 @@ export function Toaster() {
             <button
               type="button"
               onClick={() => {
+                // Pressing the action is not a dismissal: drop onDismiss first.
+                useToast.setState({ onDismiss: null });
+                haptic("tap");
                 action.onClick();
                 clear();
               }}
-              className="press text-accent hover:bg-s2 -my-1 ml-1 h-9 cursor-pointer rounded-full px-3 text-sm font-bold"
+              className="press text-accent hover:bg-s2 -my-2 ml-1 h-11 min-w-11 cursor-pointer rounded-full px-3.5 text-sm font-bold"
             >
               {action.label}
             </button>

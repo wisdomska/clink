@@ -3,6 +3,7 @@ import { handler, ok, parseJson, requireCouple, rateLimit, deny } from "@/lib/se
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { notify } from "@/lib/server/push";
 import { track } from "@/lib/server/analytics";
+import { keysetFilter, pageParams, toPage } from "@/features/plans/cursor";
 
 const schema = z.object({
   title: z.string().trim().min(1).max(60),
@@ -68,4 +69,28 @@ export const POST = handler(async (req) => {
   });
   await track("activity_completed", user.id, { type: "capsule", mode: "turn" }, coupleId);
   return ok({ id: c.id }, { status: 201 });
+});
+
+/**
+ * KEEP-02 list: one page of capsule metadata, soonest unlock first. Contents
+ * are never listed; they come from /api/capsules/:id once the date passes.
+ */
+export const GET = handler(async (req) => {
+  const { db } = await requireCouple();
+  const { cursor, limit } = pageParams(req.nextUrl);
+  let q = db.from("capsules").select("id, author_id, title, unlock_at, opened_at, created_at");
+  if (cursor) q = q.or(keysetFilter("unlock_at", cursor, "asc"));
+  const { data, error } = await q
+    .order("unlock_at", { ascending: true })
+    .order("id", { ascending: true })
+    .limit(limit + 1);
+  if (error) throw error;
+  return ok(
+    toPage(
+      data ?? [],
+      limit,
+      (r) => r.unlock_at,
+      (r) => r.id,
+    ),
+  );
 });

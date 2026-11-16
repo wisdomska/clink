@@ -28,12 +28,14 @@ const variants: Record<Variant, string> = {
 };
 
 // Heights from the prototype: 56 primary CTA, 52 secondary, 48 inline, 44 chips, 40 compact.
+// Every size gives at least a 44 px hit target.
 const sizes: Record<Size, string> = {
   xl: "h-14 px-6 text-base",
   lg: "h-[52px] px-5 text-base",
   md: "h-12 px-5 text-base",
   sm: "h-11 px-4 text-sm",
-  xs: "h-10 px-3.5 text-sm",
+  // 40 px to look at, 44 px to hit: the invisible ::before pads the tap area.
+  xs: "h-10 px-3.5 text-sm before:absolute before:inset-x-0 before:-inset-y-0.5 before:content-['']",
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -73,7 +75,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         onClick?.(e);
       }}
       className={cn(
-        "press relative inline-flex cursor-pointer items-center justify-center gap-2 rounded-full whitespace-nowrap transition-shadow duration-200 select-none disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50",
+        "press relative inline-flex cursor-pointer items-center justify-center gap-2 rounded-full whitespace-nowrap select-none disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50",
         variants[variant],
         sizes[size],
         block && "w-full",
@@ -103,7 +105,10 @@ export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>
   dim?: number;
 }
 
-/** 44 px round icon button. "outline" = back/close, "surface" = top-bar actions. */
+/**
+ * Round icon button, 44 px by default. "outline" = back/close, "surface" = top-bar
+ * actions. A smaller `dim` keeps the look but the hit area stays 44 px.
+ */
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
   { label, tone = "outline", dim = 44, className, type = "button", style, ...rest },
   ref,
@@ -116,7 +121,9 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       title={label}
       style={{ width: dim, height: dim, ...style }}
       className={cn(
-        "press-icon flex flex-none cursor-pointer items-center justify-center rounded-full transition-[transform,background-color,border-color] duration-150",
+        dim < 44 &&
+          "relative before:absolute before:top-1/2 before:left-1/2 before:h-11 before:w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
+        "press-icon flex flex-none cursor-pointer items-center justify-center rounded-full",
         tone === "outline" && "border-line text-text border bg-transparent",
         tone === "surface" && "border-line bg-s1 text-text border",
         tone === "accent" && "bg-accent text-on-accent border-0",

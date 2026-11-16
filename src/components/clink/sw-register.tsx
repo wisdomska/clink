@@ -40,15 +40,23 @@ export function ServiceWorker() {
     window.addEventListener("error", onChunkError);
 
     let timer: ReturnType<typeof setInterval> | undefined;
-    navigator.serviceWorker.register("/sw.js", { scope: "/" }).then((reg) => {
-      void reg.update().catch(() => undefined);
-      timer = setInterval(() => reg.update().catch(() => undefined), 15 * 60 * 1000);
-      document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible") void reg.update().catch(() => undefined);
+    let checkOnReturn: (() => void) | undefined;
+    // Register once the page has loaded, so the worker's install (precaching)
+    // never competes with the first screen's own requests.
+    const register = () =>
+      navigator.serviceWorker.register("/sw.js", { scope: "/" }).then((reg) => {
+        void reg.update().catch(() => undefined);
+        timer = setInterval(() => reg.update().catch(() => undefined), 15 * 60 * 1000);
+        checkOnReturn = () => {
+          if (document.visibilityState === "visible") void reg.update().catch(() => undefined);
+        };
+        document.addEventListener("visibilitychange", checkOnReturn);
       });
-    });
+    if (document.readyState === "complete") void register();
+    else window.addEventListener("load", () => void register(), { once: true });
     return () => {
       if (timer) clearInterval(timer);
+      if (checkOnReturn) document.removeEventListener("visibilitychange", checkOnReturn);
       document.removeEventListener("visibilitychange", reloadIfPending);
       window.removeEventListener("unhandledrejection", onChunkError);
       window.removeEventListener("error", onChunkError);

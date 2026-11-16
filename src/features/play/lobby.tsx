@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { GAME_META, startGame } from "./meta";
 import { GameTile } from "./game-tile";
+import { GameHistory } from "./history";
 import { useOpenPartner } from "@/features/partner/partner-sheet";
 import { subscribeAuthed } from "@/lib/realtime";
 import type { GameType } from "./engines/types";
@@ -56,7 +57,14 @@ export function useGames() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "games", filter: `couple_id=eq.${coupleId}` },
-        () => qc.invalidateQueries({ queryKey: ["games", coupleId] }),
+        (e) => {
+          void qc.invalidateQueries({ queryKey: ["games", coupleId] });
+          // A game just finished: refresh the history and the lifetime score.
+          if ((e.new as { status?: string } | null)?.status === "finished") {
+            void qc.invalidateQueries({ queryKey: ["game-history", coupleId] });
+            void qc.invalidateQueries({ queryKey: ["rivalry"] });
+          }
+        },
       );
     return subscribeAuthed(
       ch,
@@ -135,7 +143,7 @@ export function Lobby() {
                 <button
                   type="button"
                   onClick={openPartner}
-                  className="text-text cursor-pointer border-0 bg-transparent p-0 text-base font-medium hover:underline"
+                  className="text-text min-h-11 cursor-pointer border-0 bg-transparent p-0 text-base font-medium hover:underline"
                 >
                   {partner.name}
                 </button>
@@ -305,6 +313,8 @@ export function Lobby() {
             )}
           </div>
         </div>
+
+        <GameHistory onStart={() => void play("word")} />
       </div>
       <Sheet open={deckOpen} onOpenChange={setDeckOpen} title="Pick a deck" handle>
         <div className="display text-[28px]">Pick a deck</div>

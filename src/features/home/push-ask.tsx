@@ -69,9 +69,9 @@ export function PushAsk() {
           type="button"
           aria-label="Not now"
           onClick={later}
-          className="press-icon text-muted -mt-1 -mr-1 flex h-10 w-10 flex-none cursor-pointer items-center justify-center rounded-full"
+          className="press-icon text-muted -mt-1.5 -mr-1.5 flex h-11 w-11 flex-none cursor-pointer items-center justify-center rounded-full"
         >
-          <X size={18} />
+          <X size={20} aria-hidden />
         </button>
       </div>
       <div className="flex gap-2">

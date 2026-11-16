@@ -75,7 +75,7 @@ function RoundBtn({
         type="button"
         aria-label={label}
         aria-pressed={on}
-        whileTap={{ scale: 0.97 }}
+        whileTap={{ scale: 0.94, transition: { duration: 0.06 } }}
         onClick={onClick}
         className={cn(
           "flex h-16 w-16 cursor-pointer items-center justify-center rounded-full border-0 text-white",
@@ -125,14 +125,19 @@ export function CallScreen({
         className="fixed top-[calc(env(safe-area-inset-top)+8px)] left-1/2 z-[90] flex -translate-x-1/2 items-center gap-1 rounded-full bg-[#34C759] p-1 pl-1 text-white shadow-[0_8px_24px_rgba(0,0,0,.35)]"
         initial={{ y: -40, opacity: 0.01 }}
         animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
       >
         <audio ref={audioRef} autoPlay />
         <button
           type="button"
           onClick={() => setMini(false)}
-          className="flex h-9 cursor-pointer items-center gap-2 rounded-full border-0 bg-transparent px-3 text-sm font-bold text-white"
+          className="press flex h-11 cursor-pointer items-center gap-2 rounded-full border-0 bg-transparent px-3 text-sm font-bold text-white"
         >
-          {call.video ? <VideoCamera size={18} weight="fill" /> : <Phone size={18} weight="fill" />}
+          {call.video ? (
+            <VideoCamera size={20} weight="fill" aria-hidden />
+          ) : (
+            <Phone size={20} weight="fill" aria-hidden />
+          )}
           {partnerName}
           {live && call.startedAt ? <Elapsed since={call.startedAt} /> : <LoadingDots />}
         </button>
@@ -140,9 +145,9 @@ export function CallScreen({
           type="button"
           aria-label="End call"
           onClick={hangUp}
-          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-0 bg-[#FF3B30] text-white"
+          className="press-icon flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 bg-[#FF3B30] text-white"
         >
-          <PhoneDisconnect size={18} weight="fill" />
+          <PhoneDisconnect size={20} weight="fill" aria-hidden />
         </button>
       </motion.div>
     );

@@ -33,7 +33,7 @@ export function Segmented<T extends string>({
             aria-checked={on}
             onClick={() => onChange(o.value)}
             className={cn(
-              "press h-10 flex-1 cursor-pointer rounded-full border-0 text-sm",
+              "press h-11 min-w-11 flex-1 cursor-pointer rounded-full border-0 px-3 text-sm",
               tone === "surface" ? "font-medium" : "font-semibold",
               on
                 ? tone === "surface"

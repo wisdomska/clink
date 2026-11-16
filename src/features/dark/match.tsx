@@ -7,6 +7,7 @@ import { useCouple } from "@/features/couple/context";
 import { Button, IconButton } from "@/components/ui/button";
 import { Display, Lead } from "@/components/ui/heading";
 import { Segmented } from "@/components/ui/segmented";
+import { toast } from "@/components/ui/toast";
 import { darkFetch } from "./api";
 
 interface MatchData {
@@ -32,9 +33,20 @@ export function DesireMatch() {
   const total = data?.items.length ?? 0;
 
   async function pick(id: string, answer: "yes" | "no" | "maybe") {
+    const before = local[id];
     setLocal((l) => ({ ...l, [id]: answer }));
-    await darkFetch("/api/dark/match", { itemId: id, answer });
-    void qc.invalidateQueries({ queryKey: ["match"] });
+    try {
+      await darkFetch("/api/dark/match", { itemId: id, answer });
+      void qc.invalidateQueries({ queryKey: ["match"] });
+    } catch {
+      setLocal((l) => {
+        const next = { ...l };
+        if (before === undefined) delete next[id];
+        else next[id] = before;
+        return next;
+      });
+      toast.err("Couldn't save that answer. Try again.");
+    }
   }
 
   return (

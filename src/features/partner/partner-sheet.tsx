@@ -100,7 +100,9 @@ export function PartnerSheetProvider({ children }: { children: React.ReactNode }
   const { start } = useCall();
   const weather = useWeather(partner).data;
   const { data: mood } = useQuery({
-    queryKey: ["partner-mood", coupleId, open],
+    // Not keyed on `open`: the last answer shows instantly on every reopen
+    // while a fresh one loads behind it.
+    queryKey: ["partner-mood", coupleId],
     enabled: open,
     queryFn: async () => {
       const { data } = await supabaseBrowser()
@@ -252,8 +254,9 @@ export function PartnerSheetProvider({ children }: { children: React.ReactNode }
         )}
         <Link
           href="/settings"
+          prefetch
           onClick={() => setOpen(false)}
-          className="text-muted text-center text-sm"
+          className="text-muted hover:text-text flex h-11 items-center justify-center text-sm"
         >
           Edit your own profile
         </Link>

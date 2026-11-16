@@ -8,8 +8,10 @@ import { cn } from "./cn";
 
 /**
  * Bottom sheet from the prototype: scrim rgba(15,14,17,.75), 20 px top radius,
- * --surface-1, sheetUp 360 ms drawer easing. Becomes a centred dialog from 768 px.
- * On phones, pull the handle down (or flick it) to dismiss.
+ * --surface-1, sheetUp 220 ms drawer easing (out in 160 ms). Becomes a centred
+ * dialog from 768 px. On phones, pull the handle down (or flick it) to dismiss.
+ * Callers close the sheet first and save in the background: never await the
+ * network with the sheet still up.
  */
 export function Sheet({
   open,
@@ -69,7 +71,7 @@ export function Sheet({
                 haptic("tap");
                 onOpenChange(false);
               } else {
-                void animate(y, 0, { type: "spring", stiffness: 500, damping: 40 });
+                void animate(y, 0, { type: "spring", stiffness: 700, damping: 45 });
               }
             }}
             style={{ y, boxShadow: "var(--shadow-sheet)" }}

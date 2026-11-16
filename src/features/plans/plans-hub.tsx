@@ -19,7 +19,10 @@ import { toast } from "@/components/ui/toast";
 import { wallTime, localParts } from "@/lib/time";
 import { dayNumber, streak } from "@/lib/challenges";
 import { TicketStub, KitStub } from "./tickets";
-import { useKits, useUpcomingDates, useChallenge } from "./data";
+import { useKits, useUpcomingDates, useChallenge, dateListKey, type DateRow } from "./data";
+import { DateList } from "./date-list";
+import { editList, rollback } from "./infinite";
+import { FindLinks } from "@/features/search/search-shortcut";
 
 export function PlansHub() {
   const { me, partner, coupleId } = useCouple();
@@ -35,16 +38,22 @@ export function PlansHub() {
   const nextKit = next?.date_kits as unknown as { title: string } | undefined;
 
   async function tear() {
-    if (!next) return;
+    // A just-booked date is still being saved; nothing to tear yet.
+    if (!next || next.id.startsWith("temp-")) return;
     setTorn(true);
     haptic("heavy");
-    const r = await fetch(`/api/dates/${next.id}`, {
+    const id = next.id;
+    const snap = await editList<DateRow>(qc, dateListKey(coupleId), (items) =>
+      items.map((d) => (d.id === id ? { ...d, status: "completed" } : d)),
+    );
+    const r = await fetch(`/api/dates/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "completed" }),
-    });
-    if (!r.ok) {
+    }).catch(() => null);
+    if (!r?.ok) {
       setTorn(false);
+      rollback(qc, dateListKey(coupleId), snap);
       return toast.err("Couldn't tear it. Try again.");
     }
     toast("Torn off. Added to your timeline.");
@@ -65,11 +74,14 @@ export function PlansHub() {
 
   return (
     <div className="screen an-screen flex flex-col gap-5">
-      <div>
-        <Display size={48} className="mt-2">
-          Plans
-        </Display>
-        <Lead className="mt-1">Dates that work in two time zones.</Lead>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <Display size={48} className="mt-2">
+            Plans
+          </Display>
+          <Lead className="mt-1">Dates that work in two time zones.</Lead>
+        </div>
+        <FindLinks className="mt-3" />
       </div>
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-10">
         <div className="flex min-w-0 flex-col gap-5">
@@ -167,6 +179,7 @@ export function PlansHub() {
               </Link>
             ))}
           </div>
+          <DateList />
         </div>
 
         <div className="flex min-w-0 flex-col gap-5">

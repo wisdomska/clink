@@ -38,9 +38,16 @@ export function RequestScreen() {
   const refresh = () => qc.invalidateQueries({ queryKey: ["requests"] });
 
   async function respond(id: string, response: "accept" | "decline" | "later") {
-    await darkFetch(`/api/dark/requests/${id}`, { response });
+    // Optimistic: show the outcome now, undo it if the server refuses.
     if (response === "accept") setSendFor(id);
     else setResult(response === "decline" ? "declined" : "later");
+    try {
+      await darkFetch(`/api/dark/requests/${id}`, { response });
+    } catch (e) {
+      setSendFor(null);
+      setResult(null);
+      toast.err(e instanceof Error ? e.message : "Couldn't send that. Try again.");
+    }
     void refresh();
   }
 

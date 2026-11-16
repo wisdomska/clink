@@ -36,7 +36,7 @@ async function openSend(p: Page) {
   ).toBeTruthy();
   await p.request.post("/api/dark/notice");
   await p.goto("/dark/vault");
-  await p.getByRole("button", { name: "Send" }).click();
+  await p.getByRole("button", { name: "Send", exact: true }).click();
   await p.locator('input[type="file"]').setInputFiles({
     name: "us.png",
     mimeType: "image/png",

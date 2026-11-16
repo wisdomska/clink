@@ -32,7 +32,7 @@ export function useSendClink() {
             ? `Clink sent. ${partner.name} felt that.`
             : `Clink sent. ${partner.name} gets a notification.`,
         );
-      }, 950);
+      }, 700);
     },
     [clinking, send, presence.online, partner.name, qc],
   );

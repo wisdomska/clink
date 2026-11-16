@@ -71,6 +71,8 @@ const COUPLE_SCOPED = [
   "couples",
   "couple_members",
   "bucket_items",
+  "message_pins",
+  "scheduled_messages",
 ] as const;
 const SERVER_ONLY = [
   "dark_settings",
@@ -147,6 +149,16 @@ beforeAll(async () => {
     .select("id")
     .single();
   ids.message = m.data!.id;
+  await admin
+    .from("message_pins")
+    .insert({ message_id: ids.message, couple_id: c1, pinned_by: A.id });
+  await admin.from("scheduled_messages").insert({
+    couple_id: c1,
+    sender_id: A.id,
+    client_id: randomUUID(),
+    body: "secret scheduled",
+    send_at: new Date(Date.now() + 86400000).toISOString(),
+  });
   await admin
     .from("reactions")
     .insert({ message_id: ids.message, couple_id: c1, user_id: B.id, emoji: "🔥" });
@@ -465,6 +477,52 @@ describe("write protections", () => {
       const { error } = await A.client.rpc(fn as "svc_admin_metrics", { p_couple: c1 } as never);
       expect(error, fn).toBeTruthy();
     }
+  });
+});
+
+describe("message pins", () => {
+  it("another couple cannot pin or unpin your messages", async () => {
+    const { error } = await X.client
+      .from("message_pins")
+      .insert({ message_id: ids.message, couple_id: c1, pinned_by: X.id });
+    expect(error).not.toBeNull();
+    await X.client.from("message_pins").delete().eq("message_id", ids.message);
+    const { data } = await admin.from("message_pins").select("message_id").eq("couple_id", c1);
+    expect((data ?? []).map((p) => p.message_id)).toContain(ids.message);
+  });
+  it("cannot pin as your partner", async () => {
+    const m = await admin
+      .from("messages")
+      .insert({ couple_id: c1, sender_id: B.id, client_id: randomUUID(), type: "text", body: "x" })
+      .select("id")
+      .single();
+    const { error } = await B.client
+      .from("message_pins")
+      .insert({ message_id: m.data!.id, couple_id: c1, pinned_by: A.id });
+    expect(error).not.toBeNull();
+  });
+});
+
+describe("scheduled messages", () => {
+  it("stay private to the sender until delivered, even from the partner", async () => {
+    const mine = (await A.client.from("scheduled_messages").select("body")).data ?? [];
+    expect(mine.map((r) => r.body)).toContain("secret scheduled");
+    const theirs = (await B.client.from("scheduled_messages").select("body")).data ?? [];
+    expect(theirs).toEqual([]);
+  });
+  it("clients cannot write the queue directly", async () => {
+    const { error } = await A.client.from("scheduled_messages").insert({
+      couple_id: c1,
+      sender_id: A.id,
+      client_id: randomUUID(),
+      body: "sneaky",
+      send_at: new Date().toISOString(),
+    });
+    expect(error).not.toBeNull();
+  });
+  it("the claim function is service-only", async () => {
+    const { error } = await A.client.rpc("svc_claim_scheduled_messages", { p_limit: 10 });
+    expect(error).not.toBeNull();
   });
 });
 

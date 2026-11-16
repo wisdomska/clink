@@ -2,7 +2,17 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 // /admin is not here: it has its own sign-in (admin accounts), checked in its layout.
-const APP_PREFIXES = ["/us", "/chat", "/play", "/plans", "/keep", "/settings", "/dark"];
+const APP_PREFIXES = [
+  "/us",
+  "/chat",
+  "/play",
+  "/plans",
+  "/keep",
+  "/settings",
+  "/dark",
+  "/search",
+  "/calendar",
+];
 const NEEDS_SESSION = [
   ...APP_PREFIXES,
   "/onboarding",

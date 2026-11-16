@@ -1,6 +1,14 @@
 "use client";
 import { feedback, haptic } from "@/lib/feedback";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -25,6 +33,9 @@ import {
   ArrowBendUpLeft,
   Copy,
   Trash,
+  PushPin,
+  PushPinSlash,
+  Clock,
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useCouple, useCoupleNow, useCoupleEvent } from "@/features/couple/context";
@@ -47,9 +58,19 @@ import {
   type Recording,
 } from "@/lib/media/recorder";
 import { MAX_PER_SEND } from "@/lib/media-rules";
-import { useMessages, useReactions, useMediaInfo, useOutboxFlush, sendQueued } from "./use-chat";
+import {
+  useMessages,
+  useReactions,
+  useMediaInfo,
+  useOutboxFlush,
+  useReplyTargets,
+  sendQueued,
+} from "./use-chat";
+import { usePins, PinnedBar, PinsSheet } from "./pins";
+import { useScheduled, SendLaterSheet, ScheduledBar, ScheduledSheet } from "./scheduled";
+import { usePrefersReducedMotion } from "@/lib/hooks";
 import { useQueue, newClientId, type QueuedPayload } from "./queue";
-import { Bubble, STICKER_LABEL } from "./bubbles";
+import { Bubble, STICKER_LABEL, previewText } from "./bubbles";
 import { StickerArt, STICKER_CAPTION } from "./sticker-art";
 import { MediaComposer } from "./media-composer";
 import { LiveWave } from "./live-wave";
@@ -159,19 +180,6 @@ export function ChatScreen() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const router = useRouter();
-  const jumpTo = (id: string, at: string) => {
-    setSearchOpen(false);
-    const el = listRef.current?.querySelector<HTMLElement>(`[data-mid="${id}"]`);
-    if (!el) {
-      toast(
-        `That one's from ${new Date(at).toLocaleDateString()}. Scroll up to load older messages.`,
-      );
-      return;
-    }
-    el.scrollIntoView({ block: "center", behavior: "smooth" });
-    el.classList.add("bg-accent/15");
-    setTimeout(() => el.classList.remove("bg-accent/15"), 1600);
-  };
   const [replyTo, setReplyTo] = useState<UiMessage | null>(null);
   const [actionFor, setActionFor] = useState<UiMessage | null>(null);
   const [typing, setTyping] = useState(false);
@@ -197,6 +205,50 @@ export function ChatScreen() {
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingSent = useRef(0);
   const stickToBottom = useRef(true);
+  const reducedMotion = usePrefersReducedMotion();
+  const { pins, pinned, pin, unpin } = usePins();
+  const [pinsOpen, setPinsOpen] = useState(false);
+  /**
+   * Scroll to a message and flash it. Older messages load page by page until
+   * the original turns up (or the history runs out).
+   */
+  async function jumpTo(id: string, at?: string) {
+    const find = () =>
+      listRef.current?.querySelector<HTMLElement>(`[data-mid="${CSS.escape(id)}"]`);
+    let el = find();
+    let more = hasNextPage;
+    for (let tries = 0; !el && more && tries < 25; tries++) {
+      const r = await fetchNextPage();
+      more = r.hasNextPage;
+      await new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+      el = find();
+    }
+    if (!el) {
+      toast(
+        at
+          ? `That one's from ${new Date(at).toLocaleDateString()} and isn't here any more.`
+          : "That message isn't here any more.",
+      );
+      return;
+    }
+    stickToBottom.current = false;
+    el.scrollIntoView({ block: "center", behavior: reducedMotion ? "auto" : "smooth" });
+    // After any closing sheet has handed focus back, move it to the message.
+    requestAnimationFrame(() =>
+      el.querySelector<HTMLElement>('[role="button"]')?.focus({ preventScroll: true }),
+    );
+    el.classList.add("bg-accent/15");
+    setTimeout(() => el.classList.remove("bg-accent/15"), 1600);
+  }
+  // /chat?m=<id> (from global search) opens on that message.
+  const linkedMessage = params.get("m");
+  const jumpedTo = useRef<string | null>(null);
+  const openLinked = useEffectEvent((id: string) => void jumpTo(id));
+  useEffect(() => {
+    if (!linkedMessage || isLoading || jumpedTo.current === linkedMessage) return;
+    jumpedTo.current = linkedMessage;
+    openLinked(linkedMessage);
+  }, [linkedMessage, isLoading]);
 
   const { data: stickers } = useQuery({
     queryKey: ["stickers"],
@@ -257,6 +309,36 @@ export function ChatScreen() {
   }, [messages, queue.items, queue.failed, pendingMedia, coupleId, me.id]);
 
   const byId = useMemo(() => new Map(all.map((m) => [m.id, m])), [all]);
+  const missingReplies = useMemo(
+    () => all.map((m) => m.reply_to).filter((id): id is string => Boolean(id) && !byId.has(id!)),
+    [all, byId],
+  );
+  const { data: olderTargets } = useReplyTargets(missingReplies);
+  const composerRef = useRef<HTMLInputElement>(null);
+  const myClientIds = useMemo(
+    () => new Set(messages.filter((m) => m.sender_id === me.id).map((m) => m.client_id)),
+    [messages, me.id],
+  );
+  const scheduled = useScheduled(myClientIds);
+  const [laterOpen, setLaterOpen] = useState(false);
+  const [scheduledOpen, setScheduledOpen] = useState(false);
+  async function scheduleText(at: Date) {
+    const body = text.trim();
+    if (!body) return;
+    const reply = replyTo && !replyTo.id.startsWith("local-") ? replyTo.id : undefined;
+    setLaterOpen(false);
+    setText("");
+    setReplyTo(null);
+    send("chat.typing", { typing: false });
+    const ok = await scheduled.schedule(body, at, reply);
+    if (!ok) setText((cur) => cur || body);
+  }
+  const startReply = (m: UiMessage) => {
+    setReplyTo(m);
+    setEditing(null);
+    haptic("select");
+    requestAnimationFrame(() => composerRef.current?.focus());
+  };
   const mediaIds = useMemo(() => all.flatMap((m) => m.media_ids), [all]);
   const { data: mediaInfo = new Map() } = useMediaInfo(mediaIds);
 
@@ -607,6 +689,13 @@ export function ChatScreen() {
           </IconButton>
         </header>
 
+        <PinnedBar
+          pins={pins}
+          meId={me.id}
+          partnerName={partner.name}
+          onJump={(id, at) => void jumpTo(id, at)}
+          onOpenList={() => setPinsOpen(true)}
+        />
         <div className="flex-none px-4 pt-2 empty:hidden">
           <MissedCallCard />
         </div>
@@ -734,9 +823,15 @@ export function ChatScreen() {
                       partnerName={partner.name}
                       media={mediaInfo}
                       reactions={reactions.get(m.id) ?? []}
-                      replyTarget={m.reply_to ? byId.get(m.reply_to) : undefined}
+                      replyTarget={
+                        m.reply_to
+                          ? (byId.get(m.reply_to) ?? olderTargets?.get(m.reply_to))
+                          : undefined
+                      }
+                      onJumpTo={(id, at) => void jumpTo(id, at)}
+                      pinned={pinned.has(m.id)}
                       onLongPress={(x) => !x.local && setActionFor(x)}
-                      onSwipeReply={(x) => !x.local && setReplyTo(x)}
+                      onSwipeReply={(x) => !x.local && startReply(x)}
                       meId={me.id}
                       onRemoveReaction={async (r) => {
                         haptic("tap");
@@ -862,6 +957,7 @@ export function ChatScreen() {
           </div>
         )}
 
+        <ScheduledBar count={scheduled.items.length} onOpen={() => setScheduledOpen(true)} />
         {editing && (
           <div className="border-line bg-s1 flex flex-none items-center gap-2 border-t px-4 py-2 text-sm">
             <PencilSimple size={16} className="text-accent" aria-hidden />
@@ -879,13 +975,28 @@ export function ChatScreen() {
           </div>
         )}
         {replyTo && (
-          <div className="border-line bg-s1 flex flex-none items-center gap-2 border-t px-4 py-2 text-sm">
-            <ArrowBendUpLeft size={16} className="text-accent" aria-hidden />
-            <span className="text-muted flex-1 truncate">
-              Replying to {replyTo.sender_id === me.id ? "yourself" : partner.name}:{" "}
-              {replyTo.body ?? replyTo.type}
-            </span>
-            <IconButton label="Cancel reply" dim={36} onClick={() => setReplyTo(null)}>
+          <div
+            className="border-line bg-s1 flex flex-none items-center gap-3 border-t py-1.5 pr-2 pl-4 text-sm"
+            data-testid="reply-preview"
+          >
+            <ArrowBendUpLeft size={18} className="text-accent flex-none" aria-hidden />
+            <button
+              type="button"
+              onClick={() => void jumpTo(replyTo.id, replyTo.sent_at)}
+              className="flex min-w-0 flex-1 cursor-pointer items-stretch gap-2 border-0 bg-transparent p-0 text-left"
+              aria-label={`Replying to ${replyTo.sender_id === me.id ? "yourself" : partner.name}. Show the message`}
+            >
+              <span aria-hidden className="bg-accent w-[3px] flex-none rounded-full" />
+              <span className="flex min-w-0 flex-col">
+                <span className="text-accent text-xs font-bold">
+                  Replying to {replyTo.sender_id === me.id ? "yourself" : partner.name}
+                </span>
+                <span className="text-muted truncate">
+                  {previewText(replyTo, replyTo.sender_id === me.id, mediaInfo)}
+                </span>
+              </span>
+            </button>
+            <IconButton label="Cancel reply" dim={44} onClick={() => setReplyTo(null)}>
               <X size={16} />
             </IconButton>
           </div>
@@ -963,6 +1074,15 @@ export function ChatScreen() {
               />
               <div className="rounded-input border-line bg-s2 focus-within:border-accent flex h-11 min-w-0 flex-1 items-center gap-1.5 border pr-1.5 pl-3.5">
                 <input
+                  ref={composerRef}
+                  onKeyDown={(e) => {
+                    if (e.key !== "Escape") return;
+                    if (replyTo) setReplyTo(null);
+                    else if (editing) {
+                      setEditing(null);
+                      setText("");
+                    }
+                  }}
                   aria-label={`Message ${partner.name}`}
                   placeholder={`Message ${partner.name}`}
                   value={text}
@@ -970,6 +1090,17 @@ export function ChatScreen() {
                   onChange={(e) => onType(e.target.value)}
                   className="text-text min-w-0 flex-1 bg-transparent text-base outline-none focus-visible:shadow-none"
                 />
+                {text.trim() && !editing && (
+                  <button
+                    type="button"
+                    onClick={() => setLaterOpen(true)}
+                    aria-label="Schedule a message"
+                    title="Schedule a message"
+                    className="text-muted hover:text-text flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent"
+                  >
+                    <Clock size={22} />
+                  </button>
+                )}
                 {!text && (
                   <button
                     type="button"
@@ -1077,10 +1208,31 @@ export function ChatScreen() {
                 icon={<ArrowBendUpLeft size={20} />}
                 label="Reply"
                 onClick={() => {
-                  setReplyTo(actionFor);
+                  startReply(actionFor);
                   setActionFor(null);
                 }}
               />
+              {!actionFor.removed_at &&
+                ["text", "voice", "media", "sticker"].includes(actionFor.type) &&
+                (pinned.has(actionFor.id) ? (
+                  <SheetAction
+                    icon={<PushPinSlash size={20} />}
+                    label="Unpin"
+                    onClick={() => {
+                      void unpin(actionFor.id);
+                      setActionFor(null);
+                    }}
+                  />
+                ) : (
+                  <SheetAction
+                    icon={<PushPin size={20} />}
+                    label="Pin"
+                    onClick={() => {
+                      void pin(actionFor);
+                      setActionFor(null);
+                    }}
+                  />
+                ))}
               {actionFor.body && (
                 <SheetAction
                   icon={<Copy size={20} />}
@@ -1132,6 +1284,22 @@ export function ChatScreen() {
             }}
           />
           <SheetAction
+            icon={<PushPin size={20} />}
+            label={pins.length ? `Pinned messages (${pins.length})` : "Pinned messages"}
+            onClick={() => {
+              setMoreOpen(false);
+              setPinsOpen(true);
+            }}
+          />
+          <SheetAction
+            icon={<MagnifyingGlass size={20} />}
+            label="Search everything"
+            onClick={() => {
+              setMoreOpen(false);
+              router.push("/search");
+            }}
+          />
+          <SheetAction
             icon={<Palette size={20} />}
             label="Customise chat"
             onClick={() => {
@@ -1164,7 +1332,38 @@ export function ChatScreen() {
         onOpenChange={setSearchOpen}
         meId={me.id}
         partnerName={partner.name}
-        onJump={(h) => jumpTo(h.id, h.sent_at)}
+        onJump={(h) => {
+          setSearchOpen(false);
+          void jumpTo(h.id, h.sent_at);
+        }}
+      />
+      <SendLaterSheet
+        open={laterOpen}
+        onOpenChange={setLaterOpen}
+        preview={text.trim()}
+        onPick={(at) => void scheduleText(at)}
+      />
+      <ScheduledSheet
+        open={scheduledOpen}
+        onOpenChange={setScheduledOpen}
+        items={scheduled.items}
+        onCancel={async (x) => {
+          const gone = await scheduled.cancel(x);
+          if (gone && !text.trim()) {
+            setText(gone.body);
+            setScheduledOpen(false);
+            composerRef.current?.focus();
+          }
+        }}
+      />
+      <PinsSheet
+        open={pinsOpen}
+        onOpenChange={setPinsOpen}
+        pins={pins}
+        meId={me.id}
+        partnerName={partner.name}
+        onJump={(id, at) => void jumpTo(id, at)}
+        onUnpin={(id) => void unpin(id)}
       />
 
       <Sheet open={lookOpen} onOpenChange={setLookOpen} title="Customise chat" handle>

@@ -38,11 +38,22 @@ const serwist = new Serwist({
       handler: new NetworkOnly(),
     },
     {
+      // Tab prefetches go straight to the network: nothing to cache for offline,
+      // and no cache writes competing with the navigation the person is making.
+      matcher: ({ request, sameOrigin }) =>
+        sameOrigin &&
+        request.headers.get("RSC") === "1" &&
+        request.headers.get("Next-Router-Prefetch") === "1",
+      handler: new NetworkOnly(),
+    },
+    {
       // Pages and their data always come from the network when it's there, so a
       // new version shows straight away; the cache is only for going offline.
+      // Navigation preload starts the request in parallel with worker boot, and
+      // a stalled network falls back to the cached copy after 3 s (not 4).
       matcher: ({ request, sameOrigin }) =>
         sameOrigin && (request.mode === "navigate" || request.headers.get("RSC") === "1"),
-      handler: new NetworkFirst({ cacheName: "pages-v2", networkTimeoutSeconds: 4 }),
+      handler: new NetworkFirst({ cacheName: "pages-v2", networkTimeoutSeconds: 3 }),
     },
     ...defaultCache,
   ],

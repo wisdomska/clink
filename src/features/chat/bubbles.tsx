@@ -6,10 +6,10 @@ import {
   Microphone,
   WarningCircle,
   Image as ImageIcon,
-  ArrowBendUpLeft,
   EyeSlash,
+  PushPin,
 } from "@phosphor-icons/react";
-import type { MediaInfo, Reaction, UiMessage } from "./types";
+import type { MediaInfo, Message, Reaction, UiMessage } from "./types";
 import { VoicePlayer } from "./voice-player";
 import { CallLogRow } from "@/features/call/call-log-row";
 import { StickerArt } from "./sticker-art";
@@ -88,34 +88,74 @@ function ReactionPill({
   );
 }
 
+function voiceLength(d: number) {
+  return d ? ` ${Math.floor(d / 60)}:${String(Math.round(d % 60)).padStart(2, "0")}` : "";
+}
+
+/** One-line summary of a message for quotes, pins and search ("Photo", "Voice note 0:12"). */
+export function previewText(
+  m: Pick<Message, "type" | "body" | "sticker_id" | "removed_at" | "media_ids">,
+  mine: boolean,
+  media?: Map<string, MediaInfo>,
+): string {
+  if (m.removed_at) return "Removed";
+  if (m.type === "voice") {
+    const d = Number(media?.get(m.media_ids[0] ?? "")?.duration_s ?? 0);
+    return `${mine ? "Your voice note" : "Voice note"}${voiceLength(d)}`;
+  }
+  if (m.type === "media") {
+    const kind = media?.get(m.media_ids[0] ?? "")?.kind;
+    const what = kind === "video" ? "video" : "photo";
+    const label = mine ? `Your ${what}` : what === "video" ? "Video" : "Photo";
+    return m.body ? `${label}: ${m.body}` : label;
+  }
+  if (m.type === "sticker") return `Sticker: ${STICKER_LABEL.get(m.sticker_id ?? "") ?? ""}`.trim();
+  return m.body ?? "";
+}
+
 function ReplyQuote({
   target,
   targetMine,
+  who,
   media,
+  onJump,
 }: {
   target?: UiMessage;
   targetMine: boolean;
+  who: string;
   media: Map<string, MediaInfo>;
+  onJump?: (id: string, at: string) => void;
 }) {
   if (!target) return null;
-  let label = target.body ?? "";
-  let Icon: typeof Microphone | null = null;
-  if (target.type === "voice") {
-    const info = media.get(target.media_ids[0] ?? "");
-    const d = Number(info?.duration_s ?? 0);
-    label = `${targetMine ? "Your voice note" : "Voice note"}${d ? ` · ${Math.floor(d / 60)}:${String(Math.round(d % 60)).padStart(2, "0")}` : ""}`;
-    Icon = Microphone;
-  } else if (target.type === "media") {
-    label = targetMine ? "Your photo" : "Photo";
-    Icon = ImageIcon;
-  } else if (target.type === "sticker")
-    label = `Sticker: ${STICKER_LABEL.get(target.sticker_id ?? "") ?? ""}`;
-  if (target.removed_at) label = "Removed";
+  const label = previewText(target, targetMine, media);
+  const Icon = target.removed_at
+    ? null
+    : target.type === "voice"
+      ? Microphone
+      : target.type === "media"
+        ? ImageIcon
+        : null;
   return (
-    <div className="rounded-thumb bg-s2 text-muted flex items-center gap-1.5 px-2.5 py-1.5 text-[13px]">
-      {Icon ? <Icon size={14} aria-hidden /> : <ArrowBendUpLeft size={14} aria-hidden />}
-      <span className="truncate">{label}</span>
-    </div>
+    <button
+      type="button"
+      data-testid="reply-quote"
+      aria-label={`Replying to ${who}: ${label}. Go to message`}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        onJump?.(target.id, target.sent_at);
+      }}
+      className="rounded-thumb bg-s2 text-muted hover:bg-s3 flex w-full min-w-0 cursor-pointer items-stretch gap-2 overflow-hidden border-0 py-1.5 pr-2.5 pl-0 text-left text-[13px]"
+    >
+      <span aria-hidden className="bg-accent w-[3px] flex-none rounded-full" />
+      <span className="flex min-w-0 flex-col">
+        <span className="text-accent text-xs font-bold">{who}</span>
+        <span className="flex min-w-0 items-center gap-1.5">
+          {Icon && <Icon size={14} aria-hidden className="flex-none" />}
+          <span className="truncate">{label}</span>
+        </span>
+      </span>
+    </button>
   );
 }
 
@@ -132,8 +172,13 @@ export function Bubble({
   onDoubleTap,
   meId,
   onRemoveReaction,
+  onJumpTo,
+  pinned = false,
   pos = "single",
 }: {
+  /** Tap a quoted reply to scroll to (and highlight) the original. */
+  onJumpTo?: (id: string, at: string) => void;
+  pinned?: boolean;
   onDoubleTap?: (m: UiMessage) => void;
   pos?: GroupPos;
   m: UiMessage;
@@ -181,7 +226,13 @@ export function Bubble({
     onPointerDown: (e: React.PointerEvent) => {
       press.current.x = e.clientX;
       press.current.dx = 0;
-      press.current.t = setTimeout(() => onLongPress(m), 450);
+      // Only a primary press can become a long press; right-click uses onContextMenu.
+      if (e.button !== 0) return;
+      if (press.current.t) clearTimeout(press.current.t);
+      press.current.t = setTimeout(() => {
+        press.current.t = null;
+        onLongPress(m);
+      }, 450);
     },
     onPointerMove: (e: React.PointerEvent) => {
       const dx = Math.max(0, e.clientX - press.current.x);
@@ -207,6 +258,8 @@ export function Bubble({
     onDoubleClick: () => onDoubleTap?.(m),
     onContextMenu: (e: React.MouseEvent) => {
       e.preventDefault();
+      if (press.current.t) clearTimeout(press.current.t);
+      press.current.t = null;
       onLongPress(m);
     },
     onKeyDown: (e: React.KeyboardEvent) => {
@@ -365,6 +418,9 @@ export function Bubble({
               aria-hidden
               className="mono text-faint relative top-[5px] float-right ml-2.5 text-[11px] leading-none"
             >
+              {pinned && (
+                <PushPin size={11} weight="fill" className="mr-1 inline align-[-1px]" aria-hidden />
+              )}
               {clock(m.sent_at)}
             </span>
           </div>
@@ -405,8 +461,10 @@ export function Bubble({
             <div className="mb-1.5">
               <ReplyQuote
                 target={replyTarget}
-                targetMine={replyTarget.sender_id === m.sender_id ? mine : !mine}
+                targetMine={replyTarget.sender_id === meId}
+                who={replyTarget.sender_id === meId ? "You" : partnerName}
                 media={media}
+                onJump={onJumpTo}
               />
             </div>
           )}
@@ -418,6 +476,9 @@ export function Bubble({
               mine ? "opacity-60" : "text-faint",
             )}
           >
+            {pinned && (
+              <PushPin size={11} weight="fill" className="mr-1 inline align-[-1px]" aria-hidden />
+            )}
             {m.local === "sending" ? "..." : `${m.edited_at ? "edited · " : ""}${clock(m.sent_at)}`}
           </span>
         </div>
@@ -438,7 +499,7 @@ export function Bubble({
         ref={el}
         role="button"
         tabIndex={0}
-        aria-label={`${mine ? "You" : partnerName}: ${m.type === "text" ? m.body : m.type}. Press for reactions.`}
+        aria-label={`${mine ? "You" : partnerName}: ${m.type === "text" ? m.body : m.type}.${pinned ? " Pinned." : ""} Press for reactions.`}
         className={cn(
           "relative flex w-full touch-pan-y flex-col transition-transform duration-150 select-none",
           mine ? "items-end" : "items-start",
@@ -449,8 +510,10 @@ export function Bubble({
           <div className="mb-1 max-w-[80%]">
             <ReplyQuote
               target={replyTarget}
-              targetMine={replyTarget.sender_id === m.sender_id ? mine : !mine}
+              targetMine={replyTarget.sender_id === meId}
+              who={replyTarget.sender_id === meId ? "You" : partnerName}
               media={media}
+              onJump={onJumpTo}
             />
           </div>
         )}

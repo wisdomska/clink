@@ -3,6 +3,7 @@ import { handler, ok, parseJson, requireCouple, rateLimit, deny } from "@/lib/se
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { notify } from "@/lib/server/push";
 import { track } from "@/lib/server/analytics";
+import { keysetFilter, pageParams, toPage } from "@/features/plans/cursor";
 
 const schema = z.object({
   condition: z.string().trim().min(3).max(80),
@@ -51,4 +52,33 @@ export const POST = handler(async (req) => {
   });
   await track("activity_completed", user.id, { type: "letter", mode: "turn" }, coupleId);
   return ok({ id: data.id }, { status: 201 });
+});
+
+/**
+ * KEEP-01 list: one page of letters, newest first, metadata only (never the
+ * body). `author=me` is "Sealed by you", `author=partner` is "Open when, from".
+ * Reads through the caller's own session, so RLS decides what's visible.
+ */
+export const GET = handler(async (req) => {
+  const { user, db, partnerId } = await requireCouple();
+  const { cursor, limit } = pageParams(req.nextUrl);
+  const author = req.nextUrl.searchParams.get("author") === "partner" ? partnerId : user.id;
+  let q = db
+    .from("letters")
+    .select("id, author_id, condition, sealed_at, opened_at")
+    .eq("author_id", author);
+  if (cursor) q = q.or(keysetFilter("sealed_at", cursor, "desc"));
+  const { data, error } = await q
+    .order("sealed_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(limit + 1);
+  if (error) throw error;
+  return ok(
+    toPage(
+      data ?? [],
+      limit,
+      (r) => r.sealed_at,
+      (r) => r.id,
+    ),
+  );
 });

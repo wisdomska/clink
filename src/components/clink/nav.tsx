@@ -1,4 +1,5 @@
 "use client";
+import { useState, type MouseEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -42,9 +43,30 @@ function isActive(path: string, href: string) {
   return path === href || path.startsWith(`${href}/`);
 }
 
+/**
+ * The tapped tab lights up on the tap itself, not when the next screen has
+ * loaded: a pending href wins until the pathname actually changes.
+ */
+function useActiveTab() {
+  const path = usePathname();
+  const [pending, setPending] = useState<string | null>(null);
+  const [prevPath, setPrevPath] = useState(path);
+  if (prevPath !== path) {
+    setPrevPath(path);
+    setPending(null);
+  }
+  const active = (href: string) => (pending ? pending === href : isActive(path, href));
+  const onTap = (href: string) => (e: MouseEvent) => {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
+      return;
+    if (path !== href) setPending(href);
+  };
+  return { path, active, onTap };
+}
+
 /** Prototype bottom bar: 5 tabs, pill around the active icon. */
 export function TabBar({ unread = 0 }: { unread?: number }) {
-  const path = usePathname();
+  const { active, onTap } = useActiveTab();
   return (
     <nav
       aria-label="Main"
@@ -55,14 +77,17 @@ export function TabBar({ unread = 0 }: { unread?: number }) {
       }}
     >
       {TABS.map(({ href, label, Icon }) => {
-        const on = isActive(path, href);
+        const on = active(href);
         return (
           <Link
             key={href}
             href={href}
+            // Full prefetch: the next tab's payload is already here when it's tapped.
+            prefetch
+            onClick={onTap(href)}
             aria-current={on ? "page" : undefined}
             className={cn(
-              "press flex flex-col items-center justify-center gap-0.5 text-xs font-medium",
+              "press flex min-h-11 flex-col items-center justify-center gap-0.5 text-xs font-medium",
               on ? "text-text hover:text-text" : "text-faint hover:text-muted",
             )}
           >
@@ -73,7 +98,7 @@ export function TabBar({ unread = 0 }: { unread?: number }) {
                 color: on ? "var(--on-accent)" : "var(--text-muted)",
               }}
             >
-              <Icon size={22} weight="regular" aria-hidden />
+              <Icon size={24} weight="regular" aria-hidden />
               {href === "/chat" && unread > 0 && !on && (
                 <span
                   role="img"
@@ -92,7 +117,7 @@ export function TabBar({ unread = 0 }: { unread?: number }) {
 
 /** Side rail: compact on tablets in landscape, full with labels from 1024 px. */
 export function Rail({ unread = 0 }: { unread?: number }) {
-  const path = usePathname();
+  const { path, active, onTap } = useActiveTab();
   const { darkVisible, discreet } = useCouple();
   return (
     <nav
@@ -112,11 +137,13 @@ export function Rail({ unread = 0 }: { unread?: number }) {
       </Link>
       <div className="flex flex-col gap-1">
         {TABS.map(({ href, label, Icon }) => {
-          const on = isActive(path, href);
+          const on = active(href);
           return (
             <Link
               key={href}
               href={href}
+              prefetch
+              onClick={onTap(href)}
               aria-current={on ? "page" : undefined}
               title={label}
               className={cn(
@@ -131,7 +158,7 @@ export function Rail({ unread = 0 }: { unread?: number }) {
                   color: on ? "var(--on-accent)" : "currentColor",
                 }}
               >
-                <Icon size={22} aria-hidden />
+                <Icon size={24} aria-hidden />
                 {href === "/chat" && unread > 0 && !on && (
                   <span className="bg-accent absolute top-0 right-2 h-2 w-2 rounded-full" />
                 )}
@@ -149,7 +176,7 @@ export function Rail({ unread = 0 }: { unread?: number }) {
             className="press text-muted hover:bg-s1 hover:text-text flex h-12 items-center gap-3 rounded-full px-3 text-[15px] font-medium"
           >
             <span className="flex h-[30px] w-11 flex-none items-center justify-center">
-              <Moon size={22} aria-hidden />
+              <Moon size={24} aria-hidden />
             </span>
             <span className="rail-full">After Dark</span>
           </Link>
@@ -172,6 +199,7 @@ function AccountRow({ on }: { on: boolean }) {
   return (
     <Link
       href="/settings?tab=profile"
+      prefetch
       title={`${me.name}: profile and settings`}
       aria-label={`${me.name}, profile and settings`}
       aria-current={on ? "page" : undefined}

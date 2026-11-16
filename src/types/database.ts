@@ -715,6 +715,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"message_pins": {
+                  Row: {
+                    "couple_id": string,"message_id": string,"pinned_at": string,"pinned_by": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "couple_id": string,"message_id": string,"pinned_at"?: string,"pinned_by": string
+                  }
+                  Update: {
+                    "couple_id"?: string,"message_id"?: string,"pinned_at"?: string,"pinned_by"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "message_pins_couple_id_fkey"
+      columns: ["couple_id"]
+isOneToOne: false
+      referencedRelation: "couples"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "message_pins_message_id_fkey"
+      columns: ["message_id"]
+isOneToOne: true
+      referencedRelation: "messages"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"messages": {
                   Row: {
                     "body": string | null,"client_id": string,"couple_id": string,"delivered_at": string | null,"edited_at": string | null,"id": string,"media_ids": (string)[],"read_at": string | null,"removed_at": string | null,"reply_to": string | null,"sender_id": string,"sent_at": string,"sticker_id": string | null,"type": string
@@ -1013,6 +1039,38 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"scheduled_messages": {
+                  Row: {
+                    "body": string,"cancelled_at": string | null,"claimed_at": string | null,"client_id": string,"couple_id": string,"created_at": string,"id": string,"message_id": string | null,"reply_to": string | null,"send_at": string,"sender_id": string,"sent_at": string | null,"status": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body": string,"cancelled_at"?: string | null,"claimed_at"?: string | null,"client_id": string,"couple_id": string,"created_at"?: string,"id"?: string,"message_id"?: string | null,"reply_to"?: string | null,"send_at": string,"sender_id": string,"sent_at"?: string | null,"status"?: string
+                  }
+                  Update: {
+                    "body"?: string,"cancelled_at"?: string | null,"claimed_at"?: string | null,"client_id"?: string,"couple_id"?: string,"created_at"?: string,"id"?: string,"message_id"?: string | null,"reply_to"?: string | null,"send_at"?: string,"sender_id"?: string,"sent_at"?: string | null,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "scheduled_messages_couple_id_fkey"
+      columns: ["couple_id"]
+isOneToOne: false
+      referencedRelation: "couples"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "scheduled_messages_message_id_fkey"
+      columns: ["message_id"]
+isOneToOne: false
+      referencedRelation: "messages"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "scheduled_messages_reply_to_fkey"
+      columns: ["reply_to"]
+isOneToOne: false
+      referencedRelation: "messages"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"sensitive_view_events": {
                   Row: {
                     "couple_id": string,"created_at": string,"event": string,"id": number,"media_id": string,"viewer_id": string
@@ -1263,6 +1321,28 @@ isOneToOne: false
 "svc_apply_game_move":
 { Args: { "p_current_turn_user": string,"p_expected_updated_at": string,"p_finished_at": string,"p_game_id": string,"p_is_draw": boolean,"p_scores": Json,"p_secrets": Json,"p_state": Json,"p_status": string,"p_winner_id": string }; Returns: boolean
                            },
+"svc_claim_scheduled_messages":
+{ Args: { "p_limit": number }; Returns: {
+              "body": string,
+"cancelled_at": string | null,
+"claimed_at": string | null,
+"client_id": string,
+"couple_id": string,
+"created_at": string,
+"id": string,
+"message_id": string | null,
+"reply_to": string | null,
+"send_at": string,
+"sender_id": string,
+"sent_at": string | null,
+"status": string
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "scheduled_messages"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "svc_desire_matches":
 { Args: { "p_couple": string }; Returns: {
               "item_id": string,"kind": string,"text": string,"tier": string

@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/field";
 import { PartnerMark, Display } from "@/components/ui/heading";
 import { localParts, zonedToUtc, formatClock } from "@/lib/time";
 import { toast } from "@/components/ui/toast";
+import { feedback } from "@/lib/feedback";
 
 /** HOME-08: one shared prompt a day; both answers reveal together. */
 export function RitualCard() {
@@ -48,19 +49,32 @@ export function RitualCard() {
   const theirT = formatClock(ritualInstant, partner.timezone);
   const when = myT === theirT ? `${myT} for both` : `${myT} for you, ${theirT} for ${partner.name}`;
 
+  /** Close the sheet and show "Yours is in" at once; the save runs behind it. */
   async function submit() {
     if (!data?.prompt || !text.trim()) return;
+    const answer = text.trim();
+    const key = ["ritual", coupleId, day];
+    const prev = qc.getQueryData<typeof data>(key);
+    void qc.cancelQueries({ queryKey: key });
+    qc.setQueryData<typeof data>(key, (d) =>
+      d ? { ...d, answers: [...d.answers, { user_id: me.id, answer }] } : d,
+    );
+    setOpen(false);
+    feedback("send");
     const { error } = await supabaseBrowser().from("ritual_answers").insert({
       couple_id: coupleId,
       day,
       user_id: me.id,
       prompt_id: data.prompt.id,
-      answer: text.trim(),
+      answer,
     });
-    if (error) return toast.err("Couldn't save that. Try again.");
-    setOpen(false);
+    if (error) {
+      qc.setQueryData(key, prev);
+      setOpen(true);
+      return toast.err("Couldn't save that. Try again.");
+    }
     send("ritual.answered", {});
-    void qc.invalidateQueries({ queryKey: ["ritual", coupleId, day] });
+    void qc.invalidateQueries({ queryKey: key });
   }
 
   return (

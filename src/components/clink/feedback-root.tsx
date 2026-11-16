@@ -13,6 +13,13 @@ import { applyAppearance } from "@/lib/appearance";
 const PRESSABLE = "button, [role=button], [role=switch], [role=tab], [role=radio], a[href]";
 
 /**
+ * Default for every Motion animation that doesn't set its own: a 180 ms
+ * ease-out tween instead of Motion's default spring (which can run 500 ms+
+ * and makes whileTap, entrances and exits feel late). Explicit transitions win.
+ */
+const SNAPPY = { type: "tween", duration: 0.18, ease: [0.23, 1, 0.32, 1] } as const;
+
+/**
  * App-wide feedback: Motion components follow the in-app Motion setting, the
  * page gets data-motion for CSS, and one capture listener gives every press a
  * quiet tick (when Sound is on), unlocks audio on iOS, and remembers the
@@ -46,9 +53,20 @@ export function FeedbackRoot({ children }: { children: ReactNode }) {
         return;
       else playSound("tick");
     };
+    // iOS Safari only applies :active (the .press scale) when a touchstart
+    // listener exists; without it taps show no response until the click lands.
+    const noop = () => undefined;
     document.addEventListener("pointerdown", onDown, true);
-    return () => document.removeEventListener("pointerdown", onDown, true);
+    document.addEventListener("touchstart", noop, { passive: true });
+    return () => {
+      document.removeEventListener("pointerdown", onDown, true);
+      document.removeEventListener("touchstart", noop);
+    };
   }, []);
 
-  return <MotionConfig reducedMotion={reduced ? "always" : "never"}>{children}</MotionConfig>;
+  return (
+    <MotionConfig reducedMotion={reduced ? "always" : "never"} transition={SNAPPY}>
+      {children}
+    </MotionConfig>
+  );
 }

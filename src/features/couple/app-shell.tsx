@@ -7,6 +7,7 @@ import { cn } from "@/components/ui/cn";
 import { useOnline, useStoredString } from "@/lib/hooks";
 import { GameInviteToast } from "@/features/play/invite-toast";
 import { PushAsk } from "@/features/home/push-ask";
+import { SearchShortcut } from "@/features/search/search-shortcut";
 
 const HIDE_TABS = [/^\/play\/[^/]+\/[^/]+/, /^\/settings/, /^\/help/, /^\/plans\/watch\//];
 
@@ -33,6 +34,7 @@ export function AppShell({
   return (
     <>
       <Rail />
+      <SearchShortcut />
       <GameInviteToast />
       <div className={cn("app-main", !tabs && "no-tabs")}>
         {!online && (

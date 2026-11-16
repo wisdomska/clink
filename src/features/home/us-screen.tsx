@@ -42,6 +42,12 @@ export function UsScreen() {
     }
   }, [params, router, sendClink]);
 
+  // The likely next stops from Us, fetched ahead so they open instantly.
+  useEffect(() => {
+    router.prefetch("/us/countdowns");
+    router.prefetch("/settings");
+  }, [router]);
+
   // Discreet mode: long-press the wordmark for 2 s to open After Dark.
   const wordDown = () => {
     if (wordTimer.current) clearTimeout(wordTimer.current);
@@ -68,7 +74,7 @@ export function UsScreen() {
               aria-label="After Dark"
               className="press border-line bg-s1 text-text hover:text-text flex h-11 w-11 items-center justify-center rounded-full border"
             >
-              <Moon size={20} />
+              <Moon size={24} aria-hidden />
             </Link>
           )}
           <Link
@@ -76,7 +82,7 @@ export function UsScreen() {
             aria-label="Settings"
             className="press border-line bg-s1 text-text hover:text-text flex h-11 w-11 items-center justify-center rounded-full border"
           >
-            <GearSix size={20} />
+            <GearSix size={24} aria-hidden />
           </Link>
         </div>
       </div>

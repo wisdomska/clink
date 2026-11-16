@@ -3,6 +3,7 @@ import { handler, ok, parseJson, requireCouple, rateLimit } from "@/lib/server/a
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { initGame, playersFor, LIVE, asJson } from "@/lib/server/games";
 import { notify } from "@/lib/server/push";
+import { keysetFilter, pageParams, toPage } from "@/features/plans/cursor";
 
 const schema = z.object({
   type: z.enum([
@@ -82,4 +83,32 @@ export const POST = handler(async (req) => {
     tag: `game-${game.id}`,
   });
   return ok({ id: game.id }, { status: 201 });
+});
+
+/**
+ * PLAY-08 history: one page of finished games, most recent first, for the
+ * lobby's game history. Reads through the caller's session (RLS).
+ */
+export const GET = handler(async (req) => {
+  const { db } = await requireCouple();
+  const { cursor, limit } = pageParams(req.nextUrl);
+  let q = db
+    .from("games")
+    .select("id, type, winner_id, is_draw, finished_at")
+    .eq("status", "finished")
+    .not("finished_at", "is", null);
+  if (cursor) q = q.or(keysetFilter("finished_at", cursor, "desc"));
+  const { data, error } = await q
+    .order("finished_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(limit + 1);
+  if (error) throw error;
+  return ok(
+    toPage(
+      data ?? [],
+      limit,
+      (r) => r.finished_at!,
+      (r) => r.id,
+    ),
+  );
 });

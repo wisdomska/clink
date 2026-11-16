@@ -7,6 +7,8 @@ import { useCouple } from "@/features/couple/context";
 import { IconButton, Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { formatClock } from "@/lib/time";
+import { editList, rollback } from "@/features/plans/infinite";
+import { vaultListKey, type VaultItem } from "./vault";
 
 /**
  * Sensitive media viewer. Bytes are fetched once (no-store) into an object URL
@@ -95,7 +97,19 @@ export function SensitiveViewer({
             variant="danger-outline"
             size="xs"
             onClick={async () => {
-              await fetch(`/api/media/${id}`, { method: "DELETE" });
+              // Unsend is immediate (no undo window: the sender wants it gone now).
+              // The vault updates optimistically and rolls back if the server refuses.
+              const snap = await editList<VaultItem>(qc, vaultListKey, (items) =>
+                retention === "vault"
+                  ? items.map((v) => (v.id === id ? { ...v, removed: true } : v))
+                  : items.filter((v) => v.id !== id),
+              );
+              const r = await fetch(`/api/media/${id}`, { method: "DELETE" }).catch(() => null);
+              if (!r?.ok) {
+                rollback(qc, vaultListKey, snap);
+                toast.err("Couldn't unsend it. Try again.");
+                return;
+              }
               toast("Unsent. It's gone for both of you.");
               close();
             }}

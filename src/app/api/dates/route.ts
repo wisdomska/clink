@@ -2,6 +2,7 @@ import { z } from "zod";
 import { handler, ok, parseJson, requireCouple, rateLimit, deny } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { notify } from "@/lib/server/push";
+import { keysetFilter, pageParams, toPage } from "@/features/plans/cursor";
 
 const schema = z.object({ kitId: z.uuid(), startAt: z.iso.datetime({ offset: true }) });
 
@@ -36,4 +37,31 @@ export const POST = handler(async (req) => {
     url: "/plans",
   });
   return ok({ id: data.id }, { status: 201 });
+});
+
+/**
+ * DATE-02 list: one page of your dates (booked, under way and done), latest
+ * start first. Cancelled dates are left out. RLS decides what's visible.
+ */
+export const GET = handler(async (req) => {
+  const { db } = await requireCouple();
+  const { cursor, limit } = pageParams(req.nextUrl);
+  let q = db
+    .from("scheduled_dates")
+    .select("id, kit_id, start_at, status, ticket_no, completed_at, date_kits(title, slug)")
+    .neq("status", "cancelled");
+  if (cursor) q = q.or(keysetFilter("start_at", cursor, "desc"));
+  const { data, error } = await q
+    .order("start_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(limit + 1);
+  if (error) throw error;
+  return ok(
+    toPage(
+      data ?? [],
+      limit,
+      (r) => r.start_at,
+      (r) => r.id,
+    ),
+  );
 });

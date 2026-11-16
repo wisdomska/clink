@@ -10,7 +10,7 @@ import { Input, Label, FieldError } from "@/components/ui/field";
 import { Sheet } from "@/components/ui/sheet";
 import { toast } from "@/components/ui/toast";
 import { zonedToUtc, wallTime, localParts } from "@/lib/time";
-import { useKits, useUpcomingDates } from "./data";
+import { useKits, useUpcomingDates, upcomingKey, type DateRow } from "./data";
 
 export function ScheduleSheet({
   kitId,
@@ -62,16 +62,41 @@ export function ScheduleSheet({
         onClick={async () => {
           setError(null);
           if (!instant) return;
+          if (instant.getTime() < Date.now() - 60_000)
+            return setError("Pick a time in the future.");
+          // Optimistic: the kit shows as booked at once; rolled back if the server refuses.
+          const key = upcomingKey(coupleId);
+          await qc.cancelQueries({ queryKey: key, exact: true });
+          const prev = qc.getQueryData<DateRow[]>(key);
+          const temp: DateRow = {
+            id: `temp-${crypto.randomUUID()}`,
+            kit_id: kitId,
+            start_at: instant.toISOString(),
+            status: "scheduled",
+            ticket_no: 0,
+            completed_at: null,
+            date_kits: { title, slug: "" },
+          };
+          qc.setQueryData<DateRow[]>(
+            key,
+            [...(prev ?? []), temp].sort((a, b) => a.start_at.localeCompare(b.start_at)),
+          );
+          onOpenChange(false);
+          toast(`${title} scheduled. Reminders set in both time zones.`);
           const r = await fetch("/api/dates", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ kitId, startAt: instant.toISOString() }),
-          });
-          const d = await r.json();
-          if (!r.ok) return setError(d.message);
-          onOpenChange(false);
-          toast(`${title} scheduled. Reminders set in both time zones.`);
-          void qc.invalidateQueries({ queryKey: ["dates", coupleId] });
+          }).catch(() => null);
+          const d = await r?.json().catch(() => ({}));
+          if (!r?.ok) {
+            qc.setQueryData(key, prev);
+            setError(d?.message ?? "Couldn't book it. Try again.");
+            toast.err(`Couldn't book ${title}.`);
+            onOpenChange(true);
+            return;
+          }
+          void qc.invalidateQueries({ queryKey: key });
         }}
       >
         Book it

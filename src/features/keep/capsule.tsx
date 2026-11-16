@@ -8,7 +8,10 @@ import { Button, IconButton } from "@/components/ui/button";
 import { Mono } from "@/components/ui/heading";
 import { countdownParts } from "@/lib/time";
 import { Bottle } from "./objects";
-import { tagDate } from "./data";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/components/ui/toast";
+import { editList, rollback } from "@/features/plans/infinite";
+import { capsulesKey, tagDate, type CapsuleRow } from "./data";
 
 interface Capsule {
   id: string;
@@ -22,7 +25,8 @@ interface Capsule {
 /** KEEP-02: locked with countdown, ready, uncorking, opened (contents fetched from the server only now). */
 export function CapsuleScreen({ capsule }: { capsule: Capsule }) {
   const router = useRouter();
-  const { me, partner } = useCouple();
+  const { me, partner, coupleId } = useCouple();
+  const qc = useQueryClient();
   const [now, setNow] = useState(() => new Date());
   const ready = new Date(capsule.unlock_at) <= now;
   const [state, setState] = useState<"corked" | "uncorking" | "open">(
@@ -75,11 +79,25 @@ export function CapsuleScreen({ capsule }: { capsule: Capsule }) {
         </div>
       ) : state === "corked" ? (
         <Button
-          onClick={() => {
+          onClick={async () => {
+            // Optimistic: uncork now, mark it opened on the shelf, roll back on failure.
             setState("uncorking");
             feedback("success", "pop");
-            void fetch(`/api/capsules/${capsule.id}/open`, { method: "POST" });
-            setTimeout(() => setState("open"), reduced ? 200 : 900);
+            const key = capsulesKey(coupleId);
+            const openedAt = new Date().toISOString();
+            const snap = await editList<CapsuleRow>(qc, key, (items) =>
+              items.map((c) => (c.id === capsule.id ? { ...c, opened_at: openedAt } : c)),
+            );
+            const timer = setTimeout(() => setState("open"), reduced ? 200 : 900);
+            const r = await fetch(`/api/capsules/${capsule.id}/open`, { method: "POST" }).catch(
+              () => null,
+            );
+            if (!r?.ok) {
+              clearTimeout(timer);
+              rollback(qc, key, snap);
+              setState("corked");
+              toast.err("Couldn't uncork it. Try again.");
+            }
           }}
         >
           Uncork it

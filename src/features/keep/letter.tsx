@@ -6,7 +6,10 @@ import { ArrowLeft } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
 import { Button, IconButton } from "@/components/ui/button";
 import { Mono } from "@/components/ui/heading";
-import { tagDate } from "./data";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/components/ui/toast";
+import { editList, rollback } from "@/features/plans/infinite";
+import { lettersKey, tagDate, type LetterRow } from "./data";
 
 interface Letter {
   id: string;
@@ -20,7 +23,8 @@ interface Letter {
 /** KEEP-01: sealed, breaking the seal (tap or drag), opened. */
 export function LetterScreen({ letter }: { letter: Letter }) {
   const router = useRouter();
-  const { me, partner } = useCouple();
+  const { me, partner, coupleId } = useCouple();
+  const qc = useQueryClient();
   const mine = letter.author_id === me.id;
   const [state, setState] = useState<"sealed" | "breaking" | "opened">(
     letter.opened_at || mine ? "opened" : "sealed",
@@ -35,8 +39,21 @@ export function LetterScreen({ letter }: { letter: Letter }) {
     if (state !== "sealed") return;
     setState("breaking");
     haptic("heavy");
-    void fetch(`/api/letters/${letter.id}/open`, { method: "POST" });
-    setTimeout(() => setState("opened"), reduced ? 200 : 800);
+    // Optimistic: the seal breaks now and the Keep list shows it opened; if the
+    // server refuses, the seal comes back and an error toast says so.
+    const key = lettersKey(coupleId, "partner");
+    const openedAt = new Date().toISOString();
+    const snap = await editList<LetterRow>(qc, key, (items) =>
+      items.map((l) => (l.id === letter.id ? { ...l, opened_at: openedAt } : l)),
+    );
+    const timer = setTimeout(() => setState("opened"), reduced ? 200 : 800);
+    const r = await fetch(`/api/letters/${letter.id}/open`, { method: "POST" }).catch(() => null);
+    if (!r?.ok) {
+      clearTimeout(timer);
+      rollback(qc, key, snap);
+      setState("sealed");
+      toast.err("Couldn't break the seal. Try again.");
+    }
   }
 
   return (

@@ -40,8 +40,8 @@ export function DarkHub() {
   const [verifyOpen, setVerifyOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
   const { data: vault } = useQuery({
-    queryKey: ["vault"],
-    queryFn: () => darkFetch<{ items: Array<{ removed: boolean }> }>("/api/dark/vault"),
+    queryKey: ["vault", "summary"],
+    queryFn: () => darkFetch<{ kept?: number }>("/api/dark/vault?limit=1"),
     enabled: (s?.rank ?? 0) > 0,
   });
   const { data: req } = useQuery({
@@ -52,7 +52,7 @@ export function DarkHub() {
   });
   const rank = s?.rank ?? 0;
   const pending = req?.inbox.filter((r) => r.status === "pending" || r.status === "later") ?? [];
-  const kept = vault?.items.filter((v) => !v.removed).length ?? 0;
+  const kept = vault?.kept ?? 0;
 
   function tierCount(t: Tier) {
     return { Flirty: "54 cards", Steamy: "54 cards", Spicy: "53 cards", Unhinged: "54 cards" }[t];

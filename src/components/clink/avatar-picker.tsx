@@ -37,7 +37,7 @@ export function AvatarPicker({
                 setTone(t);
                 if (current) onChange(poseKey(current.g, current.pose, t));
               }}
-              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-0 p-0"
+              className="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-0 p-0 before:absolute before:-inset-1.5 before:content-['']"
               style={{ background: colour }}
             >
               {tone === t && (
@@ -57,7 +57,7 @@ export function AvatarPicker({
               aria-checked={g === k}
               onClick={() => setG(k)}
               className={cn(
-                "h-8 cursor-pointer rounded-full border-0 px-3 text-xs font-bold",
+                "relative h-8 cursor-pointer rounded-full border-0 px-3 text-xs font-bold before:absolute before:inset-x-0 before:-inset-y-2 before:content-['']",
                 g === k ? "bg-accent text-on-accent" : "text-muted bg-transparent",
               )}
             >
@@ -87,8 +87,13 @@ export function AvatarPicker({
               }}
               initial={{ opacity: 0.01, scale: 0.85 }}
               animate={{ opacity: 1, scale: on ? 1.05 : 1 }}
-              transition={{ delay: i * 0.02, type: "spring", stiffness: 420, damping: 26 }}
-              whileTap={{ scale: 0.92 }}
+              // Only the first fade is staggered; selecting one scales it at once.
+              transition={{
+                duration: 0.14,
+                ease: [0.23, 1, 0.32, 1],
+                opacity: { delay: Math.min(i, 8) * 0.012, duration: 0.14 },
+              }}
+              whileTap={{ scale: 0.94, transition: { duration: 0.06 } }}
               className={cn(
                 "relative flex aspect-square cursor-pointer items-end justify-center overflow-hidden rounded-[26%] border-0 p-0",
                 on ? "bg-accent/25" : "bg-s2 hover:bg-s3",

@@ -72,9 +72,13 @@ export function CallLogRow({
         type="button"
         onClick={() => start(c.video)}
         aria-label={`Call ${partnerName} back`}
-        className="press bg-accent/15 text-accent flex h-10 flex-none cursor-pointer items-center gap-1.5 rounded-full border-0 px-3 text-sm font-bold"
+        className="press bg-accent/15 text-accent flex h-11 flex-none cursor-pointer items-center gap-1.5 rounded-full border-0 px-3 text-sm font-bold"
       >
-        {c.video ? <VideoCamera size={18} weight="fill" /> : <Phone size={18} weight="fill" />}
+        {c.video ? (
+          <VideoCamera size={20} weight="fill" aria-hidden />
+        ) : (
+          <Phone size={20} weight="fill" aria-hidden />
+        )}
         Call
       </button>
     </div>

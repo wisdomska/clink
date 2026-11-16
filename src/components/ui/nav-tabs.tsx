@@ -1,6 +1,6 @@
 "use client";
 import { useId, useRef } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import { cn } from "./cn";
 import { feedback } from "@/lib/feedback";
@@ -34,7 +34,6 @@ export function NavTabs<T extends string>({
   param?: string;
   className?: string;
 }) {
-  const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const active = useTab(tabs, param);
@@ -47,7 +46,10 @@ export function NavTabs<T extends string>({
     const next = new URLSearchParams(params);
     if (v === tabs[0]!.value) next.delete(param);
     else next.set(param, v);
-    router.replace(`${pathname}${next.size ? `?${next}` : ""}`, { scroll: false });
+    // Native replaceState syncs useSearchParams without a server round trip, so
+    // the pill and panel switch on the same frame as the tap. (router.replace
+    // re-fetched the page's RSC payload first, which waited on the network.)
+    window.history.replaceState(null, "", `${pathname}${next.size ? `?${next}` : ""}`);
   }
 
   return (
@@ -83,7 +85,7 @@ export function NavTabs<T extends string>({
             tabIndex={on ? 0 : -1}
             onClick={() => go(t.value)}
             className={cn(
-              "relative flex h-10 flex-none cursor-pointer items-center gap-2 rounded-full border-0 bg-transparent px-4 text-sm font-semibold whitespace-nowrap transition-colors",
+              "relative flex h-11 flex-none cursor-pointer items-center gap-2 rounded-full border-0 bg-transparent px-4 text-sm font-semibold whitespace-nowrap transition-colors duration-100",
               on ? "text-on-accent" : "text-muted hover:text-text",
             )}
           >
@@ -91,7 +93,7 @@ export function NavTabs<T extends string>({
               <motion.span
                 layoutId={`navtab-${label}`}
                 className="bg-accent absolute inset-0 rounded-full"
-                transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                transition={{ type: "spring", stiffness: 700, damping: 45, mass: 0.6 }}
                 aria-hidden
               />
             )}
@@ -116,7 +118,7 @@ export function NavTabs<T extends string>({
   );
 }
 
-/** Wraps a tab's content with a soft entrance each time it is shown. */
+/** Wraps a tab's content with a quick entrance (140 ms, never blocks input) each time it is shown. */
 export function TabPanel({
   children,
   className,
@@ -127,9 +129,9 @@ export function TabPanel({
   return (
     <motion.div
       role="tabpanel"
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0.01, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      transition={{ duration: 0.14, ease: [0.23, 1, 0.32, 1] }}
       className={className}
     >
       {children}

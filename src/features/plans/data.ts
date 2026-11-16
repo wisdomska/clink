@@ -2,6 +2,29 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useCouple } from "@/features/couple/context";
+import { getPage, useCursorList } from "./infinite";
+
+export interface DateRow {
+  id: string;
+  kit_id: string;
+  start_at: string;
+  status: string;
+  ticket_no: number;
+  completed_at: string | null;
+  date_kits: { title: string; slug: string } | null;
+}
+
+export const upcomingKey = (coupleId: string) => ["dates", coupleId] as const;
+export const dateListKey = (coupleId: string) => ["dates", coupleId, "all"] as const;
+
+/** Every date you've booked or done, latest first, 20 at a time. */
+export function useDateList() {
+  const { coupleId } = useCouple();
+  return useCursorList<DateRow>({
+    queryKey: dateListKey(coupleId),
+    fetchPage: (cursor) => getPage<DateRow>("/api/dates", cursor),
+  });
+}
 
 export function useKits() {
   return useQuery({
@@ -15,7 +38,7 @@ export function useKits() {
 export function useUpcomingDates() {
   const { coupleId } = useCouple();
   return useQuery({
-    queryKey: ["dates", coupleId],
+    queryKey: upcomingKey(coupleId),
     queryFn: async () =>
       (
         await supabaseBrowser()

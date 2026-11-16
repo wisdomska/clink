@@ -73,6 +73,7 @@ export function MissedCallCard() {
           initial={{ opacity: 0, y: -10, height: 0 }}
           animate={{ opacity: 1, y: 0, height: "auto" }}
           exit={{ opacity: 0, y: -10, height: 0 }}
+          transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
           className="flex-none overflow-hidden"
         >
           <div className="rounded-card border-danger/30 bg-danger/10 flex items-center gap-3 border p-2.5 pl-3">
@@ -97,12 +98,12 @@ export function MissedCallCard() {
                 hide();
                 start(c!.video);
               }}
-              className="press bg-accent text-on-accent flex h-10 cursor-pointer items-center gap-1.5 rounded-full border-0 px-3.5 text-sm font-bold"
+              className="press bg-accent text-on-accent flex h-11 cursor-pointer items-center gap-1.5 rounded-full border-0 px-3.5 text-sm font-bold"
             >
               {c!.video ? (
-                <VideoCamera size={18} weight="fill" />
+                <VideoCamera size={20} weight="fill" aria-hidden />
               ) : (
-                <Phone size={18} weight="fill" />
+                <Phone size={20} weight="fill" aria-hidden />
               )}
               Call back
             </button>
@@ -110,9 +111,9 @@ export function MissedCallCard() {
               type="button"
               aria-label="Dismiss"
               onClick={hide}
-              className="text-faint hover:text-text flex h-10 w-8 cursor-pointer items-center justify-center border-0 bg-transparent"
+              className="press-icon text-faint hover:text-text -mr-1 flex h-11 w-11 flex-none cursor-pointer items-center justify-center rounded-full border-0 bg-transparent"
             >
-              <X size={18} />
+              <X size={20} aria-hidden />
             </button>
           </div>
         </motion.div>

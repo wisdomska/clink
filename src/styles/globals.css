@@ -53,6 +53,9 @@
     color-scheme: dark;
     background: var(--bg-page);
     -webkit-text-size-adjust: 100%;
+    /* No double-tap-to-zoom wait anywhere: taps fire on release, not 300 ms later. */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
     margin: 0;
@@ -111,15 +114,23 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
-  /* Tactile press used on every prototype button */
-  .press {
+  /*
+   * Tactile press used on every button. The press lands within one frame
+   * (60 ms, no delay); only the release eases back, so a tap reads instantly.
+   */
+  .press,
+  .press-icon {
     transition: var(--press);
   }
   .press:active:not(:disabled, [aria-disabled="true"]) {
     transform: scale(0.97);
+    transition-duration: 60ms;
+    transition-delay: 0ms;
   }
   .press-icon:active:not(:disabled, [aria-disabled="true"]) {
     transform: scale(0.92);
+    transition-duration: 60ms;
+    transition-delay: 0ms;
   }
   /* Diagonal placeholder stripe used for media slots */
   .stripe {
@@ -143,8 +154,9 @@
 
 /* Prototype animation map (renderVals().an). Reduced-motion fallbacks below. */
 @layer utilities {
+  /* Entrances never hold content back: 160 ms, no delay, input works throughout. */
   .an-screen {
-    animation: screenIn 220ms var(--ease-out) both;
+    animation: screenIn 160ms var(--ease-out) both;
   }
   .an-glassL {
     animation: glassL 640ms var(--ease-pop) 300ms both;
@@ -174,7 +186,7 @@
     animation: ripple 700ms var(--ease-out) both;
   }
   .an-slide-down {
-    animation: slideDown 340ms var(--ease-drawer) both;
+    animation: slideDown 220ms var(--ease-drawer) both;
   }
   .an-pulse {
     animation: pulseRing 900ms var(--ease-out) 200ms both;
@@ -204,13 +216,13 @@
     animation: cork 640ms var(--ease-out) both;
   }
   .an-sheet {
-    animation: sheetUp 360ms var(--ease-drawer) both;
+    animation: sheetUp 220ms var(--ease-drawer) both;
   }
   .an-flame {
     animation: flame 300ms var(--ease-out) both;
   }
   .an-reveal {
-    animation: fadeUp 260ms var(--ease-out) both;
+    animation: fadeUp 180ms var(--ease-out) both;
   }
   .an-tear {
     animation: tear 380ms var(--ease-out) both;
@@ -222,13 +234,13 @@
     animation: shake 360ms var(--ease-in-out) both;
   }
   .an-toast {
-    animation: toastIn 220ms var(--ease-out) both;
+    animation: toastIn 160ms var(--ease-out) both;
   }
   .an-fade {
-    animation: fadeIn 200ms both;
+    animation: fadeIn 160ms both;
   }
   .an-fade-slow {
-    animation: fadeIn 320ms both;
+    animation: fadeIn 240ms both;
   }
   .an-dot {
     animation: live 1.6s ease-in-out infinite;
@@ -236,11 +248,15 @@
   .an-typing {
     animation: dots 1s ease-in-out infinite;
   }
-  /* Skeletons wait 300 ms (fast loads never flash), then fade in with a shimmer sweep. */
+  /*
+   * Skeletons wait 90 ms (a cached screen swaps in before then, so it never
+   * flashes), then fade in fast with a shimmer sweep. Any longer and the tap
+   * looks ignored: the old screen is already gone.
+   */
   .an-skel {
     position: relative;
     overflow: hidden;
-    animation: fadeIn 200ms ease 300ms both;
+    animation: fadeIn 140ms ease 90ms both;
   }
   .an-skel::after {
     content: "";
@@ -252,10 +268,15 @@
   }
   /* Sheets and dialogs leave the way they came (Radix waits for animationend). */
   .an-sheet[data-state="closed"] {
-    animation: sheetDown 180ms var(--ease-out) forwards;
+    animation: sheetDown 160ms var(--ease-out) forwards;
   }
   .an-fade[data-state="closed"] {
-    animation: fadeOut 160ms var(--ease-out) forwards;
+    animation: fadeOut 140ms var(--ease-out) forwards;
+  }
+  /* A closing overlay never swallows the next tap. */
+  [data-state="closed"].an-fade,
+  [data-state="closed"].an-sheet {
+    pointer-events: none;
   }
   .haptic-shake {
     animation: hapticShake 90ms ease-in-out 2;
@@ -272,15 +293,18 @@
   .an-shake-b {
     animation: shakeB 360ms var(--ease-in-out);
   }
-  /* Staggered rise: set --i on the element. */
+  /*
+   * Staggered rise: set --i on the element. 180 ms, 20 ms apart, and the
+   * stagger stops after 5 items so a long list is fully in within 280 ms.
+   */
   .an-rise {
-    animation: rise 280ms var(--ease-out) calc(var(--i, 0) * 40ms) both;
+    animation: rise 180ms var(--ease-out) calc(min(var(--i, 0), 5) * 20ms) both;
   }
 }
 
 @media (min-width: 768px) {
   .an-sheet[data-state="closed"] {
-    animation: modalOut 150ms var(--ease-out) forwards;
+    animation: modalOut 140ms var(--ease-out) forwards;
   }
 }
 
@@ -399,6 +423,19 @@
     -webkit-touch-callout: none;
     touch-action: manipulation;
   }
+  :where(
+    a,
+    input,
+    select,
+    textarea,
+    label,
+    summary,
+    [role="tab"],
+    [role="radio"],
+    [role="switch"]
+  ) {
+    touch-action: manipulation;
+  }
 }
 
 /*
@@ -477,6 +514,34 @@
   .screen {
     padding: 32px 48px 48px;
   }
+}
+/*
+ * Width presets for single-column screens, so a form or a list never stretches
+ * 1100 px across a 1440/1920 display. The column stays centred (margin auto).
+ */
+.screen.screen-narrow {
+  max-width: 720px;
+}
+.screen.screen-medium {
+  max-width: 960px;
+}
+/*
+ * Short, single-purpose screens (empty states, confirmations, done, offline):
+ * fill the visible area above the tab bar and centre the content vertically.
+ * Put .screen-fill on the screen and .fill-center on the block to centre when
+ * there is a header above it.
+ */
+.screen-fill,
+.screen-center {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - var(--chrome-bottom, 0px));
+}
+.screen-center {
+  justify-content: center;
+}
+.screen-fill > .fill-center {
+  margin-block: auto;
 }
 
 /* Never allow sideways page scroll on phones. */

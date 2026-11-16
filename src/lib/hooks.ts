@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type PointerEvent } from "react";
+import { haptic } from "@/lib/feedback";
 
 const noop = () => () => {};
 
@@ -60,6 +61,56 @@ export function useNow(ms = 30_000): number {
     return () => clearInterval(t);
   }, [ms]);
   return now;
+}
+
+/**
+ * Long-press (touch) or right-click (mouse) opens a context menu, the way
+ * iMessage and WhatsApp do. Spread the handlers on the element; its normal tap
+ * still works, and is swallowed only when the long-press fired. The haptic
+ * lands the moment the press is recognised, not after any async work.
+ */
+export function useLongPress(onLongPress: () => void, ms = 450) {
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fired = useRef(false);
+  const start = useRef<{ x: number; y: number } | null>(null);
+  const clear = () => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
+    start.current = null;
+  };
+  return {
+    onPointerDown: (e: PointerEvent) => {
+      fired.current = false;
+      clear();
+      if (e.pointerType === "mouse") return; // mouse uses right-click
+      start.current = { x: e.clientX, y: e.clientY };
+      timer.current = setTimeout(() => {
+        fired.current = true;
+        haptic("heavy");
+        onLongPress();
+      }, ms);
+    },
+    onPointerMove: (e: PointerEvent) => {
+      // A scroll or drag is not a long-press.
+      const s = start.current;
+      if (s && Math.hypot(e.clientX - s.x, e.clientY - s.y) > 10) clear();
+    },
+    onPointerUp: clear,
+    onPointerCancel: clear,
+    onPointerLeave: clear,
+    onContextMenu: (e: { preventDefault: () => void }) => {
+      e.preventDefault();
+      if (fired.current) return; // touch long-press already opened it
+      clear();
+      onLongPress();
+    },
+    onClickCapture: (e: { preventDefault: () => void; stopPropagation: () => void }) => {
+      if (!fired.current) return;
+      fired.current = false;
+      e.preventDefault();
+      e.stopPropagation();
+    },
+  };
 }
 
 /** Honours the in-app Motion setting (Settings) as well as the OS preference. */

@@ -106,15 +106,34 @@ export function ChallengeScreen({ id }: { id: string }) {
         <Button
           disabled={doneToday}
           onClick={async () => {
-            const r = await fetch(`/api/challenges/${c.id}/check`, { method: "POST" });
-            const d = await r.json();
-            if (!r.ok) return toast.err(d.message);
-            void qc.invalidateQueries({ queryKey: ["challenge", coupleId] });
+            // Optimistic: today's dot fills in at once; it empties again if the server refuses.
+            const key = ["challenge", coupleId];
+            await qc.cancelQueries({ queryKey: key });
+            const prev = qc.getQueryData<NonNullable<typeof data>>(key);
+            if (prev) {
+              const mark = me.role === "a" ? { done_by_a: true } : { done_by_b: true };
+              const has = prev.days.some((d) => d.day === today);
+              qc.setQueryData(key, {
+                ...prev,
+                days: has
+                  ? prev.days.map((d) => (d.day === today ? { ...d, ...mark } : d))
+                  : [...prev.days, { day: today, done_by_a: false, done_by_b: false, ...mark }],
+              });
+            }
             toast(
               theirs(today)
                 ? "Both done today. Streak safe."
                 : `Ticked. Waiting on ${partner.name}.`,
             );
+            const r = await fetch(`/api/challenges/${c.id}/check`, { method: "POST" }).catch(
+              () => null,
+            );
+            const d = await r?.json().catch(() => ({}));
+            if (!r?.ok) {
+              if (prev) qc.setQueryData(key, prev);
+              return toast.err(d?.message ?? "Couldn't tick it off. Try again.");
+            }
+            void qc.invalidateQueries({ queryKey: key });
           }}
         >
           {doneToday ? (

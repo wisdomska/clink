@@ -91,8 +91,14 @@ export const POST = handler(async (req) => {
     }
   }
   if (m.replyTo) {
-    const { data: r } = await db.from("messages").select("id").eq("id", m.replyTo).maybeSingle();
-    if (!r) throw deny(422, "bad_reply", "That message is gone.");
+    // Only quote a message from this conversation (never an older couple's).
+    const { data: r } = await db
+      .from("messages")
+      .select("id, type")
+      .eq("id", m.replyTo)
+      .eq("couple_id", coupleId)
+      .maybeSingle();
+    if (!r || r.type === "sensitive") throw deny(422, "bad_reply", "That message is gone.");
   }
 
   const { data: row, error } = await db

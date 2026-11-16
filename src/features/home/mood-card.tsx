@@ -103,7 +103,6 @@ export function MoodCard() {
   const qc = useQueryClient();
   const [note, setNote] = useState("");
   const [editing, setEditing] = useState(false);
-  const [busy, setBusy] = useState(false);
 
   const { data } = useQuery({
     queryKey: ["moods", coupleId],
@@ -123,19 +122,37 @@ export function MoodCard() {
   const theirs = data?.find((m) => m.user_id === partner.id);
   const choosing = editing || !mine;
 
+  /**
+   * Optimistic: your mood shows the moment you tap it, and saves in the
+   * background. If the save fails it rolls back and the picker comes back.
+   */
   async function choose(mood: string) {
-    if (busy) return;
-    setBusy(true);
     feedback("select");
-    const { error } = await supabaseBrowser()
-      .from("moods")
-      .insert({ couple_id: coupleId, user_id: me.id, mood, note: note.trim() || null });
-    setBusy(false);
-    if (error) return toast.err("Couldn't send that. Try again.");
+    const key = ["moods", coupleId];
+    const line = note.trim() || null;
+    type Row = NonNullable<typeof data>[number];
+    const prev = qc.getQueryData<Row[]>(key);
+    const optimistic = {
+      user_id: me.id,
+      mood,
+      note: line,
+      created_at: new Date().toISOString(),
+    } as Row;
+    void qc.cancelQueries({ queryKey: key });
+    qc.setQueryData<Row[]>(key, (rows) => [optimistic, ...(rows ?? [])]);
     setEditing(false);
     setNote("");
+    const { error } = await supabaseBrowser()
+      .from("moods")
+      .insert({ couple_id: coupleId, user_id: me.id, mood, note: line });
+    if (error) {
+      qc.setQueryData(key, prev);
+      setEditing(true);
+      setNote(line ?? "");
+      return toast.err("Couldn't send that. Try again.");
+    }
     send("mood.set", {});
-    void qc.invalidateQueries({ queryKey: ["moods", coupleId] });
+    void qc.invalidateQueries({ queryKey: key });
   }
 
   return (
@@ -175,7 +192,7 @@ export function MoodCard() {
           {HARD.has(theirs.mood) && (
             <Link
               href="/chat"
-              className="press bg-accent text-on-accent hover:text-on-accent flex h-9 flex-none items-center gap-1.5 rounded-full px-3 text-xs font-bold"
+              className="press bg-accent text-on-accent hover:text-on-accent flex h-11 flex-none items-center gap-1.5 rounded-full px-3.5 text-sm font-bold"
             >
               <ChatCircle size={16} weight="fill" aria-hidden />
               {theirs.mood === "Need space" ? "Send love" : "Talk it out"}
@@ -206,7 +223,7 @@ export function MoodCard() {
             type="button"
             onClick={() => setEditing(true)}
             aria-label="Change your mood"
-            className="press bg-s2 text-text h-10 flex-none cursor-pointer rounded-full border-0 px-4 text-sm font-semibold"
+            className="press bg-s2 text-text h-11 flex-none cursor-pointer rounded-full border-0 px-4 text-sm font-semibold"
           >
             Change
           </button>
@@ -229,9 +246,8 @@ export function MoodCard() {
                       type="button"
                       role="radio"
                       aria-checked={on}
-                      disabled={busy}
-                      onClick={() => choose(m)}
-                      whileTap={{ scale: 0.97 }}
+                      onClick={() => void choose(m)}
+                      whileTap={{ scale: 0.97, transition: { duration: 0.06 } }}
                       className={cn(
                         "an-rise flex w-[76px] flex-none cursor-pointer flex-col items-center gap-1 rounded-[14px] border-0 px-1 pt-2 pb-2 text-center text-[12px] leading-[1.15] font-semibold transition-colors",
                         on
@@ -267,7 +283,7 @@ export function MoodCard() {
             <button
               type="button"
               onClick={() => setEditing(false)}
-              className="text-muted cursor-pointer self-start border-0 bg-transparent text-sm"
+              className="press text-muted hover:text-text -ml-1 h-11 cursor-pointer self-start rounded-full border-0 bg-transparent px-1 text-sm"
             >
               Keep &ldquo;{mine.mood}&rdquo;
             </button>

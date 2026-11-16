@@ -150,6 +150,28 @@ export function useMediaInfo(ids: string[]) {
   });
 }
 
+/**
+ * Replies can quote a message older than what's loaded. Fetch just those
+ * originals (RLS keeps them to this couple) so every quote has its preview.
+ */
+export function useReplyTargets(ids: string[]) {
+  const { coupleId } = useCouple();
+  const sorted = useMemo(() => [...new Set(ids)].sort(), [ids]);
+  return useQuery({
+    queryKey: ["reply-targets", coupleId, sorted.join(",")],
+    enabled: sorted.length > 0,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data } = await supabaseBrowser()
+        .from("messages")
+        .select("*")
+        .eq("couple_id", coupleId)
+        .in("id", sorted);
+      return new Map((data ?? []).map((m) => [m.id, m as Message]));
+    },
+  });
+}
+
 /** Sends one queued payload; marks it failed on network errors. */
 export async function sendQueued(
   p: QueuedPayload,

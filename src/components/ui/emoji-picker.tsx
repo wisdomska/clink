@@ -117,7 +117,7 @@ export function EmojiPicker({
                 title={t.label}
                 onClick={() => setGroup(t.id)}
                 className={cn(
-                  "relative flex h-9 w-10 flex-none cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-lg",
+                  "relative flex h-11 w-11 flex-none cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-lg",
                   on ? "" : "opacity-60 hover:opacity-100",
                 )}
               >
@@ -125,13 +125,13 @@ export function EmojiPicker({
                   <motion.span
                     layoutId="emoji-group"
                     className="bg-accent/25 absolute inset-0 rounded-full"
-                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    transition={{ type: "spring", stiffness: 700, damping: 45, mass: 0.6 }}
                     aria-hidden
                   />
                 )}
                 <span className="relative">
                   {t.icon === "recent" ? (
-                    <ClockCounterClockwise size={18} weight="bold" className="text-text" />
+                    <ClockCounterClockwise size={20} weight="bold" className="text-text" />
                   ) : (
                     t.icon
                   )}
@@ -157,16 +157,16 @@ export function EmojiPicker({
             type="button"
             onClick={() => pick(e)}
             aria-label={e}
-            initial={{ opacity: 0, scale: 0.6 }}
+            initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
+            // The whole grid is in within ~150 ms (was up to 320 ms + a spring tail).
             transition={{
-              delay: Math.min(i, 40) * 0.008,
-              type: "spring",
-              stiffness: 500,
-              damping: 28,
+              delay: Math.min(i, 24) * 0.004,
+              duration: 0.12,
+              ease: [0.23, 1, 0.32, 1],
             }}
-            whileHover={{ scale: 1.25 }}
-            whileTap={{ scale: 0.85 }}
+            whileHover={{ scale: 1.15, transition: { duration: 0.1 } }}
+            whileTap={{ scale: 0.88, transition: { duration: 0.06 } }}
             className="hover:bg-s2 flex aspect-square cursor-pointer items-center justify-center rounded-xl border-0 bg-transparent text-[26px] leading-none"
           >
             {e}

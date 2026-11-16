@@ -55,7 +55,7 @@ export function CountdownCard({ now }: { now: Date }) {
     >
       <div className="flex items-center justify-between gap-3">
         <h2 id="cd-h" className="m-0 text-lg font-bold">
-          <Link href="/us/countdowns" className="text-text hover:text-text">
+          <Link href="/us/countdowns" prefetch className="text-text hover:text-text">
             {next?.title ?? "Next visit"}
           </Link>
         </h2>
@@ -104,6 +104,7 @@ export function CountdownCard({ now }: { now: Date }) {
           </p>
           <Link
             href="/us/countdowns?new=1"
+            prefetch
             className="press border-line bg-s2 text-text hover:text-text flex h-11 items-center self-start rounded-full border px-[18px] text-sm font-medium"
           >
             Add a countdown
