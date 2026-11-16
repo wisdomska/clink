@@ -43,7 +43,7 @@ export function AdminSettings() {
   const tab = useTab(TABS);
   const live = (data?.announcements ?? []).filter((a) => a.active);
   return (
-    <div className="an-screen flex max-w-[760px] flex-col gap-6">
+    <div className="an-screen mx-auto flex w-full max-w-[720px] flex-col gap-6">
       <div className="flex flex-col gap-1">
         <Display size={36}>Settings</Display>
         <p className="text-muted m-0 text-sm">

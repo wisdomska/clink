@@ -1,152 +1,111 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
-import { HeroGlasses } from "@/components/clink/hero-glasses";
-import { MiniBoard, MiniEnvelope, MiniMatchbook, MiniStub } from "@/components/clink/objects-mini";
 import { InstalledRedirect } from "./installed-redirect";
-import { Logo } from "@/components/brand/logo";
+import { SiteHeader } from "@/components/landing/site-header";
+import { Hero } from "@/components/landing/hero";
+import { MomentsMarquee } from "@/components/landing/moments-marquee";
+import { Statement } from "@/components/landing/statement";
+import { ProductTour, type TourStep } from "@/components/landing/product-tour";
+import { ChatScreen, GameScreen, LetterScreen, PlansScreen } from "@/components/landing/screens";
+import { ClinkDemo } from "@/components/landing/clink-demo";
+import { FeatureBento } from "@/components/landing/feature-bento";
+import { Trust } from "@/components/landing/trust";
+import { Faq } from "@/components/landing/faq";
+import { FinalCta, SiteFooter } from "@/components/landing/final-cta";
+import { RevealController } from "@/components/landing/reveal-controller";
+import "@/components/landing/landing.css";
 
 export const metadata: Metadata = {
   title: { absolute: "Clink: do things together, from apart" },
   description:
-    "Games, dates, dares and letters for two people in two places. One account links to exactly one person. 18+.",
+    "Calls, chat, games, letters and date nights for couples who live apart. One account links to exactly one person. 18+.",
   robots: { index: true, follow: true },
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Clink: do things together, from apart",
-    description: "Games, dates, dares and letters for two people in two places.",
+    title: "Clink: two cities, one clink",
+    description: "Calls, chat, games, letters and date nights for couples who live apart.",
     type: "website",
     siteName: "Clink",
   },
   twitter: { card: "summary_large_image" },
 };
 
-const cta =
-  "press flex h-14 items-center justify-center gap-2 rounded-full bg-accent px-7 text-base font-bold text-on-accent hover:text-on-accent";
-const ctaSecondary =
-  "press flex h-[52px] items-center justify-center rounded-full border border-line bg-s2 px-7 text-base font-medium text-text hover:text-text";
+const TOUR: TourStep[] = [
+  {
+    id: "chat",
+    title: "Talk like you share a sofa.",
+    body: "Messages, voice notes, photos and stickers that sound like them. When typing isn't enough, call from the same screen.",
+    screen: <ChatScreen />,
+  },
+  {
+    id: "play",
+    title: "Your move.",
+    body: "Ten games made for two, from Trivia duel to Draw and guess. Play live, or take turns whenever you're free.",
+    screen: <GameScreen />,
+  },
+  {
+    id: "letters",
+    title: "Letters for later.",
+    body: "Write one for the night they can't sleep, or seal a time capsule until a date you choose. It won't open a minute early.",
+    screen: <LetterScreen />,
+  },
+  {
+    id: "plans",
+    title: "Date night, decided.",
+    body: "Can't choose? Spin the date roulette, book it, and count down to the night together.",
+    screen: <PlansScreen />,
+  },
+];
 
 export default function Landing() {
   return (
-    <div className="an-screen bg-app min-h-dvh pt-[max(env(safe-area-inset-top),4px)] pb-8">
+    <div className="bg-app text-text min-h-dvh overflow-x-clip">
       <InstalledRedirect />
-      <header className="mx-auto flex h-12 max-w-[1200px] items-center justify-between px-4 md:h-[72px] md:px-8">
-        <Link href="/" className="display text-text hover:text-text text-[28px]">
-          <Logo size={26} />
-        </Link>
-        <Link
-          href="/login"
-          className="press border-line text-text hover:text-text flex h-11 items-center rounded-full border bg-transparent px-[18px] text-sm font-medium"
-        >
-          Sign in
-        </Link>
-      </header>
+      <RevealController />
+      <SiteHeader />
+      <main>
+        <Hero />
+        <MomentsMarquee />
+        <Statement />
 
-      <main className="mx-auto max-w-[1200px]">
-        {/* Hero: stacked on phones, split from 1024 px */}
-        <section className="grid gap-0 px-4 pt-4 md:px-8 lg:grid-cols-[1fr_1.05fr] lg:items-center lg:gap-16 lg:pt-12">
-          <div className="order-2 lg:order-1">
-            <h1 className="display mt-7 mb-0 text-[48px] leading-[1.05] md:text-[64px] lg:mt-0">
-              Do things together, from apart.
-            </h1>
-            <p className="text-muted mt-3 mb-0 max-w-[46ch] text-base leading-normal text-pretty md:text-lg">
-              Games, dates, dares and letters for two people in two places. One account links to
-              exactly one person.
-            </p>
-            <div className="mt-6 flex flex-col gap-2 sm:max-w-[420px] lg:max-w-none lg:flex-row">
-              <Link href="/signup" className={cta}>
-                Start with your partner <ArrowRight size={20} aria-hidden />
-              </Link>
-              <Link href="/signup?code=1" className={ctaSecondary}>
-                I have a code
-              </Link>
-            </div>
-          </div>
-          <div className="order-1 lg:order-2">
-            <HeroGlasses />
-          </div>
-        </section>
-
-        {/* Four objects. Mobile keeps the prototype's alternating rows; desktop becomes an offset 2x2. */}
         <section
-          aria-labelledby="table"
-          className="mt-14 flex flex-col gap-10 px-4 md:px-8 lg:mt-28"
+          aria-labelledby="tour-title"
+          className="mx-auto max-w-[1440px] px-4 pb-24 md:px-8 md:pb-36 xl:px-12"
         >
-          <h2 id="table" className="display m-0 text-[28px] leading-[1.1] md:text-[36px]">
-            Four things on the table.
+          <h2
+            id="tour-title"
+            data-reveal
+            className="display m-0 mb-12 max-w-[16ch] text-[clamp(2.5rem,5.5vw,4.75rem)] leading-[0.98] tracking-[-0.03em] lg:mb-4"
+          >
+            Built for the hours between visits.
           </h2>
-          <div className="grid gap-10 lg:grid-cols-2 lg:gap-x-16 lg:gap-y-20">
-            <div className="grid grid-cols-[112px_1fr] items-center gap-5 lg:grid-cols-[140px_1fr]">
-              <MiniMatchbook />
-              <div>
-                <h3 className="display m-0 text-[22px] leading-[1.1]">
-                  Dares, one match at a time.
-                </h3>
-                <p className="text-muted mt-1.5 mb-0 text-base leading-normal">
-                  Spin, strike, reveal. Passing is always free, no questions asked.
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-[1fr_156px] items-center gap-4 lg:mt-24">
-              <div>
-                <h3 className="display m-0 text-[22px] leading-[1.1]">Date nights with a stub.</h3>
-                <p className="text-muted mt-1.5 mb-0 text-base leading-normal">
-                  Cook together, stargaze, tour a museum. Tear it off when you&apos;re done.
-                </p>
-              </div>
-              <MiniStub />
-            </div>
-            <div className="grid grid-cols-[156px_1fr] items-center gap-4">
-              <MiniEnvelope />
-              <div>
-                <h3 className="display m-0 text-[22px] leading-[1.1]">Letters for later.</h3>
-                <p className="text-muted mt-1.5 mb-0 text-base leading-normal">
-                  Write one for the night they can&apos;t sleep. It stays sealed until they need it.
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-3 lg:mt-24">
-              <MiniBoard />
-              <div>
-                <h3 className="display m-0 text-[22px] leading-[1.1]">
-                  A countdown to your next kiss.
-                </h3>
-                <p className="text-muted mt-1.5 mb-0 text-base leading-normal">
-                  Your next visit, ticking down on a departure board.
-                </p>
-              </div>
-            </div>
+          <ProductTour steps={TOUR} />
+        </section>
+
+        <section aria-labelledby="try-title" className="border-line bg-s1/40 border-y">
+          <div className="mx-auto max-w-[1440px] px-4 py-24 md:px-8 md:py-32 xl:px-12">
+            <ClinkDemo />
           </div>
         </section>
 
-        <section className="rounded-card border-line mx-4 mt-12 flex items-start gap-3 border p-4 md:mx-8 lg:mt-24 lg:max-w-[640px]">
-          <div className="display border-text flex h-11 w-11 flex-none items-center justify-center rounded-full border-[1.5px] text-base tracking-normal">
-            18+
-          </div>
-          <p className="text-muted m-0 text-base leading-normal">
-            Clink is for adults in a relationship. After Dark, your private space for the spicier
-            stuff, only opens when you both say yes.
-          </p>
+        <section
+          aria-labelledby="more-title"
+          className="mx-auto max-w-[1440px] px-4 pt-24 md:px-8 md:pt-36 xl:px-12"
+        >
+          <h2
+            id="more-title"
+            data-reveal
+            className="display m-0 mb-10 max-w-[18ch] text-[clamp(2.5rem,5.5vw,4.75rem)] leading-[0.98] tracking-[-0.03em] md:mb-14"
+          >
+            And the small things that add up.
+          </h2>
+          <FeatureBento />
         </section>
+
+        <Trust />
+        <Faq />
+        <FinalCta />
       </main>
-
-      <footer className="border-line mx-4 mt-10 flex max-w-[1200px] items-end justify-between border-t pt-5 md:mx-8 lg:mx-auto lg:px-8">
-        <div>
-          <Logo size={20} />
-          <div className="text-faint text-sm">Made for two.</div>
-        </div>
-        <nav aria-label="Legal" className="flex flex-col gap-1 text-right text-sm font-medium">
-          <Link href="/privacy" className="text-muted">
-            Privacy
-          </Link>
-          <Link href="/terms" className="text-muted">
-            Terms
-          </Link>
-          <Link href="/safety" className="text-muted">
-            Help and safety
-          </Link>
-        </nav>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

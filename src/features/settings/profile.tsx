@@ -222,7 +222,7 @@ export function ProfileCard() {
       </section>
 
       <section
-        aria-label="About you"
+        aria-label="Your details"
         className="rounded-card border-line bg-s1 flex flex-col gap-4 border p-4"
       >
         <div>

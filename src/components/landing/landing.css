@@ -1,0 +1,157 @@
+/*
+ * Landing page motion. Everything here is decorative and collapses to a still
+ * frame under prefers-reduced-motion or the in-app "Reduce motion" switch.
+ */
+
+/* ---------------------------------------------------------------- reveal
+ * Content is visible by default (no JS, crawlers, screenshots, first paint).
+ * RevealController arms the page on the first scroll; only then do sections
+ * that are still below the fold wait for their entrance. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    transition:
+      opacity 700ms var(--ease-out),
+      transform 700ms var(--ease-out);
+    transition-delay: calc(var(--d, 0) * 90ms);
+  }
+  html[data-lp-armed] [data-reveal]:not([data-shown]) {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: none;
+  }
+}
+:root[data-motion="reduce"] [data-reveal] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* ---------------------------------------------------------------- marquee */
+@keyframes lpMarquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.lp-marquee {
+  animation: lpMarquee 48s linear infinite;
+}
+.lp-marquee-wrap:hover .lp-marquee,
+.lp-marquee-wrap:focus-within .lp-marquee {
+  animation-play-state: paused;
+}
+
+/* ---------------------------------------------------------------- voice note
+ * The played part of the waveform sweeps left to right, like the real player. */
+@keyframes lpPlay {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  85%,
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.lp-wave-played {
+  clip-path: inset(0 58% 0 0);
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-active="true"] .lp-wave-played {
+    animation: lpPlay 7s linear infinite;
+  }
+}
+
+/* ---------------------------------------------------------------- roulette
+ * The reel spins down and lands on the picked date (its resting transform). */
+@keyframes lpSpin {
+  from {
+    transform: translateY(0);
+  }
+}
+@keyframes lpLand {
+  0% {
+    border-color: var(--line);
+  }
+  100% {
+    border-color: var(--accent);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-active="true"] .lp-reel {
+    animation: lpSpin 1.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  [data-active="true"] .lp-reel-window {
+    animation: lpLand 300ms ease 1.3s both;
+  }
+}
+
+/* ---------------------------------------------------------------- seal */
+@keyframes lpStamp {
+  0% {
+    transform: scale(1.6) rotate(-18deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(0.94) rotate(4deg);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-active="true"] .lp-seal {
+    animation: lpStamp 520ms var(--ease-pop) 250ms both;
+  }
+}
+
+/* ---------------------------------------------------------------- typing dots */
+@keyframes lpDot {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lp-dots i {
+    animation: lpDot 1.2s ease-in-out infinite;
+  }
+  .lp-dots i:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+  .lp-dots i:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+}
+
+/* ---------------------------------------------------------------- FAQ */
+.lp-faq summary::-webkit-details-marker {
+  display: none;
+}
+.lp-faq summary {
+  list-style: none;
+}
+.lp-faq .lp-faq-icon {
+  transition: transform 260ms var(--ease-out);
+}
+.lp-faq details[open] .lp-faq-icon {
+  transform: rotate(45deg);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lp-faq details[open] .lp-faq-body {
+    animation: fadeUp 280ms var(--ease-out) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-marquee,
+  .lp-wave-played,
+  .lp-reel,
+  .lp-seal {
+    animation: none !important;
+  }
+}
+:root[data-motion="reduce"] .lp-marquee {
+  animation: none !important;
+}

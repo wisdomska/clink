@@ -13,6 +13,9 @@ import {
   GameController,
   HardDrives,
   Heart,
+  LockKeyOpen,
+  PaperPlaneTilt,
+  SignOut,
   MapPin,
   Moon,
   ShieldWarning,
@@ -28,6 +31,7 @@ import { GAME_META } from "@/features/play/meta";
 import type { GameType } from "@/features/play/engines/types";
 import { adminFetch } from "./fetch";
 import { useConfirm } from "./ui";
+import { AdminPage } from "./list";
 import { NavTabs, TabPanel, useTab } from "@/components/ui/nav-tabs";
 import { AdminConversation } from "./conversation";
 
@@ -72,7 +76,13 @@ interface Detail {
     };
   } | null;
   pastCouples: number;
-  afterDark: { optedIn: boolean; since: string | null };
+  afterDark: {
+    optedIn: boolean;
+    since: string | null;
+    hasPin?: boolean;
+    pinFailed?: number;
+    lockedUntil?: string | null;
+  };
   pushDevices: number;
   counts: {
     messagesTotal: number;
@@ -211,8 +221,36 @@ export function UserDetail({ id }: { id: string }) {
     queryFn: () => adminFetch<Detail>(`/api/admin/users/${id}/detail`),
   });
 
-  async function act(action: "suspend" | "unsuspend" | "force_unlink" | "delete") {
+  async function act(
+    action:
+      | "suspend"
+      | "unsuspend"
+      | "force_unlink"
+      | "delete"
+      | "resend_link"
+      | "clear_dark_lockout"
+      | "sign_out_all",
+  ) {
     const copy = {
+      resend_link: {
+        title: "Send a new sign-in link?",
+        body: "We email a fresh one-time sign-in link to their address. Older links stop working once they use it.",
+        confirm: "Send link",
+        reason: "required" as const,
+      },
+      clear_dark_lockout: {
+        title: "Clear the After Dark PIN lockout?",
+        body: "Their wrong-PIN count resets and they can try their PIN again straight away. Their PIN doesn't change.",
+        confirm: "Clear lockout",
+        reason: "required" as const,
+      },
+      sign_out_all: {
+        title: "Sign them out everywhere?",
+        body: "Every device they're signed in on is signed out within a minute. Their account and data stay as they are.",
+        confirm: "Sign out everywhere",
+        danger: true,
+        reason: "required" as const,
+      },
       suspend: {
         title: "Suspend this account?",
         body: "They're signed out everywhere and can't sign back in until you lift it.",
@@ -245,7 +283,15 @@ export function UserDetail({ id }: { id: string }) {
     if (!answer) return;
     try {
       await adminFetch(`/api/admin/users/${id}`, { body: { action, reason: answer.reason } });
-      toast.ok("Saved. Added to the audit log.");
+      toast.ok(
+        action === "resend_link"
+          ? "Sign-in link sent. Added to the audit log."
+          : action === "sign_out_all"
+            ? "Signed out everywhere. Added to the audit log."
+            : action === "clear_dark_lockout"
+              ? "Lockout cleared. Added to the audit log."
+              : "Saved. Added to the audit log.",
+      );
       if (action === "delete") return router.push("/admin/users");
       void qc.invalidateQueries({ queryKey: ["admin-user", id] });
     } catch (e) {
@@ -255,17 +301,19 @@ export function UserDetail({ id }: { id: string }) {
 
   if (isLoading)
     return (
-      <div className="flex flex-col gap-4">
+      <AdminPage className="gap-4">
         <div className="an-skel rounded-card bg-s2 h-28" />
         <div className="an-skel rounded-card bg-s2 h-24" />
-      </div>
+      </AdminPage>
     );
   if (error || !d)
     return (
-      <p className="text-muted">
-        Couldn&apos;t load this user. They may have been deleted. Go back to All users and search
-        again.
-      </p>
+      <AdminPage>
+        <p className="text-muted">
+          Couldn&apos;t load this user. They may have been deleted. Go back to All users and search
+          again.
+        </p>
+      </AdminPage>
     );
 
   const p = d.profile;
@@ -278,7 +326,7 @@ export function UserDetail({ id }: { id: string }) {
   const status = p?.suspended_at ? "Suspended" : !d.account.confirmedAt ? "Unconfirmed" : "Active";
 
   return (
-    <div className="an-screen flex flex-col gap-5">
+    <AdminPage>
       {dialog}
       <Link
         href="/admin/users"
@@ -428,6 +476,7 @@ export function UserDetail({ id }: { id: string }) {
               </div>
             )}
           </Card>
+          <SupportTools d={d} onAct={act} />
         </TabPanel>
       )}
 
@@ -662,6 +711,70 @@ export function UserDetail({ id }: { id: string }) {
         Opening a conversation needs a reason and is written to the audit log. After Dark content is
         never shown to admins.
       </p>
-    </div>
+    </AdminPage>
+  );
+}
+
+/** Account support: each tool asks for a reason, and is written to the audit log. */
+function SupportTools({
+  d,
+  onAct,
+}: {
+  d: Detail;
+  onAct: (a: "resend_link" | "clear_dark_lockout" | "sign_out_all") => void;
+}) {
+  const locked = d.afterDark.lockedUntil;
+  const tools = [
+    {
+      key: "resend_link" as const,
+      label: "Resend sign-in link",
+      help: `Emails a one-time sign-in link to ${d.account.email}.`,
+      Icon: PaperPlaneTilt,
+      on: true,
+    },
+    {
+      key: "clear_dark_lockout" as const,
+      label: "Clear After Dark PIN lockout",
+      help: !d.afterDark.hasPin
+        ? "No After Dark PIN set up, so there's nothing to clear."
+        : locked
+          ? `Locked until ${when(locked)} after too many wrong PINs.`
+          : d.afterDark.pinFailed
+            ? `Not locked. ${d.afterDark.pinFailed} wrong ${d.afterDark.pinFailed === 1 ? "try" : "tries"} so far.`
+            : "Not locked right now.",
+      Icon: LockKeyOpen,
+      on: Boolean(d.afterDark.hasPin),
+    },
+    {
+      key: "sign_out_all" as const,
+      label: "Sign out everywhere",
+      help: "Ends every session on every device. They can sign straight back in.",
+      Icon: SignOut,
+      on: true,
+    },
+  ];
+  return (
+    <Card title="Support tools">
+      <ul className="divide-line m-0 flex list-none flex-col divide-y p-0">
+        {tools.map(({ key, label, help, Icon, on }) => (
+          <li key={key} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
+            <Icon size={18} className="text-muted flex-none" aria-hidden />
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium">{label}</div>
+              <div className="text-muted text-xs">{help}</div>
+            </div>
+            <Button
+              size="xs"
+              variant={key === "sign_out_all" ? "danger-outline" : "ghost"}
+              softDisabled={!on}
+              aria-label={label}
+              onClick={() => (on ? onAct(key) : toast(help))}
+            >
+              {key === "resend_link" ? "Send" : key === "clear_dark_lockout" ? "Clear" : "Sign out"}
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </Card>
   );
 }

@@ -1,6 +1,7 @@
 import "server-only";
 import { deny, rateLimit, audit } from "@/lib/server/api";
 import { currentAdmin } from "@/lib/server/admin-auth";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import type { Json } from "@/types/database";
 
 /**
@@ -24,7 +25,27 @@ export async function adminAudit(
   meta: Record<string, Json> = {},
   subjectUserId: string | null = null,
 ) {
+  // Admin accounts often have no Clink user to put in actor_id, so every admin
+  // row also names the admin by email. The audit log's actor filter uses it.
+  if (meta.admin === undefined) {
+    const who = await currentAdmin().catch(() => null);
+    if (who) meta = { ...meta, admin: who.email };
+  }
   await audit(`admin.${event}`, subjectUserId, meta, adminId);
+}
+
+/** Ends every Clink session the person has (all devices). Returns how many were removed. */
+export async function revokeUserSessions(userId: string): Promise<number> {
+  const { data, error } = await (
+    supabaseAdmin() as unknown as {
+      rpc: (
+        fn: string,
+        args: Record<string, unknown>,
+      ) => PromiseLike<{ data: number | null; error: { message: string } | null }>;
+    }
+  ).rpc("svc_admin_revoke_sessions", { p_user: userId });
+  if (error) throw new Error(error.message);
+  return data ?? 0;
 }
 
 /** Free-tier limits the dashboard warns against (70% and 90%). See docs/LIMITS.md. */

@@ -68,5 +68,5 @@ test("pick a 3D avatar, upload your own photo, and switch back", async ({ couple
     )
     .toEqual({ avatar_kind: "icon", avatar_icon: "p-m-singer-k" });
   await a.goto("/settings");
-  await expect(a.locator('img[src="/avatars/p/m-singer-k.webp"]').first()).toBeVisible();
+  await expect(a.locator('img[src="/avatars/p/m-singer-k.webp"]:visible').first()).toBeVisible();
 });

@@ -1,18 +1,24 @@
 "use client";
-import { useState } from "react";
 import { Reorder, useDragControls } from "motion/react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowUp, ArrowDown, Plus, DotsSixVertical } from "@phosphor-icons/react";
 import { Display } from "@/components/ui/heading";
 import { Button, IconButton } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/segmented";
 import { toast } from "@/components/ui/toast";
+import { Pagination } from "@/components/ui/pagination";
 import { adminFetch } from "./fetch";
 import { usePrompt } from "./ui";
+import { AdminPage, useListParams } from "./list";
 import { cn } from "@/components/ui/cn";
 
 type Table = "dares" | "deck_cards" | "date_kits" | "challenge_templates" | "stickers" | "decks";
 type Row = Record<string, unknown> & { id: string | number; enabled: boolean; sort: number };
+interface Page {
+  rows: Row[];
+  total: number;
+  maxSort: number;
+}
 
 const TABS: Array<{ value: Table; label: string }> = [
   { value: "deck_cards", label: "Deck cards" },
@@ -24,40 +30,59 @@ const TABS: Array<{ value: Table; label: string }> = [
 const TIERS = ["Flirty", "Steamy", "Spicy", "Unhinged"];
 const title = (r: Row) => String(r.text ?? r.title ?? r.label ?? r.id);
 
-/** Content library: create, edit, reorder, enable or disable. */
+/**
+ * Content library: create, edit, reorder, enable or disable. Long lists come a
+ * page at a time; the content type, tier, page and page size live in the URL.
+ * Reordering (drag or arrows) works within the current page.
+ */
 export function AdminContent() {
   const prompt = usePrompt();
   const qc = useQueryClient();
-  const [table, setTable] = useState<Table>("deck_cards");
-  const [filter, setFilter] = useState("Flirty");
+  const list = useListParams<"sort">({ sort: "sort", dir: "asc" });
+  const table = (
+    TABS.some((t) => t.value === list.get("type")) ? list.get("type") : "deck_cards"
+  ) as Table;
+  const setTable = (v: Table) => list.set({ type: v === "deck_cards" ? null : v });
+  const filter = TIERS.includes(list.get("tier")) ? list.get("tier") : "Flirty";
+  const setFilter = (v: string) => list.set({ tier: v === "Flirty" ? null : v });
+  const offset = (list.page - 1) * list.size;
   const { data: decks } = useQuery({
     queryKey: ["admin-content", "decks"],
     queryFn: () => adminFetch<{ rows: Row[] }>("/api/admin/content/decks"),
   });
   const deckId = decks?.rows.find((d) => d.tier === filter)?.id as string | undefined;
   const filterParam = table === "dares" ? filter : table === "deck_cards" ? deckId : undefined;
-  const key = ["admin-content", table, filterParam];
+  const key = ["admin-content", table, filterParam, list.page, list.size];
   const { data } = useQuery({
     queryKey: key,
     enabled: table !== "deck_cards" || Boolean(deckId),
     queryFn: () =>
-      adminFetch<{ rows: Row[] }>(
-        `/api/admin/content/${table}${filterParam ? `?filter=${filterParam}` : ""}`,
+      adminFetch<Page>(
+        `/api/admin/content/${table}?page=${list.page}&size=${list.size}${filterParam ? `&filter=${encodeURIComponent(filterParam)}` : ""}`,
       ),
+    placeholderData: keepPreviousData,
   });
   const rows = data?.rows ?? [];
+  const total = data?.total ?? 0;
+  /** Replace this page's rows in the cache, keeping the totals. */
+  const setRows = (next: Row[]) =>
+    qc.setQueryData<Page>(key, (prev) => ({
+      total: prev?.total ?? next.length,
+      maxSort: prev?.maxSort ?? next.length,
+      rows: next,
+    }));
 
   async function patch(r: Row, body: Record<string, unknown>) {
     await adminFetch(`/api/admin/content/${table}/${r.id}`, { method: "PATCH", body });
     void qc.invalidateQueries({ queryKey: key });
   }
-  /** Reorder instantly on screen, then save the whole order in one request. */
+  /** Reorder instantly on screen, then save this page's order (at its offset) in one request. */
   async function reorder(next: Row[]) {
-    const prev = qc.getQueryData<{ rows: Row[] }>(key);
-    qc.setQueryData(key, { rows: next.map((r, i) => ({ ...r, sort: i })) });
+    const prev = qc.getQueryData<Page>(key);
+    setRows(next.map((r, i) => ({ ...r, sort: offset + i })));
     try {
       await adminFetch(`/api/admin/content/${table}/reorder`, {
-        body: { ids: next.map((r) => r.id) },
+        body: { ids: next.map((r) => r.id), offset, filter: filterParam },
       });
     } catch (e) {
       if (prev) qc.setQueryData(key, prev);
@@ -66,7 +91,7 @@ export function AdminContent() {
   }
   /** After a drag, save whatever order is on screen. */
   function saveDragged() {
-    const cur = qc.getQueryData<{ rows: Row[] }>(key)?.rows;
+    const cur = qc.getQueryData<Page>(key)?.rows;
     if (cur) void reorder(cur);
   }
   function move(i: number, dir: -1 | 1) {
@@ -87,7 +112,8 @@ export function AdminContent() {
             : "Text",
     });
     if (!text) return;
-    const nextSort = (rows[rows.length - 1]?.sort ?? 0) + 1;
+    // After the last item in the whole list, not just this page.
+    const nextSort = Math.max(data?.maxSort ?? -1, rows[rows.length - 1]?.sort ?? -1) + 1;
     const slug = text
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
@@ -134,7 +160,7 @@ export function AdminContent() {
   }
 
   return (
-    <div className="an-screen flex flex-col gap-5">
+    <AdminPage>
       <Display size={36}>Content library</Display>
       <div className="no-scrollbar overflow-x-auto">
         <div className="max-w-[760px] min-w-[620px]">
@@ -164,7 +190,9 @@ export function AdminContent() {
       )}
       <div className="flex items-center justify-between">
         <div className="text-muted text-sm">
-          {rows.length} items, {rows.filter((r) => r.enabled).length} live
+          {total > rows.length
+            ? `${total} items, ${rows.filter((r) => r.enabled).length} of this page live`
+            : `${rows.length} items, ${rows.filter((r) => r.enabled).length} live`}
         </div>
         <Button size="sm" onClick={add}>
           <Plus size={16} aria-hidden /> Add item
@@ -174,7 +202,7 @@ export function AdminContent() {
         as="ol"
         axis="y"
         values={rows}
-        onReorder={(next: Row[]) => qc.setQueryData(key, { rows: next })}
+        onReorder={(next: Row[]) => setRows(next)}
         className={
           rows.length
             ? "rounded-card border-line bg-s1 divide-line m-0 flex list-none flex-col divide-y overflow-hidden border p-0"
@@ -186,6 +214,7 @@ export function AdminContent() {
             key={String(r.id)}
             row={r}
             index={i}
+            position={offset + i + 1}
             count={rows.length}
             label={title(r)}
             onDrop={saveDragged}
@@ -206,8 +235,19 @@ export function AdminContent() {
           />
         ))}
       </Reorder.Group>
+      {data && total > 0 && (
+        <Pagination
+          page={list.page}
+          size={list.size}
+          total={total}
+          noun="items"
+          label="Content pages"
+          onPage={(page) => list.set({ page })}
+          onSize={(size) => list.set({ size })}
+        />
+      )}
       {prompt.dialog}
-    </div>
+    </AdminPage>
   );
 }
 
@@ -215,6 +255,7 @@ export function AdminContent() {
 function ContentRow({
   row,
   index,
+  position,
   count,
   label,
   onDrop,
@@ -224,6 +265,8 @@ function ContentRow({
 }: {
   row: Row;
   index: number;
+  /** 1-based position in the whole list (page offset included). */
+  position: number;
   count: number;
   label: string;
   onDrop: () => void;
@@ -249,7 +292,7 @@ function ContentRow({
       >
         <DotsSixVertical size={18} weight="bold" aria-hidden />
       </button>
-      <span className="mono text-faint w-7 text-xs tabular-nums">{index + 1}</span>
+      <span className="mono text-faint w-7 text-xs tabular-nums">{position}</span>
       <button
         type="button"
         className={cn(

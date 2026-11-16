@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/toast";
 import { AdminFetchError } from "./fetch";
+import { AdminCommands } from "./command";
 import {
   ChartBar,
   Users,
@@ -12,6 +13,7 @@ import {
   SlidersHorizontal,
   ListMagnifyingGlass,
   List,
+  MagnifyingGlass,
   X,
   SignOut,
 } from "@phosphor-icons/react";
@@ -81,21 +83,46 @@ export function AdminRail({ name }: { name: string }) {
           <Logo size={22} />
           <AdminChip />
         </span>
-        <button
-          type="button"
-          aria-label={open ? "Close menu" : "Open menu"}
-          onClick={() => setOpen(!open)}
-          className="border-line text-text flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border bg-transparent"
-        >
-          {open ? <X size={20} /> : <List size={20} />}
-        </button>
+        <span className="flex items-center gap-2">
+          <AdminCommands
+            trigger={(openPalette) => (
+              <button
+                type="button"
+                aria-label="Search and go to"
+                onClick={openPalette}
+                className="border-line text-text flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border bg-transparent"
+              >
+                <MagnifyingGlass size={20} />
+              </button>
+            )}
+          />
+          <button
+            type="button"
+            aria-label={open ? "Close menu" : "Open menu"}
+            onClick={() => setOpen(!open)}
+            className="border-line text-text flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border bg-transparent"
+          >
+            {open ? <X size={20} /> : <List size={20} />}
+          </button>
+        </span>
       </div>
       {open && <div className="border-line bg-app border-b p-3 lg:hidden">{nav}</div>}
       <aside className="border-line sticky top-0 hidden h-dvh flex-col border-r px-3 py-6 lg:flex">
-        <div className="mb-8 flex items-center gap-2 px-3">
+        <div className="mb-6 flex items-center gap-2 px-3">
           <Logo size={26} />
           <AdminChip />
         </div>
+        <button
+          type="button"
+          onClick={() =>
+            window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }))
+          }
+          className="border-line text-muted hover:text-text hover:border-line-strong rounded-input mb-4 flex h-11 cursor-pointer items-center gap-2 border bg-transparent px-3 text-sm"
+        >
+          <MagnifyingGlass size={16} aria-hidden />
+          <span className="flex-1 text-left">Search</span>
+          <kbd className="mono text-faint text-[11px]">Ctrl K</kbd>
+        </button>
         {nav}
         <div className="mt-auto flex flex-col gap-2 px-3">
           <div className="text-faint truncate text-xs" title={name}>

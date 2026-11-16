@@ -42,7 +42,8 @@ test.describe("Admin (/admin)", () => {
         })
       ).ok(),
     ).toBeTruthy();
-    expect((await a.request.get("/api/me/state")).status()).toBe(403);
+    // Suspension ends every session, so the old session is refused outright.
+    expect([401, 403]).toContain((await a.request.get("/api/me/state")).status());
     const audit = await (await p.request.get("/api/admin/audit?event=admin.suspend")).json();
     expect(audit.events.some((e: { user_id: string }) => e.user_id === nia.id)).toBe(true);
     await p.request.post(`/api/admin/users/${nia.id}`, { data: { action: "unsuspend" } });

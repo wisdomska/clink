@@ -1,14 +1,14 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
-import { DownloadSimple, MagnifyingGlass } from "@phosphor-icons/react";
+import { MagnifyingGlass, X } from "@phosphor-icons/react";
 import { Display } from "@/components/ui/heading";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import { toast } from "@/components/ui/toast";
 import { adminFetch } from "./fetch";
-import { downloadCsv, useConfirm } from "./ui";
+import { useConfirm } from "./ui";
+import { AdminPage, ExportButton, FilterDate, FilterSelect, SortTh, useListParams } from "./list";
 
 interface U {
   id: string;
@@ -25,20 +25,50 @@ interface U {
   coupleId: string | null;
   linkedAt: string | null;
   ageVerified: boolean;
+  status: "active" | "suspended" | "deleting" | "unconfirmed";
+}
+type Sort = "joined" | "email" | "name" | "last_sign_in";
+const FILTERS = ["q", "status", "linked", "from", "to"];
+
+/** Search box: submits on Enter. Keyed on the URL value so it follows Back and the command palette. */
+function SearchBox({ value, onSearch }: { value: string; onSearch: (q: string) => void }) {
+  return (
+    <form
+      key={value}
+      role="search"
+      className="rounded-input border-line bg-s2 focus-within:border-accent flex w-full max-w-[520px] items-center gap-2 border px-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSearch(String(new FormData(e.currentTarget).get("q") ?? "").trim());
+      }}
+    >
+      <MagnifyingGlass size={18} className="text-muted flex-none" aria-hidden />
+      <input
+        name="q"
+        type="search"
+        data-admin-search
+        aria-label="Search by email or name"
+        placeholder="Search by email or name"
+        defaultValue={value}
+        className="text-text h-12 min-w-0 flex-1 bg-transparent text-base outline-none focus-visible:shadow-none"
+      />
+    </form>
+  );
 }
 
 export function AdminUsers() {
   const qc = useQueryClient();
-  const router = useRouter();
-  const pathname = usePathname();
-  const params = useSearchParams();
-  // The search lives in the URL, so reload, Back and shared links keep the view.
-  const search = params.get("q") ?? "";
-  const [q, setQ] = useState(search);
+  const list = useListParams<Sort>({ sort: "joined", dir: "desc" });
+  const search = list.get("q");
+  const filtered = FILTERS.some((f) => list.get(f));
+  const qs = list.query(FILTERS);
   const { ask, dialog } = useConfirm();
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: ["admin-users", search],
-    queryFn: () => adminFetch<{ users: U[] }>(`/api/admin/users?q=${encodeURIComponent(search)}`),
+    queryKey: ["admin-users", qs],
+    queryFn: () =>
+      adminFetch<{ users: U[]; total: number; page: number; size: number }>(
+        `/api/admin/users?${qs}`,
+      ),
     placeholderData: keepPreviousData,
   });
 
@@ -84,64 +114,76 @@ export function AdminUsers() {
     }
   }
 
+  const total = data?.total ?? 0;
+  const sortProps = { sort: list.sort, dir: list.dir, onSort: list.toggleSort };
+
   return (
-    <div className="an-screen flex flex-col gap-5">
+    <AdminPage>
       <Display size={36}>Users and couples</Display>
       <p className="text-muted m-0 text-sm">
         Open a person to see their full profile. Reading a conversation needs a reason, and every
         look is logged.
       </p>
-      <form
-        className="rounded-input border-line bg-s2 focus-within:border-accent flex max-w-[520px] items-center gap-2 border px-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const next = new URLSearchParams(params);
-          if (q.trim()) next.set("q", q.trim());
-          else next.delete("q");
-          router.replace(`${pathname}${next.size ? `?${next}` : ""}`, { scroll: false });
-        }}
-      >
-        <MagnifyingGlass size={18} className="text-muted" aria-hidden />
-        <input
-          aria-label="Search by email or name"
-          placeholder="Search by email or name"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          className="text-text h-12 flex-1 bg-transparent text-base outline-none focus-visible:shadow-none"
+      <SearchBox value={search} onSearch={(q) => list.set({ q })} />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <FilterSelect
+          id="f-status"
+          label="Status"
+          value={list.get("status")}
+          onChange={(v) => list.set({ status: v })}
+          options={[
+            { value: "", label: "Any status" },
+            { value: "active", label: "Active" },
+            { value: "suspended", label: "Suspended" },
+            { value: "deleting", label: "Deleting" },
+            { value: "unconfirmed", label: "Unconfirmed" },
+          ]}
         />
-      </form>
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-muted text-sm" role="status">
-          {data ? `${data.users.length} ${data.users.length === 1 ? "account" : "accounts"}` : ""}
+        <FilterSelect
+          id="f-linked"
+          label="Couple"
+          value={list.get("linked")}
+          onChange={(v) => list.set({ linked: v })}
+          options={[
+            { value: "", label: "Linked or not" },
+            { value: "linked", label: "Linked" },
+            { value: "unlinked", label: "Not linked" },
+          ]}
+        />
+        <FilterDate
+          id="f-from"
+          label="Joined from"
+          value={list.get("from")}
+          onChange={(v) => list.set({ from: v })}
+        />
+        <FilterDate
+          id="f-to"
+          label="Joined to"
+          value={list.get("to")}
+          onChange={(v) => list.set({ to: v })}
+        />
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <span className="flex items-center gap-3">
+          <span className="text-muted text-sm" role="status">
+            {data ? `${total} ${total === 1 ? "account" : "accounts"}` : ""}
+          </span>
+          {filtered && (
+            <Button
+              size="xs"
+              variant="text"
+              onClick={() =>
+                list.set({ q: null, status: null, linked: null, from: null, to: null })
+              }
+            >
+              <X size={14} aria-hidden /> Clear filters
+            </Button>
+          )}
         </span>
-        <Button
-          size="xs"
-          variant="ghost"
-          softDisabled={!data?.users.length}
-          onClick={() =>
-            data?.users.length &&
-            downloadCsv(
-              `clink-accounts-${new Date().toISOString().slice(0, 10)}.csv`,
-              data.users.map((u) => ({
-                name: u.name ?? "",
-                email: u.email,
-                joined: u.createdAt.slice(0, 10),
-                last_sign_in: u.lastSignIn?.slice(0, 10) ?? "",
-                linked: u.coupleId ? (u.linkedAt?.slice(0, 10) ?? "yes") : "",
-                status: u.deleted
-                  ? "deleting"
-                  : u.suspended
-                    ? "suspended"
-                    : u.confirmed
-                      ? "active"
-                      : "unconfirmed",
-                admin: u.admin ? "yes" : "",
-              })),
-            )
-          }
-        >
-          <DownloadSimple size={16} aria-hidden /> Export CSV
-        </Button>
+        <ExportButton
+          url={`/api/admin/users?${list.query(FILTERS, { format: "csv" })}`}
+          disabled={!total}
+        />
       </div>
       {isLoading ? (
         <div className="an-skel rounded-card bg-s2 h-60" />
@@ -149,15 +191,26 @@ export function AdminUsers() {
         <div
           className="rounded-card border-line bg-s1 overflow-x-auto border transition-opacity duration-200"
           style={{ opacity: isFetching ? 0.6 : 1 }}
+          aria-busy={isFetching}
         >
-          <table className="w-full min-w-[860px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[960px] border-collapse text-left text-sm">
             <thead className="text-muted text-xs">
               <tr>
-                {["Account", "Joined", "Couple", "18+", "Status", ""].map((h) => (
-                  <th key={h} scope="col" className="px-4 py-3 font-medium">
-                    {h}
-                  </th>
-                ))}
+                <SortTh col="name" label="Account" firstDir="asc" {...sortProps} />
+                <SortTh col="joined" label="Joined" {...sortProps} />
+                <SortTh col="last_sign_in" label="Last sign-in" {...sortProps} />
+                <th scope="col" className="px-4 py-3 font-medium">
+                  Couple
+                </th>
+                <th scope="col" className="px-4 py-3 font-medium">
+                  18+
+                </th>
+                <th scope="col" className="px-4 py-3 font-medium">
+                  Status
+                </th>
+                <th scope="col" className="px-4 py-3 font-medium">
+                  <span className="sr-only">Actions</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -181,8 +234,11 @@ export function AdminUsers() {
                     )}
                   </td>
                   <td className="mono text-muted px-4 py-3 text-xs">{u.createdAt.slice(0, 10)}</td>
+                  <td className="mono text-muted px-4 py-3 text-xs">
+                    {u.lastSignIn?.slice(0, 10) ?? "Never"}
+                  </td>
                   <td className="text-muted px-4 py-3 text-xs">
-                    {u.coupleId ? `Linked ${u.linkedAt?.slice(0, 10)}` : "Not linked"}
+                    {u.coupleId ? `Linked ${u.linkedAt?.slice(0, 10) ?? ""}` : "Not linked"}
                   </td>
                   <td className="px-4 py-3 text-xs">
                     {u.ageVerified ? "Declared 18+" : "Birth date only"}
@@ -229,12 +285,25 @@ export function AdminUsers() {
             <p className="text-muted m-0 px-4 py-8 text-center text-sm">
               {search
                 ? `No accounts match "${search}". Try part of an email or name.`
-                : "No accounts yet. People show up here once they sign up."}
+                : filtered
+                  ? "No accounts match these filters."
+                  : "No accounts yet. People show up here once they sign up."}
             </p>
           )}
         </div>
       )}
+      {data && (
+        <Pagination
+          page={list.page}
+          size={list.size}
+          total={total}
+          noun="accounts"
+          label="Account pages"
+          onPage={(page) => list.set({ page })}
+          onSize={(size) => list.set({ size })}
+        />
+      )}
       {dialog}
-    </div>
+    </AdminPage>
   );
 }

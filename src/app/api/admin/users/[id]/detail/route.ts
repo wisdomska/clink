@@ -63,7 +63,11 @@ export const GET = handler(async (_req, ctx: { params: Promise<{ id: string }> }
       .select("couple_id, role, joined_at, left_at")
       .eq("user_id", id)
       .order("joined_at", { ascending: false }),
-    db.from("dark_settings").select("opted_in_at").eq("user_id", id).maybeSingle(),
+    db
+      .from("dark_settings")
+      .select("opted_in_at, pin_hash, pin_failed_count, pin_locked_until")
+      .eq("user_id", id)
+      .maybeSingle(),
     db
       .from("messages")
       .select("type, sent_at")
@@ -218,7 +222,14 @@ export const GET = handler(async (_req, ctx: { params: Promise<{ id: string }> }
     presence: presence ?? null,
     couple,
     pastCouples: (memberRows ?? []).filter((m) => m.left_at).length,
-    afterDark: { optedIn: Boolean(dark?.opted_in_at), since: dark?.opted_in_at ?? null },
+    afterDark: {
+      optedIn: Boolean(dark?.opted_in_at),
+      since: dark?.opted_in_at ?? null,
+      // Lockout state only (never the PIN), for the support tools.
+      hasPin: Boolean(dark?.pin_hash),
+      pinFailed: dark?.pin_failed_count ?? 0,
+      lockedUntil: dark?.pin_locked_until ?? null,
+    },
     pushDevices: push?.length ?? 0,
     counts: {
       messagesTotal,

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/segmented";
 import { adminFetch, fmtBytes } from "./fetch";
 import { TrendCard, downloadCsv } from "./ui";
+import { AdminPage, UpdatedAgo } from "./list";
 
 type TrendKey = "signups" | "links" | "active_couples" | "clinks" | "messages" | "games";
 interface Trends {
@@ -214,10 +215,11 @@ function Usage({
 
 /** Aggregate metrics only (spec 16 dashboards). No content anywhere. */
 export function AdminDashboard() {
-  const { data } = useQuery({
+  // Live: refetches every 30 s while the tab is visible (TanStack pauses it when hidden).
+  const { data, dataUpdatedAt } = useQuery({
     queryKey: ["admin-metrics"],
     queryFn: () => adminFetch<Data>("/api/admin/metrics"),
-    refetchInterval: 60_000,
+    refetchInterval: 30_000,
   });
   const m = data?.metrics;
   const pct = (a?: number, b?: number) =>
@@ -229,8 +231,11 @@ export function AdminDashboard() {
       )
     : "0%";
   return (
-    <div className="an-screen flex flex-col gap-6">
-      <Display size={36}>Dashboard</Display>
+    <AdminPage className="gap-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <Display size={36}>Dashboard</Display>
+        <UpdatedAgo at={dataUpdatedAt} />
+      </div>
       {!m ? (
         <div className="an-skel rounded-card bg-s2 h-40" />
       ) : (
@@ -314,6 +319,6 @@ export function AdminDashboard() {
           </section>
         </>
       )}
-    </div>
+    </AdminPage>
   );
 }
