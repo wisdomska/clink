@@ -58,16 +58,18 @@ export function HeroScene() {
                 {minute === null ? "--:--" : clockIn(minute, c.zone)}
               </span>
             </div>
-            <div className={cn("flex flex-col gap-2", right && "items-end")}>
-              <Image
-                src={c.avatar}
-                alt=""
-                width={64}
-                height={64}
-                className="bg-s2 h-12 w-12 rounded-full sm:h-16 sm:w-16"
-              />
-              <div className="text-text text-[20px] leading-none font-bold sm:text-[26px] lg:text-[30px]">
-                {c.name}
+            <div className={cn("flex flex-col gap-2.5", right && "items-end")}>
+              <div className="flex items-center gap-3">
+                <Image
+                  src={c.avatar}
+                  alt=""
+                  width={56}
+                  height={56}
+                  className="bg-s2 h-11 w-11 flex-none rounded-full sm:h-14 sm:w-14"
+                />
+                <span className="text-text text-[20px] leading-none font-bold sm:text-[26px] lg:text-[30px]">
+                  {c.name}
+                </span>
               </div>
               <span className="border-line bg-s2 text-text rounded-full border px-3 py-1 text-xs font-semibold sm:text-sm">
                 {c.mood}
