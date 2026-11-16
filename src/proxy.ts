@@ -41,7 +41,10 @@ function buildCsp(nonce: string, path: string) {
   const frames = isPrivate
     ? "'none'"
     : "https://www.youtube-nocookie.com https://www.youtube.com https://open.spotify.com https://embed.music.apple.com";
-  const ytScripts = isPrivate ? "" : " https://www.youtube.com https://s.ytimg.com";
+  // Host fallbacks for browsers without 'strict-dynamic' (YouTube and the Spotify iFrame API).
+  const ytScripts = isPrivate
+    ? ""
+    : " https://www.youtube.com https://s.ytimg.com https://open.spotify.com";
   const ytImg = isPrivate ? "" : " https://i.ytimg.com";
   return [
     "default-src 'self'",

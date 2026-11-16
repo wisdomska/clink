@@ -114,6 +114,20 @@ export function embedUrl(service: Exclude<MusicService, "youtube">, ref: string)
   return `https://embed.music.apple.com/${ref}`;
 }
 
+/** "track/ID" -> "spotify:track:ID" for the Spotify iFrame API, or null when the ref is invalid. */
+export function spotifyUri(ref: string): string | null {
+  return SPOTIFY_REF.test(ref) ? `spotify:${ref.replace("/", ":")}` : null;
+}
+
+/**
+ * Single tracks and episodes can be kept in step between devices. Albums and
+ * playlists can't: the embed moves through their tracks on its own and gives
+ * no way to tell which one is playing.
+ */
+export function isSpotifySyncable(ref: string): boolean {
+  return SPOTIFY_REF.test(ref) && (ref.startsWith("track/") || ref.startsWith("episode/"));
+}
+
 /** The public page for a stored item, used for oEmbed title lookups. */
 export function canonicalUrl(link: MusicLink): string {
   if (link.service === "youtube") return `https://www.youtube.com/watch?v=${link.ref}`;

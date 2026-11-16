@@ -10,6 +10,7 @@ import { Display, Lead, PartnerMark, Skeleton } from "@/components/ui/heading";
 import { FieldError } from "@/components/ui/field";
 import { toast } from "@/components/ui/toast";
 import { SyncedPlayer } from "./watch-room";
+import { SyncedSpotify } from "./spotify-player";
 import { subscribeAuthed } from "@/lib/realtime";
 import { BrandLogo } from "@/components/clink/brand-logo";
 import type { Database } from "@/types/database";
@@ -19,7 +20,9 @@ import {
   detectService,
   embedHeight,
   embedUrl,
+  isSpotifySyncable,
   parseMusicLink,
+  spotifyUri,
   type MusicService,
 } from "./music-link";
 import { PAGE, editPaged, flatPaged, nextOffset } from "./paged";
@@ -50,7 +53,7 @@ function ServiceMark({ service }: { service: MusicService | null }) {
   );
 }
 
-/** Spotify and Apple Music: their own official embed players (no cross-device sync). */
+/** Spotify and Apple Music: their own official embed players, without sync. */
 function EmbedPlayer({ item }: { item: QueueItem }) {
   const svc = svcOf(item);
   if (svc === "youtube") return null;
@@ -234,12 +237,31 @@ export function ListenTogether() {
               audioOnly
               onEnded={() => void drop(now.id, "played")}
             />
+          ) : nowSvc === "spotify" && isSpotifySyncable(now.video_id) ? (
+            <>
+              <SyncedSpotify
+                key={now.id}
+                sessionId={`listen-${now.id}`}
+                uri={spotifyUri(now.video_id)!}
+                title={`Spotify player: ${now.title ?? "song"}`}
+                height={embedHeight("spotify", now.video_id)}
+                leader={now.added_by === me.id}
+                onEnded={() => void drop(now.id, "played")}
+                fallback={<EmbedPlayer item={now} />}
+              />
+              <p className="text-faint m-0 text-xs">
+                Play, pause and skipping ahead stay in step on both devices. For full songs, each of
+                you needs to be signed in to Spotify in this browser. Otherwise Spotify plays a
+                30-second preview.
+              </p>
+            </>
           ) : (
             <>
               <EmbedPlayer key={now.id} item={now} />
               <p className="text-faint m-0 text-xs">
-                {SERVICE_LABEL[nowSvc!]} plays on each device separately. Press play together, then
-                tap Next when it ends.
+                {nowSvc === "apple_music"
+                  ? "Apple Music can't be synced, so it plays on each device separately. Press play together, then tap Next when it ends."
+                  : "Albums and playlists can't be synced, so they play on each device separately. For full songs, each of you needs to be signed in to Spotify in this browser."}
               </p>
             </>
           )}
