@@ -178,15 +178,24 @@ export function Onboarding({
           <Lead className="mt-2 mb-5">Pick a face and a pose. Or upload your own photo.</Lead>
           <div className="mb-5">
             <p className="text-muted mb-2 text-xs font-bold">I&apos;m a</p>
-            <Segmented
-              label="I'm a"
-              value={gender ?? ("" as Gender)}
-              options={GENDERS.map(([value, label]) => ({ value, label }))}
-              onChange={(g) => {
-                setGender(g);
-                setError(null);
-              }}
-            />
+            {initialGender ? (
+              <p className="text-text m-0 text-base font-medium">
+                {GENDERS.find(([g]) => g === initialGender)?.[1]}
+                <span className="text-faint block text-[13px] font-normal">
+                  Set when you joined. It can&apos;t be changed.
+                </span>
+              </p>
+            ) : (
+              <Segmented
+                label="I'm a"
+                value={gender ?? ("" as Gender)}
+                options={GENDERS.map(([value, label]) => ({ value, label }))}
+                onChange={(g) => {
+                  setGender(g);
+                  setError(null);
+                }}
+              />
+            )}
           </div>
           <div className="mb-5 flex items-center gap-4">
             <div className="rounded-card border-line bg-s2 relative flex h-24 w-24 flex-none items-center justify-center overflow-hidden border">

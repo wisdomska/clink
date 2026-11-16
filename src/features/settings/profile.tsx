@@ -232,12 +232,22 @@ export function ProfileCard() {
         </div>
         <div>
           <p className="text-muted mb-2 text-xs font-bold">I&apos;m a</p>
-          <Segmented
-            label="I'm a"
-            value={draft.gender ?? ("" as Gender)}
-            options={GENDERS.map(([value, label]) => ({ value, label }))}
-            onChange={(g) => set({ gender: g })}
-          />
+          {me.gender ? (
+            // Chosen once, then fixed: show it, don't offer a change.
+            <p className="text-text m-0 text-base font-medium">
+              {GENDERS.find(([g]) => g === me.gender)?.[1]}
+              <span className="text-faint block text-[13px] font-normal">
+                Set when you joined. It can&apos;t be changed.
+              </span>
+            </p>
+          ) : (
+            <Segmented
+              label="I'm a"
+              value={draft.gender ?? ("" as Gender)}
+              options={GENDERS.map(([value, label]) => ({ value, label }))}
+              onChange={(g) => set({ gender: g })}
+            />
+          )}
         </div>
         {!draft.photo && (
           <AvatarPicker

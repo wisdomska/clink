@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { handler, ok, parseJson, requireUser } from "@/lib/server/api";
+import { handler, ok, parseJson, requireUser, deny } from "@/lib/server/api";
 import { profileSchema } from "@/lib/validation";
 import type { Database } from "@/types/database";
 
@@ -7,6 +7,13 @@ import type { Database } from "@/types/database";
 export const PATCH = handler(async (req: NextRequest) => {
   const { user, db } = await requireUser();
   const { finish, ...body } = await parseJson(req, profileSchema.partial());
+  // Gender is chosen once (it picks your avatar cast) and can't be changed after.
+  if (body.gender !== undefined) {
+    const { data: cur } = await db.from("profiles").select("gender").eq("id", user.id).single();
+    if (cur?.gender && cur.gender !== body.gender)
+      throw deny(409, "gender_locked", "Your gender is set and can't be changed.");
+    if (cur?.gender) delete body.gender;
+  }
   const patch: Database["public"]["Tables"]["profiles"]["Update"] = {
     ...body,
     phone: body.phone === "" ? null : body.phone,

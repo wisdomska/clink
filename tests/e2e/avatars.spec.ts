@@ -45,6 +45,12 @@ test("pick a memoji avatar, upload your own photo, and switch back", async ({ co
   expect(
     (await admin.from("profiles").select("gender").eq("id", nia.id).single()).data?.gender,
   ).toBe("unspecified");
+  // Once chosen, gender is fixed: the server refuses a change and the screen shows it as text.
+  const change = await a.request.patch("/api/me/profile", { data: { gender: "woman" } });
+  expect(change.status()).toBe(409);
+  await a.goto("/onboarding?edit=1");
+  await expect(a.getByRole("radiogroup", { name: "I'm a" })).toHaveCount(0);
+  await expect(a.getByText("Set when you joined. It can't be changed.")).toBeVisible();
 
   // Any photo, no content filter: it is only resized and stripped of metadata.
   await a.goto("/onboarding?edit=1");
