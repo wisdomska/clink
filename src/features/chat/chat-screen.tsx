@@ -681,14 +681,14 @@ export function ChatScreen() {
               <span className="sr-only">Open {partner.name}&apos;s profile.</span>
             </span>
           </button>
-          <IconButton label="More" tone="surface" onClick={() => setMoreOpen(true)}>
-            <DotsThreeVertical size={22} weight="bold" />
-          </IconButton>
           <IconButton label="Call" tone="surface" onClick={() => startCall(false)}>
             <Phone size={20} />
           </IconButton>
           <IconButton label="Video call" tone="surface" onClick={() => startCall(true)}>
             <VideoCamera size={20} />
+          </IconButton>
+          <IconButton label="More" tone="surface" onClick={() => setMoreOpen(true)}>
+            <DotsThreeVertical size={22} weight="bold" />
           </IconButton>
         </header>
 

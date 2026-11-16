@@ -25,17 +25,20 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
     data: { user },
   } = await db.auth.getUser();
   if (!user) redirect(`/auth/reset?next=${encodeURIComponent(nextPath)}`);
-  const step = await journeyStep(user.id);
+  // These don't depend on each other: ask the database once, in parallel.
+  const [step, appLock, couple] = await Promise.all([
+    journeyStep(user.id),
+    appLockEnabled(user.id),
+    activeCouple(user.id),
+  ]);
   // Not linked yet is fine: the app opens in solo mode instead of trapping you on /link.
   if (step !== "app" && step !== "link") redirect(pathFor(step));
   // CHAT-07: optional PIN on open. Nothing is loaded until it is entered.
-  const appLock = await appLockEnabled(user.id);
   if (appLock && !(await isAppUnlocked(user.id)))
     redirect(`/unlock?next=${encodeURIComponent(nextPath)}`);
   const admin = supabaseAdmin();
   const cols =
     "id, display_name, avatar_kind, avatar_icon, avatar_path, home_city, country, timezone, latitude, longitude, partner_nickname, phone, discreet_mode, app_icon, notify, quiet_start, quiet_end, suspended_at, is_admin, bio, love_language, share_birthday";
-  const couple = await activeCouple(user.id);
   if (!couple) return soloContext(user.id, user.email ?? null, appLock, cols);
   const [{ data: people }, { data: c }, { data: members }, { data: dark }, { data: dobs }] =
     await Promise.all([
@@ -83,11 +86,15 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
   });
   const roleOf = (id: string) => (members!.find((m) => m.user_id === id)?.role ?? "a") as "a" | "b";
   const darkBoth = (dark ?? []).filter((d) => d.opted_in_at).length === 2;
+  const [me, partner] = await Promise.all([
+    toPerson(meRow, roleOf(user.id)),
+    toPerson(pRow, roleOf(couple.partnerId)),
+  ]);
   return {
     solo: false,
     coupleId: couple.coupleId,
-    me: await toPerson(meRow, roleOf(user.id)),
-    partner: await toPerson(pRow, roleOf(couple.partnerId)),
+    me,
+    partner,
     startedOn: c?.started_on ?? null,
     chatTheme: c?.chat_theme ?? "clink",
     chatWallpaper: c?.chat_wallpaper ?? "none",

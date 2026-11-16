@@ -29,6 +29,11 @@ export default async function DarkLayout({ children }: { children: React.ReactNo
   const open = ["/dark", "/dark/setup"];
   if (setUp && !unlocked && !open.includes(pathname))
     redirect(`/dark?next=${encodeURIComponent(path)}`);
+  // Already unlocked: skip the lock screen (and its round trip) and go straight in.
+  if (unlocked && pathname === "/dark") {
+    const next = new URLSearchParams(path.split("?")[1] ?? "").get("next");
+    redirect(next?.startsWith("/dark/") ? next : "/dark/home");
+  }
   return (
     <QueryProvider>
       <CoupleProvider value={ctx}>
