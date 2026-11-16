@@ -133,6 +133,7 @@ export function ChatScreen() {
     chatWallpaperMedia,
     chatWallpaperBlur,
     darkBoth,
+    linkedAt,
   } = useCouple();
   const [stickerTab, setStickerTab] = useState<"all" | "spicy">("all");
   const [look, setLook] = useState({
@@ -398,13 +399,39 @@ export function ChatScreen() {
       wallRef.current.style.transform = `translate3d(0, ${Math.min(48, fromBottom * 0.04)}px, 0)`;
     }
     stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
-    if (el.scrollTop < 120 && hasNextPage && !isFetchingNextPage) {
-      const before = el.scrollHeight;
-      void fetchNextPage().then(() =>
-        requestAnimationFrame(() => (el.scrollTop = el.scrollHeight - before + el.scrollTop)),
-      );
-    }
+    if (el.scrollTop < 120) loadOlder();
   }
+
+  // Older messages: keep your place while the earlier page slots in above.
+  const loadingOlder = useRef(false);
+  function loadOlder() {
+    const el = listRef.current;
+    if (!el || !hasNextPage || isFetchingNextPage || loadingOlder.current) return;
+    loadingOlder.current = true;
+    const before = el.scrollHeight;
+    const top = el.scrollTop;
+    void fetchNextPage().finally(() =>
+      requestAnimationFrame(() => {
+        el.scrollTop = el.scrollHeight - before + top;
+        loadingOlder.current = false;
+      }),
+    );
+  }
+  // The top of the list is watched too, so a fast fling (where phones skip
+  // scroll events) or a short list that can't scroll still loads more.
+  const topRef = useRef<HTMLDivElement>(null);
+  const loadOlderEvent = useEffectEvent(loadOlder);
+  useEffect(() => {
+    const el = topRef.current;
+    const root = listRef.current;
+    if (!el || !root) return;
+    const io = new IntersectionObserver(
+      (entries) => entries.some((e) => e.isIntersecting) && loadOlderEvent(),
+      { root, rootMargin: "300px 0px 0px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasNextPage, isLoading]);
 
   async function enqueue(p: Omit<QueuedPayload, "clientId" | "createdAt">) {
     const item: QueuedPayload = {
@@ -738,7 +765,27 @@ export function ChatScreen() {
             onClick={() => blurred && setBlurred(false)}
             aria-live="polite"
           >
-            {isFetchingNextPage && <div className="an-skel bg-s2 mx-auto h-4 w-24 rounded-full" />}
+            <div ref={topRef} aria-hidden className="h-px w-full flex-none" />
+            {!isLoading &&
+              (isFetchingNextPage ? (
+                <div className="an-skel bg-s2 mx-auto h-4 w-24 flex-none rounded-full" />
+              ) : hasNextPage ? (
+                <button
+                  type="button"
+                  onClick={loadOlder}
+                  className="press text-accent mx-auto flex h-9 flex-none cursor-pointer items-center rounded-full border-0 bg-transparent px-3 text-sm font-semibold"
+                >
+                  Load earlier messages
+                </button>
+              ) : (
+                <p className="text-faint m-0 flex-none py-2 text-center text-xs">
+                  Start of your chat with {partner.name}
+                  {linkedAt
+                    ? `, linked ${new Date(linkedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`
+                    : ""}
+                  .
+                </p>
+              ))}
             {isLoading ? (
               <div role="status" className="flex flex-col gap-2.5" aria-label="Loading messages">
                 {[
