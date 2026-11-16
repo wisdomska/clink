@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { installCapture } from "@/lib/install";
 
 /**
  * Registers the service worker and keeps Clink current without asking:
@@ -9,6 +10,7 @@ import { useEffect } from "react";
  */
 export function ServiceWorker() {
   useEffect(() => {
+    installCapture();
     if (!("serviceWorker" in navigator) || process.env.NODE_ENV !== "production") return;
     let hadController = Boolean(navigator.serviceWorker.controller);
     let pending = false;

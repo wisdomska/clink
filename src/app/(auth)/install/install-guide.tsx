@@ -14,16 +14,13 @@ import { Button } from "@/components/ui/button";
 import { Display, Lead } from "@/components/ui/heading";
 import { Segmented } from "@/components/ui/segmented";
 import { isStandalone, platform, enablePush } from "@/lib/pwa";
+import { useInstallState, promptInstall } from "@/lib/install";
 import { useClientValue } from "@/lib/hooks";
 import { toast } from "@/components/ui/toast";
 import { IdentityPicker } from "@/components/clink/identity-picker";
 import type { Identity } from "@/lib/app-identity";
 
 type Tab = "android" | "iphone" | "done";
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
 
 const STEPS: Record<"android" | "iphone", Array<[string, string]>> = {
   android: [
@@ -47,7 +44,7 @@ export function InstallGuide({ identity = "clink" }: { identity?: Identity }) {
   const [picked, setTab] = useState<Tab | null>(null);
   const [icon, setIcon] = useState<Identity>(identity);
   const tab = picked ?? detected;
-  const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const installState = useInstallState();
   const initialPush = useClientValue<NotificationPermission | "unsupported">(
     () => ("Notification" in window ? Notification.permission : "unsupported"),
     "default",
@@ -56,10 +53,6 @@ export function InstallGuide({ identity = "clink" }: { identity?: Identity }) {
   const push = pushOverride ?? initialPush;
 
   useEffect(() => {
-    const onPrompt = (e: Event) => {
-      e.preventDefault();
-      setPrompt(e as BeforeInstallPromptEvent);
-    };
     const onInstalled = () => {
       setTab("done");
       void fetch("/api/events", {
@@ -68,10 +61,8 @@ export function InstallGuide({ identity = "clink" }: { identity?: Identity }) {
         body: JSON.stringify({ name: "pwa_installed", props: { platform: platform() } }),
       }).catch(() => undefined);
     };
-    window.addEventListener("beforeinstallprompt", onPrompt);
     window.addEventListener("appinstalled", onInstalled);
     return () => {
-      window.removeEventListener("beforeinstallprompt", onPrompt);
       window.removeEventListener("appinstalled", onInstalled);
     };
   }, []);
@@ -88,7 +79,7 @@ export function InstallGuide({ identity = "clink" }: { identity?: Identity }) {
       {tab !== "done" && (
         <section aria-labelledby="looks" className="mb-5">
           <h2 id="looks" className="m-0 mb-1 text-base font-bold">
-            How it shows on your phone
+            How it shows on your device
           </h2>
           <p className="text-muted m-0 mb-3 text-sm">
             Pick a quieter name and icon if you like. Notifications stay generic either way.
@@ -137,16 +128,13 @@ export function InstallGuide({ identity = "clink" }: { identity?: Identity }) {
               ? "Needs iOS 16.4 or later for notifications."
               : "Works in Chrome, Edge and Samsung Internet."}
           </p>
-          {prompt && tab === "android" && (
+          {installState === "prompt" && tab === "android" && (
             <Button
               variant="secondary"
               size="lg"
               className="mt-4"
               onClick={async () => {
-                await prompt.prompt();
-                const { outcome } = await prompt.userChoice;
-                if (outcome === "accepted") setTab("done");
-                setPrompt(null);
+                if (await promptInstall()) setTab("done");
               }}
             >
               <DownloadSimple size={20} aria-hidden />

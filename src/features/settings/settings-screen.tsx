@@ -27,6 +27,7 @@ import { FeelCard } from "./feel";
 import { NavTabs, TabPanel, useTab } from "@/components/ui/nav-tabs";
 import { AppearanceCard } from "./appearance";
 import { IdentityPicker } from "@/components/clink/identity-picker";
+import { InstallCard } from "./install-card";
 import { asIdentity } from "@/lib/app-identity";
 import { ProfileCard } from "./profile";
 
@@ -149,6 +150,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
           <TabPanel key="look" className="flex flex-col gap-4">
             <AppearanceCard />
             <FeelCard />
+            <InstallCard />
             <h2 className="m-0 mt-1 text-lg font-bold">App icon and name</h2>
             <IdentityPicker value={icon} onChange={setIcon} />
           </TabPanel>
