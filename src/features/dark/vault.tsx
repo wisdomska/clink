@@ -1,13 +1,13 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, EyeSlash, Plus, Vault } from "@phosphor-icons/react";
+import { EyeSlash, Plus, Vault } from "@phosphor-icons/react";
 import { useState } from "react";
-import { IconButton, Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { LoadMore, flatItems, useCursorList, useScrollRestore } from "@/features/plans/infinite";
 import type { CursorPage } from "@/features/plans/cursor";
 import { darkFetch } from "./api";
 import { SendSheet } from "./send-sheet";
+import { PageBar } from "@/components/clink/page-bar";
 
 export const vaultListKey = ["vault", "list"] as const;
 
@@ -35,7 +35,6 @@ function VaultSkeleton({ count = 6 }: { count?: number }) {
 
 /** DARK-08 vault: empty, blurred grid, removed by sender. Revealing opens the protected viewer. */
 export function VaultScreen() {
-  const router = useRouter();
   const [send, setSend] = useState(false);
   const q = useCursorList<VaultItem>({
     queryKey: vaultListKey,
@@ -49,16 +48,16 @@ export function VaultScreen() {
   const isLoading = q.isPending;
   useScrollRestore("dark-vault", q.isSuccess);
   return (
-    <main className="an-screen mx-auto flex min-h-dvh max-w-[900px] flex-col gap-4 px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-8 md:pt-8">
-      <div className="flex items-center gap-3">
-        <IconButton label="Back" onClick={() => router.push("/dark/home")}>
-          <ArrowLeft size={20} />
-        </IconButton>
-        <h1 className="display m-0 flex-1 text-[36px]">Vault</h1>
-        <Button size="sm" onClick={() => setSend(true)}>
-          <Plus size={18} aria-hidden /> Send
-        </Button>
-      </div>
+    <main className="an-screen mx-auto flex min-h-dvh max-w-[900px] flex-col gap-4 px-4 pt-[var(--screen-pt)] pb-8 [--screen-pt:calc(env(safe-area-inset-top)+8px)] md:[--screen-pt:2.0rem]">
+      <PageBar
+        title="Vault"
+        back="/dark/home"
+        actions={
+          <Button size="sm" onClick={() => setSend(true)}>
+            <Plus size={18} aria-hidden /> Send
+          </Button>
+        }
+      />
       <p className="text-muted -mt-2 mb-0 text-base leading-normal">
         Only what you both chose to keep. The sender can unsend any time.
       </p>

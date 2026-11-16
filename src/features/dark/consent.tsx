@@ -1,17 +1,16 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { ArrowLeft, Check } from "@phosphor-icons/react";
+import { Check } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
-import { IconButton } from "@/components/ui/button";
-import { Display, Lead, PartnerMark } from "@/components/ui/heading";
+import { Lead, PartnerMark } from "@/components/ui/heading";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/cn";
 import { feedback } from "@/lib/feedback";
 import { TIERS, contiguousRank } from "@/lib/dark-logic";
 import { useDarkState, darkFetch } from "./api";
+import { PageBar } from "@/components/clink/page-bar";
 
 const BLURB: Record<string, string> = {
   Flirty: "Teasing, compliments, a little heat.",
@@ -25,7 +24,6 @@ const BLURB: Record<string, string> = {
  * on for you; a level opens for both once you've both picked it. Saves straight away.
  */
 export function Consent() {
-  const router = useRouter();
   const qc = useQueryClient();
   const { partner } = useCouple();
   const { data: s } = useDarkState();
@@ -53,13 +51,15 @@ export function Consent() {
   }
 
   return (
-    <main className="an-screen mx-auto flex min-h-dvh max-w-[560px] flex-col gap-5 px-5 pt-[calc(env(safe-area-inset-top)+12px)] pb-10 md:pt-10">
-      <IconButton label="Back" onClick={() => router.push("/dark/home")}>
-        <ArrowLeft size={20} />
-      </IconButton>
-      <Display size={36}>
-        How <em>far</em>?
-      </Display>
+    <main className="an-screen mx-auto flex min-h-dvh max-w-[560px] flex-col gap-5 px-5 pt-[var(--screen-pt)] pb-10 [--screen-pt:calc(env(safe-area-inset-top)+12px)] md:[--screen-pt:2.5rem]">
+      <PageBar
+        title={
+          <>
+            How <em>far</em>?
+          </>
+        }
+        back="/dark/home"
+      />
       <Lead>
         Tap a level. It opens for you both once {partner.name} picks it too. Go lower any time;{" "}
         {partner.name} only sees &quot;After Dark settings changed&quot;.

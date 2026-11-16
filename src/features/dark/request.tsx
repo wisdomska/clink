@@ -2,15 +2,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, EyeSlash, Moon } from "@phosphor-icons/react";
+import { EyeSlash, Moon } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
-import { Button, IconButton } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/field";
 import { toast } from "@/components/ui/toast";
 import { darkFetch } from "./api";
 import { SendSheet } from "./send-sheet";
 import { VerifySheet } from "./hub";
 import { useDarkState } from "./api";
+import { PageBar } from "@/components/clink/page-bar";
 
 interface Req {
   rank: number;
@@ -63,13 +64,8 @@ export function RequestScreen() {
   };
 
   return (
-    <main className="an-screen mx-auto flex min-h-dvh max-w-[560px] flex-col gap-4 px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-8 md:pt-8">
-      <div className="flex items-center gap-3">
-        <IconButton label="Back" onClick={() => router.push("/dark/home")}>
-          <ArrowLeft size={20} />
-        </IconButton>
-        <div className="text-muted text-sm font-medium">Request</div>
-      </div>
+    <main className="an-screen mx-auto flex min-h-dvh max-w-[560px] flex-col gap-4 px-4 pt-[var(--screen-pt)] pb-8 [--screen-pt:calc(env(safe-area-inset-top)+8px)] md:[--screen-pt:2.0rem]">
+      <PageBar title="Request" back="/dark/home" />
       {result ? (
         <>
           <div className="an-reveal flex flex-1 flex-col justify-center gap-3">
@@ -83,9 +79,9 @@ export function RequestScreen() {
         </>
       ) : received ? (
         <>
-          <h1 className="display mt-2 mb-0 text-[36px] leading-[1.05]">
+          <h2 className="display m-0 text-[28px] leading-[1.1]">
             {partner.name} sent you a request
-          </h1>
+          </h2>
           <div className="rounded-card border-line bg-s2 flex aspect-[4/3] flex-none flex-col items-center justify-center gap-2 border">
             <EyeSlash size={28} className="text-ember" aria-hidden />
             <span className="px-6 text-center text-base font-medium">
@@ -116,7 +112,7 @@ export function RequestScreen() {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          <h1 className="display mt-2 mb-0 text-[36px] leading-[1.05]">Ask for something</h1>
+          <h2 className="display m-0 text-[28px] leading-[1.1]">Ask for something</h2>
           {!unhinged ? (
             <>
               <p className="text-muted m-0 text-base leading-normal">

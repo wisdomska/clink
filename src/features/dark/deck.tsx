@@ -2,14 +2,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft } from "@phosphor-icons/react";
 import { useCouple, useCoupleEvent } from "@/features/couple/context";
-import { Button, IconButton } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/field";
 import { PartnerMark } from "@/components/ui/heading";
 import { toast } from "@/components/ui/toast";
 import { TIERS } from "@/lib/dark-logic";
 import { darkFetch, useDarkState } from "./api";
+import { PageBar } from "@/components/clink/page-bar";
 
 interface DeckData {
   title: string;
@@ -77,18 +77,18 @@ export function Deck({ tier }: { tier: string }) {
   }
 
   return (
-    <main className="an-screen mx-auto flex min-h-dvh max-w-[600px] flex-col gap-4 px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-8 md:pt-8">
-      <div className="flex items-center gap-3">
-        <IconButton label="Back" onClick={() => router.push("/dark/home")}>
-          <ArrowLeft size={20} />
-        </IconButton>
-        <div className="text-muted flex-1 text-sm font-medium">{tier} deck</div>
-        {data && (
-          <div className="mono text-sm">
-            {data.position}/{data.total}
-          </div>
-        )}
-      </div>
+    <main className="an-screen mx-auto flex min-h-dvh max-w-[600px] flex-col gap-4 px-4 pt-[var(--screen-pt)] pb-8 [--screen-pt:calc(env(safe-area-inset-top)+8px)] md:[--screen-pt:2.0rem]">
+      <PageBar
+        title={`${tier} deck`}
+        back="/dark/home"
+        actions={
+          data && (
+            <div className="mono text-muted text-sm">
+              {data.position}/{data.total}
+            </div>
+          )
+        }
+      />
       {open.length > 1 && (
         <div className="no-scrollbar flex gap-2 overflow-x-auto" role="tablist" aria-label="Decks">
           {open.map((t) => (

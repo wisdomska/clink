@@ -1,14 +1,14 @@
 "use client";
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Heart } from "@phosphor-icons/react";
+import { Heart } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
-import { Button, IconButton } from "@/components/ui/button";
-import { Display, Lead } from "@/components/ui/heading";
+import { Button } from "@/components/ui/button";
+import { Lead } from "@/components/ui/heading";
 import { Segmented } from "@/components/ui/segmented";
 import { toast } from "@/components/ui/toast";
 import { darkFetch } from "./api";
+import { PageBar } from "@/components/clink/page-bar";
 
 interface MatchData {
   items: Array<{ id: string; text: string; tier: string }>;
@@ -19,7 +19,6 @@ interface MatchData {
 
 /** DARK-04: answering, waiting, matches revealed. A "no" is never shown to anyone. */
 export function DesireMatch() {
-  const router = useRouter();
   const qc = useQueryClient();
   const { partner } = useCouple();
   const [tab, setTab] = useState<"answer" | "matches">("answer");
@@ -50,11 +49,8 @@ export function DesireMatch() {
   }
 
   return (
-    <main className="an-screen mx-auto flex min-h-dvh max-w-[640px] flex-col gap-4 px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-8 md:pt-8">
-      <IconButton label="Back" onClick={() => router.push("/dark/home")}>
-        <ArrowLeft size={20} />
-      </IconButton>
-      <Display size={36}>Desire match</Display>
+    <main className="an-screen mx-auto flex min-h-dvh max-w-[640px] flex-col gap-4 px-4 pt-[var(--screen-pt)] pb-8 [--screen-pt:calc(env(safe-area-inset-top)+8px)] md:[--screen-pt:2.0rem]">
+      <PageBar title="Desire match" back="/dark/home" />
       <Lead>
         Yes, no or maybe, privately. You only ever see the things you both said yes to, or yes and
         maybe. Nobody sees a no.

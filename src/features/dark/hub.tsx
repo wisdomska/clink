@@ -18,12 +18,13 @@ import {
 import { startRegistration } from "@simplewebauthn/browser";
 import { useQuery } from "@tanstack/react-query";
 import { useCouple } from "@/features/couple/context";
-import { Display, Lead } from "@/components/ui/heading";
+import { Lead } from "@/components/ui/heading";
 import { Button } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
 import { toast } from "@/components/ui/toast";
 import { TIERS, tierStatus, type Tier } from "@/lib/dark-logic";
 import { useDarkState, darkFetch } from "./api";
+import { PageBar } from "@/components/clink/page-bar";
 
 const STATUS_COPY = {
   open: "Unlocked",
@@ -35,7 +36,7 @@ const STATUS_COPY = {
 
 export function DarkHub() {
   const router = useRouter();
-  const { me, partner } = useCouple();
+  const { partner } = useCouple();
   const { data: s } = useDarkState();
   const [verifyOpen, setVerifyOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
@@ -57,25 +58,27 @@ export function DarkHub() {
   }
 
   return (
-    <main className="an-screen mx-auto flex min-h-dvh w-full max-w-[1100px] flex-col gap-5 px-4 pt-[calc(env(safe-area-inset-top)+4px)] pb-10 md:px-8 md:pt-8">
-      <div className="flex h-11 items-center justify-between">
+    <main className="an-screen mx-auto flex min-h-dvh w-full max-w-[1100px] flex-col gap-5 px-4 pt-[var(--screen-pt)] pb-10 [--screen-pt:calc(env(safe-area-inset-top)+4px)] md:px-8 md:[--screen-pt:2.0rem]">
+      <PageBar
+        title="After Dark"
+        actions={
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={async () => {
+              await fetch("/api/dark/lock", { method: "POST" });
+              router.replace("/us");
+            }}
+          >
+            <LockSimple size={18} aria-hidden /> Lock
+          </Button>
+        }
+      />
+      <div className="-mt-2">
         <div className="text-ember flex items-center gap-1.5 text-xs font-medium">
           <Moon size={16} aria-hidden />
           Private · you and {partner.name}
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={async () => {
-            await fetch("/api/dark/lock", { method: "POST" });
-            router.replace("/us");
-          }}
-        >
-          <LockSimple size={18} aria-hidden /> Lock
-        </Button>
-      </div>
-      <div>
-        <Display size={48}>After Dark</Display>
         <Lead className="mt-1.5">Only you two can see this. The lower choice always wins.</Lead>
       </div>
       {s && !s.partner.optedIn && (

@@ -1,17 +1,17 @@
 "use client";
 import { haptic } from "@/lib/feedback";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Fire, Plus } from "@phosphor-icons/react";
+import { Fire, Plus } from "@phosphor-icons/react";
 import { useCouple, useCoupleEvent } from "@/features/couple/context";
-import { Button, IconButton } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/field";
 import { toast } from "@/components/ui/toast";
 import { TIERS } from "@/lib/dark-logic";
 import { darkFetch, useDarkState } from "./api";
 import { SendSheet } from "./send-sheet";
+import { PageBar } from "@/components/clink/page-bar";
 
 interface Spin {
   spinId: string;
@@ -22,7 +22,6 @@ interface Spin {
 
 /** DARK-05 dare wheel: idle, spinning, closed matchbook, strike to reveal, Do it / Pass / Spin again. */
 export function DareWheel() {
-  const router = useRouter();
   const { partner, send } = useCouple();
   const { data: s } = useDarkState();
   const [deg, setDeg] = useState(0);
@@ -89,16 +88,16 @@ export function DareWheel() {
   }
 
   return (
-    <main className="an-screen mx-auto flex min-h-dvh max-w-[640px] flex-col gap-4 px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-8 md:pt-8">
-      <div className="flex items-center gap-3">
-        <IconButton label="Back" onClick={() => router.push("/dark/home")}>
-          <ArrowLeft size={20} />
-        </IconButton>
-        <div className="display flex-1 text-[28px]">Dare wheel</div>
-        <span className="mono border-line text-muted rounded-full border px-3 py-1.5 text-xs">
-          {open.join(" · ") || "Locked"}
-        </span>
-      </div>
+    <main className="an-screen mx-auto flex min-h-dvh max-w-[640px] flex-col gap-4 px-4 pt-[var(--screen-pt)] pb-8 [--screen-pt:calc(env(safe-area-inset-top)+8px)] md:[--screen-pt:2.0rem]">
+      <PageBar
+        title="Dare wheel"
+        back="/dark/home"
+        actions={
+          <span className="mono border-line text-muted rounded-full border px-3 py-1.5 text-xs">
+            {open.join(" · ") || "Locked"}
+          </span>
+        }
+      />
       <div className="relative flex min-h-[360px] flex-1 items-center justify-center">
         <div
           aria-hidden
