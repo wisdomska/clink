@@ -13,7 +13,7 @@ import { feedback } from "@/lib/feedback";
 /** Every feeling, grouped the way they actually come. */
 export const MOOD_GROUPS = [
   { label: "Good", moods: ["Happy", "Loved", "Cosy", "Excited", "Flirty", "Grateful"] },
-  { label: "Somewhere between", moods: ["Missing you", "Wired", "Tired", "Anxious", "Stressed"] },
+  { label: "Somewhere between", moods: ["Missing you", "Goofy", "Tired", "Anxious", "Stressed"] },
   { label: "Hard", moods: ["Low", "Sad", "Hurt", "Jealous", "Angry", "Need space"] },
 ] as const;
 export const MOODS = MOOD_GROUPS.flatMap((g) => g.moods);
@@ -26,7 +26,7 @@ const ART: Record<string, string> = {
   Flirty: "mood-flirty",
   Grateful: "mood-grateful",
   "Missing you": "mood-missing",
-  Wired: "mood-wired",
+  Goofy: "mood-wired",
   Tired: "mood-tired",
   Anxious: "mood-anxious",
   Stressed: "mood-stressed",
@@ -47,7 +47,7 @@ export const PHRASE: Record<string, string> = {
   Flirty: "is feeling flirty",
   Grateful: "is feeling grateful",
   "Missing you": "is missing you",
-  Wired: "is feeling wired",
+  Goofy: "is feeling goofy",
   Tired: "is tired",
   Anxious: "is feeling anxious",
   Stressed: "is stressed",
@@ -75,7 +75,7 @@ const MINE: Record<string, string> = {
   Flirty: "You're feeling flirty",
   Grateful: "You're feeling grateful",
   "Missing you": "You're missing them",
-  Wired: "You're feeling wired",
+  Goofy: "You're feeling goofy",
   Tired: "You're tired",
   Anxious: "You're feeling anxious",
   Stressed: "You're stressed",
