@@ -1,27 +1,17 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Check, MagnifyingGlass } from "@phosphor-icons/react";
+import { Camera } from "@phosphor-icons/react";
 import { motion } from "motion/react";
 import { DEFAULT_AVATAR, avatarFrame, avatarSrc, toMemoji, type AvatarKey } from "@/lib/avatars";
 import { AvatarPicker } from "@/components/clink/avatar-picker";
-import { MemojiArt } from "@/components/clink/memoji-art";
+import { CityPicker, type City } from "@/components/clink/city-picker";
 import { Button } from "@/components/ui/button";
-import { Input, FieldError, Hint } from "@/components/ui/field";
+import { Input, FieldError } from "@/components/ui/field";
 import { Display, Lead, Mono } from "@/components/ui/heading";
-import { cn } from "@/components/ui/cn";
 import { toast } from "@/components/ui/toast";
-import { formatClock } from "@/lib/time";
 
 type IconKey = AvatarKey;
-
-interface City {
-  city: string;
-  country: string;
-  timezone: string;
-  lat: number;
-  lng: number;
-}
 
 async function patch(body: Record<string, unknown>) {
   const res = await fetch("/api/me/profile", {
@@ -51,38 +41,10 @@ export function Onboarding({
   const [name, setName] = useState(initialName);
   const [icon, setIcon] = useState<IconKey>(toMemoji(initialIcon) ?? DEFAULT_AVATAR);
   const [photo, setPhoto] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<City[]>([]);
   const [city, setCity] = useState<City | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [now, setNow] = useState(() => new Date());
   const fileRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 30_000);
-    return () => clearInterval(t);
-  }, []);
-
-  useEffect(() => {
-    if (query.trim().length < 2) return;
-    const ctrl = new AbortController();
-    const t = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/cities?q=${encodeURIComponent(query.trim())}`, {
-          signal: ctrl.signal,
-        });
-        const data = await res.json();
-        setResults(data.cities ?? []);
-      } catch {
-        /* aborted */
-      }
-    }, 180);
-    return () => {
-      clearTimeout(t);
-      ctrl.abort();
-    };
-  }, [query]);
 
   if (!dobDone) return <DobStep onDone={() => setDobDone(true)} />;
 
@@ -174,7 +136,6 @@ export function Onboarding({
 
       {step === 1 && (
         <div key="1" className="an-reveal">
-          <MemojiArt person="p10" pose="wave" className="mt-4 hidden md:block" />
           <Display size={36} className="mt-3">
             What should we call you?
           </Display>
@@ -257,74 +218,19 @@ export function Onboarding({
 
       {step === 3 && (
         <div key="3" className="an-reveal">
-          <MemojiArt person="p12" pose="thumbs" className="mt-4 hidden md:block" />
           <Display size={36} className="mt-3">
             Where&apos;s home?
           </Display>
           <Lead className="mt-2 mb-6">
             For your clock and quiet hours. Never a precise location.
           </Lead>
-          <div className="rounded-input border-line bg-s2 focus-within:border-accent flex h-[52px] items-center gap-2.5 border px-4">
-            <MagnifyingGlass size={20} className="text-muted" aria-hidden />
-            <input
-              aria-label="Search for your city"
-              autoFocus
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Start typing a city"
-              className="text-text h-full min-w-0 flex-1 bg-transparent text-base outline-none focus-visible:shadow-none"
-            />
-          </div>
-          {query.trim().length >= 2 && results.length > 0 && (
-            <ul
-              role="listbox"
-              aria-label="Cities"
-              className="rounded-card border-line bg-s1 m-0 mt-2 list-none overflow-hidden border p-0"
-            >
-              {results.map((c, i) => {
-                const on = city?.city === c.city && city.country === c.country;
-                return (
-                  <li key={`${c.city}-${c.country}`} role="option" aria-selected={on}>
-                    <button
-                      type="button"
-                      onClick={() => setCity(c)}
-                      className={cn(
-                        "flex w-full cursor-pointer items-center justify-between bg-transparent px-4 py-3.5 text-left",
-                        i < results.length - 1 && "border-line border-b",
-                        on ? "text-text" : "text-muted",
-                      )}
-                    >
-                      <span className={cn("text-base", on ? "font-medium" : "font-normal")}>
-                        {c.city}, {c.country}
-                      </span>
-                      <span className="flex items-center gap-2.5">
-                        <span className="mono text-muted text-sm">
-                          {formatClock(now, c.timezone)}
-                        </span>
-                        {on && <Check size={20} className="text-accent" aria-hidden />}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-          {(query.trim().length < 2 || !results.length) && city && (
-            <Hint>
-              {city.city}, {city.country} · {formatClock(now, city.timezone)}
-            </Hint>
-          )}
+          <CityPicker value={city} onChange={setCity} autoFocus />
         </div>
       )}
 
       <FieldError>{error}</FieldError>
       <div className="min-h-6 flex-1" />
-      <Button
-        className="flex-none"
-        loading={busy}
-        disabled={step === 3 && !city && query.length > 0}
-        onClick={advance}
-      >
+      <Button className="flex-none" loading={busy} onClick={advance}>
         Continue
       </Button>
     </div>
@@ -363,7 +269,6 @@ function DobStep({ onDone }: { onDone: () => void }) {
   }
   return (
     <div className="an-screen flex flex-1 flex-col">
-      <MemojiArt person="p03" pose="party" className="mt-6 hidden md:block" />
       <Display size={36} className="mt-4">
         When&apos;s your birthday?
       </Display>

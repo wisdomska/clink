@@ -1,6 +1,5 @@
 "use client";
 import { useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Camera, CaretRight, Check } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
@@ -12,6 +11,8 @@ import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/cn";
 import { feedback } from "@/lib/feedback";
 import { AvatarPicker } from "@/components/clink/avatar-picker";
+import { CityPicker, type City } from "@/components/clink/city-picker";
+import { Sheet } from "@/components/ui/sheet";
 import { LOVE_LANGUAGES } from "@/features/partner/partner-sheet";
 
 const MONTHS = [
@@ -305,18 +306,7 @@ export function ProfileCard() {
           checked={draft.shareBday}
           onChange={(v) => set({ shareBday: v })}
         />
-        <Link
-          href="/onboarding?edit=1"
-          className="press text-text hover:text-text flex min-h-14 items-center justify-between gap-3 px-4 py-2.5 text-base font-medium"
-        >
-          <span>
-            Change home city
-            <span className="text-faint block text-[13px] font-normal">
-              {me.city || me.timezone}
-            </span>
-          </span>
-          <CaretRight size={18} className="text-faint" aria-hidden />
-        </Link>
+        <HomeCityRow current={me.city || me.timezone} />
       </div>
 
       <div
@@ -363,5 +353,67 @@ export function ProfileCard() {
         </div>
       </div>
     </form>
+  );
+}
+
+/** "Change home city": just the city picker in a sheet, not the whole onboarding. */
+function HomeCityRow({ current }: { current: string }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [city, setCity] = useState<City | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    if (!city) return;
+    setBusy(true);
+    setError(null);
+    const r = await fetch("/api/me/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        home_city: city.city,
+        country: city.country,
+        timezone: city.timezone,
+        latitude: city.lat,
+        longitude: city.lng,
+      }),
+    }).catch(() => null);
+    setBusy(false);
+    if (!r?.ok) {
+      const d = await r?.json().catch(() => ({}));
+      return setError(d?.message ?? "Couldn't save your city. Try again.");
+    }
+    setOpen(false);
+    setCity(null);
+    toast.ok(`Home is now ${city.city}.`);
+    router.refresh();
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="press text-text flex min-h-14 w-full cursor-pointer items-center justify-between gap-3 border-0 bg-transparent px-4 py-2.5 text-left text-base font-medium"
+      >
+        <span>
+          Change home city
+          <span className="text-faint block text-[13px] font-normal">{current}</span>
+        </span>
+        <CaretRight size={18} className="text-faint" aria-hidden />
+      </button>
+      <Sheet open={open} onOpenChange={setOpen} title="Home city" handle>
+        <div className="text-lg font-bold">Where&apos;s home?</div>
+        <p className="text-muted m-0 text-sm">
+          For your clock and quiet hours. Never a precise location.
+        </p>
+        <CityPicker value={city} onChange={setCity} autoFocus />
+        <FieldError>{error}</FieldError>
+        <Button loading={busy} softDisabled={!city} onClick={save}>
+          Save home city
+        </Button>
+      </Sheet>
+    </>
   );
 }
