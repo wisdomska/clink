@@ -76,10 +76,9 @@ export function AppShell({
             {!online && (
               <div
                 role="status"
-                className="an-banner flex items-center gap-2.5 px-4 py-2.5 text-sm font-bold text-[#1a0a10]"
-                style={{ background: "var(--warning)" }}
+                className="an-banner bg-s2 border-accent text-text flex items-center gap-2.5 border-b-2 px-4 py-2.5 text-sm font-bold"
               >
-                <WifiSlash size={18} weight="bold" aria-hidden />
+                <WifiSlash size={18} weight="bold" className="text-warning" aria-hidden />
                 You&apos;re offline. Messages send when you&apos;re back.
               </div>
             )}
@@ -87,13 +86,20 @@ export function AppShell({
               <div
                 key={b.id}
                 role="status"
-                className="an-banner flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-[#1a0a10] shadow-[0_6px_18px_-8px_rgba(0,0,0,0.6)]"
-                style={{
-                  // News on the brand gradient; maintenance in warning amber.
-                  background: b.kind === "maintenance" ? "var(--warning)" : "var(--brand-gradient)",
-                }}
+                className={cn(
+                  "an-banner flex items-center gap-3 px-4 py-2.5 text-sm font-bold shadow-[0_6px_18px_-8px_rgba(0,0,0,0.6)]",
+                  // News wears your accent colour; maintenance is a calm surface with a warning icon.
+                  b.kind === "maintenance"
+                    ? "bg-s2 border-accent text-text border-b-2"
+                    : "bg-accent text-on-accent",
+                )}
               >
-                <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-[#1a0a10] text-white">
+                <span
+                  className={cn(
+                    "flex h-8 w-8 flex-none items-center justify-center rounded-full",
+                    b.kind === "maintenance" ? "bg-s3 text-warning" : "bg-on-accent text-accent",
+                  )}
+                >
                   <Megaphone size={16} weight="fill" aria-hidden />
                 </span>
                 <span className="flex-1 leading-snug">{b.body}</span>
@@ -101,7 +107,7 @@ export function AppShell({
                   <button
                     type="button"
                     aria-label="Dismiss"
-                    className="press-icon flex h-11 w-11 flex-none cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-[#1a0a10]"
+                    className="press-icon flex h-11 w-11 flex-none cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-current"
                     onClick={() => setDismissedRaw(JSON.stringify([...dismissed, b.id]))}
                   >
                     <X size={18} weight="bold" />

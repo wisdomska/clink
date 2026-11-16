@@ -1,8 +1,8 @@
 import { cn } from "@/components/ui/cn";
 
 /**
- * The After Dark entry mark: "18+" on the After Dark romance gradient
- * (Rouge to Orchid) with a soft Ember glow. Reads as "the private, adults-only
+ * The After Dark entry mark: "18+" in After Dark's own colour, Ember, with a
+ * soft Ember glow. Reads as "the private, adults-only
  * space", never as a light/dark theme switch.
  */
 export function AfterDarkBadge({ size = 44, className }: { size?: number; className?: string }) {
@@ -17,7 +17,7 @@ export function AfterDarkBadge({ size = 44, className }: { size?: number; classN
         width: size,
         height: size,
         fontSize: Math.round(size * 0.34),
-        background: "var(--brand-gradient-romance)",
+        background: "var(--accent-dark)",
         boxShadow: "0 0 0 1px rgba(255,255,255,0.12) inset, 0 6px 18px -4px var(--ember-55)",
       }}
     >
