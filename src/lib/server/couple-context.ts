@@ -7,6 +7,7 @@ import { activeCouple } from "@/lib/server/api";
 import { storage } from "@/lib/storage";
 import { appLockEnabled, isAppUnlocked } from "@/lib/server/app-lock";
 import type { CoupleContextValue, Person } from "@/features/couple/types";
+import { DEFAULT_AVATAR, toMemoji } from "@/lib/avatars";
 
 async function avatarUrl(path: string | null): Promise<string | null> {
   if (!path) return null;
@@ -60,7 +61,7 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
     id: p.id,
     name: p.display_name ?? "You",
     role,
-    avatarIcon: p.avatar_icon as Person["avatarIcon"],
+    avatarIcon: (toMemoji(p.avatar_icon) ?? DEFAULT_AVATAR) as Person["avatarIcon"],
     avatarUrl: p.avatar_kind === "photo" ? await avatarUrl(p.avatar_path) : null,
     city: p.home_city ?? "",
     country: p.country ?? "",

@@ -10,7 +10,14 @@ test("edit your profile (avatar, about, love language, birthday) and see your pa
   await a.goto("/settings");
   await expect(a.getByRole("tab", { name: "Profile" })).toHaveAttribute("aria-selected", "true");
   const sheet = a.getByRole("tabpanel");
-  await sheet.getByRole("radio", { name: "Woman dancing, medium skin" }).click();
+  await sheet
+    .getByRole("radiogroup", { name: "Person", exact: true })
+    .getByRole("radio", { name: "Woman with long black hair and red glasses" })
+    .click();
+  await sheet
+    .getByRole("radiogroup", { name: "Pose", exact: true })
+    .getByRole("radio", { name: "Party", exact: true })
+    .click();
   await sheet.getByLabel("About you").fill("Coffee snob, terrible singer.");
   await sheet.getByRole("radio", { name: "Quality time" }).click();
   await sheet.getByRole("switch", { name: /Show my birthday/ }).click();
@@ -29,7 +36,7 @@ test("edit your profile (avatar, about, love language, birthday) and see your pa
         ).data,
     )
     .toEqual({
-      avatar_icon: "p-w-dance-m",
+      avatar_icon: "m-p15-party",
       bio: "Coffee snob, terrible singer.",
       love_language: "time",
       share_birthday: true,

@@ -71,7 +71,7 @@ export function ClinkDemo() {
         {/* Ama (you) */}
         <div className="absolute bottom-5 left-5 flex items-center gap-2.5" aria-hidden>
           <Image
-            src="/avatars/woman_dark.webp"
+            src="/memoji/p10-love.webp"
             alt=""
             width={44}
             height={44}
@@ -94,7 +94,7 @@ export function ClinkDemo() {
             className="rounded-full"
           >
             <Image
-              src="/avatars/man_light.webp"
+              src="/memoji/p12-love.webp"
               alt=""
               width={44}
               height={44}

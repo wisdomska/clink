@@ -1,5 +1,5 @@
 import { cn } from "./cn";
-import { AVATAR_KEYS, avatarSrc, type AvatarKey } from "@/lib/avatars";
+import { AVATAR_KEYS, avatarFrame, avatarSrc, toMemoji, type AvatarKey } from "@/lib/avatars";
 
 export type AvatarIcon = AvatarKey;
 export const AVATAR_ICONS = AVATAR_KEYS;
@@ -30,7 +30,8 @@ export function Avatar({
   children?: React.ReactNode;
 }) {
   const initial = (name.trim()[0] ?? "?").toUpperCase();
-  const known = icon && (AVATAR_KEYS as readonly string[]).includes(icon);
+  // Old keys (Fluent poses, classic faces) still render, as their memoji.
+  const memoji = toMemoji(icon);
   const ringColor = side === "me" ? "var(--partner-a)" : dim ? "var(--line)" : "var(--partner-b)";
   return (
     <div
@@ -50,15 +51,19 @@ export function Avatar({
       {photoUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={photoUrl} alt="" className="h-full w-full rounded-full object-cover" />
-      ) : known ? (
+      ) : memoji ? (
         <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={avatarSrc(icon!)}
-            alt=""
-            draggable={false}
-            className="h-[78%] w-[78%] object-contain drop-shadow-[0_3px_6px_rgba(0,0,0,.35)]"
-          />
+          {/* Memoji are transparent: sit on the circle, zoomed so the face fills it. */}
+          <span className="absolute inset-0 overflow-hidden rounded-full">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={avatarSrc(memoji)}
+              alt=""
+              draggable={false}
+              className="h-full w-full object-contain"
+              style={{ transform: avatarFrame(memoji) }}
+            />
+          </span>
           <span className="sr-only">{initial}</span>
         </>
       ) : (

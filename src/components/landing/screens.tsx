@@ -16,15 +16,21 @@ import {
  * the Device frame hides them from assistive tech and nothing is focusable.
  */
 
-const THEO = "/avatars/man_light.webp";
-const AMA = "/avatars/woman_dark.webp";
+const THEO = "/memoji/p12-love.webp";
+const AMA = "/memoji/p10-love.webp";
 
 function TopBar({ title, sub, art }: { title: string; sub?: React.ReactNode; art?: string }) {
   return (
     <div className="border-line flex h-14 flex-none items-center gap-2.5 border-b px-3">
       <CaretLeft size={18} className="text-muted" />
       {art && (
-        <Image src={art} alt="" width={32} height={32} className="bg-s2 h-8 w-8 rounded-full" />
+        <Image
+          src={art}
+          alt=""
+          width={32}
+          height={32}
+          className="bg-s2 h-8 w-8 rounded-full object-contain"
+        />
       )}
       <div className="min-w-0 flex-1">
         <div className="text-text truncate text-[15px] leading-tight font-bold">{title}</div>
@@ -53,7 +59,13 @@ export function ChatScreen() {
     <>
       <div className="border-line flex h-14 flex-none items-center gap-2.5 border-b px-3">
         <CaretLeft size={18} className="text-muted" />
-        <Image src={THEO} alt="" width={32} height={32} className="bg-s2 h-8 w-8 rounded-full" />
+        <Image
+          src={THEO}
+          alt=""
+          width={32}
+          height={32}
+          className="bg-s2 h-8 w-8 rounded-full object-contain"
+        />
         <div className="min-w-0 flex-1">
           <div className="text-text text-[15px] leading-tight font-bold">Theo</div>
           <div className="text-muted flex items-center gap-1 text-xs leading-tight">
@@ -121,7 +133,13 @@ export function GameScreen() {
       <div className="flex flex-1 flex-col gap-4 overflow-hidden px-4 pt-4 pb-5">
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-2">
-            <Image src={AMA} alt="" width={28} height={28} className="bg-s2 h-7 w-7 rounded-full" />
+            <Image
+              src={AMA}
+              alt=""
+              width={28}
+              height={28}
+              className="bg-s2 h-7 w-7 rounded-full object-contain"
+            />
             <span className="mono text-text text-lg">3</span>
           </span>
           <span className="text-muted text-xs">Live</span>
@@ -132,7 +150,7 @@ export function GameScreen() {
               alt=""
               width={28}
               height={28}
-              className="bg-s2 h-7 w-7 rounded-full"
+              className="bg-s2 h-7 w-7 rounded-full object-contain"
             />
           </span>
         </div>
@@ -153,7 +171,13 @@ export function GameScreen() {
             >
               {o}
               {i === 2 && (
-                <Image src={AMA} alt="" width={22} height={22} className="h-[22px] w-[22px]" />
+                <Image
+                  src={AMA}
+                  alt=""
+                  width={22}
+                  height={22}
+                  className="h-[22px] w-[22px] scale-110"
+                />
               )}
             </div>
           ))}

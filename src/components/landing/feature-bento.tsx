@@ -82,7 +82,7 @@ export function FeatureBento() {
             <div className="grid aspect-[16/10] grid-cols-2">
               <div className="flex items-center justify-center bg-[var(--bg-night)]">
                 <Image
-                  src="/avatars/woman_dark.webp"
+                  src="/memoji/p10-wave.webp"
                   alt=""
                   width={96}
                   height={96}
@@ -91,7 +91,7 @@ export function FeatureBento() {
               </div>
               <div className="bg-s2 flex items-center justify-center">
                 <Image
-                  src="/avatars/man_light.webp"
+                  src="/memoji/p12-wave.webp"
                   alt=""
                   width={96}
                   height={96}

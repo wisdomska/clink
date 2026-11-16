@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, Check, MagnifyingGlass } from "@phosphor-icons/react";
 import { motion } from "motion/react";
-import { avatarSrc, type AvatarKey } from "@/lib/avatars";
+import { DEFAULT_AVATAR, avatarFrame, avatarSrc, toMemoji, type AvatarKey } from "@/lib/avatars";
 import { AvatarPicker } from "@/components/clink/avatar-picker";
 import { Button } from "@/components/ui/button";
 import { Input, FieldError, Hint } from "@/components/ui/field";
@@ -48,7 +48,7 @@ export function Onboarding({
   const [dobDone, setDobDone] = useState(!needsDob);
   const [step, setStep] = useState(editing ? 2 : 1);
   const [name, setName] = useState(initialName);
-  const [icon, setIcon] = useState<IconKey>((initialIcon as IconKey) ?? "p-w-wave-m");
+  const [icon, setIcon] = useState<IconKey>(toMemoji(initialIcon) ?? DEFAULT_AVATAR);
   const [photo, setPhoto] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<City[]>([]);
@@ -195,7 +195,7 @@ export function Onboarding({
           <Display size={36} className="mt-3">
             Pick your avatar
           </Display>
-          <Lead className="mt-2 mb-5">Your skin tone, your vibe. Or upload your own photo.</Lead>
+          <Lead className="mt-2 mb-5">Pick a face and a mood. Or upload your own photo.</Lead>
           <div className="mb-5 flex items-center gap-4">
             <div className="rounded-card border-line bg-s2 relative flex h-24 w-24 flex-none items-center justify-center overflow-hidden border">
               {photo ? (
@@ -206,10 +206,11 @@ export function Onboarding({
                   key={icon}
                   src={avatarSrc(icon)}
                   alt=""
-                  initial={{ scale: 0.9, opacity: 0.01 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                  className="h-[80%] w-[80%] object-contain drop-shadow-[0_6px_10px_rgba(0,0,0,.4)]"
+                  initial={{ opacity: 0.01 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
+                  className="h-full w-full object-contain"
+                  style={{ transform: avatarFrame(icon) }}
                 />
               )}
             </div>

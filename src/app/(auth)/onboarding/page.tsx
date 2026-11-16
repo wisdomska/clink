@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
 import { journeyStep } from "@/lib/server/journey";
+import { DEFAULT_AVATAR } from "@/lib/avatars";
 import { Onboarding } from "./onboarding";
 
 export const metadata: Metadata = { title: "Set up" };
@@ -34,7 +35,7 @@ export default async function OnboardingPage({
         (user.user_metadata?.full_name as string | undefined)?.split(" ")[0] ??
         ""
       }
-      initialIcon={profile?.avatar_icon ?? "moon"}
+      initialIcon={profile?.avatar_icon ?? DEFAULT_AVATAR}
       next={next ?? null}
       editing={editing}
     />

@@ -719,7 +719,7 @@ export function MemoryRoom({ game }: { game: GameRow }) {
                     <img
                       src={avatarSrc(face.ref)}
                       alt=""
-                      className="bg-s3 h-full w-full object-contain p-3"
+                      className="bg-s3 h-full w-full object-contain p-1.5"
                     />
                   ))}
               </span>

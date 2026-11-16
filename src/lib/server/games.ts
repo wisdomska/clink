@@ -36,7 +36,7 @@ import {
   type MemoryCard,
 } from "@/features/play/engines/image";
 import { isWord } from "@/lib/server/dictionary";
-import { AVATAR_KEYS } from "@/lib/avatars";
+import { MEMOJI_POSES, PEOPLE, memojiKey } from "@/lib/avatars";
 import type { Json } from "@/types/database";
 
 export const LIVE: GameType[] = [
@@ -174,9 +174,13 @@ export async function initGame(
       const photos: MemoryCard[] = shuffle(data ?? [])
         .slice(0, 6)
         .map((m) => ({ kind: "media", ref: m.id }));
-      const art: MemoryCard[] = shuffle([...AVATAR_KEYS])
+      // One memoji per person, so no two art cards look alike.
+      const art: MemoryCard[] = shuffle([...PEOPLE])
         .slice(0, 6 - photos.length)
-        .map((k) => ({ kind: "art", ref: k }));
+        .map(([id]) => ({
+          kind: "art",
+          ref: memojiKey(id, shuffle([...MEMOJI_POSES])[0]![0]),
+        }));
       return memoryInit(p, shuffle([...photos, ...art]));
     }
     case "word":

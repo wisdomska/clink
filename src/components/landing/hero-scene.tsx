@@ -13,14 +13,14 @@ const PEOPLE = [
     place: "Accra",
     name: "Ama",
     mood: "Feeling flirty",
-    avatar: "/avatars/woman_dark.webp",
+    avatar: "/memoji/p10-love.webp",
   },
   {
     zone: "America/New_York",
     place: "New York",
     name: "Theo",
     mood: "Thinking of you",
-    avatar: "/avatars/man_light.webp",
+    avatar: "/memoji/p12-think.webp",
   },
 ] as const;
 
