@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { WifiSlash, Megaphone, X } from "@phosphor-icons/react";
 import { TabBar, Rail } from "@/components/clink/nav";
@@ -44,46 +45,72 @@ export function AppShell({
   }
 
   const visible = banners.filter((b) => b.kind === "maintenance" || !dismissed.includes(b.id));
+  const hasBanner = !online || visible.length > 0;
+  // Tell the page how tall the pinned banners are, so top bars stick right under them.
+  const mainRef = useRef<HTMLDivElement>(null);
+  const bannersRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const main = mainRef.current;
+    const el = bannersRef.current;
+    if (!main) return;
+    if (!el) {
+      main.style.removeProperty("--banner-h");
+      return;
+    }
+    const set = () => main.style.setProperty("--banner-h", `${el.offsetHeight}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [hasBanner]);
 
   return (
     <>
       <Rail />
       {!solo && <SearchShortcut />}
       {!solo && <GameInviteToast />}
-      <div className={cn("app-main", !tabs && "no-tabs")}>
-        {!online && (
-          <div
-            role="status"
-            className="bg-s3 sticky top-0 z-30 flex items-center gap-2 px-4 py-2.5 pt-[calc(env(safe-area-inset-top)+10px)] text-sm font-medium"
-          >
-            <WifiSlash size={18} className="text-warning" aria-hidden />
-            You&apos;re offline. Messages send when you&apos;re back.
+      <div ref={mainRef} className={cn("app-main", !tabs && "no-tabs", hasBanner && "has-banner")}>
+        {/* Banners stay pinned at the top; each screen's top bar sits just below them. */}
+        {hasBanner && (
+          <div ref={bannersRef} className="bg-app sticky top-0 z-30 pt-[env(safe-area-inset-top)]">
+            {!online && (
+              <div
+                role="status"
+                className="an-banner flex items-center gap-2.5 px-4 py-2.5 text-sm font-bold text-[#1a0a10]"
+                style={{ background: "var(--warning)" }}
+              >
+                <WifiSlash size={18} weight="bold" aria-hidden />
+                You&apos;re offline. Messages send when you&apos;re back.
+              </div>
+            )}
+            {visible.map((b) => (
+              <div
+                key={b.id}
+                role="status"
+                className="an-banner flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-[#1a0a10] shadow-[0_6px_18px_-8px_rgba(0,0,0,0.6)]"
+                style={{
+                  // News on the brand gradient; maintenance in warning amber.
+                  background: b.kind === "maintenance" ? "var(--warning)" : "var(--brand-gradient)",
+                }}
+              >
+                <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-[#1a0a10] text-white">
+                  <Megaphone size={16} weight="fill" aria-hidden />
+                </span>
+                <span className="flex-1 leading-snug">{b.body}</span>
+                {b.kind !== "maintenance" && (
+                  <button
+                    type="button"
+                    aria-label="Dismiss"
+                    className="press-icon flex h-11 w-11 flex-none cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-[#1a0a10]"
+                    onClick={() => setDismissedRaw(JSON.stringify([...dismissed, b.id]))}
+                  >
+                    <X size={18} weight="bold" />
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
         )}
-        {visible.map((b) => (
-          <div
-            key={b.id}
-            role="status"
-            className="border-line bg-s1 flex items-center gap-2 border-b px-4 py-2.5 text-sm font-medium"
-          >
-            <Megaphone
-              size={18}
-              className={b.kind === "maintenance" ? "text-warning" : "text-accent"}
-              aria-hidden
-            />
-            <span className="flex-1">{b.body}</span>
-            {b.kind !== "maintenance" && (
-              <button
-                type="button"
-                aria-label="Dismiss"
-                className="text-muted flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-transparent"
-                onClick={() => setDismissedRaw(JSON.stringify([...dismissed, b.id]))}
-              >
-                <X size={16} />
-              </button>
-            )}
-          </div>
-        ))}
         {body}
       </div>
       {tabs && <TabBar />}
