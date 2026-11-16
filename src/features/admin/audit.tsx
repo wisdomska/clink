@@ -212,7 +212,7 @@ export function AdminAudit() {
               {(data?.events ?? []).map((e) => (
                 <tr
                   key={e.id}
-                  className="border-line hover:bg-s2 border-t align-top transition-colors"
+                  className="border-line hover:bg-s2 border-t align-middle transition-colors"
                 >
                   <td className="mono text-muted px-4 py-2 text-xs whitespace-nowrap tabular-nums">
                     {new Date(e.created_at).toLocaleString("en-GB")}

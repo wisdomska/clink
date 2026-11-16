@@ -217,7 +217,7 @@ export function AdminUsers() {
               {(data?.users ?? []).map((u) => (
                 <tr
                   key={u.id}
-                  className="border-line hover:bg-s2 border-t align-top transition-colors"
+                  className="border-line hover:bg-s2 border-t align-middle transition-colors"
                 >
                   <td className="px-4 py-3">
                     <Link
