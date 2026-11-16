@@ -5,6 +5,7 @@ import { Camera, Check, MagnifyingGlass } from "@phosphor-icons/react";
 import { motion } from "motion/react";
 import { avatarSrc, type AvatarKey } from "@/lib/avatars";
 import { AvatarPicker } from "@/components/clink/avatar-picker";
+import { PoseDuo } from "@/components/clink/pose-duo";
 import { Button } from "@/components/ui/button";
 import { Input, FieldError, Hint } from "@/components/ui/field";
 import { Display, Lead, Mono } from "@/components/ui/heading";
@@ -173,6 +174,7 @@ export function Onboarding({
 
       {step === 1 && (
         <div key="1" className="an-reveal">
+          <PoseDuo scene="hello" className="mt-4" />
           <Display size={36} className="mt-3">
             What should we call you?
           </Display>
@@ -254,6 +256,7 @@ export function Onboarding({
 
       {step === 3 && (
         <div key="3" className="an-reveal">
+          <PoseDuo scene="city" className="mt-4" />
           <Display size={36} className="mt-3">
             Where&apos;s home?
           </Display>
@@ -359,7 +362,8 @@ function DobStep({ onDone }: { onDone: () => void }) {
   }
   return (
     <div className="an-screen flex flex-1 flex-col">
-      <Display size={36} className="mt-6">
+      <PoseDuo scene="birthday" className="mt-6" />
+      <Display size={36} className="mt-4">
         When&apos;s your birthday?
       </Display>
       <Lead className="mt-2 mb-6">Clink is 18+. Your partner never sees this.</Lead>

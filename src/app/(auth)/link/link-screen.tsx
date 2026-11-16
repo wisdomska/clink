@@ -18,6 +18,7 @@ import { Sparks } from "@/components/clink/sparks";
 import { toast } from "@/components/ui/toast";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { subscribeAuthed } from "@/lib/realtime";
+import { PoseDuo } from "@/components/clink/pose-duo";
 
 type Invite = { code: string; expires_at: string };
 
@@ -183,19 +184,12 @@ export function LinkScreen({
     : 0;
 
   if (linked) {
-    const a = (me.trim()[0] ?? "Y").toUpperCase();
-    const b = (partner.trim()[0] ?? "?").toUpperCase();
     return (
       <div className="an-screen flex flex-1 flex-col">
         <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <div className="relative flex h-[150px] items-center justify-center" aria-hidden>
-            <div className="an-linkL display border-pa bg-s2 relative z-[1] -mr-3.5 flex h-28 w-28 items-center justify-center rounded-full border-[3px] text-[44px]">
-              {a}
-            </div>
-            <div className="an-linkR display border-pb bg-s3 -ml-3.5 flex h-28 w-28 items-center justify-center rounded-full border-[3px] text-[44px]">
-              {b}
-            </div>
-            <Sparks variant="spark-late" className="top-3.5 left-1/2 z-[2]" />
+          <div className="relative" aria-hidden>
+            <PoseDuo scene="linked" size={140} />
+            <Sparks variant="spark-late" className="top-0 left-1/2 z-[2]" />
           </div>
           <Display size={48} className="mt-7">
             You&apos;re linked.
