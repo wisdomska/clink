@@ -19,7 +19,9 @@ import { toast } from "@/components/ui/toast";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { subscribeAuthed } from "@/lib/realtime";
 import { MemojiArt } from "@/components/clink/memoji-art";
-import { parseMemoji } from "@/lib/avatars";
+import { parseMemoji, DEFAULT_AVATAR } from "@/lib/avatars";
+import { Sheet } from "@/components/ui/sheet";
+import { Avatar, type AvatarIcon } from "@/components/ui/avatar";
 
 type Invite = { code: string; expires_at: string };
 
@@ -47,6 +49,7 @@ export function LinkScreen({
   const [copied, setCopied] = useState(false);
   const [entry, setEntry] = useState(prefillCode?.toUpperCase().slice(0, 6) ?? "");
   const [confirmName, setConfirmName] = useState<string | null>(null);
+  const [confirmAvatar, setConfirmAvatar] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [partner, setPartner] = useState(initialPartner);
@@ -151,6 +154,7 @@ export function LinkScreen({
       setError(data.message);
       return;
     }
+    setConfirmAvatar(data.avatar ?? null);
     setConfirmName(data.name);
   }
 
@@ -317,52 +321,64 @@ export function LinkScreen({
         Got their code?
         <span className="bg-line h-px flex-1" />
       </div>
-      {confirmName ? (
-        <div className="an-reveal rounded-card bg-s2 flex flex-col gap-3 p-4">
-          <div className="display text-[22px]">Link with {confirmName}?</div>
-          <p className="text-muted m-0 text-sm">
-            You can only link with one person. You can unlink later in Settings.
-          </p>
-          <div className="flex gap-2">
-            <Button size="md" onClick={accept} loading={busy}>
-              Link us
-            </Button>
-            <Button size="md" variant="ghost" onClick={() => setConfirmName(null)}>
-              Not them
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <form
-          className="flex gap-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (entry.length === 6) void preview(entry);
-            else setError("Codes are 6 letters and numbers.");
-          }}
-        >
-          <input
-            aria-label="Partner code"
-            placeholder="6 characters"
-            autoFocus={focusEnter}
-            autoCapitalize="characters"
-            autoComplete="one-time-code"
-            value={entry}
-            onChange={(e) =>
-              setEntry(
-                e.target.value
-                  .toUpperCase()
-                  .replace(/[^A-Z0-9]/g, "")
-                  .slice(0, 6),
-              )
-            }
-            className="mono rounded-input border-line bg-s2 text-text focus:border-accent h-[52px] min-w-0 flex-1 border px-4 text-lg uppercase outline-none"
+      <Sheet
+        open={Boolean(confirmName)}
+        onOpenChange={(v) => !v && setConfirmName(null)}
+        title={`Link with ${confirmName ?? "them"}?`}
+        handle
+      >
+        <div className="flex flex-col items-center gap-3 pt-2 text-center">
+          <Avatar
+            name={confirmName ?? ""}
+            side="partner"
+            size={88}
+            photoUrl={null}
+            icon={(confirmAvatar ?? DEFAULT_AVATAR) as AvatarIcon}
           />
-          <Button type="submit" variant="secondary" size="lg" className="font-bold">
-            Link
+          <div className="display text-[28px] leading-[1.05]">Link with {confirmName}?</div>
+          <p className="text-muted m-0 max-w-[34ch] text-sm">
+            {confirmName} sent you this invite. You can only link with one person, and you can
+            unlink later in Settings.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Button onClick={accept} loading={busy}>
+            Link us
           </Button>
-        </form>
-      )}
+          <Button variant="ghost" size="lg" onClick={() => setConfirmName(null)}>
+            Not them
+          </Button>
+        </div>
+      </Sheet>
+      <form
+        className="flex gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (entry.length === 6) void preview(entry);
+          else setError("Codes are 6 letters and numbers.");
+        }}
+      >
+        <input
+          aria-label="Partner code"
+          placeholder="6 characters"
+          autoFocus={focusEnter}
+          autoCapitalize="characters"
+          autoComplete="one-time-code"
+          value={entry}
+          onChange={(e) =>
+            setEntry(
+              e.target.value
+                .toUpperCase()
+                .replace(/[^A-Z0-9]/g, "")
+                .slice(0, 6),
+            )
+          }
+          className="mono rounded-input border-line bg-s2 text-text focus:border-accent h-[52px] min-w-0 flex-1 border px-4 text-lg uppercase outline-none"
+        />
+        <Button type="submit" variant="secondary" size="lg" className="font-bold">
+          Link
+        </Button>
+      </form>
       <FieldError>{error}</FieldError>
       <p className="text-muted mt-8 text-center text-sm">
         Not ready yet?{" "}

@@ -2,8 +2,9 @@ import type { NextRequest } from "next/server";
 import { handler, ok, requireUser, rateLimit, deny } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { inviteCodeSchema } from "@/lib/validation";
+import { toMemoji } from "@/lib/avatars";
 
-/** "Link with [name]?" preview. Reveals only the inviter's display name for a live code. */
+/** "Link with [name]?" preview. Reveals only the inviter's display name and avatar for a live code. */
 export const GET = handler(async (req: NextRequest) => {
   const { user } = await requireUser();
   await rateLimit(`invite-preview:${user.id}`, 30, 3600);
@@ -23,8 +24,8 @@ export const GET = handler(async (req: NextRequest) => {
     throw deny(409, "own_code", "That's your own code. Send it to your partner.");
   const { data: p } = await admin
     .from("profiles")
-    .select("display_name")
+    .select("display_name, avatar_icon")
     .eq("id", inv.inviter_id)
     .single();
-  return ok({ name: p?.display_name ?? "your partner" });
+  return ok({ name: p?.display_name ?? "your partner", avatar: toMemoji(p?.avatar_icon) });
 });

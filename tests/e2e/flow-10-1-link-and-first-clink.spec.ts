@@ -24,8 +24,10 @@ test.describe("Flow 10.1: sign up, link and first Clink", () => {
     expect(code).toMatch(/^[A-HJ-NP-Z2-9]{6}$/);
 
     await signIn(b, theo, `/link?code=${code}`);
-    await expect(b.getByText("Link with Nia?")).toBeVisible();
-    await b.getByRole("button", { name: "Link us" }).click();
+    // Opening the shared link asks straight away, no typing.
+    const ask = b.getByRole("dialog", { name: "Link with Nia?" });
+    await expect(ask).toBeVisible();
+    await ask.getByRole("button", { name: "Link us" }).click();
     await expect(b.getByRole("heading", { name: /linked/ })).toBeVisible();
     await expect(b.getByText("Theo and Nia. Two people, one Clink.")).toBeVisible();
 
