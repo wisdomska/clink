@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
+import { Reorder, useDragControls } from "motion/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowUp, ArrowDown, Plus } from "@phosphor-icons/react";
+import { ArrowUp, ArrowDown, Plus, DotsSixVertical } from "@phosphor-icons/react";
 import { Display } from "@/components/ui/heading";
 import { Button, IconButton } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/segmented";
@@ -50,11 +51,30 @@ export function AdminContent() {
     await adminFetch(`/api/admin/content/${table}/${r.id}`, { method: "PATCH", body });
     void qc.invalidateQueries({ queryKey: key });
   }
-  async function move(i: number, dir: -1 | 1) {
-    const a = rows[i]!;
-    const b = rows[i + dir];
-    if (!b) return;
-    await Promise.all([patch(a, { sort: b.sort }), patch(b, { sort: a.sort })]);
+  /** Reorder instantly on screen, then save the whole order in one request. */
+  async function reorder(next: Row[]) {
+    const prev = qc.getQueryData<{ rows: Row[] }>(key);
+    qc.setQueryData(key, { rows: next.map((r, i) => ({ ...r, sort: i })) });
+    try {
+      await adminFetch(`/api/admin/content/${table}/reorder`, {
+        body: { ids: next.map((r) => r.id) },
+      });
+    } catch (e) {
+      if (prev) qc.setQueryData(key, prev);
+      toast.err(e instanceof Error ? e.message : "Couldn't save the new order. Try again.");
+    }
+  }
+  /** After a drag, save whatever order is on screen. */
+  function saveDragged() {
+    const cur = qc.getQueryData<{ rows: Row[] }>(key)?.rows;
+    if (cur) void reorder(cur);
+  }
+  function move(i: number, dir: -1 | 1) {
+    const j = i + dir;
+    if (j < 0 || j >= rows.length) return;
+    const next = rows.slice();
+    [next[i], next[j]] = [next[j]!, next[i]!];
+    void reorder(next);
   }
   async function add() {
     const text = await prompt.ask({
@@ -150,7 +170,11 @@ export function AdminContent() {
           <Plus size={16} aria-hidden /> Add item
         </Button>
       </div>
-      <ol
+      <Reorder.Group
+        as="ol"
+        axis="y"
+        values={rows}
+        onReorder={(next: Row[]) => qc.setQueryData(key, { rows: next })}
         className={
           rows.length
             ? "rounded-card border-line bg-s1 divide-line m-0 flex list-none flex-col divide-y overflow-hidden border p-0"
@@ -158,51 +182,98 @@ export function AdminContent() {
         }
       >
         {rows.map((r, i) => (
-          <li key={String(r.id)} className="flex items-center gap-2 px-3 py-1.5">
-            <span className="mono text-faint w-8 text-xs tabular-nums">{i + 1}</span>
-            <button
-              type="button"
-              className={cn(
-                "flex-1 cursor-text bg-transparent text-left text-sm",
-                r.enabled ? "text-text" : "text-faint",
-              )}
-              onClick={async () => {
-                const field = "text" in r ? "text" : "title" in r ? "title" : "label";
-                const v = await prompt.ask({ title: "Edit item", label: "Text", value: title(r) });
-                if (v && v !== title(r)) {
-                  try {
-                    await patch(r, { [field]: v });
-                    toast("Saved.");
-                  } catch (e) {
-                    toast.err(e instanceof Error ? e.message : "Couldn't save that. Try again.");
-                  }
+          <ContentRow
+            key={String(r.id)}
+            row={r}
+            index={i}
+            count={rows.length}
+            label={title(r)}
+            onDrop={saveDragged}
+            onMove={(dir) => move(i, dir)}
+            onToggle={() => patch(r, { enabled: !r.enabled })}
+            onEdit={async () => {
+              const field = "text" in r ? "text" : "title" in r ? "title" : "label";
+              const v = await prompt.ask({ title: "Edit item", label: "Text", value: title(r) });
+              if (v && v !== title(r)) {
+                try {
+                  await patch(r, { [field]: v });
+                  toast("Saved.");
+                } catch (e) {
+                  toast.err(e instanceof Error ? e.message : "Couldn't save that. Try again.");
                 }
-              }}
-            >
-              {title(r)}
-            </button>
-            <IconButton label="Move up" dim={36} onClick={() => move(i, -1)} disabled={i === 0}>
-              <ArrowUp size={16} />
-            </IconButton>
-            <IconButton
-              label="Move down"
-              dim={36}
-              onClick={() => move(i, 1)}
-              disabled={i === rows.length - 1}
-            >
-              <ArrowDown size={16} />
-            </IconButton>
-            <Button
-              size="xs"
-              variant={r.enabled ? "ghost" : "secondary"}
-              onClick={() => patch(r, { enabled: !r.enabled })}
-            >
-              {r.enabled ? "Disable" : "Enable"}
-            </Button>
-          </li>
+              }
+            }}
+          />
         ))}
-      </ol>
+      </Reorder.Group>
       {prompt.dialog}
     </div>
+  );
+}
+
+/** One draggable row: grab the handle to drag, or use the arrows. */
+function ContentRow({
+  row,
+  index,
+  count,
+  label,
+  onDrop,
+  onMove,
+  onToggle,
+  onEdit,
+}: {
+  row: Row;
+  index: number;
+  count: number;
+  label: string;
+  onDrop: () => void;
+  onMove: (dir: -1 | 1) => void;
+  onToggle: () => void;
+  onEdit: () => void;
+}) {
+  const controls = useDragControls();
+  return (
+    <Reorder.Item
+      value={row}
+      dragListener={false}
+      dragControls={controls}
+      onDragEnd={onDrop}
+      className="bg-s1 relative flex items-center gap-2 px-3 py-1.5"
+      whileDrag={{ scale: 1.01, boxShadow: "0 8px 24px rgba(0,0,0,.35)", zIndex: 2 }}
+    >
+      <button
+        type="button"
+        aria-label={`Drag to reorder: ${label}`}
+        onPointerDown={(e) => controls.start(e)}
+        className="text-faint hover:text-text flex h-9 w-6 flex-none cursor-grab touch-none items-center justify-center border-0 bg-transparent active:cursor-grabbing"
+      >
+        <DotsSixVertical size={18} weight="bold" aria-hidden />
+      </button>
+      <span className="mono text-faint w-7 text-xs tabular-nums">{index + 1}</span>
+      <button
+        type="button"
+        className={cn(
+          "flex-1 cursor-text bg-transparent text-left text-sm",
+          row.enabled ? "text-text" : "text-faint",
+        )}
+        onClick={onEdit}
+      >
+        {label}
+      </button>
+      <IconButton label="Move up" dim={36} onClick={() => onMove(-1)} disabled={index === 0}>
+        <ArrowUp size={16} />
+      </IconButton>
+      <IconButton
+        label="Move down"
+        dim={36}
+        onClick={() => onMove(1)}
+        disabled={index === count - 1}
+      >
+        <ArrowDown size={16} />
+      </IconButton>
+      <Button size="xs" variant={row.enabled ? "ghost" : "secondary"} onClick={onToggle}>
+        {row.enabled ? "Disable" : "Enable"}
+      </Button>
+    </Reorder.Item>
   );
 }
