@@ -65,7 +65,7 @@ export function HeroScene() {
                   alt=""
                   width={56}
                   height={56}
-                  className="bg-s2 h-11 w-11 flex-none rounded-full sm:h-14 sm:w-14"
+                  className="bg-s2 h-11 w-11 flex-none rounded-full object-contain p-[8%] sm:h-14 sm:w-14"
                 />
                 <span className="text-text text-[20px] leading-none font-bold sm:text-[26px] lg:text-[30px]">
                   {c.name}

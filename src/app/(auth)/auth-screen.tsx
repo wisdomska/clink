@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Fingerprint, Check, ShieldCheck } from "@phosphor-icons/react";
 import { BrandLogo } from "@/components/clink/brand-logo";
-import { AuthPoster } from "@/components/clink/auth-poster";
 import { motion } from "motion/react";
 import { cn } from "@/components/ui/cn";
 
@@ -224,9 +223,6 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
           animate="show"
           variants={{ show: { transition: { staggerChildren: 0.06, delayChildren: 0.15 } } }}
         >
-          <motion.div variants={ITEM} className="mt-4 lg:hidden">
-            <AuthPoster compact />
-          </motion.div>
           <motion.div variants={ITEM}>
             <Display size={48} className="mt-6 lg:mt-2">
               {mode === "signup" ? <>Make your account</> : <>Welcome back</>}

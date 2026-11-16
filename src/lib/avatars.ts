@@ -143,19 +143,11 @@ export function avatarSrc(key: string | null | undefined): string {
  * How to frame a pose inside a small circle. Wave and heart show head and
  * shoulders, idea has a bulb overhead: zoom on the face so it fills the circle.
  */
-export function avatarFrame(key: string | null | undefined): string {
-  const pose = parseMemoji(toMemoji(key) ?? DEFAULT_AVATAR)?.pose;
-  // [zoom, face centre x %, face centre y %] in the 320px source.
-  const [s, x, y] =
-    pose === "wave"
-      ? [1.45, 55, 54]
-      : pose === "heart"
-        ? [1.8, 50, 32]
-        : pose === "idea"
-          ? [1.4, 53, 60]
-          : [1.08, 50, 50];
-  // Scale about the centre after moving the face there.
-  return `scale(${s}) translate(${50 - x}%, ${50 - y}%)`;
+export function avatarFrame(_key?: string | null): string {
+  // Show the whole memoji inside the circle: hats, hands, hearts and props
+  // were getting cut off when poses were zoomed onto the face. 84% of the
+  // circle keeps every one of the 120 fully inside, corners included.
+  return "scale(0.84)";
 }
 
 export function avatarLabel(key: string) {

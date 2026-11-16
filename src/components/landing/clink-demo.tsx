@@ -75,7 +75,7 @@ export function ClinkDemo() {
             alt=""
             width={44}
             height={44}
-            className="bg-s2 h-11 w-11 rounded-full"
+            className="bg-s2 h-11 w-11 rounded-full object-contain p-[8%]"
           />
           <span className="text-text text-sm font-bold">You</span>
         </div>
@@ -98,7 +98,7 @@ export function ClinkDemo() {
               alt=""
               width={44}
               height={44}
-              className="bg-s2 h-11 w-11 rounded-full"
+              className="bg-s2 h-11 w-11 rounded-full object-contain p-[8%]"
             />
           </motion.div>
           <span className="text-text text-sm font-bold">Theo</span>

@@ -64,7 +64,7 @@ export function ChatScreen() {
           alt=""
           width={32}
           height={32}
-          className="bg-s2 h-8 w-8 rounded-full object-contain"
+          className="bg-s2 h-8 w-8 rounded-full object-contain p-[8%]"
         />
         <div className="min-w-0 flex-1">
           <div className="text-text text-[15px] leading-tight font-bold">Theo</div>
@@ -138,7 +138,7 @@ export function GameScreen() {
               alt=""
               width={28}
               height={28}
-              className="bg-s2 h-7 w-7 rounded-full object-contain"
+              className="bg-s2 h-7 w-7 rounded-full object-contain p-[8%]"
             />
             <span className="mono text-text text-lg">3</span>
           </span>
@@ -150,7 +150,7 @@ export function GameScreen() {
               alt=""
               width={28}
               height={28}
-              className="bg-s2 h-7 w-7 rounded-full object-contain"
+              className="bg-s2 h-7 w-7 rounded-full object-contain p-[8%]"
             />
           </span>
         </div>
@@ -171,13 +171,7 @@ export function GameScreen() {
             >
               {o}
               {i === 2 && (
-                <Image
-                  src={AMA}
-                  alt=""
-                  width={22}
-                  height={22}
-                  className="h-[22px] w-[22px] scale-110"
-                />
+                <Image src={AMA} alt="" width={22} height={22} className="h-[22px] w-[22px]" />
               )}
             </div>
           ))}

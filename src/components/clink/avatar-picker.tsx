@@ -109,7 +109,7 @@ export function AvatarPicker({
                   alt=""
                   loading="lazy"
                   draggable={false}
-                  className="h-full w-full scale-110 object-contain"
+                  className="h-[86%] w-[86%] object-contain"
                 />
                 {on && <Badge />}
               </button>

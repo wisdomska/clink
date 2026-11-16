@@ -174,7 +174,7 @@ export function Onboarding({
 
       {step === 1 && (
         <div key="1" className="an-reveal">
-          <MemojiArt person="p10" pose="wave" className="mt-4" />
+          <MemojiArt person="p10" pose="wave" className="mt-4 hidden md:block" />
           <Display size={36} className="mt-3">
             What should we call you?
           </Display>
@@ -257,7 +257,7 @@ export function Onboarding({
 
       {step === 3 && (
         <div key="3" className="an-reveal">
-          <MemojiArt person="p12" pose="thumbs" className="mt-4" />
+          <MemojiArt person="p12" pose="thumbs" className="mt-4 hidden md:block" />
           <Display size={36} className="mt-3">
             Where&apos;s home?
           </Display>
@@ -363,7 +363,7 @@ function DobStep({ onDone }: { onDone: () => void }) {
   }
   return (
     <div className="an-screen flex flex-1 flex-col">
-      <MemojiArt person="p03" pose="party" className="mt-6" />
+      <MemojiArt person="p03" pose="party" className="mt-6 hidden md:block" />
       <Display size={36} className="mt-4">
         When&apos;s your birthday?
       </Display>
