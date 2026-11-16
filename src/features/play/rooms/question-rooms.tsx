@@ -335,7 +335,7 @@ export function WyrRoom({ game }: { game: GameRow }) {
           </div>
           <div className="display text-[28px] leading-[1.05]">
             {s.matches >= s.cards.length * 0.7 ? (
-              <>Same brain, two cities.</>
+              <>Same brain, two people.</>
             ) : s.matches >= s.cards.length * 0.4 ? (
               <>Enough in common. Enough to argue about.</>
             ) : (

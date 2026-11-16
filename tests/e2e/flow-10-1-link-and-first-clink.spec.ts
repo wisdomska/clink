@@ -27,7 +27,7 @@ test.describe("Flow 10.1: sign up, link and first Clink", () => {
     await expect(b.getByText("Link with Nia?")).toBeVisible();
     await b.getByRole("button", { name: "Link us" }).click();
     await expect(b.getByRole("heading", { name: /linked/ })).toBeVisible();
-    await expect(b.getByText("Theo and Nia. Two cities, one Clink.")).toBeVisible();
+    await expect(b.getByText("Theo and Nia. Two people, one Clink.")).toBeVisible();
 
     // A learns about the link by polling.
     await expect(a.getByRole("heading", { name: /linked/ })).toBeVisible({ timeout: 15_000 });

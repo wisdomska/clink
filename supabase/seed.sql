@@ -113,7 +113,7 @@ on conflict (id) do nothing;
 
 -- How Well Do You Know Me.
 insert into public.know_me_questions (text, options, sort) values
-  ('What would {name} order at 2 am?', '["Suya from the stand by the junction", "Indomie with two eggs", "Cereal, standing up", "Nothing. Asleep."]'::jsonb, 1),
+  ('What would {name} order at 2 am?', '["Kelewele from the stand by the junction", "Indomie with two eggs", "Cereal, standing up", "Nothing. Asleep."]'::jsonb, 1),
   ('What''s {name}''s go-to comfort film?', '["Something animated", "An old romcom", "A documentary", "Whatever''s trending"]'::jsonb, 2),
   ('How does {name} take their tea or coffee?', '["Black, no sugar", "Milky and sweet", "Neither, just water", "Fancy oat latte"]'::jsonb, 3),
   ('Where would {name} go on a free weekend?', '["The beach", "A cosy cabin", "A big city", "Nowhere. Sofa."]'::jsonb, 4),

@@ -13,12 +13,12 @@ export function Hero() {
           id="hero-title"
           className="display m-0 text-[clamp(3.25rem,17vw,6rem)] leading-[0.92] tracking-[-0.035em] lg:text-[clamp(5rem,8.5vw,8.5rem)]"
         >
-          <span className="block whitespace-nowrap">Two cities.</span>{" "}
+          <span className="block whitespace-nowrap">Two people.</span>{" "}
           <span className="text-accent block whitespace-nowrap">One clink.</span>
         </h1>
         <p className="text-muted mt-6 mb-0 max-w-[40ch] text-lg leading-relaxed text-pretty md:text-xl">
-          Calls, chat, games, letters and late-night plans for couples who live apart. Tap once and
-          they feel it.
+          Calls, chat, games, letters and late-night plans for the two of you, wherever you are. Tap
+          once and they feel it.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <CtaLink href="/signup">Get started</CtaLink>

@@ -14,7 +14,7 @@ const MOMENTS: Moment[] = [
     icon: <Wine size={22} weight="fill" />,
     tone: "#FF4F7B",
     title: "Theo sent you a clink",
-    meta: "Lagos to London · just now",
+    meta: "Just now",
   },
   {
     icon: <PhoneCall size={22} weight="fill" />,
@@ -56,12 +56,12 @@ export function AuthPoster({ compact = false }: { compact?: boolean }) {
       moments={MOMENTS}
       headline={
         compact ? (
-          <>Closer, from apart.</>
+          <>Made for two.</>
         ) : (
           <>
-            Do things together,
+            Two people.
             <br />
-            from apart.
+            One clink.
           </>
         )
       }

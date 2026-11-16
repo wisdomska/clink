@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s · ${name}`,
     },
     description:
-      "Games, dates, dares and letters for two people in two places. An 18+ app for long-distance couples.",
+      "Games, dates, dares and letters for two people, together or apart. An 18+ app for couples.",
     applicationName: name,
     manifest: "/manifest.webmanifest",
     icons: {

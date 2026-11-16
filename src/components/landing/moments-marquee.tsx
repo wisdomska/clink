@@ -4,10 +4,10 @@ const MOMENTS = [
   { art: "/landing/clinking_glasses.webp", text: "Theo sent a clink" },
   { art: "/art/trivia.webp", text: "Your move in Trivia duel" },
   { art: "/landing/love_letter.webp", text: "A letter unlocks Friday" },
-  { art: "/art/telephone.webp", text: "Ada is calling" },
+  { art: "/art/telephone.webp", text: "Ama is calling" },
   { art: "/art/mood-missing.webp", text: "Theo is missing you" },
   { art: "/landing/ramen.webp", text: "Date night: ramen and a film" },
-  { art: "/art/draw_guess.webp", text: "Ada drew you something" },
+  { art: "/art/draw_guess.webp", text: "Ama drew you something" },
   { art: "/landing/airplane.webp", text: "12 days until London" },
   { art: "/art/fire.webp", text: "After Dark: you both said yes" },
 ] as const;

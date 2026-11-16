@@ -79,7 +79,7 @@ export function PlansHub() {
           <Display size={48} className="mt-2">
             Plans
           </Display>
-          <Lead className="mt-1">Dates that work in two time zones.</Lead>
+          <Lead className="mt-1">Date nights, planned together.</Lead>
         </div>
         <FindLinks className="mt-3" />
       </div>

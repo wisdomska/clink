@@ -9,7 +9,7 @@ const ROUGE = "#ff4f7b";
 
 /* Words marked with * end in Rouge. */
 const COPY =
-  "Long distance is mostly waiting. Clink gives the waiting something to do: *a *tap, *a *voice *note, *a *game, *a *letter *for *later.";
+  "Love lives in the little things. Clink gives them somewhere to go: *a *tap, *a *voice *note, *a *game, *a *letter *for *later.";
 
 function Word({
   word,

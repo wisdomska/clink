@@ -17,7 +17,7 @@ import {
  */
 
 const THEO = "/avatars/man_light.webp";
-const ADA = "/avatars/woman_dark.webp";
+const AMA = "/avatars/woman_dark.webp";
 
 function TopBar({ title, sub, art }: { title: string; sub?: React.ReactNode; art?: string }) {
   return (
@@ -108,7 +108,7 @@ export function ChatScreen() {
 }
 
 const OPTIONS = [
-  "Suya, extra pepper",
+  "Kelewele, extra pepper",
   "Cereal, no milk",
   "Leftover jollof",
   "Nothing, he's asleep",
@@ -121,7 +121,7 @@ export function GameScreen() {
       <div className="flex flex-1 flex-col gap-4 overflow-hidden px-4 pt-4 pb-5">
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-2">
-            <Image src={ADA} alt="" width={28} height={28} className="bg-s2 h-7 w-7 rounded-full" />
+            <Image src={AMA} alt="" width={28} height={28} className="bg-s2 h-7 w-7 rounded-full" />
             <span className="mono text-text text-lg">3</span>
           </span>
           <span className="text-muted text-xs">Live</span>
@@ -153,7 +153,7 @@ export function GameScreen() {
             >
               {o}
               {i === 2 && (
-                <Image src={ADA} alt="" width={22} height={22} className="h-[22px] w-[22px]" />
+                <Image src={AMA} alt="" width={22} height={22} className="h-[22px] w-[22px]" />
               )}
             </div>
           ))}
@@ -174,7 +174,7 @@ export function GameScreen() {
 export function LetterScreen() {
   return (
     <>
-      <TopBar title="Time capsule" sub="From Ada" />
+      <TopBar title="Time capsule" sub="From Ama" />
       <div className="flex flex-1 flex-col gap-5 overflow-hidden px-4 pt-6 pb-5">
         <div className="bg-s2 border-line relative aspect-[4/3] overflow-hidden rounded-[16px] border">
           <div

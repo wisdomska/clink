@@ -41,7 +41,7 @@ test("reactions toggle off, any emoji, custom blurred wallpaper, appearance", as
   );
   const walls = a.getByRole("radiogroup", { name: "Chat wallpaper" });
   await expect(walls.getByRole("radio")).toHaveCount(22);
-  await walls.getByRole("radio", { name: "Two cities" }).click();
+  await walls.getByRole("radio", { name: "Skylines" }).click();
   await expect
     .poll(() =>
       a

@@ -17,12 +17,12 @@ import "@/components/landing/landing.css";
 export const metadata: Metadata = {
   title: { absolute: "Clink: Made for two" },
   description:
-    "Calls, chat, games, letters and date nights for couples who live apart. One account links to exactly one person. 18+.",
+    "Calls, chat, games, letters and date nights for two people, together or apart. One account links to exactly one person. 18+.",
   robots: { index: true, follow: true },
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Clink: two cities, one clink",
-    description: "Calls, chat, games, letters and date nights for couples who live apart.",
+    title: "Clink: two people, one clink",
+    description: "Calls, chat, games, letters and date nights for two people, together or apart.",
     type: "website",
     siteName: "Clink",
   },

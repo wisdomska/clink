@@ -201,7 +201,7 @@ export function LinkScreen({
             You&apos;re linked.
           </Display>
           <Lead className="mt-3">
-            {me} and {partner}. Two cities, one Clink.
+            {me} and {partner}. Two people, one Clink.
           </Lead>
         </div>
         <div className="flex flex-col gap-2">

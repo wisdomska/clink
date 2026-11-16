@@ -16,7 +16,7 @@ function reply(n: number) {
 
 /**
  * Try the core gesture: tap the glasses, they clink, a heart crosses the
- * distance and Theo's side reacts. Vibrates where the device allows.
+ * room and Theo's side reacts. Vibrates where the device allows.
  */
 export function ClinkDemo() {
   const [count, setCount] = useState(0);
@@ -68,7 +68,7 @@ export function ClinkDemo() {
         <div className="bg-s2" />
         <div aria-hidden className="bg-line absolute inset-y-0 left-1/2 w-px" />
 
-        {/* Ada (you) */}
+        {/* Ama (you) */}
         <div className="absolute bottom-5 left-5 flex items-center gap-2.5" aria-hidden>
           <Image
             src="/avatars/woman_dark.webp"

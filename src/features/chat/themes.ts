@@ -260,7 +260,7 @@ export const WALLPAPERS = {
     ],
   },
   two_cities: {
-    label: "Two cities",
+    label: "Skylines",
     group: "Night",
     layers: [
       { img: TWO_CITIES, size: "100% auto", pos: "center bottom", repeat: "no-repeat" },

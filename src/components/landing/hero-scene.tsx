@@ -7,27 +7,25 @@ import { clockIn, useMinute } from "./use-minute";
 import { useStill } from "./use-still";
 import { cn } from "@/components/ui/cn";
 
-const CITIES = [
+const PEOPLE = [
   {
-    city: "Lagos",
-    zone: "Africa/Lagos",
-    offset: "UTC+1",
-    name: "Ada",
+    zone: "Africa/Accra",
+    name: "Ama",
+    mood: "Feeling flirty",
     avatar: "/avatars/woman_dark.webp",
   },
   {
-    city: "London",
     zone: "Europe/London",
-    offset: "UTC",
     name: "Theo",
+    mood: "Thinking of you",
     avatar: "/avatars/man_light.webp",
   },
 ] as const;
 
 /**
- * Hero visual: two cities side by side, each on its own live clock. Two flutes
- * swing in from either side and clink across the seam, and the toast lands on
- * the other side. Holds the resting pose for reduced motion.
+ * Hero visual: two people side by side, each with their mood and local time.
+ * Two flutes swing in from either side and clink in the middle, and the toast
+ * lands on the other side. Holds the resting pose for reduced motion.
  */
 export function HeroScene() {
   const minute = useMinute();
@@ -36,43 +34,42 @@ export function HeroScene() {
   return (
     <figure
       className="rounded-card border-line relative m-0 grid h-[380px] grid-cols-2 overflow-hidden border sm:h-[460px] lg:h-[min(620px,calc(100dvh-180px))] lg:min-h-[480px]"
-      aria-label="Ada in Lagos and Theo in London, an hour apart, clinking glasses across the distance."
+      aria-label="Ama and Theo clinking glasses."
     >
-      {CITIES.map((c, i) => {
+      {PEOPLE.map((c, i) => {
         const right = i === 1;
         return (
           <div
-            key={c.city}
+            key={c.name}
             aria-hidden
             className={cn(
               "relative flex flex-col justify-between p-4 sm:p-6 lg:p-8",
               right ? "bg-s1 items-end text-right" : "items-start bg-[var(--bg-night)]",
             )}
           >
-            <div>
-              <div className="flex items-baseline gap-2 max-sm:flex-col max-sm:gap-0.5">
-                <span className="display text-text text-lg sm:text-2xl">{c.city}</span>
-                <span className="mono text-faint text-xs sm:text-sm">{c.offset}</span>
-              </div>
-              <div className="mono text-text mt-2 text-[40px] leading-none tracking-[-0.04em] sm:text-[60px] lg:text-[76px]">
-                {minute === null ? "--:--" : clockIn(minute, c.zone)}
-              </div>
-            </div>
-            <div className={cn("flex items-center gap-2.5", right && "flex-row-reverse")}>
+            <div className={cn("flex flex-col gap-3", right && "items-end")}>
               <Image
                 src={c.avatar}
                 alt=""
-                width={44}
-                height={44}
-                className="bg-s2 h-9 w-9 rounded-full sm:h-11 sm:w-11"
+                width={72}
+                height={72}
+                className="bg-s2 h-14 w-14 rounded-full sm:h-[72px] sm:w-[72px]"
               />
-              <span className="text-text text-sm font-bold sm:text-base">{c.name}</span>
+              <div className="display text-text text-[34px] leading-none sm:text-[52px] lg:text-[64px]">
+                {c.name}
+              </div>
+              <span className="border-line bg-s2 text-text rounded-full border px-3 py-1 text-xs font-semibold sm:text-sm">
+                {c.mood}
+              </span>
             </div>
+            <span className="mono text-faint text-xs sm:text-sm">
+              {minute === null ? "--:--" : clockIn(minute, c.zone)} their time
+            </span>
           </div>
         );
       })}
 
-      {/* The seam between the two places. */}
+      {/* The seam between the two of you. */}
       <div aria-hidden className="bg-line absolute inset-y-0 left-1/2 w-px" />
 
       <div
@@ -97,7 +94,7 @@ export function HeroScene() {
         <span className="bg-accent text-on-accent flex h-5 w-5 items-center justify-center rounded-full">
           <Heart size={12} weight="fill" />
         </span>
-        Ada sent a clink
+        Ama sent a clink
       </motion.div>
     </figure>
   );

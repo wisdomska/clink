@@ -11,7 +11,7 @@ test.describe("landing", () => {
 
   test("hero, clocks and calls to action", async ({ page }) => {
     await expect(
-      page.getByRole("heading", { level: 1, name: "Two cities. One clink." }),
+      page.getByRole("heading", { level: 1, name: "Two people. One clink." }),
     ).toBeVisible();
     const main = page.getByRole("main");
     await expect(main.getByRole("link", { name: "Get started" }).first()).toHaveAttribute(
@@ -19,9 +19,9 @@ test.describe("landing", () => {
       "/signup",
     );
     await expect(main.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
-    // Lagos is an hour ahead of London in November.
+    // Accra and London share a clock in November.
     const scene = page.getByRole("figure");
-    await expect(scene).toContainText("22:14");
+    await expect(scene).toContainText("21:14 their time");
     await expect(scene).toContainText("21:14");
     await expectNoHorizontalScroll(page);
   });

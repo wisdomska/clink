@@ -9,7 +9,7 @@ export async function GET() {
     id: "/",
     name: meta.name,
     short_name: meta.short,
-    description: id === "clink" ? "Things to do together, from apart." : "",
+    description: id === "clink" ? "Made for two." : "",
     start_url: "/us?source=pwa",
     scope: "/",
     display: "standalone",

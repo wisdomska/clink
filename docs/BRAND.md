@@ -1,10 +1,10 @@
 # Clink brand guide
 
-Clink is for two people in two places. The brand is **spicy, playful and a little romantic**: a late-night text, not a greeting card. It flirts, it teases, it never gets cheesy or crude, and it is always easy to understand.
+Clink is for two people, wherever they are: across town, across the world, or on the same sofa. The brand is **spicy, playful and a little romantic**: a late-night text, not a greeting card. It flirts, it teases, it never gets cheesy or crude, and it is always easy to understand.
 
 ## 1. The idea
 
-Two glasses meeting. Every feature in Clink is a small "clink" across the distance: a tap, a voice note, a game, a dare. The logo, the motion and the copy all come back to that one moment of contact.
+Two glasses meeting. Every feature in Clink is a small "clink" between two people: a tap, a voice note, a game, a dare. The logo, the motion and the copy all come back to that one moment of contact.
 
 ## 2. Logo
 
