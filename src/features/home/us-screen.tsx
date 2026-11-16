@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Moon, Archive } from "@phosphor-icons/react";
+import { Archive } from "@phosphor-icons/react";
 import { useCouple, useCoupleNow } from "@/features/couple/context";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { PresencePair } from "./presence-pair";
@@ -18,6 +18,7 @@ import { MilestoneMoment } from "./milestone-moment";
 import { AsleepCard } from "./asleep-card";
 import { useSendClink } from "./use-send-clink";
 import { LogoMark, Wordmark } from "@/components/brand/logo";
+import { AfterDarkBadge } from "@/components/clink/after-dark-badge";
 
 export function UsScreen() {
   const { darkVisible, discreet, coupleId } = useCouple();
@@ -74,10 +75,11 @@ export function UsScreen() {
           {darkVisible && !discreet && (
             <a
               href="/dark"
-              aria-label="After Dark"
-              className="press border-line bg-s1 text-text hover:text-text flex h-11 w-11 items-center justify-center rounded-full border"
+              aria-label="After Dark, 18+"
+              title="After Dark"
+              className="press flex h-11 w-11 items-center justify-center rounded-full"
             >
-              <Moon size={24} aria-hidden />
+              <AfterDarkBadge />
             </a>
           )}
           <Link

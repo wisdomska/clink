@@ -20,6 +20,7 @@ import { useCouple } from "@/features/couple/context";
 import { statusLabel } from "@/features/couple/types";
 import { Avatar } from "@/components/ui/avatar";
 import { Logo, LogoMark } from "@/components/brand/logo";
+import { AfterDarkBadge } from "@/components/clink/after-dark-badge";
 
 export const TABS = [
   { href: "/us", label: "Us", Icon: Heart },
@@ -175,7 +176,7 @@ export function Rail({ unread = 0 }: { unread?: number }) {
             className="press text-muted hover:bg-s1 hover:text-text flex h-12 items-center gap-3 rounded-full px-3 text-[15px] font-medium"
           >
             <span className="flex h-[30px] w-11 flex-none items-center justify-center">
-              <Moon size={24} aria-hidden />
+              <AfterDarkBadge size={30} />
             </span>
             <span className="rail-full">After Dark</span>
           </a>
