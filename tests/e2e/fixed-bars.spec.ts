@@ -18,8 +18,10 @@ test("top bar and tab bar stay on screen while the page scrolls", async ({ coupl
   await a.mouse.wheel(0, 2000);
   const settings = a.getByRole("link", { name: "Settings", exact: true });
   const nav = a.getByRole("navigation", { name: "Main" });
-  const sBox = await settings.boundingBox();
-  if (sBox) expect(sBox.y).toBeGreaterThanOrEqual(0);
+  // Phones and tablets have the top bar; desktop uses the side rail instead.
+  if (await settings.isVisible()) {
+    expect((await settings.boundingBox())!.y).toBeGreaterThanOrEqual(0);
+  }
   if (await nav.isVisible()) {
     const n = (await nav.boundingBox())!;
     expect(Math.round(n.y + n.height)).toBe(vh);
