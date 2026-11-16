@@ -443,9 +443,9 @@ export function UserDetail({ id }: { id: string }) {
               {d.chart.map((c) => (
                 <div key={c.day} className="group relative flex h-full flex-1 items-end">
                   <div
-                    className="bg-accent w-full rounded-t-[4px] transition-[height] duration-500"
+                    className="bg-accent h-full w-full origin-bottom rounded-t-[4px] transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
                     style={{
-                      height: `${Math.max(c.n ? 6 : 2, (c.n / max) * 100)}%`,
+                      transform: `scaleY(${Math.max(c.n ? 6 : 2, (c.n / max) * 100) / 100})`,
                       opacity: c.n ? 1 : 0.2,
                     }}
                   />

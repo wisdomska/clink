@@ -1,6 +1,6 @@
 "use client";
 import { create } from "zustand";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle, WarningCircle, Info } from "@phosphor-icons/react";
 import { haptic } from "@/lib/feedback";
 import { cn } from "./cn";
@@ -79,10 +79,17 @@ const COLOUR = { ok: "text-accent", err: "text-danger", info: "text-muted" } as 
 /** Pill toast above the tab bar on phones, bottom-right on desktop. Re-showing restarts the timer. */
 export function Toaster() {
   const { message, kind, action, duration, id, clear } = useToast();
+  // Which toast is on its way out: it fades down for 140 ms, then unmounts.
+  const [leaving, setLeaving] = useState<number | null>(null);
   useEffect(() => {
     if (!message) return;
-    const t = setTimeout(clear, duration ?? (action ? 5000 : 2600));
-    return () => clearTimeout(t);
+    const total = duration ?? (action ? 5000 : 2600);
+    const out = setTimeout(() => setLeaving(id), Math.max(0, total - 140));
+    const t = setTimeout(clear, total);
+    return () => {
+      clearTimeout(out);
+      clearTimeout(t);
+    };
   }, [message, id, clear, action, duration]);
   const Icon = kind === "plain" ? null : ICON[kind];
   return (
@@ -96,7 +103,8 @@ export function Toaster() {
         <div
           key={id}
           className={cn(
-            "an-toast border-line bg-s3 text-text flex max-w-[360px] items-center gap-2.5 rounded-full border py-3 text-sm font-medium",
+            "border-line bg-s3 text-text flex max-w-[360px] items-center gap-2.5 rounded-full border py-3 text-sm font-medium",
+            leaving === id ? "an-toast-out" : "an-toast",
             action ? "pointer-events-auto pr-2 pl-[18px]" : "px-[18px]",
           )}
           style={{ boxShadow: "var(--shadow-toast)" }}

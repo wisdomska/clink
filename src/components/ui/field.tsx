@@ -67,7 +67,8 @@ export function FieldError({ id, children }: { id?: string; children?: ReactNode
     <div
       id={id}
       role="alert"
-      className="text-danger mt-2 flex items-center gap-1.5 text-sm font-medium"
+      // Fades in so a new error is noticed without jolting the layout.
+      className="an-fade text-danger mt-2 flex items-center gap-1.5 text-sm font-medium"
     >
       <WarningCircle size={18} aria-hidden />
       {children}

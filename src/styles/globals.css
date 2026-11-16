@@ -238,6 +238,9 @@
   .an-toast {
     animation: toastIn 160ms var(--ease-out) both;
   }
+  .an-toast-out {
+    animation: fadeOut 140ms var(--ease-out) forwards;
+  }
   .an-fade {
     animation: fadeIn 160ms both;
   }
@@ -709,12 +712,23 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
     --radix-select-content-transform-origin,
     var(--radix-popover-content-transform-origin)
   );
-  animation: popIn 160ms var(--ease-out);
+  animation: fieldPopIn 160ms var(--ease-out);
 }
-@keyframes popIn {
+/* Exits are quicker than entrances: the choice is made, get out of the way. */
+.picker-pop[data-state="closed"] {
+  animation: fieldPopOut 120ms var(--ease-out) forwards;
+  pointer-events: none;
+}
+@keyframes fieldPopIn {
   from {
     opacity: 0;
     transform: scale(0.96) translateY(-4px);
+  }
+}
+@keyframes fieldPopOut {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
   }
 }
 @media (prefers-reduced-motion: reduce) {

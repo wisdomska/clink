@@ -60,12 +60,13 @@ function typing(t: EventTarget | null) {
 }
 
 const panel =
-  "an-fade border-line bg-s1 fixed top-[12dvh] left-1/2 z-[61] flex max-h-[76dvh] w-[calc(100vw-32px)] max-w-[600px] -translate-x-1/2 flex-col overflow-hidden rounded-[20px] border shadow-[0_8px_24px_rgba(0,0,0,.35)] outline-none";
+  "border-line bg-s1 fixed top-[12dvh] left-1/2 z-[61] flex max-h-[76dvh] w-[calc(100vw-32px)] max-w-[600px] -translate-x-1/2 flex-col overflow-hidden rounded-[20px] border shadow-[0_8px_24px_rgba(0,0,0,.35)] outline-none";
 
 /**
  * The admin shell's keyboard layer: Ctrl/Cmd+K command palette (jump to a page
  * or find a person by email or name), "g" then a letter to go to a page, "/"
- * to focus the page's search, and "?" for the list of shortcuts.
+ * to focus the page's search, and "?" for the list of shortcuts. No open/close
+ * animation: a keyboard tool used all day should appear the instant it's called.
  */
 export function AdminCommands({ trigger }: { trigger?: (open: () => void) => React.ReactNode }) {
   const router = useRouter();
@@ -162,10 +163,7 @@ export function AdminCommands({ trigger }: { trigger?: (open: () => void) => Rea
       {trigger?.(() => setOpen(true))}
       <Dialog.Root open={open} onOpenChange={(v) => (v ? setOpen(true) : close())}>
         <Dialog.Portal>
-          <Dialog.Overlay
-            className="an-fade fixed inset-0 z-[60]"
-            style={{ background: "var(--scrim)" }}
-          />
+          <Dialog.Overlay className="fixed inset-0 z-[60]" style={{ background: "var(--scrim)" }} />
           <Dialog.Content className={panel} aria-describedby={undefined}>
             <Dialog.Title className="sr-only">Command palette</Dialog.Title>
             <div className="border-line flex items-center gap-2 border-b px-4">
@@ -259,10 +257,7 @@ export function AdminCommands({ trigger }: { trigger?: (open: () => void) => Rea
 
       <Dialog.Root open={help} onOpenChange={setHelp}>
         <Dialog.Portal>
-          <Dialog.Overlay
-            className="an-fade fixed inset-0 z-[60]"
-            style={{ background: "var(--scrim)" }}
-          />
+          <Dialog.Overlay className="fixed inset-0 z-[60]" style={{ background: "var(--scrim)" }} />
           <Dialog.Content className={cn(panel, "max-w-[480px] p-5")} aria-describedby={undefined}>
             <Dialog.Title className="m-0 mb-3 text-lg font-bold">Keyboard shortcuts</Dialog.Title>
             <dl className="divide-line m-0 flex flex-col divide-y">

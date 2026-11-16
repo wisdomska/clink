@@ -172,8 +172,8 @@ export function CameraCapture({
           aria-hidden
         >
           <div
-            className="bg-danger h-full rounded-full transition-[width] duration-1000 ease-linear"
-            style={{ width: `${(secs / MAX_VIDEO_S) * 100}%` }}
+            className="bg-danger h-full w-full origin-left rounded-full transition-transform duration-1000 ease-linear"
+            style={{ transform: `scaleX(${secs / MAX_VIDEO_S})` }}
           />
         </div>
       )}

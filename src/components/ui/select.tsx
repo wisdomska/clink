@@ -50,7 +50,7 @@ export function Select({
         id={id}
         aria-label={label}
         className={cn(
-          "press rounded-input border-line bg-s2 text-text data-[state=open]:border-accent focus-visible:border-accent data-[placeholder]:text-faint flex w-full min-w-0 cursor-pointer items-center justify-between gap-2 border text-left outline-none disabled:cursor-not-allowed disabled:opacity-50",
+          "group rounded-input border-line bg-s2 text-text data-[state=open]:border-accent focus-visible:border-accent data-[placeholder]:text-faint flex w-full min-w-0 cursor-pointer items-center justify-between gap-2 border text-left transition-colors duration-150 outline-none disabled:cursor-not-allowed disabled:opacity-50",
           size === "md" ? "h-[52px] px-4 text-base" : "h-11 px-3 text-sm",
           className,
         )}
@@ -59,7 +59,12 @@ export function Select({
           <S.Value placeholder={placeholder} />
         </span>
         <S.Icon asChild>
-          <CaretDown size={16} weight="bold" className="text-muted flex-none" aria-hidden />
+          <CaretDown
+            size={16}
+            weight="bold"
+            className="text-muted flex-none transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-data-[state=open]:rotate-180 motion-reduce:transition-none"
+            aria-hidden
+          />
         </S.Icon>
       </S.Trigger>
       <S.Portal>

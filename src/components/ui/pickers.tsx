@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import * as P from "@radix-ui/react-popover";
-import { CalendarBlank, CaretLeft, CaretRight, Clock } from "@phosphor-icons/react";
+import { CalendarBlank, CaretDown, CaretLeft, CaretRight, Clock } from "@phosphor-icons/react";
 import { cn } from "./cn";
 import { Select } from "./select";
 
@@ -39,7 +39,7 @@ function centre(el: HTMLElement) {
 const daysIn = (y: number, m: number) => new Date(y, m + 1, 0).getDate();
 
 const field =
-  "press rounded-input border-line bg-s2 text-text data-[state=open]:border-accent focus-visible:border-accent flex w-full min-w-0 cursor-pointer items-center gap-2.5 border text-left outline-none disabled:cursor-not-allowed disabled:opacity-50";
+  "group rounded-input border-line bg-s2 transition-colors duration-150 text-text data-[state=open]:border-accent focus-visible:border-accent flex w-full min-w-0 cursor-pointer items-center gap-2.5 border text-left outline-none disabled:cursor-not-allowed disabled:opacity-50";
 /** Field heights match Input and Select: 52 px, or 44 px for compact filter bars. */
 const SIZES = { md: "h-[52px] px-4 text-base", sm: "h-11 px-3 text-sm" } as const;
 const pop =
@@ -200,6 +200,12 @@ export function DateField({
         <span className={cn("min-w-0 truncate", !value && "text-faint")}>
           {value ? formatDay(value) : placeholder}
         </span>
+        <CaretDown
+          size={16}
+          weight="bold"
+          className="text-muted ml-auto flex-none transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-data-[state=open]:rotate-180 motion-reduce:transition-none"
+          aria-hidden
+        />
       </P.Trigger>
       <P.Portal>
         <P.Content sideOffset={6} collisionPadding={12} align="start" className={pop}>
@@ -260,6 +266,12 @@ export function TimeField({
       >
         <Clock size={20} className="text-muted flex-none" aria-hidden />
         <span className={cn("mono", !value && "text-faint")}>{value || "--:--"}</span>
+        <CaretDown
+          size={16}
+          weight="bold"
+          className="text-muted ml-auto flex-none transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-data-[state=open]:rotate-180 motion-reduce:transition-none"
+          aria-hidden
+        />
       </P.Trigger>
       <P.Portal>
         <P.Content sideOffset={6} collisionPadding={12} align="start" className={pop}>
