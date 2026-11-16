@@ -42,13 +42,11 @@ export function DarkHub() {
   const { data: vault } = useQuery({
     queryKey: ["vault", "summary"],
     queryFn: () => darkFetch<{ kept?: number }>("/api/dark/vault?limit=1"),
-    enabled: (s?.rank ?? 0) > 0,
   });
   const { data: req } = useQuery({
     queryKey: ["requests"],
     queryFn: () =>
       darkFetch<{ inbox: Array<{ id: string; status: string }> }>("/api/dark/requests"),
-    enabled: (s?.rank ?? 0) > 0,
   });
   const rank = s?.rank ?? 0;
   const pending = req?.inbox.filter((r) => r.status === "pending" || r.status === "later") ?? [];

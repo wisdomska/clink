@@ -1,13 +1,11 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { ArrowLeft, Heart, Play } from "@phosphor-icons/react";
-import { IconButton } from "@/components/ui/button";
-import { Display } from "@/components/ui/heading";
+import { Heart, Play } from "@phosphor-icons/react";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useCouple } from "@/features/couple/context";
+import { PageBar } from "@/components/clink/page-bar";
 
 const PAGE = 60;
 type Tile = { id: string; kind: string; created_at: string; is_favourite: boolean };
@@ -17,7 +15,6 @@ type Tile = { id: string; kind: string; created_at: string; is_favourite: boolea
  * Keyset pages of 60 (created_at, id) load as you scroll, so it never grows unbounded.
  */
 export function MediaGallery() {
-  const router = useRouter();
   const { coupleId } = useCouple();
   const { data, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage, isError } =
     useInfiniteQuery({
@@ -72,13 +69,8 @@ export function MediaGallery() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <main className="an-screen mx-auto flex w-full max-w-[900px] flex-col gap-4 px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-8 md:pt-8">
-      <div className="flex items-center gap-3">
-        <IconButton label="Back" onClick={() => router.push("/chat")}>
-          <ArrowLeft size={20} />
-        </IconButton>
-        <Display size={28}>Photos and videos</Display>
-      </div>
+    <main className="an-screen mx-auto flex w-full max-w-[900px] flex-col gap-4 px-4 pt-[var(--screen-pt)] pb-8 [--screen-pt:calc(env(safe-area-inset-top)+8px)] md:[--screen-pt:2rem]">
+      <PageBar title="Photos and videos" back="/chat" />
       {isLoading ? (
         <div className="grid grid-cols-3 gap-1 md:grid-cols-5">
           {Array.from({ length: 9 }, (_, i) => (

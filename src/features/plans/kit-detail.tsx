@@ -1,17 +1,17 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, MusicNotes, CheckCircle } from "@phosphor-icons/react";
+import { MusicNotes, CheckCircle } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
-import { Button, IconButton } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Display, Lead, Mono } from "@/components/ui/heading";
-import { Input, Label, FieldError } from "@/components/ui/field";
+import { Label, FieldError } from "@/components/ui/field";
 import { Sheet } from "@/components/ui/sheet";
 import { toast } from "@/components/ui/toast";
 import { zonedToUtc, wallTime, localParts } from "@/lib/time";
 import { useKits, useUpcomingDates, upcomingKey, type DateRow } from "./data";
 import { DateField, TimeField } from "@/components/ui/pickers";
+import { PageBar } from "@/components/clink/page-bar";
 
 export function ScheduleSheet({
   kitId,
@@ -106,7 +106,6 @@ export function ScheduleSheet({
 }
 
 export function KitDetail({ id }: { id: string }) {
-  const router = useRouter();
   const { me, partner } = useCouple();
   const { data: kits = [] } = useKits();
   const { data: dates = [] } = useUpcomingDates();
@@ -122,9 +121,7 @@ export function KitDetail({ id }: { id: string }) {
   const inProgress = booked && new Date(booked.start_at).getTime() <= now;
   return (
     <div className="screen an-screen flex max-w-[760px] flex-col gap-5">
-      <IconButton label="Back" onClick={() => router.push("/plans")}>
-        <ArrowLeft size={20} />
-      </IconButton>
+      <PageBar title={kit.title} back="/plans" />
       <div>
         <Mono className="text-muted">
           {kit.minutes >= 120 && kit.minutes % 60 === 0
@@ -132,9 +129,6 @@ export function KitDetail({ id }: { id: string }) {
             : `${kit.minutes} min`}{" "}
           · Admit 2
         </Mono>
-        <Display size={48} className="mt-1">
-          {kit.title}
-        </Display>
         <Lead className="mt-2">{kit.blurb}</Lead>
       </div>
       {done && !booked ? (

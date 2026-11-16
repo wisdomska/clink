@@ -1,14 +1,15 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, Medal } from "@phosphor-icons/react";
+import { Check, Medal } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
-import { Button, IconButton } from "@/components/ui/button";
-import { Display, Lead, Mono, PartnerMark } from "@/components/ui/heading";
+import { Button } from "@/components/ui/button";
+import { Lead, Mono, PartnerMark } from "@/components/ui/heading";
 import { toast } from "@/components/ui/toast";
 import { localParts } from "@/lib/time";
 import { dayNumber, streak } from "@/lib/challenges";
 import { useChallenge } from "./data";
+import { PageBar } from "@/components/clink/page-bar";
 
 /** DATE-04 challenge tracker: day done, missed, completed badge; or pick one to start. */
 export function ChallengeScreen({ id }: { id: string }) {
@@ -22,10 +23,7 @@ export function ChallengeScreen({ id }: { id: string }) {
   if (showPicker) {
     return (
       <div className="screen an-screen flex max-w-[760px] flex-col gap-5">
-        <IconButton label="Back" onClick={() => router.push("/plans")}>
-          <ArrowLeft size={20} />
-        </IconButton>
-        <Display size={48}>Pick a challenge</Display>
+        <PageBar title="Pick a challenge" back="/plans" />
         <Lead>
           Both of you tick it off each day. Miss one and the streak starts again, no lectures.
         </Lead>
@@ -73,9 +71,7 @@ export function ChallengeScreen({ id }: { id: string }) {
 
   return (
     <div className="screen an-screen flex max-w-[760px] flex-col gap-5">
-      <IconButton label="Back" onClick={() => router.push("/plans")}>
-        <ArrowLeft size={20} />
-      </IconButton>
+      <PageBar title={tpl.title} back="/plans" />
       <div className="flex items-start justify-between gap-3">
         <div>
           <Mono className="text-muted">
@@ -83,9 +79,6 @@ export function ChallengeScreen({ id }: { id: string }) {
               ? "COMPLETE"
               : `DAY ${Math.min(today, tpl.days)} OF ${tpl.days}`}
           </Mono>
-          <Display size={36} className="mt-1">
-            {tpl.title}
-          </Display>
         </div>
         <div className="text-right">
           <div className="mono text-accent text-[48px] leading-none">{s}</div>

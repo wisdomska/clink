@@ -23,7 +23,7 @@ import { Logo } from "@/components/brand/logo";
 
 const ITEMS = [
   { href: "/admin", label: "Dashboard", Icon: ChartBar },
-  { href: "/admin/users", label: "Users and couples", Icon: Users },
+  { href: "/admin/users", label: "Users", Icon: Users },
   { href: "/admin/reports", label: "Reports", Icon: Flag },
   { href: "/admin/content", label: "Content library", Icon: Books },
   { href: "/admin/settings", label: "Settings", Icon: SlidersHorizontal },

@@ -1,21 +1,12 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  CaretRight,
-  Trash,
-  ChatCircle,
-  BellSimple,
-  BellRinging,
-} from "@phosphor-icons/react";
+import { CaretRight, Trash, ChatCircle, BellSimple, BellRinging } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
-import { Button, IconButton } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { Sheet } from "@/components/ui/sheet";
 import { Input, Label } from "@/components/ui/field";
-import { Display } from "@/components/ui/heading";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/cn";
 import { enablePush } from "@/lib/pwa";
@@ -61,6 +52,14 @@ function Row({
     danger ? "text-danger hover:text-danger" : "text-text hover:text-text",
     (onClick || href) && "cursor-pointer",
   );
+  // After Dark is its own private area with its own security policy: open it as a
+  // fresh page load rather than an in-app jump.
+  if (href?.startsWith("/dark"))
+    return (
+      <a href={href} className={cls}>
+        {children}
+      </a>
+    );
   if (href)
     return (
       <Link href={href} className={cls}>
@@ -85,7 +84,6 @@ const SETTINGS_TABS = [
 ] as const;
 
 export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myTiers: string[] }) {
-  const router = useRouter();
   const ctx = useCouple();
   const { me, partner, settings } = ctx;
   const [tone, setTone] = useState(() => (typeof window === "undefined" ? true : messageToneOn()));
@@ -135,11 +133,8 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
     <div className="screen an-screen">
       <div className="mx-auto flex w-full max-w-[720px] flex-col gap-4">
         <div className="app-topbar flex flex-col gap-3">
-          <div className="flex items-center gap-3">
-            <IconButton label="Back" onClick={() => router.push("/us")}>
-              <ArrowLeft size={20} />
-            </IconButton>
-            <Display size={36}>Settings</Display>
+          <div className="flex min-h-11 items-center">
+            <h1 className="display m-0 text-[28px] leading-[1.15]">Settings</h1>
           </div>
           <NavTabs label="Settings sections" tabs={SETTINGS_TABS} />
         </div>

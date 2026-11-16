@@ -2,10 +2,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Trash } from "@phosphor-icons/react";
+import { Plus, Trash } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
 import { Button, IconButton } from "@/components/ui/button";
-import { Display, Mono } from "@/components/ui/heading";
+import { Mono } from "@/components/ui/heading";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import {
   LoadMore,
@@ -17,6 +17,7 @@ import {
 } from "@/features/plans/infinite";
 import { useTimeline, timelineKey, tagDate, type TimelineRow } from "./data";
 import { nextAnniversary } from "@/lib/milestones";
+import { PageBar } from "@/components/clink/page-bar";
 
 /** KEEP-03 full timeline: auto milestones plus manual entries with photos. */
 function ordinal(n: number) {
@@ -84,12 +85,9 @@ export function TimelineScreen() {
 
   return (
     <div className="screen an-screen flex max-w-[720px] flex-col gap-5">
-      <IconButton label="Back" onClick={() => router.push("/keep")}>
-        <ArrowLeft size={20} />
-      </IconButton>
+      <PageBar title="Timeline" back="/keep" />
       <div>
-        <Display size={48}>Timeline</Display>
-        <p className="text-muted m-0 mt-1 text-sm">
+        <p className="text-muted m-0 text-sm">
           Day {days.toLocaleString("en-GB")} {startedOn ? "together" : "on Clink"}
         </p>
         {anniversary && (

@@ -2,13 +2,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, TelevisionSimple } from "@phosphor-icons/react";
+import { TelevisionSimple } from "@phosphor-icons/react";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useCouple } from "@/features/couple/context";
-import { Button, IconButton } from "@/components/ui/button";
-import { Display, Lead } from "@/components/ui/heading";
+import { Button } from "@/components/ui/button";
+import { Lead } from "@/components/ui/heading";
 import { Input, Label, FieldError } from "@/components/ui/field";
 import { BrandLogo } from "@/components/clink/brand-logo";
+import { PageBar } from "@/components/clink/page-bar";
 
 export function WatchStart() {
   const router = useRouter();
@@ -33,10 +34,7 @@ export function WatchStart() {
   );
   return (
     <div className="screen an-screen flex max-w-[640px] flex-col gap-5">
-      <IconButton label="Back" onClick={() => router.push("/plans")}>
-        <ArrowLeft size={20} />
-      </IconButton>
-      <Display size={48}>Watch party</Display>
+      <PageBar title="Watch party" back="/plans" />
       <Lead>Paste a YouTube link. Play, pause and skip stay in step for both of you.</Lead>
       {live && (
         <button

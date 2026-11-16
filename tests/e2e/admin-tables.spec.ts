@@ -181,7 +181,7 @@ test("admin shell: command palette and keyboard shortcuts", async ({ couple, bro
 
   // "/" focuses the page search.
   await p.goto("/admin/users");
-  await p.getByRole("heading", { name: "Users and couples" }).click();
+  await p.getByRole("heading", { name: "Users", exact: true }).click();
   await p.keyboard.press("/");
   await expect(p.getByLabel("Search by email or name")).toBeFocused();
   await ctx.close();

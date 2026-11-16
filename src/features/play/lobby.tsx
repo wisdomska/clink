@@ -8,13 +8,11 @@ import {
   PencilSimpleLine,
   Lightning,
   ArrowsLeftRight,
-  GridFour,
-  BookOpenText,
   Plus,
 } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
 import { supabaseBrowser } from "@/lib/supabase/client";
-import { Display, PartnerMark } from "@/components/ui/heading";
+import { PartnerMark } from "@/components/ui/heading";
 import { Sheet } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
@@ -24,6 +22,7 @@ import { GameHistory } from "./history";
 import { useOpenPartner } from "@/features/partner/partner-sheet";
 import { subscribeAuthed } from "@/lib/realtime";
 import type { GameType } from "./engines/types";
+import { PageBar } from "@/components/clink/page-bar";
 
 const LIVE: Array<{ type: GameType; Icon: typeof Question }> = [
   { type: "know_me", Icon: Question },
@@ -122,9 +121,7 @@ export function Lobby() {
 
   return (
     <div className="screen an-screen flex flex-col gap-5">
-      <Display size={48} className="mt-2">
-        Play together
-      </Display>
+      <PageBar title="Play together" />
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-10">
         <div className="flex min-w-0 flex-col gap-5">
           <section

@@ -7,7 +7,6 @@ import {
   GameController,
   Ticket,
   Archive,
-  GearSix,
   LinkSimple,
   Wine,
   CalendarBlank,
@@ -114,18 +113,11 @@ export function SoloHome() {
   useLinkWatch();
   return (
     <div className="screen an-screen">
-      <div className="app-topbar flex h-11 flex-none items-center justify-between lg:hidden">
+      <div className="app-topbar flex h-11 flex-none items-center lg:hidden">
         <h1 className="m-0 flex items-center gap-1.5">
           <LogoMark size={30} decorative />
           <Wordmark size={28} />
         </h1>
-        <Link
-          href="/settings"
-          aria-label="Settings"
-          className="press border-line bg-s1 text-text hover:text-text flex h-11 w-11 items-center justify-center rounded-full border"
-        >
-          <GearSix size={24} aria-hidden />
-        </Link>
       </div>
       <div className="mx-auto flex w-full max-w-[640px] flex-col gap-5 pt-4">
         <div className="flex items-center gap-4">

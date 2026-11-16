@@ -130,7 +130,7 @@ export function AdminUsers() {
 
   return (
     <AdminPage>
-      <Display size={36}>Users and couples</Display>
+      <Display size={36}>Users</Display>
       <p className="text-muted m-0 text-sm">
         Open a person to see their full profile. Reading a conversation needs a reason, and every
         look is logged.

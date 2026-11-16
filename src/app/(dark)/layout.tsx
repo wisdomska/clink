@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
+import { DarkSkeleton } from "@/features/dark/dark-skeleton";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { loadCoupleContext } from "@/lib/server/couple-context";
@@ -14,7 +16,17 @@ export const metadata: Metadata = { title: "Private", robots: { index: false, fo
  * After Dark shell: Ember accent everywhere, no tab bar, no third-party scripts
  * (CSP), never cached (headers), locked after 2 minutes idle.
  */
-export default async function DarkLayout({ children }: { children: React.ReactNode }) {
+export default function DarkLayout({ children }: { children: React.ReactNode }) {
+  // The checks below hit the database; stream a skeleton first so opening After
+  // Dark is instant instead of a blank wait.
+  return (
+    <Suspense fallback={<DarkSkeleton />}>
+      <DarkShell>{children}</DarkShell>
+    </Suspense>
+  );
+}
+
+async function DarkShell({ children }: { children: React.ReactNode }) {
   const path = (await headers()).get("x-pathname") ?? "/dark";
   const ctx = await loadCoupleContext(path);
   const pathname = path.split("?")[0]!;

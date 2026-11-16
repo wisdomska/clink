@@ -1,10 +1,9 @@
 "use client";
 import { feedback } from "@/lib/feedback";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Play } from "@phosphor-icons/react";
+import { Play } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
-import { Button, IconButton } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Mono } from "@/components/ui/heading";
 import { countdownParts } from "@/lib/time";
 import { Bottle } from "./objects";
@@ -12,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/components/ui/toast";
 import { editList, rollback } from "@/features/plans/infinite";
 import { capsulesKey, tagDate, type CapsuleRow } from "./data";
+import { PageBar } from "@/components/clink/page-bar";
 
 interface Capsule {
   id: string;
@@ -24,7 +24,6 @@ interface Capsule {
 
 /** KEEP-02: locked with countdown, ready, uncorking, opened (contents fetched from the server only now). */
 export function CapsuleScreen({ capsule }: { capsule: Capsule }) {
-  const router = useRouter();
   const { me, partner, coupleId } = useCouple();
   const qc = useQueryClient();
   const [now, setNow] = useState(() => new Date());
@@ -51,10 +50,7 @@ export function CapsuleScreen({ capsule }: { capsule: Capsule }) {
   const p = countdownParts(now, new Date(capsule.unlock_at));
   return (
     <div className="screen an-screen flex max-w-[640px] flex-col gap-5">
-      <IconButton label="Back" onClick={() => router.push("/keep")}>
-        <ArrowLeft size={20} />
-      </IconButton>
-      <h1 className="display m-0 text-[36px] leading-[1.05]">{capsule.title}</h1>
+      <PageBar title={capsule.title} back="/keep" />
       {!ready && (
         <p className="text-muted -mt-2 mb-0 text-base">
           Neither of you can open it early. That&apos;s the point.

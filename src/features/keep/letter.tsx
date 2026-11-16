@@ -2,14 +2,14 @@
 import { haptic } from "@/lib/feedback";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
-import { Button, IconButton } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Mono } from "@/components/ui/heading";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/components/ui/toast";
 import { editList, rollback } from "@/features/plans/infinite";
 import { lettersKey, tagDate, type LetterRow } from "./data";
+import { PageBar } from "@/components/clink/page-bar";
 
 interface Letter {
   id: string;
@@ -58,14 +58,12 @@ export function LetterScreen({ letter }: { letter: Letter }) {
 
   return (
     <div className="screen an-screen flex max-w-[640px] flex-col gap-5">
-      <IconButton label="Back" onClick={() => router.push("/keep")}>
-        <ArrowLeft size={20} />
-      </IconButton>
+      <PageBar title="Letter" back="/keep" />
       <div>
         <Mono>
           {mine ? "From you" : `From ${partner.name}`} · Sealed {tagDate(letter.sealed_at)}
         </Mono>
-        <h1 className="display mt-1.5 mb-0 text-[36px] leading-[1.05]">{letter.condition}</h1>
+        <h2 className="display mt-1.5 mb-0 text-[28px] leading-[1.1]">{letter.condition}</h2>
       </div>
       {state !== "opened" ? (
         <>

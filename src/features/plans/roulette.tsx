@@ -2,13 +2,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, animate, useMotionValue, useTransform, type MotionValue } from "motion/react";
-import { ArrowLeft, Shuffle } from "@phosphor-icons/react";
-import { Button, IconButton } from "@/components/ui/button";
-import { Display } from "@/components/ui/heading";
+import { Shuffle } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
 import { Confetti } from "@/components/fx/confetti";
 import { feedback, useReducedMotion } from "@/lib/feedback";
 import { useKits } from "./data";
 import { ScheduleSheet } from "./kit-detail";
+import { PageBar } from "@/components/clink/page-bar";
 
 const ROW = 64;
 const VISIBLE = 5; // rows in the window; the middle one is the pick
@@ -85,10 +85,7 @@ export function Roulette() {
   const pick = kits[idx];
   return (
     <div className="screen an-screen flex min-h-[calc(100dvh-var(--chrome-bottom))] max-w-[640px] flex-col gap-5">
-      <IconButton label="Back" onClick={() => router.push("/plans")}>
-        <ArrowLeft size={20} />
-      </IconButton>
-      <Display size={48}>Date roulette</Display>
+      <PageBar title="Date roulette" back="/plans" />
       <div className="relative flex items-center gap-4">
         <motion.img
           src="/art/slot.webp"

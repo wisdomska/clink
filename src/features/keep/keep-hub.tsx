@@ -39,6 +39,7 @@ import {
   type TimelineRow,
 } from "./data";
 import { DateField } from "@/components/ui/pickers";
+import { PageBar } from "@/components/clink/page-bar";
 
 const CONDITIONS = [
   "Open when you miss me",
@@ -114,18 +115,16 @@ export function KeepHub() {
 
   return (
     <div className="screen an-screen flex flex-col gap-5">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <Display size={48} className="mt-2">
-            Keep
-          </Display>
-          <Lead className="mt-1">Things to open later.</Lead>
-        </div>
-        <Button size="sm" onClick={() => setWrite("letter")}>
-          <PencilSimple size={18} aria-hidden />
-          Write one
-        </Button>
-      </div>
+      <PageBar
+        title="Keep"
+        actions={
+          <Button size="sm" onClick={() => setWrite("letter")}>
+            <PencilSimple size={18} aria-hidden />
+            Write one
+          </Button>
+        }
+      />
+      <Lead className="-mt-2">Things to open later.</Lead>
 
       {empty && (
         <div className="rounded-card border-line flex flex-col items-start gap-3 border border-dashed p-5">

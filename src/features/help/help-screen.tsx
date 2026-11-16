@@ -2,13 +2,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Plus, Minus, ShieldCheck, Paperclip, X } from "@phosphor-icons/react";
-import { Button, IconButton } from "@/components/ui/button";
+import { Plus, Minus, ShieldCheck, Paperclip, X } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
 import { Textarea, FieldError } from "@/components/ui/field";
-import { Display } from "@/components/ui/heading";
 import { cn } from "@/components/ui/cn";
 import { compressImage } from "@/lib/media/compress";
 import { FAQS, REPORT_CATEGORIES } from "./faqs";
+import { PageBar } from "@/components/clink/page-bar";
 
 type View = "faq" | "report" | "sent";
 
@@ -65,24 +65,21 @@ export function HelpScreen({
   }
 
   return (
-    <main className="an-screen mx-auto flex min-h-dvh w-full max-w-[720px] flex-col gap-4 px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-10 md:px-8 md:pt-10">
-      <div className="flex items-center gap-3">
-        <IconButton
-          label="Back"
-          onClick={() =>
-            view === "report"
-              ? setView("faq")
-              : window.history.length > 1
-                ? router.back()
-                : router.push(signedIn ? "/settings" : "/")
-          }
-        >
-          <ArrowLeft size={20} />
-        </IconButton>
-        <Display size={36}>
-          Help and <em>safety</em>
-        </Display>
-      </div>
+    <main className="an-screen mx-auto flex min-h-dvh w-full max-w-[720px] flex-col gap-4 px-4 pt-[var(--screen-pt)] pb-10 [--screen-pt:calc(env(safe-area-inset-top)+8px)] md:px-8 md:[--screen-pt:2.5rem]">
+      <PageBar
+        title={
+          <>
+            Help and <em>safety</em>
+          </>
+        }
+        back={() =>
+          view === "report"
+            ? setView("faq")
+            : window.history.length > 1
+              ? router.back()
+              : router.push(signedIn ? "/settings" : "/")
+        }
+      />
 
       {view === "faq" && (
         <>

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Moon, GearSix } from "@phosphor-icons/react";
+import { Moon, Archive } from "@phosphor-icons/react";
 import { useCouple, useCoupleNow } from "@/features/couple/context";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { PresencePair } from "./presence-pair";
@@ -45,13 +45,16 @@ export function UsScreen() {
   // The likely next stops from Us, fetched ahead so they open instantly.
   useEffect(() => {
     router.prefetch("/us/countdowns");
-    router.prefetch("/settings");
+    router.prefetch("/keep");
   }, [router]);
 
   // Discreet mode: long-press the wordmark for 2 s to open After Dark.
   const wordDown = () => {
     if (wordTimer.current) clearTimeout(wordTimer.current);
-    wordTimer.current = setTimeout(() => discreet && darkVisible && router.push("/dark"), 2000);
+    wordTimer.current = setTimeout(
+      () => discreet && darkVisible && window.location.assign("/dark"),
+      2000,
+    );
   };
   const wordUp = () => wordTimer.current && clearTimeout(wordTimer.current);
 
@@ -69,20 +72,20 @@ export function UsScreen() {
         </h1>
         <div className="flex gap-2">
           {darkVisible && !discreet && (
-            <Link
+            <a
               href="/dark"
               aria-label="After Dark"
               className="press border-line bg-s1 text-text hover:text-text flex h-11 w-11 items-center justify-center rounded-full border"
             >
               <Moon size={24} aria-hidden />
-            </Link>
+            </a>
           )}
           <Link
-            href="/settings"
-            aria-label="Settings"
+            href="/keep"
+            aria-label="Keep"
             className="press border-line bg-s1 text-text hover:text-text flex h-11 w-11 items-center justify-center rounded-full border"
           >
-            <GearSix size={24} aria-hidden />
+            <Archive size={24} aria-hidden />
           </Link>
         </div>
       </div>

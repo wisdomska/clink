@@ -1,8 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Trash } from "@phosphor-icons/react";
+import { Plus, Trash } from "@phosphor-icons/react";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useCouple, useCoupleNow } from "@/features/couple/context";
 import { Button, IconButton } from "@/components/ui/button";
@@ -15,10 +15,10 @@ import { cn } from "@/components/ui/cn";
 import { useCountdowns, formatTarget } from "./countdown-card";
 import { SplitFlap, EmptyBoard } from "./split-flap";
 import { DateField, TimeField } from "@/components/ui/pickers";
+import { PageBar } from "@/components/clink/page-bar";
 
 export function CountdownsScreen() {
   const { me, coupleId } = useCouple();
-  const router = useRouter();
   const params = useSearchParams();
   const qc = useQueryClient();
   const { data = [], isLoading } = useCountdowns();
@@ -123,17 +123,15 @@ export function CountdownsScreen() {
         !isLoading && data.length === 0 && "screen-fill",
       )}
     >
-      <div className="flex items-center gap-3">
-        <IconButton label="Back" onClick={() => router.push("/us")}>
-          <ArrowLeft size={20} />
-        </IconButton>
-        <Display size={36} className="flex-1">
-          Countdowns
-        </Display>
-        <Button size="sm" disabled={active.length >= 5} onClick={() => setOpen(true)}>
-          <Plus size={20} aria-hidden /> Add
-        </Button>
-      </div>
+      <PageBar
+        title="Countdowns"
+        back="/us"
+        actions={
+          <Button size="sm" disabled={active.length >= 5} onClick={() => setOpen(true)}>
+            <Plus size={20} aria-hidden /> Add
+          </Button>
+        }
+      />
       <Lead>Up to 5 at a time. A note can flip over when one hits zero.</Lead>
       {isLoading ? (
         <div className="an-skel rounded-card bg-s2 h-40" />

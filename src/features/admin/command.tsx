@@ -19,7 +19,7 @@ import { adminFetch } from "./fetch";
 
 const PAGES = [
   { href: "/admin", label: "Dashboard", keys: "g d", Icon: ChartBar },
-  { href: "/admin/users", label: "Users and couples", keys: "g u", Icon: Users },
+  { href: "/admin/users", label: "Users", keys: "g u", Icon: Users },
   { href: "/admin/reports", label: "Reports", keys: "g r", Icon: Flag },
   { href: "/admin/content", label: "Content library", keys: "g c", Icon: Books },
   { href: "/admin/settings", label: "Settings", keys: "g s", Icon: SlidersHorizontal },

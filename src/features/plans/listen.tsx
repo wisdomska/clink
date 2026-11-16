@@ -1,12 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, MusicNotes, Plus, SkipForward, Trash } from "@phosphor-icons/react";
+import { MusicNotes, Plus, SkipForward, Trash } from "@phosphor-icons/react";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useCouple } from "@/features/couple/context";
 import { Button, IconButton } from "@/components/ui/button";
-import { Display, Lead, PartnerMark, Skeleton } from "@/components/ui/heading";
+import { Lead, PartnerMark, Skeleton } from "@/components/ui/heading";
 import { FieldError } from "@/components/ui/field";
 import { toast } from "@/components/ui/toast";
 import { SyncedPlayer } from "./watch-room";
@@ -26,6 +25,7 @@ import {
   type MusicService,
 } from "./music-link";
 import { PAGE, editPaged, flatPaged, nextOffset } from "./paged";
+import { PageBar } from "@/components/clink/page-bar";
 
 type Row = Database["public"]["Tables"]["listen_queue"]["Row"];
 /** `service` comes from migration 20261116000100; older rows default to youtube. */
@@ -94,7 +94,6 @@ function RowSkeleton() {
 
 /** TOG-02 listen together: shared queue of YouTube, Spotify and Apple Music links. */
 export function ListenTogether() {
-  const router = useRouter();
   const { me, partner, coupleId } = useCouple();
   const qc = useQueryClient();
   const [url, setUrl] = useState("");
@@ -199,10 +198,7 @@ export function ListenTogether() {
 
   return (
     <div className="screen an-screen flex max-w-[760px] flex-col gap-5">
-      <IconButton label="Back" onClick={() => router.push("/plans")}>
-        <ArrowLeft size={20} />
-      </IconButton>
-      <Display size={48}>Listen together</Display>
+      <PageBar title="Listen together" back="/plans" />
       <Lead>
         One queue, two pairs of headphones. Either of you can add a song from YouTube, Spotify or
         Apple Music.

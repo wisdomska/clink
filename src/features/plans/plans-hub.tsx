@@ -13,7 +13,7 @@ import {
   Ticket as TicketIcon,
 } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
-import { Display, Lead } from "@/components/ui/heading";
+import { Lead } from "@/components/ui/heading";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { wallTime, localParts } from "@/lib/time";
@@ -23,6 +23,7 @@ import { useKits, useUpcomingDates, useChallenge, dateListKey, type DateRow } fr
 import { DateList } from "./date-list";
 import { editList, rollback } from "./infinite";
 import { FindLinks } from "@/features/search/search-shortcut";
+import { PageBar } from "@/components/clink/page-bar";
 
 export function PlansHub() {
   const { me, partner, coupleId } = useCouple();
@@ -74,15 +75,8 @@ export function PlansHub() {
 
   return (
     <div className="screen an-screen flex flex-col gap-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <Display size={48} className="mt-2">
-            Plans
-          </Display>
-          <Lead className="mt-1">Date nights, planned together.</Lead>
-        </div>
-        <FindLinks className="mt-3" />
-      </div>
+      <PageBar title="Plans" actions={<FindLinks />} />
+      <Lead className="-mt-2">Date nights, planned together.</Lead>
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-10">
         <div className="flex min-w-0 flex-col gap-5">
           {next && nextKit ? (

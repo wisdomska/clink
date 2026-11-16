@@ -7,7 +7,6 @@ import {
   ChatCircle,
   GameController,
   Ticket,
-  Archive,
   GearSix,
   Moon,
   Leaf,
@@ -27,7 +26,7 @@ export const TABS = [
   { href: "/chat", label: "Chat", Icon: ChatCircle },
   { href: "/play", label: "Play", Icon: GameController },
   { href: "/plans", label: "Plans", Icon: Ticket },
-  { href: "/keep", label: "Keep", Icon: Archive },
+  { href: "/settings", label: "Settings", Icon: GearSix },
 ] as const;
 
 const STATUS_ICON: Record<string, Icon> = {
@@ -170,7 +169,7 @@ export function Rail({ unread = 0 }: { unread?: number }) {
       </div>
       <div className="mt-auto flex flex-col gap-1">
         {darkVisible && !discreet && (
-          <Link
+          <a
             href="/dark"
             title="After Dark"
             className="press text-muted hover:bg-s1 hover:text-text flex h-12 items-center gap-3 rounded-full px-3 text-[15px] font-medium"
@@ -179,7 +178,7 @@ export function Rail({ unread = 0 }: { unread?: number }) {
               <Moon size={24} aria-hidden />
             </span>
             <span className="rail-full">After Dark</span>
-          </Link>
+          </a>
         )}
         <AccountRow on={isActive(path, "/settings")} />
       </div>

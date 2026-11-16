@@ -12,7 +12,7 @@ import { useCouple } from "@/features/couple/context";
 import { MessageTone } from "@/features/chat/message-tone";
 import { SoloHome, SoloGate, SOLO_OPEN } from "@/features/couple/solo";
 
-const HIDE_TABS = [/^\/play\/[^/]+\/[^/]+/, /^\/settings/, /^\/help/, /^\/plans\/watch\//];
+const HIDE_TABS = [/^\/play\/[^/]+\/[^/]+/, /^\/help/, /^\/plans\/watch\//];
 
 export function AppShell({
   children,

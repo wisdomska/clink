@@ -1,11 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   AirplaneTilt,
-  ArrowLeft,
   BookOpen,
   FilmSlate,
   ForkKnife,
@@ -14,7 +12,7 @@ import {
   Trash,
 } from "@phosphor-icons/react";
 import { IconButton, Button } from "@/components/ui/button";
-import { Display, Skeleton } from "@/components/ui/heading";
+import { Skeleton } from "@/components/ui/heading";
 import { useCouple } from "@/features/couple/context";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { subscribeAuthed } from "@/lib/realtime";
@@ -24,6 +22,7 @@ import { cn } from "@/components/ui/cn";
 import { Confetti } from "@/components/fx/confetti";
 import type { Database } from "@/types/database";
 import { PAGE, editPaged, flatPaged, nextOffset, type Paged } from "./paged";
+import { PageBar } from "@/components/clink/page-bar";
 
 const CATS = [
   { key: "do", label: "Do", Icon: Sparkle },
@@ -115,7 +114,6 @@ function SkeletonRows({ n = 3 }: { n?: number }) {
 
 /** "Our list": the things you two want to do together. Shared and live. */
 export function BucketList() {
-  const router = useRouter();
   const qc = useQueryClient();
   const { me, partner, coupleId } = useCouple();
   const [text, setText] = useState("");
@@ -332,12 +330,7 @@ export function BucketList() {
           <Confetti count={30} seed={burst} />
         </div>
       )}
-      <div className="flex items-center gap-3">
-        <IconButton label="Back" onClick={() => router.push("/plans")}>
-          <ArrowLeft size={20} />
-        </IconButton>
-        <Display size={36}>Our list</Display>
-      </div>
+      <PageBar title="Our list" back="/plans" />
       <p className="text-muted m-0 text-base">
         Everything you and {partner.name} want to do together.{" "}
         {doneCount > 0 && `${doneCount} done so far.`}

@@ -13,12 +13,12 @@ import {
   ListChecks,
   CheckCircle,
 } from "@phosphor-icons/react";
-import { Display } from "@/components/ui/heading";
 import { LoadingDots } from "@/components/ui/spinner";
 import { cn } from "@/components/ui/cn";
 import { useCouple } from "@/features/couple/context";
 import { localParts } from "@/lib/time";
 import { useSearchShortcut } from "./search-shortcut";
+import { PageBar } from "@/components/clink/page-bar";
 
 export interface SearchResults {
   q: string;
@@ -119,9 +119,7 @@ export function SearchScreen() {
 
   return (
     <main className="screen an-screen mx-auto flex w-full max-w-[760px] flex-col gap-4">
-      <Display size={48} className="mt-2">
-        Search
-      </Display>
+      <PageBar title="Search" />
       <form
         role="search"
         onSubmit={(e) => {

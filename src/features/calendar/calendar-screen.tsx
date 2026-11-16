@@ -16,7 +16,7 @@ import {
 import { useCouple, useCoupleNow } from "@/features/couple/context";
 import { Display } from "@/components/ui/heading";
 import { Button, IconButton } from "@/components/ui/button";
-import { Input, Label, FieldError } from "@/components/ui/field";
+import { Label, FieldError } from "@/components/ui/field";
 import { Sheet } from "@/components/ui/sheet";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/cn";
@@ -37,6 +37,7 @@ import {
 } from "./calendar-math";
 import { monthKey, useCalendarEvents, type CalEvent, type EventKind, type MonthData } from "./data";
 import { TimeField } from "@/components/ui/pickers";
+import { PageBar } from "@/components/clink/page-bar";
 
 const KIND: Record<EventKind, { label: string; Icon: typeof Ticket; dot: string }> = {
   date: { label: "Date", Icon: Ticket, dot: "bg-accent" },
@@ -137,14 +138,14 @@ export function CalendarScreen() {
 
   return (
     <main className="screen an-screen flex flex-col gap-5">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <Display size={48} className="mt-2">
-          Calendar
-        </Display>
-        <Button variant="ghost" size="sm" onClick={() => select(today, true)}>
-          Today
-        </Button>
-      </div>
+      <PageBar
+        title="Calendar"
+        actions={
+          <Button variant="ghost" size="sm" onClick={() => select(today, true)}>
+            Today
+          </Button>
+        }
+      />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-10">
         <section aria-labelledby="cal-month" className="flex min-w-0 flex-col gap-3">
