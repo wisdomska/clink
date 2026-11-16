@@ -5,6 +5,8 @@ import { ArrowDown, ArrowUp, ArrowsDownUp, DownloadSimple } from "@phosphor-icon
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/cn";
+import { DateField } from "@/components/ui/pickers";
+import { Select } from "@/components/ui/select";
 
 export const PAGE_SIZES = [25, 50, 100];
 
@@ -220,18 +222,14 @@ export function FilterSelect({
       <label htmlFor={id} className="text-muted text-xs font-medium">
         {label}
       </label>
-      <select
+      <Select
         id={id}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="rounded-input border-line bg-s2 text-text h-11 w-full cursor-pointer border px-3 text-sm"
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
+        onChange={onChange}
+        options={options}
+        size="sm"
+        className="h-11"
+      />
     </div>
   );
 }
@@ -253,12 +251,12 @@ export function FilterDate({
       <label htmlFor={id} className="text-muted text-xs font-medium">
         {label}
       </label>
-      <input
+      <DateField
         id={id}
-        type="date"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="rounded-input border-line bg-s2 text-text h-11 w-full border px-3 text-sm [color-scheme:dark]"
+        onChange={onChange}
+        placeholder="Any"
+        className="h-11 px-3 text-sm"
       />
     </div>
   );

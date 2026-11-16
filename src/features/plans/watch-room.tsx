@@ -228,7 +228,8 @@ export function SyncedPlayer({
             setPos(v);
             setTimeout(() => broadcast(playing), 200);
           }}
-          className="h-11 flex-1 accent-[var(--text)]"
+          className="h-11 flex-1"
+          style={{ "--fill": `${(pos / Math.max(1, dur)) * 100}%` } as React.CSSProperties}
         />
         <span className="mono text-muted text-xs">
           {fmt(pos)} / {fmt(dur)}

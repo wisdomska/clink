@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { BirthdayField } from "@/components/ui/pickers";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Fingerprint, Check, ShieldCheck } from "@phosphor-icons/react";
@@ -40,8 +41,6 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
   );
   const [busy, setBusy] = useState(false);
   const [resendIn, setResendIn] = useState(0);
-  const monthRef = useRef<HTMLInputElement>(null);
-  const yearRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (resendIn <= 0) return;
@@ -168,8 +167,6 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
     router.refresh();
   }
 
-  const two = (v: string) => v.replace(/\D/g, "").slice(0, 2);
-
   const q = next ? `?next=${encodeURIComponent(next)}` : "";
   return (
     <div className="relative isolate flex flex-1 flex-col lg:flex-none">
@@ -282,51 +279,20 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
           {mode === "signup" && (
             <fieldset className="m-0 mt-4 border-0 p-0">
               <legend className="text-muted mb-1.5 p-0 text-sm font-medium">Date of birth</legend>
-              <div className="grid grid-cols-[1fr_1fr_1.6fr] gap-2">
-                <Input
-                  aria-label="Day"
-                  inputMode="numeric"
-                  autoComplete="bday-day"
-                  placeholder="DD"
-                  mono
-                  className="text-center"
-                  value={day}
-                  invalid={Boolean(dobError)}
-                  onChange={(e) => {
-                    const v = two(e.target.value);
-                    setDay(v);
-                    if (v.length === 2) monthRef.current?.focus();
-                  }}
-                />
-                <Input
-                  ref={monthRef}
-                  aria-label="Month"
-                  inputMode="numeric"
-                  autoComplete="bday-month"
-                  placeholder="MM"
-                  mono
-                  className="text-center"
-                  value={month}
-                  invalid={Boolean(dobError)}
-                  onChange={(e) => {
-                    const v = two(e.target.value);
-                    setMonth(v);
-                    if (v.length === 2) yearRef.current?.focus();
-                  }}
-                />
-                <Input
-                  ref={yearRef}
-                  aria-label="Year"
-                  inputMode="numeric"
-                  autoComplete="bday-year"
-                  placeholder="YYYY"
-                  mono
-                  className="text-center"
-                  value={year}
-                  invalid={Boolean(dobError)}
-                  onChange={(e) => setYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                />
-              </div>
+              <BirthdayField
+                idPrefix="signup-dob"
+                value={
+                  day && month && year.length === 4
+                    ? `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`
+                    : ""
+                }
+                onChange={(v) => {
+                  const [yy = "", mm = "", dd = ""] = v ? v.split("-") : [];
+                  setYear(yy);
+                  setMonth(mm);
+                  setDay(dd);
+                }}
+              />
               <FieldError>{dobError}</FieldError>
               <Hint>We check you&apos;re 18+. Your partner never sees this.</Hint>
             </fieldset>

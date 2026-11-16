@@ -1,12 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 import { test, expect } from "./fixtures";
+import { pickTime } from "./controls";
 import { admin } from "./helpers";
 
 // HOME-08: the ritual time changes only when both partners agree.
 test("ritual time needs both partners to agree", async ({ couple }) => {
   const { a, b, nia, theo } = couple;
   await a.goto("/settings?tab=account");
-  await a.getByLabel(/Ritual time/).fill("20:30");
+  await pickTime(a, /Ritual time/, "20:30");
   await a.getByRole("button", { name: "Suggest" }).click();
   await expect(a.getByText(`You suggested 20:30. Waiting for ${theo.name}.`)).toBeVisible();
 
@@ -16,7 +17,7 @@ test("ritual time needs both partners to agree", async ({ couple }) => {
   // Wait for the settled screen (a navigation can briefly overlap two renders).
   await expect(b.getByText(`${nia.name} suggested 20:30.`)).toHaveCount(1);
   await expect(b.getByText(`${nia.name} suggested 20:30.`)).toBeVisible();
-  await b.getByRole("button", { name: "Agree" }).click();
+  await b.getByRole("button", { name: "Agree", exact: true }).click();
   await expect(b.getByText("Agreed. Ritual at 20:30.")).toBeVisible();
 
   // Neither partner can skip the agreement by writing to the database directly.

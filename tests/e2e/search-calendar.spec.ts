@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { test, expect } from "./fixtures";
+import { pickTime } from "./controls";
 import { admin } from "./helpers";
 
 test("global search finds messages and list items, never sealed letters", async ({ couple }) => {
@@ -95,7 +96,7 @@ test("calendar shows birthdays and books a date on a tapped day", async ({ coupl
 
   await a.getByRole("button", { name: "Plan a date" }).click();
   const sheet = a.getByRole("dialog", { name: "Plan a date" });
-  await sheet.getByLabel("Your time").fill("19:30");
+  await pickTime(sheet, "Your time", "19:30");
   await sheet.getByRole("button", { name: "Book it" }).click();
   await expect(sheet).toBeHidden();
   await expect(a.getByRole("button", { name: /15 \w+, 2 events/ })).toBeVisible({ timeout: 10000 });

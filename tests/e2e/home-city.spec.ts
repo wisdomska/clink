@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import { pickOption } from "./controls";
 import { admin } from "./helpers";
 
 test("home city: find Takoradi, use a typed town with its country, change it from Settings", async ({
@@ -41,7 +42,7 @@ test("home city: find Takoradi, use a typed town with its country, change it fro
   await a.getByRole("button", { name: /Change home city/ }).click();
   await sheet.getByLabel("Search for your city").fill("Zzyzxtown");
   await sheet.getByRole("button", { name: /Use “Zzyzxtown”/ }).click();
-  await sheet.getByLabel("Which country is Zzyzxtown in?").selectOption("Ghana");
+  await pickOption(sheet, "Which country is Zzyzxtown in?", "Ghana");
   await sheet.getByRole("button", { name: "Save home city" }).click();
   await expect(a.getByText("Home is now Zzyzxtown.")).toBeVisible();
   await expect

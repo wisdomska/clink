@@ -36,6 +36,7 @@ import {
   type MonthRef,
 } from "./calendar-math";
 import { monthKey, useCalendarEvents, type CalEvent, type EventKind, type MonthData } from "./data";
+import { TimeField } from "@/components/ui/pickers";
 
 const KIND: Record<EventKind, { label: string; Icon: typeof Ticket; dot: string }> = {
   date: { label: "Date", Icon: Ticket, dot: "bg-accent" },
@@ -472,7 +473,6 @@ function AddDateSheet({
                     value={k.id}
                     checked={on}
                     onChange={() => setKitId(k.id)}
-                    className="h-4 w-4 flex-none accent-[var(--accent)]"
                   />
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="text-text truncate text-sm font-semibold">{k.title}</span>
@@ -486,7 +486,7 @@ function AddDateSheet({
       </fieldset>
       <div>
         <Label htmlFor="cal-time">Your time</Label>
-        <Input id="cal-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+        <TimeField id="cal-time" value={time} onChange={setTime} />
       </div>
       {instant && (
         <p className="text-muted m-0 text-sm">

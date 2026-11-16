@@ -12,6 +12,7 @@ import { cn } from "@/components/ui/cn";
 import { haptic } from "@/lib/feedback";
 import { localParts, wallTime, zonedToUtc } from "@/lib/time";
 import { newClientId } from "./queue";
+import { DateField, TimeField } from "@/components/ui/pickers";
 
 export interface Scheduled {
   id: string;
@@ -162,17 +163,11 @@ export function SendLaterSheet({
       <div className="grid grid-cols-[1.4fr_1fr] gap-2">
         <div>
           <Label htmlFor="sl-date">Date</Label>
-          <Input
-            id="sl-date"
-            type="date"
-            min={today}
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
+          <DateField id="sl-date" min={today} value={date} onChange={setDate} />
         </div>
         <div>
           <Label htmlFor="sl-time">Your time</Label>
-          <Input id="sl-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+          <TimeField id="sl-time" value={time} onChange={setTime} />
         </div>
       </div>
       {instant && (

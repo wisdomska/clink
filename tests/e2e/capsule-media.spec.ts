@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import { pickDate } from "./controls";
 import { admin } from "./helpers";
 
 // KEEP-02: a time capsule can hold a voice note, sealed until its date.
@@ -8,7 +9,7 @@ test("seal a voice note in a capsule and open it on the day", async ({ couple })
   await a.getByRole("button", { name: "Seal one" }).click();
   await a.getByLabel("Name it").fill("Our song, hummed");
   const d = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
-  await a.getByLabel("Opens on").fill(d);
+  await pickDate(a, "Opens on", d);
   await a.getByRole("button", { name: "Record a voice note" }).click();
   await a.waitForTimeout(1500);
   await a.getByRole("button", { name: "Stop recording" }).click();

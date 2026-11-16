@@ -313,7 +313,7 @@ export function VerifySheet({
             type="checkbox"
             checked={agree}
             onChange={(e) => setAgree(e.target.checked)}
-            className="mt-0.5 h-5 w-5 flex-none accent-[var(--accent-dark)]"
+            className="mt-0.5"
           />
           {data?.declaration}
         </label>

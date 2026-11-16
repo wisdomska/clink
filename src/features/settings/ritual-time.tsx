@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCouple } from "@/features/couple/context";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
+import { TimeField } from "@/components/ui/pickers";
 
 async function post(body: object) {
   const r = await fetch("/api/couple/ritual-time", {
@@ -58,12 +59,11 @@ export function RitualTimeRows() {
           </span>
         </label>
         <div className="flex items-center gap-2">
-          <input
+          <TimeField
             id="ritual"
-            type="time"
             value={time}
-            onChange={(e) => setTime(e.target.value)}
-            className="mono rounded-input border-line bg-s2 text-text h-10 border px-3 text-sm"
+            onChange={setTime}
+            className="h-10 w-[120px] px-3 text-sm"
           />
           <Button
             size="sm"

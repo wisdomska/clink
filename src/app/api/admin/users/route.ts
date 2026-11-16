@@ -113,14 +113,26 @@ export const GET = handler(async (req: NextRequest) => {
   const slice = pg.csv ? rows.slice(0, EXPORT_MAX) : rows.slice(pg.from, pg.to + 1);
 
   const ageVerified = new Set<string>();
+  const dobs = new Map<string, string>();
+  const seen = new Map<string, string>();
   for (let i = 0; i < slice.length; i += 200) {
     const ids = slice.slice(i, i + 200).map((u) => u.id);
-    const { data: priv } = await admin
-      .from("user_private")
-      .select("user_id, age_verified_at")
-      .in("user_id", ids);
-    for (const x of priv ?? []) if (x.age_verified_at) ageVerified.add(x.user_id);
+    const [{ data: priv }, { data: pres }] = await Promise.all([
+      admin.from("user_private").select("user_id, dob, age_verified_at").in("user_id", ids),
+      admin.from("presence").select("user_id, last_seen_at").in("user_id", ids),
+    ]);
+    for (const x of priv ?? []) {
+      if (x.age_verified_at) ageVerified.add(x.user_id);
+      if (x.dob) dobs.set(x.user_id, x.dob);
+    }
+    for (const x of pres ?? []) if (x.last_seen_at) seen.set(x.user_id, x.last_seen_at);
   }
+  // Last active: whichever is newer, last seen in the app or last sign-in.
+  const lastActive = (u: User) => {
+    const a = seen.get(u.id) ?? "";
+    const b = u.last_sign_in_at ?? "";
+    return (a > b ? a : b) || null;
+  };
 
   const users = slice.map((u) => {
     const pr = prof.get(u.id);
@@ -132,6 +144,8 @@ export const GET = handler(async (req: NextRequest) => {
       city: pr?.home_city ?? null,
       createdAt: u.created_at,
       lastSignIn: u.last_sign_in_at ?? null,
+      lastActive: lastActive(u),
+      dob: dobs.get(u.id) ?? null,
       confirmed: Boolean(u.email_confirmed_at),
       suspended: pr?.suspended_at ?? null,
       suspendedReason: pr?.suspended_reason ?? null,
@@ -157,6 +171,8 @@ export const GET = handler(async (req: NextRequest) => {
         email: u.email,
         joined: u.createdAt.slice(0, 10),
         last_sign_in: u.lastSignIn?.slice(0, 10) ?? "",
+        last_active: u.lastActive?.slice(0, 16).replace("T", " ") ?? "",
+        date_of_birth: u.dob ?? "",
         linked: u.coupleId ? (u.linkedAt?.slice(0, 10) ?? "yes") : "",
         status: u.status,
         age_18_declared: u.ageVerified ? "yes" : "",

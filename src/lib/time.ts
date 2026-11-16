@@ -124,3 +124,26 @@ export function zonedToUtc(dateKey: string, time: string, timeZone: string): Dat
   const off2 = zoneOffsetMinutes(first, timeZone);
   return off1 === off2 ? first : new Date(guess.getTime() - off2 * 60000);
 }
+
+/**
+ * How long ago, the way people say it: "Just now", "5 min ago", "3 h ago",
+ * "Yesterday", "4 days ago", then the date itself ("12 Mar", or "12 Mar 2025"
+ * in an earlier year) once it's more than a week back.
+ */
+export function timeAgo(iso: string | null | undefined, now: Date = new Date()): string {
+  if (!iso) return "Never";
+  const t = new Date(iso);
+  const min = Math.floor((now.getTime() - t.getTime()) / 60000);
+  if (min < 1) return "Just now";
+  if (min < 60) return `${min} min ago`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `${h} h ago`;
+  const d = Math.floor(h / 24);
+  if (d === 1) return "Yesterday";
+  if (d < 7) return `${d} days ago`;
+  return t.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    ...(t.getFullYear() !== now.getFullYear() ? { year: "numeric" } : {}),
+  });
+}

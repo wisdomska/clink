@@ -9,6 +9,15 @@ import { toast } from "@/components/ui/toast";
 import { adminFetch } from "./fetch";
 import { useConfirm } from "./ui";
 import { AdminPage, ExportButton, FilterDate, FilterSelect, SortTh, useListParams } from "./list";
+import { timeAgo } from "@/lib/time";
+import { ageOn } from "@/lib/age";
+
+const dobLabel = (iso: string) =>
+  new Date(`${iso}T00:00:00`).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 
 interface U {
   id: string;
@@ -17,6 +26,8 @@ interface U {
   city: string | null;
   createdAt: string;
   lastSignIn: string | null;
+  lastActive: string | null;
+  dob: string | null;
   confirmed: boolean;
   suspended: string | null;
   suspendedReason: string | null;
@@ -198,12 +209,12 @@ export function AdminUsers() {
               <tr>
                 <SortTh col="name" label="Account" firstDir="asc" {...sortProps} />
                 <SortTh col="joined" label="Joined" {...sortProps} />
-                <SortTh col="last_sign_in" label="Last sign-in" {...sortProps} />
+                <SortTh col="last_sign_in" label="Last active" {...sortProps} />
                 <th scope="col" className="px-4 py-3 font-medium">
                   Couple
                 </th>
                 <th scope="col" className="px-4 py-3 font-medium">
-                  18+
+                  Date of birth
                 </th>
                 <th scope="col" className="px-4 py-3 font-medium">
                   Status
@@ -234,14 +245,29 @@ export function AdminUsers() {
                     )}
                   </td>
                   <td className="mono text-muted px-4 py-3 text-xs">{u.createdAt.slice(0, 10)}</td>
-                  <td className="mono text-muted px-4 py-3 text-xs">
-                    {u.lastSignIn?.slice(0, 10) ?? "Never"}
+                  <td
+                    className="text-muted px-4 py-3 text-xs whitespace-nowrap"
+                    title={
+                      u.lastActive ? new Date(u.lastActive).toLocaleString("en-GB") : undefined
+                    }
+                  >
+                    {timeAgo(u.lastActive)}
                   </td>
                   <td className="text-muted px-4 py-3 text-xs">
                     {u.coupleId ? `Linked ${u.linkedAt?.slice(0, 10) ?? ""}` : "Not linked"}
                   </td>
-                  <td className="px-4 py-3 text-xs">
-                    {u.ageVerified ? "Declared 18+" : "Birth date only"}
+                  <td className="px-4 py-3 text-xs whitespace-nowrap">
+                    {u.dob ? (
+                      <>
+                        <span className="text-text">{dobLabel(u.dob)}</span>
+                        <span className="text-faint block">
+                          Age {ageOn(new Date(`${u.dob}T00:00:00`), new Date())}
+                          {u.ageVerified ? " · declared 18+" : ""}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-faint">Not given yet</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-xs">
                     {u.deleted ? (

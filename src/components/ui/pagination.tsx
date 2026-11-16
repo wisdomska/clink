@@ -2,6 +2,7 @@
 import { useId } from "react";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { cn } from "./cn";
+import { Select } from "./select";
 
 /** Page numbers to show: first, last, and the current page with one neighbour each side. */
 export function pageItems(page: number, pages: number): Array<number | "gap"> {
@@ -70,18 +71,14 @@ export function Pagination({
         {onSize && (
           <span className="flex items-center gap-2">
             <label htmlFor={`${id}-size`}>Per page</label>
-            <select
+            <Select
               id={`${id}-size`}
-              value={size}
-              onChange={(e) => onSize(Number(e.target.value))}
-              className="rounded-input border-line bg-s2 text-text h-11 cursor-pointer border px-3 text-sm"
-            >
-              {sizes.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+              value={String(size)}
+              onChange={(v) => onSize(Number(v))}
+              options={sizes.map((s) => ({ value: String(s), label: String(s) }))}
+              size="sm"
+              className="h-11 w-[84px]"
+            />
           </span>
         )}
       </div>

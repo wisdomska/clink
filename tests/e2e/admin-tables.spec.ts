@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import { pickOption } from "./controls";
 import { admin, adminSignIn } from "./helpers";
 
 test("admin tables: pages, sizes, sorting and filters live in the URL; CSV exports the full set", async ({
@@ -56,19 +57,19 @@ test("admin tables: pages, sizes, sorting and filters live in the URL; CSV expor
 
   // UI: filters, sort and size go in the URL and reset to page 1.
   await p.goto("/admin/users?page=2");
-  await p.getByLabel("Status").selectOption("active");
+  await pickOption(p, "Status", "Active");
   await expect(p).toHaveURL(/status=active/);
   await expect(p).not.toHaveURL(/page=2/);
-  await p.getByRole("button", { name: /^Joined/ }).click();
+  await p.getByRole("button", { name: /^Joined(?! (from|to))/ }).click();
   await expect(p).toHaveURL(/sort=joined/);
   await expect(
     p.getByText(/^Showing [\d,]+-[\d,]+ of [\d,]+ accounts?$|^No accounts$/),
   ).toBeVisible();
-  await p.getByLabel("Per page").selectOption("50");
+  await pickOption(p, "Per page", "50");
   await expect(p).toHaveURL(/size=50/);
   await p.reload();
-  await expect(p.getByLabel("Per page")).toHaveValue("50");
-  await expect(p.getByLabel("Status")).toHaveValue("active");
+  await expect(p.getByLabel("Per page")).toHaveText("50");
+  await expect(p.getByLabel("Status")).toHaveText("Active");
   await ctx.close();
 });
 

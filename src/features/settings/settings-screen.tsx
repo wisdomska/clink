@@ -28,6 +28,7 @@ import { NavTabs, TabPanel, useTab } from "@/components/ui/nav-tabs";
 import { AppearanceCard } from "./appearance";
 import { IdentityPicker } from "@/components/clink/identity-picker";
 import { InstallCard } from "./install-card";
+import { DateField, TimeField } from "@/components/ui/pickers";
 import { asIdentity } from "@/lib/app-identity";
 import { ProfileCard } from "./profile";
 
@@ -315,14 +316,13 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
                     <label htmlFor="started" className="text-base font-medium">
                       Together since
                     </label>
-                    <input
+                    <DateField
                       id="started"
-                      type="date"
                       value={startedOn}
+                      placeholder="Add a date"
                       max={new Date().toISOString().slice(0, 10)}
-                      onChange={async (e) => {
+                      onChange={async (next) => {
                         const prev = startedOn;
-                        const next = e.target.value;
                         setStartedOn(next);
                         const r = await fetch("/api/couple", {
                           method: "PATCH",
@@ -335,7 +335,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
                           toast.err("Couldn't save that date.");
                         }
                       }}
-                      className="mono rounded-input border-line bg-s2 text-text h-10 border px-3 text-sm"
+                      className="h-10 w-auto max-w-[200px] px-3 text-sm"
                     />
                   </div>
                   <RitualTimeRows />
@@ -527,20 +527,18 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
           <div className="grid grid-cols-2 gap-2">
             <div>
               <Label htmlFor="qs">From</Label>
-              <Input
+              <TimeField
                 id="qs"
-                type="time"
                 value={quiet.start}
-                onChange={(e) => setQuiet((q) => ({ ...q, start: e.target.value }))}
+                onChange={(v) => setQuiet((q) => ({ ...q, start: v }))}
               />
             </div>
             <div>
               <Label htmlFor="qe">To</Label>
-              <Input
+              <TimeField
                 id="qe"
-                type="time"
                 value={quiet.end}
-                onChange={(e) => setQuiet((q) => ({ ...q, end: e.target.value }))}
+                onChange={(v) => setQuiet((q) => ({ ...q, end: v }))}
               />
             </div>
           </div>

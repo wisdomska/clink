@@ -14,6 +14,7 @@ import { AvatarPicker } from "@/components/clink/avatar-picker";
 import { CityPicker, type City } from "@/components/clink/city-picker";
 import { Sheet } from "@/components/ui/sheet";
 import { LOVE_LANGUAGES } from "@/features/partner/partner-sheet";
+import { BirthdayField } from "@/components/ui/pickers";
 
 const MONTHS = [
   "January",
@@ -306,6 +307,7 @@ export function ProfileCard() {
           checked={draft.shareBday}
           onChange={(v) => set({ shareBday: v })}
         />
+        <BirthdayRow current={bday} />
         <HomeCityRow current={me.city || me.timezone} />
       </div>
 
@@ -412,6 +414,78 @@ function HomeCityRow({ current }: { current: string }) {
         <FieldError>{error}</FieldError>
         <Button loading={busy} softDisabled={!city} onClick={save}>
           Save home city
+        </Button>
+      </Sheet>
+    </>
+  );
+}
+
+/** Your date of birth: fix a typo here. It has to stay 18+, and only you ever see the year. */
+function BirthdayRow({ current }: { current: string | null }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [loaded, setLoaded] = useState<string | null>(null);
+  const [dob, setDob] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function openSheet() {
+    setOpen(true);
+    setError(null);
+    const r = await fetch("/api/me/dob").catch(() => null);
+    const d = r?.ok ? await r.json() : null;
+    setLoaded(d?.dob ?? "");
+    setDob(d?.dob ?? "");
+  }
+
+  async function save() {
+    if (!dob) return;
+    const [year, month, day] = dob.split("-").map(Number);
+    setBusy(true);
+    setError(null);
+    const r = await fetch("/api/me/dob", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ day, month, year }),
+    }).catch(() => null);
+    setBusy(false);
+    if (!r?.ok) {
+      const d = await r?.json().catch(() => ({}));
+      return setError(d?.message ?? "Couldn't save your birthday. Try again.");
+    }
+    setOpen(false);
+    toast.ok("Birthday saved.");
+    router.refresh();
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={openSheet}
+        className="press text-text border-line flex min-h-14 w-full cursor-pointer items-center justify-between gap-3 border-0 border-b bg-transparent px-4 py-2.5 text-left text-base font-medium"
+      >
+        <span>
+          Birthday
+          <span className="text-faint block text-[13px] font-normal">
+            {current ?? "Add your date of birth"}
+          </span>
+        </span>
+        <CaretRight size={18} className="text-faint" aria-hidden />
+      </button>
+      <Sheet open={open} onOpenChange={setOpen} title="Birthday" handle>
+        <div className="text-lg font-bold">When&apos;s your birthday?</div>
+        <p className="text-muted m-0 text-sm">
+          Only you see the year. If you share it, your partner sees the day and month.
+        </p>
+        {loaded === null ? (
+          <div className="an-skel bg-s2 rounded-input h-12" />
+        ) : (
+          <BirthdayField key={loaded} idPrefix="settings-dob" value={loaded} onChange={setDob} />
+        )}
+        <FieldError>{error}</FieldError>
+        <Button loading={busy} softDisabled={!dob || dob === loaded} onClick={save}>
+          Save birthday
         </Button>
       </Sheet>
     </>

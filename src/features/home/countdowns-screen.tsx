@@ -14,6 +14,7 @@ import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/cn";
 import { useCountdowns, formatTarget } from "./countdown-card";
 import { SplitFlap, EmptyBoard } from "./split-flap";
+import { DateField, TimeField } from "@/components/ui/pickers";
 
 export function CountdownsScreen() {
   const { me, coupleId } = useCouple();
@@ -217,22 +218,11 @@ export function CountdownsScreen() {
         <div className="grid grid-cols-[1.4fr_1fr] gap-2">
           <div>
             <Label htmlFor="cd-date">Date</Label>
-            <Input
-              id="cd-date"
-              type="date"
-              min={minDate}
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
+            <DateField id="cd-date" min={minDate} value={date} onChange={setDate} />
           </div>
           <div>
             <Label htmlFor="cd-time">Your time</Label>
-            <Input
-              id="cd-time"
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-            />
+            <TimeField id="cd-time" value={time} onChange={setTime} />
           </div>
         </div>
         <div>

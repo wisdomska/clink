@@ -38,6 +38,7 @@ import {
   type LetterRow,
   type TimelineRow,
 } from "./data";
+import { DateField } from "@/components/ui/pickers";
 
 const CONDITIONS = [
   "Open when you miss me",
@@ -542,13 +543,7 @@ function CapsuleSheet({
       </div>
       <div>
         <Label htmlFor="cd">Opens on</Label>
-        <Input
-          id="cd"
-          type="date"
-          min={tomorrow}
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
+        <DateField id="cd" min={tomorrow} value={date} onChange={setDate} />
       </div>
       <Textarea
         aria-label="What goes inside"
@@ -746,12 +741,11 @@ function MomentSheet({
       </div>
       <div>
         <Label htmlFor="md">When</Label>
-        <Input
+        <DateField
           id="md"
-          type="date"
           max={localParts(new Date(), me.timezone).dateKey}
           value={date}
-          onChange={(e) => setDate(e.target.value)}
+          onChange={setDate}
         />
       </div>
       <label className="press border-line bg-s2 flex h-11 cursor-pointer items-center gap-2 self-start rounded-full border px-4 text-sm font-medium">

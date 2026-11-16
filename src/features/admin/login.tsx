@@ -213,7 +213,6 @@ export function AdminLogin({ next }: { next: string }) {
               type="checkbox"
               checked={remember}
               onChange={(e) => setRemember(e.target.checked)}
-              className="h-4 w-4 accent-[var(--accent)]"
             />
             Remember my email on this device
           </label>

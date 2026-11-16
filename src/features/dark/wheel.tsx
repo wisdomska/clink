@@ -211,7 +211,8 @@ export function DareWheel() {
                   onChange={(e) =>
                     Number(e.target.value) >= 90 ? struck() : setStrike(Number(e.target.value))
                   }
-                  className="h-11 w-full accent-[var(--accent-dark)]"
+                  className="h-11 w-full"
+                  style={{ "--fill": `${strike}%` } as React.CSSProperties}
                 />
                 <Button variant="text" size="sm" className="text-muted" onClick={struck}>
                   Or tap to strike

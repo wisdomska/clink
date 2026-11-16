@@ -4,6 +4,7 @@ import { Check, MagnifyingGlass, MapPin } from "@phosphor-icons/react";
 import { cn } from "@/components/ui/cn";
 import { Hint, Label } from "@/components/ui/field";
 import { formatClock } from "@/lib/time";
+import { Select } from "@/components/ui/select";
 
 export interface City {
   city: string;
@@ -150,28 +151,21 @@ export function CityPicker({
       {manual && q.length >= 2 && (
         <div className="rounded-card border-line bg-s1 flex flex-col gap-2 border p-4">
           <Label htmlFor="home-country">Which country is {q} in?</Label>
-          <select
+          <Select
             id="home-country"
             value={value?.city === q ? value.country : ""}
-            onChange={(e) => {
-              const c = countries.find((x) => x.country === e.target.value);
+            placeholder={countries.length ? "Choose a country" : "Loading countries…"}
+            disabled={!countries.length}
+            options={countries.map((c) => ({ value: c.country, label: c.country }))}
+            onChange={(v) => {
+              const c = countries.find((x) => x.country === v);
               onChange(
                 c
                   ? { city: q, country: c.country, timezone: c.timezone, lat: c.lat, lng: c.lng }
                   : null,
               );
             }}
-            className="rounded-input border-line bg-s2 text-text h-12 border px-3 text-base"
-          >
-            <option value="" disabled>
-              {countries.length ? "Choose a country" : "Loading countries…"}
-            </option>
-            {countries.map((c) => (
-              <option key={c.country} value={c.country}>
-                {c.country}
-              </option>
-            ))}
-          </select>
+          />
           <Hint>We use the country&apos;s time zone for your clock and quiet hours.</Hint>
         </div>
       )}

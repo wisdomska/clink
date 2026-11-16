@@ -1,4 +1,5 @@
 "use client";
+import { BirthdayField } from "@/components/ui/pickers";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera } from "@phosphor-icons/react";
@@ -273,35 +274,17 @@ function DobStep({ onDone }: { onDone: () => void }) {
         When&apos;s your birthday?
       </Display>
       <Lead className="mt-2 mb-6">Clink is 18+. Your partner never sees this.</Lead>
-      <div className="grid grid-cols-[1fr_1fr_1.6fr] gap-2">
-        <Input
-          aria-label="Day"
-          inputMode="numeric"
-          placeholder="DD"
-          mono
-          className="text-center"
-          value={day}
-          onChange={(e) => setDay(e.target.value.replace(/\D/g, "").slice(0, 2))}
-        />
-        <Input
-          aria-label="Month"
-          inputMode="numeric"
-          placeholder="MM"
-          mono
-          className="text-center"
-          value={month}
-          onChange={(e) => setMonth(e.target.value.replace(/\D/g, "").slice(0, 2))}
-        />
-        <Input
-          aria-label="Year"
-          inputMode="numeric"
-          placeholder="YYYY"
-          mono
-          className="text-center"
-          value={year}
-          onChange={(e) => setYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
-        />
-      </div>
+      <BirthdayField
+        value={
+          day && month && year ? `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}` : ""
+        }
+        onChange={(v) => {
+          const [yy = "", mm = "", dd = ""] = v ? v.split("-") : [];
+          setYear(yy);
+          setMonth(mm);
+          setDay(dd);
+        }}
+      />
       <FieldError>{error}</FieldError>
       <div className="min-h-6 flex-1" />
       <Button loading={busy} disabled={!day || !month || year.length < 4} onClick={save}>

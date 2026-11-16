@@ -34,6 +34,7 @@ import { useConfirm } from "./ui";
 import { AdminPage } from "./list";
 import { NavTabs, TabPanel, useTab } from "@/components/ui/nav-tabs";
 import { AdminConversation } from "./conversation";
+import { timeAgo } from "@/lib/time";
 
 interface Detail {
   account: {
@@ -115,13 +116,8 @@ interface Detail {
 const when = (iso: string | null | undefined) =>
   iso ? new Date(iso).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }) : "Never";
 const ago = (iso: string | null | undefined) => {
-  if (!iso) return "never";
-  const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (m < 2) return "just now";
-  if (m < 60) return `${m} min ago`;
-  const h = Math.round(m / 60);
-  if (h < 48) return `${h} h ago`;
-  return `${Math.round(h / 24)} days ago`;
+  const t = timeAgo(iso);
+  return /ago$|now$|^Yesterday$|^Never$/.test(t) ? t.toLowerCase() : `on ${t}`;
 };
 const bytes = (n: number) =>
   n > 1e9

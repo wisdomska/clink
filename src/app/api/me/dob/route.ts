@@ -43,3 +43,30 @@ export const POST = handler(async (req: NextRequest) => {
   await admin.from("user_private").insert({ user_id: user.id, dob: toIsoDate(dob) });
   return ok({ ok: true });
 });
+
+/** Your own date of birth, for the Settings editor. Never your partner's. */
+export const GET = handler(async () => {
+  const { user } = await requireUser();
+  const { data } = await supabaseAdmin()
+    .from("user_private")
+    .select("dob")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  return ok({ dob: data?.dob ?? null });
+});
+
+/** Fix a typo in your birthday. It has to stay 18+; changes are rate limited and audited. */
+export const PATCH = handler(async (req: NextRequest) => {
+  const { user } = await requireUser();
+  await rateLimit(`dob-edit:${user.id}`, 3, 24 * 3600);
+  const dob = parseDob(await parseJson(req, dobSchema));
+  if (!dob) throw deny(422, "bad_date", "That date doesn't exist. Check the day and month.");
+  if (!isAdult(dob)) throw deny(422, "under_18", "Clink is 18+, so that date can't be saved.");
+  const { error } = await supabaseAdmin()
+    .from("user_private")
+    .update({ dob: toIsoDate(dob) })
+    .eq("user_id", user.id);
+  if (error) throw error;
+  await audit("dob_changed", user.id, {});
+  return ok({ ok: true, dob: toIsoDate(dob) });
+});
