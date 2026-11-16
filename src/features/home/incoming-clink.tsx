@@ -9,7 +9,7 @@ import { useClinkStore } from "./clink-store";
 import { feedback, flashTitle } from "@/lib/feedback";
 import { useTopSlot } from "@/lib/top-slot";
 import { useSendClink } from "./use-send-clink";
-import { HoldTogether } from "./hold-together";
+import { HoldTogether, HoldInvite } from "./hold-together";
 
 /** App-wide incoming Clink overlay (spec 9.5): slides in, soft pulse, auto-dismisses after 4 s. */
 export function IncomingClink() {
@@ -102,6 +102,7 @@ export function IncomingClink() {
         </>
       )}
       <HoldTogether />
+      <HoldInvite />
     </>
   );
 }

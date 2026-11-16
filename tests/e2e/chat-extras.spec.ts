@@ -19,6 +19,12 @@ test("edit a message, search the chat, browse media, and see On this day", async
   await a.keyboard.press("Enter");
   await expect(b.getByText("dinner at 8 tonight")).toBeVisible({ timeout: 10000 });
   await expect(b.getByText(/edited ·/)).toBeVisible();
+  // The stamp sits inside its bubble, never hanging under the next one.
+  const stamp = b.getByText(/edited ·/);
+  const bubble = stamp.locator("xpath=..");
+  const sb = (await stamp.boundingBox())!;
+  const bb = (await bubble.boundingBox())!;
+  expect(sb.y + sb.height).toBeLessThanOrEqual(bb.y + bb.height + 0.5);
 
   // Search.
   await a.getByRole("button", { name: "More" }).click();

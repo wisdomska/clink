@@ -17,6 +17,8 @@
   --color-accent: var(--accent);
   --color-ember: var(--accent-dark);
   --color-on-accent: var(--on-accent);
+  --color-champagne: var(--champagne);
+  --color-blush: var(--blush);
   --color-pa: var(--partner-a);
   --color-pb: var(--partner-b);
   --color-danger: var(--danger);

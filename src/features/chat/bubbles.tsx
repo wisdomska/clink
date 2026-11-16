@@ -443,7 +443,9 @@ export function Bubble({
         </div>
       ) : (
         <div
-          className="w-fit max-w-full px-3.5 pt-2 pb-1.5 text-[length:var(--chat-text,16px)] leading-[1.35] [overflow-wrap:anywhere] whitespace-pre-wrap"
+          // flow-root: the bubble grows around the floated time/"edited" stamp, so a stamp
+          // that wraps to its own line stays inside instead of hiding under the next bubble.
+          className="flow-root w-fit max-w-full px-3.5 pt-2 pb-1.5 text-[length:var(--chat-text,16px)] leading-[1.35] [overflow-wrap:anywhere] whitespace-pre-wrap"
           style={{
             borderRadius: radius(mine, pos),
             // Chat theme (themes.ts bubbleVars): fill, text and edge for both sides.
