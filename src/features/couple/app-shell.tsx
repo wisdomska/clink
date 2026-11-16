@@ -9,6 +9,7 @@ import { GameInviteToast } from "@/features/play/invite-toast";
 import { PushAsk } from "@/features/home/push-ask";
 import { SearchShortcut } from "@/features/search/search-shortcut";
 import { useCouple } from "@/features/couple/context";
+import { MessageTone } from "@/features/chat/message-tone";
 import { SoloHome, SoloGate, SOLO_OPEN } from "@/features/couple/solo";
 
 const HIDE_TABS = [/^\/play\/[^/]+\/[^/]+/, /^\/settings/, /^\/help/, /^\/plans\/watch\//];
@@ -87,6 +88,7 @@ export function AppShell({
       </div>
       {tabs && <TabBar />}
       {!solo && <IncomingClink />}
+      {!solo && <MessageTone />}
       {!solo && <PushAsk />}
     </>
   );

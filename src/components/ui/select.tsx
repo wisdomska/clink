@@ -51,7 +51,7 @@ export function Select({
         aria-label={label}
         className={cn(
           "press rounded-input border-line bg-s2 text-text data-[state=open]:border-accent focus-visible:border-accent data-[placeholder]:text-faint flex w-full min-w-0 cursor-pointer items-center justify-between gap-2 border text-left outline-none disabled:cursor-not-allowed disabled:opacity-50",
-          size === "md" ? "h-12 px-4 text-base" : "h-10 px-3 text-sm",
+          size === "md" ? "h-[52px] px-4 text-base" : "h-11 px-3 text-sm",
           className,
         )}
       >

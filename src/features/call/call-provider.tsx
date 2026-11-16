@@ -2,7 +2,8 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useCouple, useCoupleEvent } from "@/features/couple/context";
 import { toast } from "@/components/ui/toast";
-import { haptic, playSound } from "@/lib/feedback";
+import { haptic } from "@/lib/feedback";
+import { startTone, stopTones, primeTones } from "@/lib/tones";
 import { iceServers } from "./ice";
 import { CallScreen } from "./call-screen";
 
@@ -43,7 +44,7 @@ export const useCall = () => {
 const RING_TIMEOUT = 45_000;
 const ENDED_MESSAGES: Record<string, string> = {
   declined: "They can't pick up right now.",
-  busy: "They're on another call.",
+  elsewhere: "Answered on another device.",
   missed: "No answer.",
   failed: "Couldn't connect your networks. Try Wi-Fi on both sides, or call again in a moment.",
   media: "Clink needs your microphone (and camera for video) to call.",
@@ -56,7 +57,7 @@ const ENDED_MESSAGES: Record<string, string> = {
  * encrypted with DTLS-SRTP). The caller sends the offer once the callee accepts.
  */
 export function CallProvider({ children }: { children: React.ReactNode }) {
-  const { send, partner, presence } = useCouple();
+  const { send, partner, presence, me } = useCouple();
   const [call, setCall] = useState<CallState | null>(null);
   const [local, setLocal] = useState<MediaStream | null>(null);
   const [remote, setRemote] = useState<MediaStream | null>(null);
@@ -67,6 +68,13 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const ringTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ringTone = useRef<ReturnType<typeof setInterval> | null>(null);
   const iCalled = useRef(false);
+  const restarted = useRef(false);
+
+  // Warm up: audio unlock on the first tap, and relay credentials ahead of time.
+  useEffect(() => {
+    primeTones();
+    void iceServers();
+  }, []);
 
   /** The caller writes the call into the chat once it's over. */
   const logCall = (c: CallState | null, reason: string | null) => {
@@ -101,11 +109,13 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     if (ringTone.current) clearInterval(ringTone.current);
     ringTimer.current = null;
     ringTone.current = null;
+    stopTones();
   };
 
   const cleanup = useCallback(
     (reason: string | null) => {
       stopRinging();
+      restarted.current = false;
       pc.current?.close();
       pc.current = null;
       localRef.current?.getTracks().forEach((t) => t.stop());
@@ -141,21 +151,60 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     return s;
   };
 
-  const makePeer = (id: string, stream: MediaStream) => {
-    const p = new RTCPeerConnection({ iceServers: iceServers() });
+  const goLive = () => {
+    if (callRef.current && callRef.current.phase !== "live" && callRef.current.phase !== "ended") {
+      stopRinging();
+      update({ phase: "live", startedAt: callRef.current.startedAt ?? Date.now() });
+      haptic("success");
+    }
+  };
+
+  const makePeer = async (id: string, stream: MediaStream) => {
+    const p = new RTCPeerConnection({ iceServers: await iceServers() });
     stream.getTracks().forEach((t) => p.addTrack(t, stream));
     p.onicecandidate = (e) =>
       e.candidate && send("call:ice", { id, candidate: e.candidate.toJSON() });
-    p.ontrack = (e) => setRemote(e.streams[0] ?? new MediaStream([e.track]));
-    p.onconnectionstatechange = () => {
-      if (p.connectionState === "connected") {
-        update({ phase: "live", startedAt: callRef.current?.startedAt ?? Date.now() });
-        haptic("success");
-      } else if (p.connectionState === "failed") {
+    p.ontrack = (e) => {
+      const s = e.streams[0] ?? new MediaStream([e.track]);
+      // A fresh object each time, so the screen re-attaches when video joins audio.
+      setRemote(new MediaStream(s.getTracks()));
+      // Media actually flowing is the surest sign the call is up.
+      e.track.onunmute = () => goLive();
+    };
+    let lostTimer: ReturnType<typeof setTimeout> | null = null;
+    const onState = () => {
+      const st = p.connectionState ?? p.iceConnectionState;
+      const ice = p.iceConnectionState;
+      if (st === "connected" || ice === "connected" || ice === "completed") {
+        if (lostTimer) clearTimeout(lostTimer);
+        lostTimer = null;
+        goLive();
+      } else if (st === "failed" || ice === "failed") {
+        // One automatic retry over a fresh path (the relay, if direct failed).
+        if (!restarted.current && iCalled.current) {
+          restarted.current = true;
+          void (async () => {
+            const offer = await p.createOffer({ iceRestart: true });
+            await p.setLocalDescription(offer);
+            send("call:sdp", { id, sdp: p.localDescription?.toJSON() });
+          })().catch(() => undefined);
+          return;
+        }
+        if (restarted.current && !iCalled.current) return; // the caller is retrying
         send("call:end", { id, reason: "failed" });
         cleanup("failed");
+      } else if (ice === "disconnected" && !lostTimer) {
+        // Networks blip (lift, tunnel). Give it a moment before calling it.
+        lostTimer = setTimeout(() => {
+          if (pc.current === p && p.iceConnectionState === "disconnected") {
+            send("call:end", { id, reason: "failed" });
+            cleanup("failed");
+          }
+        }, 12000);
       }
     };
+    p.onconnectionstatechange = onState;
+    p.oniceconnectionstatechange = onState;
     pc.current = p;
     return p;
   };
@@ -199,7 +248,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ video }),
       }).catch(() => undefined);
-      ringTone.current = setInterval(() => playSound("tick"), 1800);
+      startTone("ringback");
       ringTimer.current = setTimeout(() => {
         if (callRef.current?.phase === "outgoing") {
           send("call:end", { id, reason: "missed" });
@@ -212,13 +261,58 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   );
 
   /* ------------------------------------------------------------- incoming */
+  const accept = useCallback(
+    async (reuse?: MediaStream | null) => {
+      const c = callRef.current;
+      if (!c || c.phase !== "incoming") return;
+      stopRinging();
+      update({ phase: "connecting" });
+      try {
+        const s =
+          reuse && reuse.getTracks().some((t) => t.readyState === "live")
+            ? reuse
+            : await getMedia(c.video);
+        await makePeer(c.id, s);
+        send("call:accept", { id: c.id, by: me.id });
+      } catch {
+        send("call:end", { id: c.id, reason: "declined" });
+        cleanup("media");
+      }
+    },
+    // makePeer and getMedia read only refs and stable setters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [send, update, cleanup, me.id],
+  );
+
   useCoupleEvent("call:ring", (p) => {
     const id = String(p.id);
-    if (!callRef.current) iCalled.current = false;
-    if (callRef.current) {
-      send("call:end", { id, reason: "busy" });
+    const cur = callRef.current;
+    if (cur?.id === id) return;
+    if (cur && cur.phase === "outgoing") {
+      // We called each other at the same moment. Don't say "busy": join into
+      // one call. The call with the smaller id wins; the other side answers it.
+      if (id < cur.id) {
+        stopRinging();
+        iCalled.current = false;
+        const keep = localRef.current;
+        const merged: CallState = { ...cur, id, video: cur.video || Boolean(p.video) };
+        callRef.current = { ...merged, phase: "incoming" };
+        setCall(callRef.current);
+        void accept(keep);
+      }
       return;
     }
+    if (cur && cur.phase !== "ended") {
+      // Already connected and they ring again: their side dropped. Take the new call.
+      pc.current?.close();
+      pc.current = null;
+      localRef.current?.getTracks().forEach((t) => t.stop());
+      localRef.current = null;
+      setLocal(null);
+      setRemote(null);
+      stopRinging();
+    }
+    iCalled.current = false;
     const next: CallState = {
       id,
       video: Boolean(p.video),
@@ -232,31 +326,13 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     };
     callRef.current = next;
     setCall(next);
+    startTone("ringtone");
     haptic([300, 200, 300, 200, 300]);
-    ringTone.current = setInterval(() => {
-      playSound("clink");
-      haptic([300, 200, 300]);
-    }, 2200);
+    ringTone.current = setInterval(() => haptic([300, 200, 300]), 2200);
     ringTimer.current = setTimeout(() => {
       if (callRef.current?.phase === "incoming") cleanup("missed");
     }, RING_TIMEOUT);
   });
-
-  const accept = useCallback(async () => {
-    const c = callRef.current;
-    if (!c || c.phase !== "incoming") return;
-    stopRinging();
-    update({ phase: "connecting" });
-    try {
-      const s = await getMedia(c.video);
-      makePeer(c.id, s);
-      send("call:accept", { id: c.id });
-    } catch {
-      send("call:end", { id: c.id, reason: "declined" });
-      cleanup("media");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [send, update, cleanup]);
 
   const decline = useCallback(() => {
     const c = callRef.current;
@@ -275,10 +351,16 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   /* ------------------------------------------------------------ signalling */
   useCoupleEvent("call:accept", async (p) => {
     const c = callRef.current;
-    if (!c || p.id !== c.id || c.phase !== "outgoing" || !localRef.current) return;
+    if (!c || p.id !== c.id) return;
+    // You answered on another of your devices: stop ringing here.
+    if (p.by === me.id) {
+      if (c.phase === "incoming") cleanup("local");
+      return;
+    }
+    if (c.phase !== "outgoing" || !localRef.current) return;
     stopRinging();
     update({ phase: "connecting" });
-    const peer = makePeer(c.id, localRef.current);
+    const peer = await makePeer(c.id, localRef.current);
     const offer = await peer.createOffer();
     await peer.setLocalDescription(offer);
     send("call:sdp", { id: c.id, sdp: peer.localDescription?.toJSON() });
@@ -310,7 +392,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   useCoupleEvent("call:end", (p) => {
     const c = callRef.current;
     if (!c || p.id !== c.id) return;
-    cleanup(String(p.reason ?? "ended"));
+    const reason = String(p.reason ?? "ended");
+    cleanup(reason === "busy" ? "declined" : reason);
   });
 
   useCoupleEvent("call:camera", (p) => {
@@ -374,7 +457,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         local,
         remote,
         start,
-        accept,
+        accept: () => void accept(),
         decline,
         hangUp,
         toggleMute,

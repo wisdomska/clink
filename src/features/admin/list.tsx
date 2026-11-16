@@ -222,14 +222,7 @@ export function FilterSelect({
       <label htmlFor={id} className="text-muted text-xs font-medium">
         {label}
       </label>
-      <Select
-        id={id}
-        value={value}
-        onChange={onChange}
-        options={options}
-        size="sm"
-        className="h-11"
-      />
+      <Select id={id} value={value} onChange={onChange} options={options} size="sm" />
     </div>
   );
 }
@@ -251,13 +244,7 @@ export function FilterDate({
       <label htmlFor={id} className="text-muted text-xs font-medium">
         {label}
       </label>
-      <DateField
-        id={id}
-        value={value}
-        onChange={onChange}
-        placeholder="Any"
-        className="h-11 px-3 text-sm"
-      />
+      <DateField id={id} value={value} onChange={onChange} placeholder="Any" size="sm" />
     </div>
   );
 }

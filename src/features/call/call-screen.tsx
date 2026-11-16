@@ -29,14 +29,19 @@ function Video({
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
-    if (ref.current && ref.current.srcObject !== stream) ref.current.srcObject = stream;
+    const v = ref.current;
+    if (!v) return;
+    if (v.srcObject !== stream) v.srcObject = stream;
+    // Explicit play: autoplay alone is flaky for live streams on phones.
+    void v.play().catch(() => undefined);
   }, [stream]);
   return (
     <video
       ref={ref}
       autoPlay
       playsInline
-      muted={muted}
+      // Sound always comes from the <audio> element; video stays muted so it can autoplay.
+      muted={muted ?? true}
       className={cn("object-cover", mirror && "-scale-x-100", className)}
     />
   );
@@ -109,9 +114,17 @@ export function CallScreen({
     useCall();
   const audioRef = useRef<HTMLAudioElement>(null);
   const [mini, setMini] = useState(false);
+  const [needsTap, setNeedsTap] = useState(false);
   useEffect(() => {
-    if (audioRef.current && audioRef.current.srcObject !== remote)
-      audioRef.current.srcObject = remote;
+    const a = audioRef.current;
+    if (!a) return;
+    if (a.srcObject !== remote) a.srcObject = remote;
+    if (!remote) return;
+    // If the browser blocks sound until a tap, offer one instead of silence.
+    void a
+      .play()
+      .then(() => setNeedsTap(false))
+      .catch(() => setNeedsTap(true));
   }, [remote, mini]);
   if (!call) return null;
   const live = call.phase === "live";
@@ -152,7 +165,13 @@ export function CallScreen({
       </motion.div>
     );
   }
-  const showRemoteVideo = call.video && live && remote && !call.remoteCameraOff;
+  // Show their picture as soon as it arrives, not only once the call reports "live".
+  const showRemoteVideo =
+    call.video &&
+    call.phase !== "incoming" &&
+    call.phase !== "ended" &&
+    Boolean(remote?.getVideoTracks().length) &&
+    !call.remoteCameraOff;
 
   const status =
     call.phase === "outgoing"
@@ -231,6 +250,17 @@ export function CallScreen({
             </>
           )}
         </div>
+        {needsTap && remote && (
+          <button
+            type="button"
+            onClick={() => {
+              void audioRef.current?.play().then(() => setNeedsTap(false));
+            }}
+            className="press mt-2 cursor-pointer rounded-full border-0 bg-white px-4 py-2 text-sm font-bold text-black"
+          >
+            Tap to hear {partnerName}
+          </button>
+        )}
         {live && call.video && call.remoteCameraOff && (
           <div className="text-sm text-white/70">{partnerName}&apos;s camera is off</div>
         )}
@@ -246,8 +276,8 @@ export function CallScreen({
             exit={{ opacity: 0, scale: 0.8 }}
             className={cn(
               "absolute overflow-hidden rounded-[14px] shadow-[0_8px_24px_rgba(0,0,0,.35)]",
-              live
-                ? "top-[calc(env(safe-area-inset-top)+16px)] right-4 h-44 w-28 cursor-grab"
+              live || showRemoteVideo
+                ? "top-[calc(env(safe-area-inset-top)+16px)] right-4 z-[2] h-44 w-28 cursor-grab"
                 : "inset-0 rounded-none opacity-40",
             )}
           >

@@ -81,7 +81,7 @@ export function useConfirm() {
                 value={typed}
                 autoComplete="off"
                 onChange={(e) => setTyped(e.target.value)}
-                className="rounded-input border-line bg-s2 text-text mono h-12 w-full border px-3 text-base"
+                className="rounded-input border-line bg-s2 text-text mono h-[52px] w-full border px-3 text-base"
               />
             </div>
           )}

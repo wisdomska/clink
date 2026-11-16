@@ -77,7 +77,7 @@ export function Pagination({
               onChange={(v) => onSize(Number(v))}
               options={sizes.map((s) => ({ value: String(s), label: String(s) }))}
               size="sm"
-              className="h-11 w-[84px]"
+              className="w-[84px]"
             />
           </span>
         )}

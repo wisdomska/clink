@@ -59,12 +59,7 @@ export function RitualTimeRows() {
           </span>
         </label>
         <div className="flex items-center gap-2">
-          <TimeField
-            id="ritual"
-            value={time}
-            onChange={setTime}
-            className="h-10 w-[120px] px-3 text-sm"
-          />
+          <TimeField id="ritual" value={time} onChange={setTime} size="sm" className="w-[120px]" />
           <Button
             size="sm"
             variant="ghost"

@@ -357,7 +357,7 @@ export function BucketList() {
             maxLength={140}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className="rounded-input bg-s2 text-text h-12 min-w-0 flex-1 border-0 px-3.5 text-base"
+            className="rounded-input bg-s2 text-text h-[52px] min-w-0 flex-1 border-0 px-3.5 text-base"
           />
           <Button type="submit" size="md" disabled={!text.trim()} aria-label="Add">
             <Plus size={20} weight="bold" />

@@ -66,7 +66,7 @@ export function ChatSearch({
   const term = q.trim();
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title="Search messages" handle>
-      <div className="rounded-input bg-s2 flex h-12 items-center gap-2 px-3.5">
+      <div className="rounded-input bg-s2 flex h-[52px] items-center gap-2 px-3.5">
         <MagnifyingGlass size={18} className="text-muted" aria-hidden />
         <input
           autoFocus

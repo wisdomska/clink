@@ -29,6 +29,7 @@ import { AppearanceCard } from "./appearance";
 import { IdentityPicker } from "@/components/clink/identity-picker";
 import { InstallCard } from "./install-card";
 import { DateField, TimeField } from "@/components/ui/pickers";
+import { messageToneOn, setMessageTone, playMessageTone } from "@/lib/tones";
 import { asIdentity } from "@/lib/app-identity";
 import { ProfileCard } from "./profile";
 
@@ -87,6 +88,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
   const router = useRouter();
   const ctx = useCouple();
   const { me, partner, settings } = ctx;
+  const [tone, setTone] = useState(() => (typeof window === "undefined" ? true : messageToneOn()));
   const [notify, setNotify] = useState<Record<string, boolean>>({
     clinks: true,
     chat: true,
@@ -161,6 +163,18 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
         {tab === "alerts" && (
           <TabPanel key="alerts" className="flex flex-col gap-4">
             <h2 className="sr-only">Notifications</h2>
+            <div className="rounded-card border-line bg-s1 overflow-hidden border">
+              <Toggle
+                label="Message tone"
+                sub="A soft chime when a message arrives while Clink is open. Calls always ring."
+                checked={tone}
+                onChange={(v) => {
+                  setTone(v);
+                  setMessageTone(v);
+                  if (v) playMessageTone();
+                }}
+              />
+            </div>
             <div className="rounded-card border-line bg-s1 overflow-hidden border">
               <Toggle
                 label="Clinks"
@@ -335,7 +349,8 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
                           toast.err("Couldn't save that date.");
                         }
                       }}
-                      className="h-10 w-auto max-w-[200px] px-3 text-sm"
+                      size="sm"
+                      className="w-auto max-w-[200px]"
                     />
                   </div>
                   <RitualTimeRows />

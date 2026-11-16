@@ -39,7 +39,9 @@ function centre(el: HTMLElement) {
 const daysIn = (y: number, m: number) => new Date(y, m + 1, 0).getDate();
 
 const field =
-  "press rounded-input border-line bg-s2 text-text data-[state=open]:border-accent focus-visible:border-accent flex h-[52px] w-full min-w-0 cursor-pointer items-center gap-2.5 border px-4 text-left text-base outline-none disabled:cursor-not-allowed disabled:opacity-50";
+  "press rounded-input border-line bg-s2 text-text data-[state=open]:border-accent focus-visible:border-accent flex w-full min-w-0 cursor-pointer items-center gap-2.5 border text-left outline-none disabled:cursor-not-allowed disabled:opacity-50";
+/** Field heights match Input and Select: 52 px, or 44 px for compact filter bars. */
+const SIZES = { md: "h-[52px] px-4 text-base", sm: "h-11 px-3 text-sm" } as const;
 const pop =
   "picker-pop rounded-card border-line bg-s1 z-[80] border p-3 shadow-[var(--shadow-float)] outline-none";
 
@@ -172,6 +174,7 @@ export function DateField({
   label,
   className,
   disabled,
+  size = "md",
 }: {
   id?: string;
   value: string;
@@ -182,6 +185,7 @@ export function DateField({
   label?: string;
   className?: string;
   disabled?: boolean;
+  size?: keyof typeof SIZES;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -190,7 +194,7 @@ export function DateField({
         id={id}
         disabled={disabled}
         aria-label={label ? `${label}${value ? `: ${formatDay(value)}` : ""}` : undefined}
-        className={cn(field, className)}
+        className={cn(field, SIZES[size], className)}
       >
         <CalendarBlank size={20} className="text-muted flex-none" aria-hidden />
         <span className={cn("min-w-0 truncate", !value && "text-faint")}>
@@ -223,6 +227,7 @@ export function TimeField({
   className,
   disabled,
   step = 5,
+  size = "md",
 }: {
   id?: string;
   value: string;
@@ -231,6 +236,7 @@ export function TimeField({
   className?: string;
   disabled?: boolean;
   step?: number;
+  size?: keyof typeof SIZES;
 }) {
   const [open, setOpen] = useState(false);
   const [h, m] = (value || "").split(":");
@@ -250,7 +256,7 @@ export function TimeField({
         id={id}
         disabled={disabled}
         aria-label={label ? `${label}${value ? `: ${value}` : ""}` : undefined}
-        className={cn(field, className)}
+        className={cn(field, SIZES[size], className)}
       >
         <Clock size={20} className="text-muted flex-none" aria-hidden />
         <span className={cn("mono", !value && "text-faint")}>{value || "--:--"}</span>
