@@ -21,6 +21,8 @@ export interface Person {
 }
 
 export interface CoupleContextValue {
+  /** Signed in and set up, but not linked with anyone yet. partner is a placeholder. */
+  solo: boolean;
   coupleId: string;
   me: Person;
   partner: Person;

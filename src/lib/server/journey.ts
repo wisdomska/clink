@@ -19,7 +19,8 @@ export async function journeyStep(userId: string): Promise<Step> {
 
 export function pathFor(step: Step, next?: string | null): string {
   if (step === "dob" || step === "profile") return "/onboarding";
-  if (step === "link") return next?.startsWith("/link") ? next : "/link";
+  // Not linked yet: honour where they were going (the app opens in solo mode), else the solo home, which leads with the invite.
+  if (step === "link") return next && next.startsWith("/") && !next.startsWith("//") ? next : "/us";
   if (next && next.startsWith("/") && !next.startsWith("//")) return next;
   return "/us";
 }

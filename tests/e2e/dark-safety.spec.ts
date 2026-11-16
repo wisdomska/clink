@@ -70,6 +70,6 @@ test.describe("After Dark safety (SAF-07, SAF-08)", () => {
       .single();
     expect(m!.storage_verified_gone_at).toBeTruthy();
     await b.goto("/us");
-    await expect(b).toHaveURL(/\/link/);
+    await expect(b.getByRole("heading", { name: "Link with your partner" })).toBeVisible();
   });
 });

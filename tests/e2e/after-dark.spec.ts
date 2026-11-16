@@ -244,8 +244,11 @@ test.describe("After Dark (spec section 7 and the must-pass safety tests)", () =
     await expect(b.getByText('"something just for me?"')).toBeVisible();
     await b.getByRole("button", { name: "Not right now" }).click();
     await expect(b.getByText("Sent: Not right now.")).toBeVisible();
+    // The reply shows optimistically; wait for the server to record it.
+    await expect
+      .poll(async () => (await (await a.request.get("/api/dark/requests")).json()).sent?.status)
+      .toBe("not_right_now");
     const s = await (await a.request.get("/api/dark/requests")).json();
-    expect(s.sent.status).toBe("not_right_now");
     expect(JSON.stringify(s)).not.toContain("declined");
     const again = await a.request.post("/api/dark/requests", { data: {} });
     expect(again.status()).toBe(429);
@@ -301,9 +304,9 @@ test.describe("After Dark (spec section 7 and the must-pass safety tests)", () =
       .single();
     expect(job!.verified_at).toBeTruthy();
     await b.goto("/us");
-    await expect(b).toHaveURL(/\/link/);
+    await expect(b.getByRole("heading", { name: "Link with your partner" })).toBeVisible();
     await a.goto("/chat");
-    await expect(a).toHaveURL(/\/link/);
+    await expect(a.getByRole("heading", { name: "Chat opens once you link" })).toBeVisible();
   });
 
   test("flow 10.4: spin within unlocked tiers, Pass is free, Spin again works", async ({

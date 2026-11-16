@@ -211,9 +211,14 @@ export function LinkScreen({
 
   return (
     <div className="an-screen flex flex-1 flex-col">
-      <IconButton label="Back" onClick={() => router.push("/onboarding")}>
-        <ArrowLeft size={20} />
-      </IconButton>
+      <div className="flex items-center justify-between">
+        <IconButton label="Back" onClick={() => router.push("/us")}>
+          <ArrowLeft size={20} />
+        </IconButton>
+        <Button variant="text" size="md" onClick={() => router.push("/us")}>
+          Skip for now
+        </Button>
+      </div>
       <Display size={36} className="mt-6">
         Link your partner
       </Display>
@@ -359,6 +364,13 @@ export function LinkScreen({
         </form>
       )}
       <FieldError>{error}</FieldError>
+      <p className="text-muted mt-8 text-center text-sm">
+        Not ready yet?{" "}
+        <a href="/us" className="text-link text-text hover:text-text">
+          Look around Clink first
+        </a>
+        . You can link any time from Settings.
+      </p>
     </div>
   );
 }

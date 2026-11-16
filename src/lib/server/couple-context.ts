@@ -26,15 +26,17 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
   } = await db.auth.getUser();
   if (!user) redirect(`/auth/reset?next=${encodeURIComponent(nextPath)}`);
   const step = await journeyStep(user.id);
-  if (step !== "app") redirect(pathFor(step));
+  // Not linked yet is fine: the app opens in solo mode instead of trapping you on /link.
+  if (step !== "app" && step !== "link") redirect(pathFor(step));
   // CHAT-07: optional PIN on open. Nothing is loaded until it is entered.
   const appLock = await appLockEnabled(user.id);
   if (appLock && !(await isAppUnlocked(user.id)))
     redirect(`/unlock?next=${encodeURIComponent(nextPath)}`);
-  const couple = (await activeCouple(user.id))!;
   const admin = supabaseAdmin();
   const cols =
     "id, display_name, avatar_kind, avatar_icon, avatar_path, home_city, country, timezone, latitude, longitude, partner_nickname, phone, discreet_mode, app_icon, notify, quiet_start, quiet_end, suspended_at, is_admin, bio, love_language, share_birthday";
+  const couple = await activeCouple(user.id);
+  if (!couple) return soloContext(user.id, user.email ?? null, appLock, cols);
   const [{ data: people }, { data: c }, { data: members }, { data: dark }, { data: dobs }] =
     await Promise.all([
       admin.from("profiles").select(cols).in("id", [user.id, couple.partnerId]),
@@ -82,6 +84,7 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
   const roleOf = (id: string) => (members!.find((m) => m.user_id === id)?.role ?? "a") as "a" | "b";
   const darkBoth = (dark ?? []).filter((d) => d.opted_in_at).length === 2;
   return {
+    solo: false,
     coupleId: couple.coupleId,
     me: await toPerson(meRow, roleOf(user.id)),
     partner: await toPerson(pRow, roleOf(couple.partnerId)),
@@ -111,6 +114,104 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
       quietEnd: meRow.quiet_end.slice(0, 5),
       allowSavedSpicyMine: Boolean(members!.find((m) => m.user_id === user.id)?.allow_saved_spicy),
       allowSavedSpicyBoth: (members ?? []).every((m) => m.allow_saved_spicy),
+    },
+  };
+}
+
+/** The app for someone who hasn't linked yet: their own profile, a placeholder partner. */
+async function soloContext(
+  userId: string,
+  email: string | null,
+  appLock: boolean,
+  cols: string,
+): Promise<CoupleContextValue> {
+  const admin = supabaseAdmin();
+  const [{ data: p }, { data: priv }] = await Promise.all([
+    admin.from("profiles").select(cols).eq("id", userId).single(),
+    admin.from("user_private").select("dob").eq("user_id", userId).maybeSingle(),
+  ]);
+  const row = p as unknown as {
+    display_name: string | null;
+    avatar_kind: string;
+    avatar_icon: string | null;
+    avatar_path: string | null;
+    home_city: string | null;
+    country: string | null;
+    timezone: string;
+    latitude: number | null;
+    longitude: number | null;
+    phone: string | null;
+    discreet_mode: boolean;
+    app_icon: string;
+    notify: Record<string, boolean>;
+    quiet_start: string;
+    quiet_end: string;
+    is_admin: boolean;
+    bio: string | null;
+    love_language: string | null;
+    share_birthday: boolean;
+  };
+  const me: Person = {
+    id: userId,
+    name: row.display_name ?? "You",
+    role: "a",
+    avatarIcon: (toMemoji(row.avatar_icon) ?? DEFAULT_AVATAR) as Person["avatarIcon"],
+    avatarUrl: row.avatar_kind === "photo" ? await avatarUrl(row.avatar_path) : null,
+    city: row.home_city ?? "",
+    country: row.country ?? "",
+    timezone: row.timezone,
+    lat: row.latitude === null ? null : Number(row.latitude),
+    lon: row.longitude === null ? null : Number(row.longitude),
+    nickname: null,
+    phone: row.phone,
+    bio: row.bio,
+    loveLanguage: row.love_language,
+    shareBirthday: row.share_birthday,
+    birthday: priv?.dob?.slice(5, 10) ?? null,
+  };
+  const partner: Person = {
+    ...me,
+    id: "",
+    name: "Your partner",
+    role: "b",
+    avatarIcon: DEFAULT_AVATAR as Person["avatarIcon"],
+    avatarUrl: null,
+    city: "",
+    country: "",
+    lat: null,
+    lon: null,
+    phone: null,
+    bio: null,
+    loveLanguage: null,
+    birthday: null,
+  };
+  return {
+    solo: true,
+    coupleId: "",
+    me,
+    partner,
+    startedOn: null,
+    chatTheme: "clink",
+    chatWallpaper: "none",
+    chatWallpaperMedia: null,
+    chatWallpaperBlur: false,
+    linkedAt: new Date().toISOString(),
+    ritualTime: "21:00",
+    ritualProposal: null,
+    darkVisible: false,
+    darkBoth: false,
+    discreet: row.discreet_mode,
+    appLock,
+    renderedAt: Date.now(),
+    isAdmin: row.is_admin,
+    email,
+    settings: {
+      appIcon: row.app_icon,
+      notify: row.notify,
+      quietStart: row.quiet_start.slice(0, 5),
+      quietEnd: row.quiet_end.slice(0, 5),
+      allowSavedSpicyMine: false,
+      allowSavedSpicyBoth: false,
     },
   };
 }

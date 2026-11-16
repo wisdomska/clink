@@ -8,6 +8,8 @@ import { useOnline, useStoredString } from "@/lib/hooks";
 import { GameInviteToast } from "@/features/play/invite-toast";
 import { PushAsk } from "@/features/home/push-ask";
 import { SearchShortcut } from "@/features/search/search-shortcut";
+import { useCouple } from "@/features/couple/context";
+import { SoloHome, SoloGate, SOLO_OPEN } from "@/features/couple/solo";
 
 const HIDE_TABS = [/^\/play\/[^/]+\/[^/]+/, /^\/settings/, /^\/help/, /^\/plans\/watch\//];
 
@@ -19,7 +21,18 @@ export function AppShell({
   banners: Array<{ id: string; kind: string; body: string }>;
 }) {
   const path = usePathname();
+  const { solo } = useCouple();
   const tabs = !HIDE_TABS.some((r) => r.test(path));
+  // Not linked yet: Us becomes the invite home, partner-only screens ask you to link.
+  const body = !solo ? (
+    children
+  ) : path === "/us" ? (
+    <SoloHome />
+  ) : SOLO_OPEN.some((r) => r.test(path)) ? (
+    children
+  ) : (
+    <SoloGate path={path} />
+  );
   const online = useOnline();
   const [dismissedRaw, setDismissedRaw] = useStoredString("clink_banners", "[]");
   let dismissed: string[] = [];
@@ -34,8 +47,8 @@ export function AppShell({
   return (
     <>
       <Rail />
-      <SearchShortcut />
-      <GameInviteToast />
+      {!solo && <SearchShortcut />}
+      {!solo && <GameInviteToast />}
       <div className={cn("app-main", !tabs && "no-tabs")}>
         {!online && (
           <div
@@ -70,11 +83,11 @@ export function AppShell({
             )}
           </div>
         ))}
-        {children}
+        {body}
       </div>
       {tabs && <TabBar />}
-      <IncomingClink />
-      <PushAsk />
+      {!solo && <IncomingClink />}
+      {!solo && <PushAsk />}
     </>
   );
 }

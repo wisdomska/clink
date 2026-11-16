@@ -55,6 +55,8 @@ export function CoupleProvider({
   const statusRef = useRef<PresenceStatus>("free");
 
   useEffect(() => {
+    // Solo (not linked yet): no partner to share presence or a channel with.
+    if (value.solo) return;
     const sb = supabaseBrowser();
     let disposed = false;
     let heartbeat: ReturnType<typeof setInterval> | undefined;
@@ -149,7 +151,7 @@ export function CoupleProvider({
       if (channelRef.current) void sb.removeChannel(channelRef.current);
       channelRef.current = null;
     };
-  }, [value.coupleId, value.me.id, value.partner.id]);
+  }, [value.solo, value.coupleId, value.me.id, value.partner.id]);
 
   const send = useCallback((event: string, payload: Record<string, unknown>) => {
     void channelRef.current?.send({ type: "broadcast", event, payload });

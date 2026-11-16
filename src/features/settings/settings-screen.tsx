@@ -232,58 +232,62 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
         {tab === "privacy" && (
           <TabPanel key="privacy" className="flex flex-col gap-4">
             <PrivacyCard />
-            <h2 className="m-0 mt-1 text-lg font-bold">After Dark</h2>
-            <div className="rounded-card border-line bg-s1 overflow-hidden border">
-              {darkSetUp ? (
-                <>
-                  <Toggle
-                    label="Allow saved spicy media"
-                    sub={
-                      savedBoth
-                        ? "On for both of you"
-                        : saved
-                          ? `On for you. Waiting on ${partner.name}.`
-                          : "You both need this on"
-                    }
-                    checked={saved}
-                    onChange={async (v) => {
-                      const prev = saved;
-                      setSaved(v);
-                      if (!v) setSavedBoth(false);
-                      try {
-                        const r = await fetch("/api/couple/allow-saved", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ allow: v }),
-                        });
-                        if (!r.ok) throw new Error();
-                        const d = await r.json();
-                        setSavedBoth(Boolean(d.both));
-                      } catch {
-                        setSaved(prev);
-                        toast.err("Couldn't save that.");
-                      }
-                    }}
-                  />
-                  <Row href="/dark/consent" last>
-                    <span>Your tiers</span>
-                    <span className="text-muted text-sm font-normal">
-                      {myTiers.length ? myTiers.join(", ") : "None yet"}
-                    </span>
-                  </Row>
-                </>
-              ) : (
-                <Row href="/dark/setup" last>
-                  <span>
-                    Set up After Dark
-                    <span className="text-faint block text-[13px] font-normal">
-                      18+, private, opens only when you both say yes.
-                    </span>
-                  </span>
-                  <CaretRight size={18} className="text-faint" aria-hidden />
-                </Row>
-              )}
-            </div>
+            {!ctx.solo && (
+              <>
+                <h2 className="m-0 mt-1 text-lg font-bold">After Dark</h2>
+                <div className="rounded-card border-line bg-s1 overflow-hidden border">
+                  {darkSetUp ? (
+                    <>
+                      <Toggle
+                        label="Allow saved spicy media"
+                        sub={
+                          savedBoth
+                            ? "On for both of you"
+                            : saved
+                              ? `On for you. Waiting on ${partner.name}.`
+                              : "You both need this on"
+                        }
+                        checked={saved}
+                        onChange={async (v) => {
+                          const prev = saved;
+                          setSaved(v);
+                          if (!v) setSavedBoth(false);
+                          try {
+                            const r = await fetch("/api/couple/allow-saved", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ allow: v }),
+                            });
+                            if (!r.ok) throw new Error();
+                            const d = await r.json();
+                            setSavedBoth(Boolean(d.both));
+                          } catch {
+                            setSaved(prev);
+                            toast.err("Couldn't save that.");
+                          }
+                        }}
+                      />
+                      <Row href="/dark/consent" last>
+                        <span>Your tiers</span>
+                        <span className="text-muted text-sm font-normal">
+                          {myTiers.length ? myTiers.join(", ") : "None yet"}
+                        </span>
+                      </Row>
+                    </>
+                  ) : (
+                    <Row href="/dark/setup" last>
+                      <span>
+                        Set up After Dark
+                        <span className="text-faint block text-[13px] font-normal">
+                          18+, private, opens only when you both say yes.
+                        </span>
+                      </span>
+                      <CaretRight size={18} className="text-faint" aria-hidden />
+                    </Row>
+                  )}
+                </div>
+              </>
+            )}
           </TabPanel>
         )}
 
@@ -291,38 +295,52 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
           <TabPanel key="account" className="flex flex-col gap-4">
             <h2 className="m-0 mt-1 text-lg font-bold">Linking and account</h2>
             <div className="rounded-card border-line bg-s1 overflow-hidden border">
-              <Row>
-                <span>Linked with {partner.name}</span>
-                <span className="text-muted text-sm font-normal">Since {since}</span>
-              </Row>
-              <div className="border-line flex min-h-14 items-center justify-between gap-3 border-b px-4 py-2.5">
-                <label htmlFor="started" className="text-base font-medium">
-                  Together since
-                </label>
-                <input
-                  id="started"
-                  type="date"
-                  value={startedOn}
-                  max={new Date().toISOString().slice(0, 10)}
-                  onChange={async (e) => {
-                    const prev = startedOn;
-                    const next = e.target.value;
-                    setStartedOn(next);
-                    const r = await fetch("/api/couple", {
-                      method: "PATCH",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ started_on: next || null }),
-                    }).catch(() => null);
-                    if (r?.ok) toast("Saved. It's on your timeline.");
-                    else {
-                      setStartedOn(prev);
-                      toast.err("Couldn't save that date.");
-                    }
-                  }}
-                  className="mono rounded-input border-line bg-s2 text-text h-10 border px-3 text-sm"
-                />
-              </div>
-              <RitualTimeRows />
+              {ctx.solo ? (
+                <Row href="/link">
+                  <span>
+                    Link with your partner
+                    <span className="text-faint block text-[13px] font-normal">
+                      Share your code, or enter theirs.
+                    </span>
+                  </span>
+                  <CaretRight size={18} className="text-faint" aria-hidden />
+                </Row>
+              ) : (
+                <>
+                  <Row>
+                    <span>Linked with {partner.name}</span>
+                    <span className="text-muted text-sm font-normal">Since {since}</span>
+                  </Row>
+                  <div className="border-line flex min-h-14 items-center justify-between gap-3 border-b px-4 py-2.5">
+                    <label htmlFor="started" className="text-base font-medium">
+                      Together since
+                    </label>
+                    <input
+                      id="started"
+                      type="date"
+                      value={startedOn}
+                      max={new Date().toISOString().slice(0, 10)}
+                      onChange={async (e) => {
+                        const prev = startedOn;
+                        const next = e.target.value;
+                        setStartedOn(next);
+                        const r = await fetch("/api/couple", {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ started_on: next || null }),
+                        }).catch(() => null);
+                        if (r?.ok) toast("Saved. It's on your timeline.");
+                        else {
+                          setStartedOn(prev);
+                          toast.err("Couldn't save that date.");
+                        }
+                      }}
+                      className="mono rounded-input border-line bg-s2 text-text h-10 border px-3 text-sm"
+                    />
+                  </div>
+                  <RitualTimeRows />
+                </>
+              )}
               <AccountRows />
               <PasskeyRows />
               <Row href="/help">
@@ -367,9 +385,11 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
               >
                 Sign out of all devices
               </Row>
-              <Row danger onClick={() => setUnlink(1)}>
-                Unlink from {partner.name}
-              </Row>
+              {!ctx.solo && (
+                <Row danger onClick={() => setUnlink(1)}>
+                  Unlink from {partner.name}
+                </Row>
+              )}
               <Row danger last onClick={() => setDel(true)}>
                 Delete my account
               </Row>
