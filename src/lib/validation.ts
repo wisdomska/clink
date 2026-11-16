@@ -26,6 +26,7 @@ export const profileSchema = z.object({
   bio: z.string().trim().max(160).optional(),
   love_language: z.enum(["words", "touch", "time", "gifts", "acts"]).nullable().optional(),
   share_birthday: z.boolean().optional(),
+  gender: z.enum(["woman", "man", "unspecified"]).nullable().optional(),
   phone: z
     .string()
     .trim()

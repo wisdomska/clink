@@ -6,7 +6,8 @@ import { feedback } from "@/lib/feedback";
 import {
   DEFAULT_AVATAR,
   MEMOJI_POSES,
-  PEOPLE,
+  peopleFor,
+  type Gender,
   avatarSrc,
   memojiKey,
   parseMemoji,
@@ -40,10 +41,11 @@ function onArrows(e: React.KeyboardEvent<HTMLDivElement>, cols: number) {
   radios[next]?.click();
 }
 
+/** The selected tick. Sits on the tile's edge (outside any clipping) with a ring, so it's never cut off. */
 function Badge() {
   return (
-    <span className="bg-accent text-on-accent absolute top-0.5 right-0.5 flex h-5 w-5 items-center justify-center rounded-full">
-      <Check size={12} weight="bold" aria-hidden />
+    <span className="bg-accent text-on-accent ring-app absolute -top-1 -right-1 z-[1] flex h-6 w-6 items-center justify-center rounded-full ring-2">
+      <Check size={13} weight="bold" aria-hidden />
     </span>
   );
 }
@@ -55,15 +57,22 @@ function Badge() {
 export function AvatarPicker({
   value,
   onChange,
+  gender = null,
 }: {
   value: string | null;
+  /** "" means a person is chosen but no pose yet: a pose must be picked. */
   onChange: (key: string) => void;
+  gender?: Gender | null;
 }) {
+  const people = peopleFor(gender);
   const current = parseMemoji(toMemoji(value) ?? "");
-  const [person, setPerson] = useState<string>(
+  const [personState, setPerson] = useState<string>(
     current?.person ?? parseMemoji(DEFAULT_AVATAR)!.person,
   );
-  const selected = toMemoji(value);
+  // If the cast changes (gender switched), fall back to the first person shown.
+  const person = people.some(([id]) => id === personState) ? personState : people[0]![0];
+  const selected = value ? toMemoji(value) : null;
+  const needsPose = !selected || parseMemoji(selected)?.person !== person;
   const poseInRow = MEMOJI_POSES.some(([p]) => selected === memojiKey(person, p));
 
   return (
@@ -81,7 +90,7 @@ export function AvatarPicker({
             )
           }
         >
-          {PEOPLE.map(([id, label]) => {
+          {people.map(([id, label]) => {
             const on = person === id;
             return (
               <button
@@ -95,11 +104,11 @@ export function AvatarPicker({
                   if (person === id) return;
                   feedback("select");
                   setPerson(id);
-                  // Keep the pose, swap the person.
-                  if (current) onChange(memojiKey(id, current.pose));
+                  // A new person needs a pose chosen for them.
+                  onChange("");
                 }}
                 className={cn(
-                  "relative flex aspect-square min-h-11 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 p-0 transition-colors",
+                  "relative flex aspect-square min-h-11 cursor-pointer items-center justify-center rounded-full border-2 p-0 transition-colors",
                   on ? "border-accent bg-s3" : "bg-s2 hover:bg-s3 border-transparent",
                 )}
               >
@@ -118,7 +127,12 @@ export function AvatarPicker({
         </div>
       </div>
       <div>
-        <p className="text-muted mb-2 text-xs font-bold">Pose</p>
+        <p
+          className={cn("mb-2 text-xs font-bold", needsPose ? "text-accent" : "text-muted")}
+          aria-live="polite"
+        >
+          {needsPose ? "Pose: pick one to finish your avatar" : "Pose"}
+        </p>
         <div
           role="radiogroup"
           aria-label="Pose"
@@ -146,7 +160,7 @@ export function AvatarPicker({
                   onChange(key);
                 }}
                 className={cn(
-                  "rounded-input relative flex aspect-square min-h-11 cursor-pointer items-center justify-center overflow-hidden border-2 p-0 transition-colors",
+                  "rounded-input relative flex aspect-square min-h-11 cursor-pointer items-center justify-center border-2 p-0 transition-colors",
                   on ? "border-accent bg-s3" : "bg-s2 hover:bg-s3 border-transparent",
                 )}
               >

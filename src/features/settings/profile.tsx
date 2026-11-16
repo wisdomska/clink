@@ -15,6 +15,8 @@ import { CityPicker, type City } from "@/components/clink/city-picker";
 import { Sheet } from "@/components/ui/sheet";
 import { LOVE_LANGUAGES } from "@/features/partner/partner-sheet";
 import { BirthdayField } from "@/components/ui/pickers";
+import { GENDERS, parseMemoji, type Gender } from "@/lib/avatars";
+import { Segmented } from "@/components/ui/segmented";
 
 const MONTHS = [
   "January",
@@ -46,6 +48,7 @@ interface Draft {
   shareBday: boolean;
   icon: string;
   photo: string | null;
+  gender: Gender | null;
 }
 
 function same(a: Draft, b: Draft) {
@@ -56,7 +59,8 @@ function same(a: Draft, b: Draft) {
     a.love === b.love &&
     a.shareBday === b.shareBday &&
     a.icon === b.icon &&
-    a.photo === b.photo
+    a.photo === b.photo &&
+    a.gender === b.gender
   );
 }
 
@@ -76,6 +80,7 @@ export function ProfileCard() {
     shareBday: me.shareBirthday,
     icon: me.avatarIcon,
     photo: me.avatarUrl,
+    gender: me.gender ?? null,
   };
   const [draft, setDraft] = useState<Draft>(initial);
   const [saved, setSaved] = useState<Draft>(initial);
@@ -96,6 +101,10 @@ export function ProfileCard() {
       setError("Give us something to call you.");
       return;
     }
+    if (!draft.photo && !parseMemoji(draft.icon)) {
+      setError("Pick a pose to finish your avatar.");
+      return;
+    }
     const before = saved;
     const next = draft;
     const body: Record<string, unknown> = {
@@ -104,6 +113,7 @@ export function ProfileCard() {
       bio: next.bio,
       love_language: next.love,
       share_birthday: next.shareBday,
+      gender: next.gender,
     };
     // Picking a 3D face (or dropping the photo) switches back from a photo.
     if (!next.photo && (next.icon !== me.avatarIcon || me.avatarUrl)) body.avatar_icon = next.icon;
@@ -220,7 +230,22 @@ export function ProfileCard() {
             }}
           />
         </div>
-        {!draft.photo && <AvatarPicker value={draft.icon} onChange={(icon) => set({ icon })} />}
+        <div>
+          <p className="text-muted mb-2 text-xs font-bold">I&apos;m a</p>
+          <Segmented
+            label="I'm a"
+            value={draft.gender ?? ("" as Gender)}
+            options={GENDERS.map(([value, label]) => ({ value, label }))}
+            onChange={(g) => set({ gender: g })}
+          />
+        </div>
+        {!draft.photo && (
+          <AvatarPicker
+            gender={draft.gender}
+            value={draft.icon}
+            onChange={(icon) => set({ icon })}
+          />
+        )}
       </section>
 
       <section

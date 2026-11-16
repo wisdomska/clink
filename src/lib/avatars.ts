@@ -20,6 +20,34 @@ export const PEOPLE = [
   ["p00", "Person with silver locs and dark skin"],
 ] as const;
 
+/** Who each person is for: "w" women, "m" men, "x" everyone. */
+export const PERSON_GENDER: Record<string, "w" | "m" | "x"> = {
+  p10: "w",
+  p13: "m",
+  p03: "w",
+  p12: "m",
+  p15: "w",
+  p22: "m",
+  p18: "m",
+  p20: "w",
+  p26: "m",
+  p00: "x",
+};
+
+export type Gender = "woman" | "man" | "unspecified";
+export const GENDERS: Array<[Gender, string]> = [
+  ["woman", "Woman"],
+  ["man", "Man"],
+  ["unspecified", "Not saying"],
+];
+
+/** The people to offer someone: their gender's cast plus the neutral ones; everyone if unsaid. */
+export function peopleFor(gender: Gender | null | undefined) {
+  if (gender !== "woman" && gender !== "man") return PEOPLE;
+  const g = gender === "woman" ? "w" : "m";
+  return PEOPLE.filter(([id]) => PERSON_GENDER[id] === g || PERSON_GENDER[id] === "x");
+}
+
 export const MEMOJI_POSES = [
   ["wave", "Waving"],
   ["heart", "Heart hands"],

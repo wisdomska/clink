@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input, FieldError } from "@/components/ui/field";
 import { Display, Lead, Mono } from "@/components/ui/heading";
 import { toast } from "@/components/ui/toast";
+import { GENDERS, parseMemoji, type Gender } from "@/lib/avatars";
+import { Segmented } from "@/components/ui/segmented";
 
 type IconKey = AvatarKey;
 
@@ -29,8 +31,10 @@ export function Onboarding({
   initialIcon,
   next,
   editing = false,
+  initialGender = null,
 }: {
   editing?: boolean;
+  initialGender?: Gender | null;
   needsDob: boolean;
   initialName: string;
   initialIcon: string;
@@ -42,6 +46,7 @@ export function Onboarding({
   const [name, setName] = useState(initialName);
   const [icon, setIcon] = useState<IconKey>(toMemoji(initialIcon) ?? DEFAULT_AVATAR);
   const [photo, setPhoto] = useState<string | null>(null);
+  const [gender, setGender] = useState<Gender | null>(initialGender);
   const [city, setCity] = useState<City | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -61,7 +66,15 @@ export function Onboarding({
         await patch({ display_name: name.trim() });
         setStep(2);
       } else if (step === 2) {
-        await patch({ avatar_icon: icon });
+        if (!gender) {
+          setError("Choose who you are, so we show the right faces.");
+          return;
+        }
+        if (!photo && !parseMemoji(icon)) {
+          setError("Pick a pose to finish your avatar.");
+          return;
+        }
+        await patch(photo ? { gender } : { avatar_icon: icon, gender });
         setStep(3);
       } else {
         const tz = city?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -129,9 +142,12 @@ export function Onboarding({
             />
           ))}
         </div>
-        <Button variant="text" size="sm" className="text-muted px-3" onClick={skip}>
-          Skip
-        </Button>
+        {/* The avatar step can't be skipped: who you are and your pose are needed. */}
+        {step !== 2 && (
+          <Button variant="text" size="sm" className="text-muted px-3" onClick={skip}>
+            Skip
+          </Button>
+        )}
       </div>
       <Mono className="mt-4">Step {step} of 3</Mono>
 
@@ -159,12 +175,26 @@ export function Onboarding({
           <Display size={36} className="mt-3">
             Pick your avatar
           </Display>
-          <Lead className="mt-2 mb-5">Pick a face and a mood. Or upload your own photo.</Lead>
+          <Lead className="mt-2 mb-5">Pick a face and a pose. Or upload your own photo.</Lead>
+          <div className="mb-5">
+            <p className="text-muted mb-2 text-xs font-bold">I&apos;m a</p>
+            <Segmented
+              label="I'm a"
+              value={gender ?? ("" as Gender)}
+              options={GENDERS.map(([value, label]) => ({ value, label }))}
+              onChange={(g) => {
+                setGender(g);
+                setError(null);
+              }}
+            />
+          </div>
           <div className="mb-5 flex items-center gap-4">
             <div className="rounded-card border-line bg-s2 relative flex h-24 w-24 flex-none items-center justify-center overflow-hidden border">
               {photo ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={photo} alt="Your photo" className="h-full w-full object-cover" />
+              ) : !parseMemoji(icon) ? (
+                <span className="text-faint px-2 text-center text-xs font-medium">Pick a pose</span>
               ) : (
                 <motion.img
                   key={icon}
@@ -207,13 +237,19 @@ export function Onboarding({
               onChange={(e) => e.target.files?.[0] && uploadPhoto(e.target.files[0])}
             />
           </div>
-          <AvatarPicker
-            value={photo ? null : icon}
-            onChange={(k) => {
-              setIcon(k);
-              setPhoto(null);
-            }}
-          />
+          {gender ? (
+            <AvatarPicker
+              gender={gender}
+              value={photo ? null : icon}
+              onChange={(k) => {
+                setIcon(k);
+                setPhoto(null);
+                setError(null);
+              }}
+            />
+          ) : (
+            <p className="text-muted m-0 text-sm">Choose above to see your faces.</p>
+          )}
         </div>
       )}
 

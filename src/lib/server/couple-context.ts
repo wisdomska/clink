@@ -38,7 +38,7 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
     redirect(`/unlock?next=${encodeURIComponent(nextPath)}`);
   const admin = supabaseAdmin();
   const cols =
-    "id, display_name, avatar_kind, avatar_icon, avatar_path, home_city, country, timezone, latitude, longitude, partner_nickname, phone, discreet_mode, app_icon, notify, quiet_start, quiet_end, suspended_at, is_admin, bio, love_language, share_birthday";
+    "id, display_name, avatar_kind, avatar_icon, avatar_path, home_city, country, timezone, latitude, longitude, partner_nickname, phone, discreet_mode, app_icon, notify, quiet_start, quiet_end, suspended_at, is_admin, bio, love_language, share_birthday, gender";
   if (!couple) return soloContext(user.id, user.email ?? null, appLock, cols);
   const [{ data: people }, { data: c }, { data: members }, { data: dark }, { data: dobs }] =
     await Promise.all([
@@ -78,6 +78,7 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
     bio: p.bio,
     loveLanguage: p.love_language,
     shareBirthday: p.share_birthday,
+    gender: p.id === user.id ? ((p as { gender?: Person["gender"] }).gender ?? null) : null,
     // Day and month only, and only when they chose to share it (or it's you).
     birthday:
       p.share_birthday || p.id === user.id
@@ -157,6 +158,7 @@ async function soloContext(
     bio: string | null;
     love_language: string | null;
     share_birthday: boolean;
+    gender: Person["gender"];
   };
   const me: Person = {
     id: userId,
@@ -175,6 +177,7 @@ async function soloContext(
     loveLanguage: row.love_language,
     shareBirthday: row.share_birthday,
     birthday: priv?.dob?.slice(5, 10) ?? null,
+    gender: row.gender ?? null,
   };
   const partner: Person = {
     ...me,

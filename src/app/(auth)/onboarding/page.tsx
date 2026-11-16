@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
 import { journeyStep } from "@/lib/server/journey";
-import { DEFAULT_AVATAR } from "@/lib/avatars";
+import { type Gender, DEFAULT_AVATAR } from "@/lib/avatars";
 import { Onboarding } from "./onboarding";
 
 export const metadata: Metadata = { title: "Set up" };
@@ -24,7 +24,7 @@ export default async function OnboardingPage({
   if (!editing && step === "app") redirect("/us");
   const { data: profile } = await db
     .from("profiles")
-    .select("display_name, avatar_icon, home_city, timezone")
+    .select("display_name, avatar_icon, home_city, timezone, gender")
     .eq("id", user.id)
     .single();
   return (
@@ -36,6 +36,7 @@ export default async function OnboardingPage({
         ""
       }
       initialIcon={profile?.avatar_icon ?? DEFAULT_AVATAR}
+      initialGender={(profile?.gender as Gender | null) ?? null}
       next={next ?? null}
       editing={editing}
     />

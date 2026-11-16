@@ -7,14 +7,24 @@ import { admin } from "./helpers";
 test("pick a memoji avatar, upload your own photo, and switch back", async ({ couple }) => {
   const { a, nia } = couple;
   await a.goto("/onboarding?edit=1");
+  const iam = a.getByRole("radiogroup", { name: "I'm a" });
   const people = a.getByRole("radiogroup", { name: "Person", exact: true });
   const poses = a.getByRole("radiogroup", { name: "Pose", exact: true });
+  // Only your cast is offered: women (plus the neutral face), men (plus it), or everyone.
+  await iam.getByRole("radio", { name: "Woman", exact: true }).click();
+  await expect(people.getByRole("radio")).toHaveCount(5);
+  await iam.getByRole("radio", { name: "Man", exact: true }).click();
+  await expect(people.getByRole("radio")).toHaveCount(6);
+  await iam.getByRole("radio", { name: "Not saying" }).click();
   await expect(people.getByRole("radio")).toHaveCount(10);
   await expect(poses.getByRole("radio")).toHaveCount(12);
   await people.getByRole("radio", { name: "Man with dark skin and spiky hair" }).click();
   await expect(
     people.getByRole("radio", { name: "Man with dark skin and spiky hair" }),
   ).toHaveAttribute("aria-checked", "true");
+  // A new person needs a pose: Continue won't go on without one.
+  await a.getByRole("button", { name: "Continue" }).click();
+  await expect(a.getByText("Pick a pose to finish your avatar.")).toBeVisible();
   await poses.getByRole("radio", { name: "Party", exact: true }).click();
   await expect(poses.getByRole("radio", { name: "Party", exact: true })).toHaveAttribute(
     "aria-checked",
@@ -32,6 +42,9 @@ test("pick a memoji avatar, upload your own photo, and switch back", async ({ co
           ?.avatar_icon,
     )
     .toBe("m-p13-party");
+  expect(
+    (await admin.from("profiles").select("gender").eq("id", nia.id).single()).data?.gender,
+  ).toBe("unspecified");
 
   // Any photo, no content filter: it is only resized and stripped of metadata.
   await a.goto("/onboarding?edit=1");

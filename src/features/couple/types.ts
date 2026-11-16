@@ -18,6 +18,8 @@ export interface Person {
   shareBirthday: boolean;
   /** "MM-DD", when shared. */
   birthday: string | null;
+  /** Picks which avatar cast to offer. Your own only; null for your partner. */
+  gender?: "woman" | "man" | "unspecified" | null;
 }
 
 export interface CoupleContextValue {
