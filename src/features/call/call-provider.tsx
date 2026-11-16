@@ -42,6 +42,13 @@ export const useCall = () => {
 };
 
 const RING_TIMEOUT = 45_000;
+const forceRelay = () => {
+  try {
+    return localStorage.getItem("clink_force_relay") === "1";
+  } catch {
+    return false;
+  }
+};
 const ENDED_MESSAGES: Record<string, string> = {
   declined: "They can't pick up right now.",
   elsewhere: "Answered on another device.",
@@ -160,7 +167,11 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   };
 
   const makePeer = async (id: string, stream: MediaStream) => {
-    const p = new RTCPeerConnection({ iceServers: await iceServers() });
+    const p = new RTCPeerConnection({
+      iceServers: await iceServers(),
+      // Support/testing: force every call through the TURN relay to prove it works.
+      iceTransportPolicy: forceRelay() ? "relay" : "all",
+    });
     stream.getTracks().forEach((t) => p.addTrack(t, stream));
     p.onicecandidate = (e) =>
       e.candidate && send("call:ice", { id, candidate: e.candidate.toJSON() });

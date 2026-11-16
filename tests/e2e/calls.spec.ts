@@ -110,3 +110,34 @@ test.describe("Calls", () => {
     await expect(onB).toBeHidden({ timeout: 6000 });
   });
 });
+
+// Phones on mobile data can't reach each other directly; the TURN relay
+// carries the call. Forced relay-only, it must still connect with sound.
+test("calls connect through the TURN relay alone", async ({ couple }) => {
+  test.skip(!process.env.CF_TURN_KEY_ID, "needs the Cloudflare TURN key");
+  test.setTimeout(60_000);
+  const { a, b } = couple;
+  for (const p of [a, b]) {
+    await p.goto("/us");
+    await p.evaluate(() => localStorage.setItem("clink_force_relay", "1"));
+  }
+  await a.goto("/chat");
+  await a.getByRole("button", { name: "Video call" }).click();
+  const incoming = b.getByRole("dialog", { name: "Video call with Nia" });
+  await expect(incoming.getByText("Incoming video call")).toBeVisible({ timeout: 15000 });
+  await incoming.getByRole("button", { name: "Accept" }).click();
+  const outgoing = a.getByRole("dialog", { name: "Video call with Theo" });
+  await expect(outgoing.getByText(/^0:0\d$/)).toBeVisible({ timeout: 25000 });
+  for (const p of [a, b]) {
+    await expect
+      .poll(() =>
+        p.evaluate(
+          () =>
+            Array.from(document.querySelectorAll("video")).filter((v) => v.videoWidth > 0).length,
+        ),
+      )
+      .toBeGreaterThanOrEqual(2);
+    await expect.poll(() => p.evaluate(remoteAudioPlaying)).toBe(true);
+  }
+  await outgoing.getByRole("button", { name: "End" }).click();
+});
