@@ -19,7 +19,7 @@ import { toast } from "@/components/ui/toast";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { subscribeAuthed } from "@/lib/realtime";
 import { MemojiArt } from "@/components/clink/memoji-art";
-import { parseMemoji, DEFAULT_AVATAR } from "@/lib/avatars";
+import { parseMemoji, toMemoji, DEFAULT_AVATAR } from "@/lib/avatars";
 import { Sheet } from "@/components/ui/sheet";
 import { Avatar, type AvatarIcon } from "@/components/ui/avatar";
 
@@ -391,7 +391,7 @@ export function LinkScreen({
   );
 }
 
-/** The two of you as memoji: you blowing a kiss, them with heart hands. */
+/** The two of you as memoji: you with heart hands, them with heart eyes. */
 function LinkedPair() {
   const [pair, setPair] = useState<{ mine: string; theirs: string } | null>(null);
   useEffect(() => {
@@ -399,11 +399,11 @@ function LinkedPair() {
     void fetch("/api/me/state")
       .then((r) => r.json())
       .then((s: { myAvatar?: string | null; partnerAvatar?: string | null }) => {
-        const person = (k?: string | null, fallback = "p15") =>
-          parseMemoji(k ?? "")?.person ?? fallback;
-        if (live) setPair({ mine: person(s.myAvatar), theirs: person(s.partnerAvatar, "p12") });
+        const person = (k?: string | null, fallback = "w2") =>
+          parseMemoji(toMemoji(k) ?? "")?.person ?? fallback;
+        if (live) setPair({ mine: person(s.myAvatar), theirs: person(s.partnerAvatar, "m6") });
       })
-      .catch(() => live && setPair({ mine: "p15", theirs: "p12" }));
+      .catch(() => live && setPair({ mine: "w2", theirs: "m6" }));
     return () => {
       live = false;
     };
@@ -412,10 +412,10 @@ function LinkedPair() {
     <div className="relative flex h-[150px] items-end justify-center" aria-hidden>
       {pair && (
         <>
-          <MemojiArt person={pair.mine} pose="kiss" size={132} tilt={-4} />
+          <MemojiArt person={pair.mine} pose="hearthands" size={132} tilt={-4} />
           <MemojiArt
             person={pair.theirs}
-            pose="heart"
+            pose="hearteyes"
             size={132}
             tilt={4}
             delay={0.12}

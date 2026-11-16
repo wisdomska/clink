@@ -16,7 +16,7 @@ test("edit your profile (avatar, about, love language, birthday) and see your pa
     .click();
   await sheet
     .getByRole("radiogroup", { name: "Pose", exact: true })
-    .getByRole("radio", { name: "Party", exact: true })
+    .getByRole("radio", { name: "Star-struck", exact: true })
     .click();
   await sheet.getByLabel("About you").fill("Coffee snob, terrible singer.");
   await sheet.getByRole("radio", { name: "Quality time" }).click();
@@ -36,7 +36,7 @@ test("edit your profile (avatar, about, love language, birthday) and see your pa
         ).data,
     )
     .toEqual({
-      avatar_icon: "m-p15-party",
+      avatar_icon: "m-w2-starstruck",
       bio: "Coffee snob, terrible singer.",
       love_language: "time",
       share_birthday: true,

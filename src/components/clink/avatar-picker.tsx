@@ -4,7 +4,7 @@ import { Check } from "@phosphor-icons/react";
 import { cn } from "@/components/ui/cn";
 import { feedback } from "@/lib/feedback";
 import {
-  MEMOJI_POSES,
+  posesFor,
   peopleFor,
   type Gender,
   avatarSrc,
@@ -73,7 +73,7 @@ export function AvatarPicker({
   const person = personState && people.some(([id]) => id === personState) ? personState : null;
   const selected = value ? toMemoji(value) : null;
   const needsPose = !selected || parseMemoji(selected)?.person !== person;
-  const poseInRow = MEMOJI_POSES.some(([p]) => selected === memojiKey(person ?? "", p));
+  const poseInRow = posesFor(person ?? "").some(([p]) => selected === memojiKey(person ?? "", p));
 
   return (
     <div className="flex flex-col gap-4">
@@ -119,7 +119,7 @@ export function AvatarPicker({
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={avatarSrc(memojiKey(id, "love"))}
+                  src={avatarSrc(memojiKey(id, "wink"))}
                   alt=""
                   loading="lazy"
                   draggable={false}
@@ -151,7 +151,7 @@ export function AvatarPicker({
                 onArrows(e, cols || 4);
               }}
             >
-              {MEMOJI_POSES.map(([pose, label], i) => {
+              {posesFor(person).map(([pose, label], i) => {
                 const key = memojiKey(person, pose);
                 const on = selected === key;
                 // Roving tab stop: the selected pose, else the first.

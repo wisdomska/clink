@@ -16,8 +16,8 @@ import {
  * the Device frame hides them from assistive tech and nothing is focusable.
  */
 
-const THEO = "/memoji/p12-love.webp";
-const AMA = "/memoji/p10-love.webp";
+const THEO = "/memoji/m6-hearteyes.webp";
+const AMA = "/memoji/w1-hearteyes.webp";
 
 function TopBar({ title, sub, art }: { title: string; sub?: React.ReactNode; art?: string }) {
   return (

@@ -10,23 +10,23 @@ test("pick a memoji avatar, upload your own photo, and switch back", async ({ co
   const iam = a.getByRole("radiogroup", { name: "I'm a" });
   const people = a.getByRole("radiogroup", { name: "Person", exact: true });
   const poses = a.getByRole("radiogroup", { name: "Pose", exact: true });
-  // Only your cast is offered: women (plus the neutral face), men (plus it), or everyone.
+  // Only your cast is offered: the 8 women, the 8 men, or all 16.
   await iam.getByRole("radio", { name: "Woman", exact: true }).click();
-  await expect(people.getByRole("radio")).toHaveCount(5);
+  await expect(people.getByRole("radio")).toHaveCount(8);
   await iam.getByRole("radio", { name: "Man", exact: true }).click();
-  await expect(people.getByRole("radio")).toHaveCount(6);
+  await expect(people.getByRole("radio")).toHaveCount(8);
   await iam.getByRole("radio", { name: "Not saying" }).click();
-  await expect(people.getByRole("radio")).toHaveCount(10);
-  await people.getByRole("radio", { name: "Man with dark skin and spiky hair" }).click();
+  await expect(people.getByRole("radio")).toHaveCount(16);
+  await people.getByRole("radio", { name: "Man with dark skin, spiky hair and glasses" }).click();
   await expect(
-    people.getByRole("radio", { name: "Man with dark skin and spiky hair" }),
+    people.getByRole("radio", { name: "Man with dark skin, spiky hair and glasses" }),
   ).toHaveAttribute("aria-checked", "true");
-  await expect(poses.getByRole("radio")).toHaveCount(12);
+  await expect(poses.getByRole("radio")).toHaveCount(16);
   // A new person needs a pose: Continue won't go on without one.
   await a.getByRole("button", { name: "Continue" }).click();
   await expect(a.getByText("Pick a pose to finish your avatar.")).toBeVisible();
-  await poses.getByRole("radio", { name: "Party", exact: true }).click();
-  await expect(poses.getByRole("radio", { name: "Party", exact: true })).toHaveAttribute(
+  await poses.getByRole("radio", { name: "Star-struck", exact: true }).click();
+  await expect(poses.getByRole("radio", { name: "Star-struck", exact: true })).toHaveAttribute(
     "aria-checked",
     "true",
   );
@@ -41,7 +41,7 @@ test("pick a memoji avatar, upload your own photo, and switch back", async ({ co
         (await admin.from("profiles").select("avatar_icon").eq("id", nia.id).single()).data
           ?.avatar_icon,
     )
-    .toBe("m-p13-party");
+    .toBe("m-m2-starstruck");
   expect(
     (await admin.from("profiles").select("gender").eq("id", nia.id).single()).data?.gender,
   ).toBe("unspecified");
@@ -69,11 +69,11 @@ test("pick a memoji avatar, upload your own photo, and switch back", async ({ co
   await expect(a.getByRole("radiogroup", { name: "Pose", exact: true })).toHaveCount(0);
   await a
     .getByRole("radiogroup", { name: "Person", exact: true })
-    .getByRole("radio", { name: "Man with dark skin and spiky hair" })
+    .getByRole("radio", { name: "Man with dark skin, spiky hair and glasses" })
     .click();
   await a
     .getByRole("radiogroup", { name: "Pose", exact: true })
-    .getByRole("radio", { name: "Laughing", exact: true })
+    .getByRole("radio", { name: "Tongue out", exact: true })
     .click();
   await a
     .getByRole("button", { name: "Next" })
@@ -86,7 +86,7 @@ test("pick a memoji avatar, upload your own photo, and switch back", async ({ co
         (await admin.from("profiles").select("avatar_kind, avatar_icon").eq("id", nia.id).single())
           .data,
     )
-    .toEqual({ avatar_kind: "icon", avatar_icon: "m-p13-laugh" });
+    .toEqual({ avatar_kind: "icon", avatar_icon: "m-m2-tongue" });
   await a.goto("/settings");
-  await expect(a.locator('img[src="/memoji/p13-laugh.webp"]:visible').first()).toBeVisible();
+  await expect(a.locator('img[src="/memoji/m2-tongue.webp"]:visible').first()).toBeVisible();
 });
