@@ -17,11 +17,11 @@ test("pick a memoji avatar, upload your own photo, and switch back", async ({ co
   await expect(people.getByRole("radio")).toHaveCount(6);
   await iam.getByRole("radio", { name: "Not saying" }).click();
   await expect(people.getByRole("radio")).toHaveCount(10);
-  await expect(poses.getByRole("radio")).toHaveCount(12);
   await people.getByRole("radio", { name: "Man with dark skin and spiky hair" }).click();
   await expect(
     people.getByRole("radio", { name: "Man with dark skin and spiky hair" }),
   ).toHaveAttribute("aria-checked", "true");
+  await expect(poses.getByRole("radio")).toHaveCount(12);
   // A new person needs a pose: Continue won't go on without one.
   await a.getByRole("button", { name: "Continue" }).click();
   await expect(a.getByText("Pick a pose to finish your avatar.")).toBeVisible();
@@ -65,6 +65,12 @@ test("pick a memoji avatar, upload your own photo, and switch back", async ({ co
     )
     .toBe("photo");
 
+  // Poses stay folded until you tap your person.
+  await expect(a.getByRole("radiogroup", { name: "Pose", exact: true })).toHaveCount(0);
+  await a
+    .getByRole("radiogroup", { name: "Person", exact: true })
+    .getByRole("radio", { name: "Man with dark skin and spiky hair" })
+    .click();
   await a
     .getByRole("radiogroup", { name: "Pose", exact: true })
     .getByRole("radio", { name: "Laughing", exact: true })

@@ -4,7 +4,6 @@ import { Check } from "@phosphor-icons/react";
 import { cn } from "@/components/ui/cn";
 import { feedback } from "@/lib/feedback";
 import {
-  DEFAULT_AVATAR,
   MEMOJI_POSES,
   peopleFor,
   type Gender,
@@ -66,14 +65,15 @@ export function AvatarPicker({
 }) {
   const people = peopleFor(gender);
   const current = parseMemoji(toMemoji(value) ?? "");
-  const [personState, setPerson] = useState<string>(
-    current?.person ?? parseMemoji(DEFAULT_AVATAR)!.person,
-  );
-  // If the cast changes (gender switched), fall back to the first person shown.
-  const person = people.some(([id]) => id === personState) ? personState : people[0]![0];
+  // Nobody is selected until you choose (or already had an avatar).
+  const [personState, setPerson] = useState<string | null>(current?.person ?? null);
+  // Poses stay folded away until a person is tapped, so the page stays short.
+  const [open, setOpen] = useState(false);
+  // If the cast changes (gender switched), a person outside it no longer counts.
+  const person = personState && people.some(([id]) => id === personState) ? personState : null;
   const selected = value ? toMemoji(value) : null;
   const needsPose = !selected || parseMemoji(selected)?.person !== person;
-  const poseInRow = MEMOJI_POSES.some(([p]) => selected === memojiKey(person, p));
+  const poseInRow = MEMOJI_POSES.some(([p]) => selected === memojiKey(person ?? "", p));
 
   return (
     <div className="flex flex-col gap-4">
@@ -99,11 +99,16 @@ export function AvatarPicker({
                 role="radio"
                 aria-checked={on}
                 aria-label={label}
-                tabIndex={on ? 0 : -1}
+                tabIndex={on || (!person && id === people[0]![0]) ? 0 : -1}
                 onClick={() => {
-                  if (person === id) return;
                   feedback("select");
+                  if (person === id) {
+                    // Tapping your person again folds the poses away (or opens them).
+                    setOpen((o) => !o);
+                    return;
+                  }
                   setPerson(id);
+                  setOpen(true);
                   // A new person needs a pose chosen for them.
                   onChange("");
                 }}
@@ -126,58 +131,64 @@ export function AvatarPicker({
           })}
         </div>
       </div>
-      <div>
-        <p
-          className={cn("mb-2 text-xs font-bold", needsPose ? "text-accent" : "text-muted")}
-          aria-live="polite"
-        >
-          {needsPose ? "Pose: pick one to finish your avatar" : "Pose"}
-        </p>
-        <div
-          role="radiogroup"
-          aria-label="Pose"
-          className="grid grid-cols-4 gap-2 sm:grid-cols-6"
-          onKeyDown={(e) => {
-            const cols = getComputedStyle(e.currentTarget).gridTemplateColumns.split(" ").length;
-            onArrows(e, cols || 4);
-          }}
-        >
-          {MEMOJI_POSES.map(([pose, label], i) => {
-            const key = memojiKey(person, pose);
-            const on = selected === key;
-            // Roving tab stop: the selected pose, else the first.
-            const focusable = on || (!poseInRow && i === 0);
-            return (
-              <button
-                key={pose}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                aria-label={label}
-                tabIndex={focusable ? 0 : -1}
-                onClick={() => {
-                  feedback("select");
-                  onChange(key);
-                }}
-                className={cn(
-                  "rounded-input relative flex aspect-square min-h-11 cursor-pointer items-center justify-center border-2 p-0 transition-colors",
-                  on ? "border-accent bg-s3" : "bg-s2 hover:bg-s3 border-transparent",
-                )}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={avatarSrc(key)}
-                  alt=""
-                  loading="lazy"
-                  draggable={false}
-                  className="h-[88%] w-[88%] object-contain"
-                />
-                {on && <Badge />}
-              </button>
-            );
-          })}
+      {person && open && (
+        <div className="an-rise">
+          <div>
+            <p
+              className={cn("mb-2 text-xs font-bold", needsPose ? "text-accent" : "text-muted")}
+              aria-live="polite"
+            >
+              {needsPose ? "Pose: pick one to finish your avatar" : "Pose"}
+            </p>
+            <div
+              role="radiogroup"
+              aria-label="Pose"
+              className="grid grid-cols-4 gap-2 sm:grid-cols-6"
+              onKeyDown={(e) => {
+                const cols = getComputedStyle(e.currentTarget).gridTemplateColumns.split(
+                  " ",
+                ).length;
+                onArrows(e, cols || 4);
+              }}
+            >
+              {MEMOJI_POSES.map(([pose, label], i) => {
+                const key = memojiKey(person, pose);
+                const on = selected === key;
+                // Roving tab stop: the selected pose, else the first.
+                const focusable = on || (!poseInRow && i === 0);
+                return (
+                  <button
+                    key={pose}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    aria-label={label}
+                    tabIndex={focusable ? 0 : -1}
+                    onClick={() => {
+                      feedback("select");
+                      onChange(key);
+                    }}
+                    className={cn(
+                      "rounded-input relative flex aspect-square min-h-11 cursor-pointer items-center justify-center border-2 p-0 transition-colors",
+                      on ? "border-accent bg-s3" : "bg-s2 hover:bg-s3 border-transparent",
+                    )}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={avatarSrc(key)}
+                      alt=""
+                      loading="lazy"
+                      draggable={false}
+                      className="h-[88%] w-[88%] object-contain"
+                    />
+                    {on && <Badge />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
