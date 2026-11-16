@@ -38,7 +38,7 @@ export function useKeep() {
     staleTime: 30_000,
     queryFn: async () => {
       const sb = supabaseBrowser();
-      const [timeline, wall] = await Promise.all([
+      const [timeline, favs, kept] = await Promise.all([
         sb
           .from("timeline_entries")
           .select("id, kind, title, happened_on, media_id, created_by")
@@ -52,10 +52,28 @@ export function useKeep() {
           .eq("kind", "image")
           .order("created_at", { ascending: false })
           .limit(24),
+        // Photos kept on the timeline (from chat or added as a memory) belong on the wall too.
+        sb
+          .from("timeline_entries")
+          .select("media_id, created_at, media:media_id(id, kind, created_at)")
+          .not("media_id", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(24),
       ]);
+      type WallItem = { id: string; kind: string; created_at: string };
+      const byId = new Map<string, WallItem>();
+      for (const k of kept.data ?? []) {
+        const m = k.media as WallItem | null;
+        // Newest first by when it was kept; RLS hides private media (m is null).
+        if (m?.kind === "image") byId.set(m.id, { ...m, created_at: k.created_at });
+      }
+      for (const f of favs.data ?? []) if (!byId.has(f.id)) byId.set(f.id, f);
+      const wall = [...byId.values()]
+        .sort((a, b) => b.created_at.localeCompare(a.created_at))
+        .slice(0, 24);
       return {
         timeline: (timeline.data ?? []) as TimelineRow[],
-        wall: wall.data ?? [],
+        wall,
       };
     },
   });

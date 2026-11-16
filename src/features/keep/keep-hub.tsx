@@ -374,8 +374,8 @@ export function KeepHub() {
               </div>
             ) : (
               <p className="text-muted m-0 flex items-center gap-2 text-sm">
-                <ImageIcon size={18} aria-hidden /> Heart a photo in chat and it lands here. Private
-                media never does.
+                <ImageIcon size={18} aria-hidden /> Heart a photo in chat, or add one to Keep, and
+                it lands here. Private media never does.
               </p>
             )}
           </section>
@@ -808,6 +808,8 @@ function MomentSheet({
               onOpenChange(true);
               throw error;
             }
+            // Refresh the hub so a kept photo shows on the Memory wall too.
+            void qc.invalidateQueries({ queryKey: previewKey });
             setTitle("");
             setFile(null);
             onDone();

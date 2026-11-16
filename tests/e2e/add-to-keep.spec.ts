@@ -51,4 +51,13 @@ test("a chat photo goes to Keep from the hold menu", async ({ couple }) => {
 
   await b.goto("/keep/timeline");
   await expect(b.getByText("Sunset swim")).toBeVisible();
+
+  // A kept photo shows on the Memory wall too, for both of you.
+  for (const page of [b, a]) {
+    await page.goto("/keep");
+    const wall = page.locator("section", {
+      has: page.getByRole("heading", { name: "Memory wall" }),
+    });
+    await expect(wall.locator(`a[href="/chat/media/${msg!.media_ids[0]}"]`)).toBeVisible();
+  }
 });
