@@ -9,10 +9,26 @@ test("our list: add together, tick off, live for both", async ({ couple }) => {
   await a.getByRole("button", { name: "Add" }).click();
   await expect(b.getByText("Lisbon in spring")).toBeVisible({ timeout: 10000 });
   await expect(b.getByText("Added by Nia")).toBeVisible();
-  await b.getByRole("button", { name: "Done: Lisbon in spring" }).click();
+  const box = b.getByRole("checkbox", { name: "Lisbon in spring" });
+  await expect(box).toHaveAttribute("aria-checked", "false");
+  await box.click();
+  // Optimistic: it moves to Done straight away on the device that ticked it.
+  await expect(
+    b
+      .getByRole("region", { name: "Done together" })
+      .getByRole("checkbox", { name: "Lisbon in spring" }),
+  ).toHaveAttribute("aria-checked", "true");
   await expect(
     a.getByRole("region", { name: "Done together" }).getByText("Lisbon in spring"),
   ).toBeVisible({
+    timeout: 10000,
+  });
+  // Untick: back to the to-do list for both.
+  await a
+    .getByRole("region", { name: "Done together" })
+    .getByRole("checkbox", { name: "Lisbon in spring" })
+    .click();
+  await expect(b.getByRole("list", { name: "To do" }).getByText("Lisbon in spring")).toBeVisible({
     timeout: 10000,
   });
 });

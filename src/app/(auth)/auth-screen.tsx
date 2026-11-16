@@ -370,31 +370,34 @@ export function AuthScreen({ mode }: { mode: "signup" | "login" }) {
 
       {view === "sent" && (
         <>
-          <div className="an-reveal flex flex-1 flex-col justify-center gap-4">
+          <div className="an-reveal flex flex-1 flex-col justify-center py-10">
             <div aria-hidden className="relative h-[140px] w-[160px]">
               <motion.img
                 src="/stickers/xoxo.webp"
                 alt=""
-                className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_16px_20px_rgba(0,0,0,.45)]"
+                className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_12px_16px_rgba(0,0,0,.35)]"
                 initial={{ y: 60, rotate: -20, scale: 0.6, opacity: 0.01 }}
                 animate={{ y: [60, -10, 0], rotate: [-20, 8, -4], scale: 1, opacity: 1 }}
                 transition={{ duration: 0.9, ease: [0.2, 0.9, 0.3, 1.2] }}
               />
               <motion.span
-                className="bg-accent text-on-accent absolute -right-1 bottom-2 flex h-11 w-11 items-center justify-center rounded-full shadow-[0_8px_20px_-6px_var(--accent)]"
+                className="bg-accent text-on-accent border-app absolute -right-1 bottom-2 flex h-11 w-11 items-center justify-center rounded-full border-[3px]"
                 initial={{ scale: 0 }}
-                animate={{ scale: [0, 1.25, 1] }}
-                transition={{ delay: 0.7, duration: 0.45 }}
+                animate={{ scale: [0, 1.15, 1] }}
+                transition={{ delay: 0.7, duration: 0.4 }}
               >
                 <Check size={22} weight="bold" />
               </motion.span>
             </div>
-            <Display size={36} className="mt-2">
+            <Display size={36} className="mt-10">
               Check your inbox
             </Display>
-            <Lead>We sent a link to {email}. Tap it on this device and you&apos;re in.</Lead>
+            <Lead className="mt-4 max-w-[34ch]">
+              We sent a link to <span className="text-text font-medium break-all">{email}</span>.
+              Tap it on this device and you&apos;re in.
+            </Lead>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="mt-12 flex flex-col gap-4 pb-2">
             <a
               href={mailAppHref(email)}
               className="press bg-accent text-on-accent hover:text-on-accent flex h-14 items-center justify-center rounded-full text-base font-bold"

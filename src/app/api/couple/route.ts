@@ -1,15 +1,13 @@
 import { z } from "zod";
 import { handler, ok, parseJson, requireCouple } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { CHAT_THEME_KEYS, WALLPAPER_KEYS } from "@/features/chat/themes";
 
 const schema = z.object({
   started_on: z.iso.date().nullable().optional(),
-  chat_theme: z
-    .enum(["clink", "sunset", "ocean", "forest", "berry", "mono", "candy", "midnight"])
-    .optional(),
-  chat_wallpaper: z
-    .enum(["none", "glow", "hearts", "stars", "dots", "waves", "aurora", "custom"])
-    .optional(),
+  // Keys come from the chat look catalogue; the DB check constraint mirrors them.
+  chat_theme: z.enum(CHAT_THEME_KEYS).optional(),
+  chat_wallpaper: z.enum(WALLPAPER_KEYS).optional(),
   chat_wallpaper_media: z.uuid().nullable().optional(),
   chat_wallpaper_blur: z.boolean().optional(),
 });

@@ -9,9 +9,16 @@ import {
   Archive,
   GearSix,
   Moon,
+  Leaf,
+  Books,
+  CookingPot,
+  Laptop,
+  type Icon,
 } from "@phosphor-icons/react";
 import { cn } from "@/components/ui/cn";
 import { useCouple } from "@/features/couple/context";
+import { statusLabel } from "@/features/couple/types";
+import { Avatar } from "@/components/ui/avatar";
 import { Logo, LogoMark } from "@/components/brand/logo";
 
 export const TABS = [
@@ -21,6 +28,15 @@ export const TABS = [
   { href: "/plans", label: "Plans", Icon: Ticket },
   { href: "/keep", label: "Keep", Icon: Archive },
 ] as const;
+
+const STATUS_ICON: Record<string, Icon> = {
+  free: Leaf,
+  studying: Books,
+  cooking: CookingPot,
+  working: Laptop,
+  sleeping: Moon,
+  away: Moon,
+};
 
 function isActive(path: string, href: string) {
   return path === href || path.startsWith(`${href}/`);
@@ -77,7 +93,7 @@ export function TabBar({ unread = 0 }: { unread?: number }) {
 /** Side rail: compact on tablets in landscape, full with labels from 1024 px. */
 export function Rail({ unread = 0 }: { unread?: number }) {
   const path = usePathname();
-  const { darkVisible, discreet, me } = useCouple();
+  const { darkVisible, discreet } = useCouple();
   return (
     <nav
       aria-label="Main"
@@ -138,22 +154,45 @@ export function Rail({ unread = 0 }: { unread?: number }) {
             <span className="rail-full">After Dark</span>
           </Link>
         )}
-        <Link
-          href="/settings"
-          title="Settings"
-          aria-current={isActive(path, "/settings") ? "page" : undefined}
-          className={cn(
-            "press hover:bg-s1 hover:text-text flex h-12 items-center gap-3 rounded-full px-3 text-[15px] font-medium",
-            isActive(path, "/settings") ? "bg-s1 text-text" : "text-muted",
-          )}
-        >
-          <span className="flex h-[30px] w-11 flex-none items-center justify-center">
-            <GearSix size={22} aria-hidden />
-          </span>
-          <span className="rail-full">Settings</span>
-        </Link>
-        <div className="rail-full text-faint mt-4 truncate px-3 text-xs">{me.name}</div>
+        <AccountRow on={isActive(path, "/settings")} />
       </div>
     </nav>
+  );
+}
+
+/**
+ * Bottom of the rail: you. Avatar, name and your current status, opening your
+ * profile and settings. The compact rail shows just the avatar.
+ */
+function AccountRow({ on }: { on: boolean }) {
+  const { me, myStatus } = useCouple();
+  const label = statusLabel(myStatus);
+  const status = label ? label[0]!.toUpperCase() + label.slice(1) : "";
+  const StatusIcon = STATUS_ICON[myStatus] ?? ChatCircle;
+  return (
+    <Link
+      href="/settings?tab=profile"
+      title={`${me.name}: profile and settings`}
+      aria-label={`${me.name}, profile and settings`}
+      aria-current={on ? "page" : undefined}
+      className={cn(
+        "press text-text hover:text-text mt-3 flex min-h-14 items-center gap-3 rounded-full border px-2 py-1.5",
+        on ? "bg-s1 border-line" : "hover:bg-s1 border-transparent",
+      )}
+    >
+      <span className="flex w-11 flex-none items-center justify-center">
+        <Avatar name={me.name} side="me" size={36} photoUrl={me.avatarUrl} icon={me.avatarIcon} />
+      </span>
+      <span className="rail-full min-w-0 flex-1">
+        <span className="block truncate text-[15px] leading-tight font-semibold">{me.name}</span>
+        {status && (
+          <span className="text-muted mt-0.5 flex items-center gap-1 text-xs leading-tight">
+            <StatusIcon size={12} weight="bold" aria-hidden className="flex-none" />
+            <span className="truncate">{status}</span>
+          </span>
+        )}
+      </span>
+      <GearSix size={18} aria-hidden className="rail-full text-faint mr-2 flex-none" />
+    </Link>
   );
 }

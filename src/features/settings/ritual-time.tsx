@@ -25,12 +25,25 @@ export function RitualTimeRows() {
   const [proposal, setProposal] = useState(ritualProposal);
   const [current, setCurrent] = useState(ritualTime);
 
-  const run = async (body: object, done: (d: Awaited<ReturnType<typeof post>>) => void) => {
+  /**
+   * Optimistic: `guess` updates the rows straight away, `done` reconciles with
+   * what the server decided, and a failure puts the rows back as they were.
+   */
+  const run = async (
+    body: object,
+    guess: () => void,
+    done: (d: Awaited<ReturnType<typeof post>>) => void,
+  ) => {
+    const before = { proposal, current, time };
+    guess();
     try {
       const d = await post(body);
       done(d);
       router.refresh();
     } catch (e) {
+      setProposal(before.proposal);
+      setCurrent(before.current);
+      setTime(before.time);
       toast.err(e instanceof Error ? e.message : "Couldn't save that.");
     }
   };
@@ -57,16 +70,26 @@ export function RitualTimeRows() {
             variant="ghost"
             disabled={!time || time === current || (proposal?.byMe && proposal.time === time)}
             onClick={() =>
-              run({ suggest: time }, (d) => {
-                if (d.ritualTime) {
-                  setCurrent(d.ritualTime);
-                  setProposal(null);
-                  toast(`Agreed. Ritual at ${d.ritualTime}.`);
-                } else {
-                  setProposal(d.proposed ?? null);
-                  toast(`Suggested. ${partner.name} needs to agree.`);
-                }
-              })
+              run(
+                { suggest: time },
+                () => {
+                  // Suggesting the time they already proposed agrees to it.
+                  if (proposal && !proposal.byMe && proposal.time === time) {
+                    setCurrent(time);
+                    setProposal(null);
+                  } else setProposal({ time, byMe: true });
+                },
+                (d) => {
+                  if (d.ritualTime) {
+                    setCurrent(d.ritualTime);
+                    setProposal(null);
+                    toast(`Agreed. Ritual at ${d.ritualTime}.`);
+                  } else {
+                    setProposal(d.proposed ?? null);
+                    toast(`Suggested. ${partner.name} needs to agree.`);
+                  }
+                },
+              )
             }
           >
             Suggest
@@ -84,7 +107,13 @@ export function RitualTimeRows() {
             <Button
               size="sm"
               variant="ghost"
-              onClick={() => run({ withdraw: true }, () => setProposal(null))}
+              onClick={() =>
+                run(
+                  { withdraw: true },
+                  () => setProposal(null),
+                  () => undefined,
+                )
+              }
             >
               Withdraw
             </Button>
@@ -92,12 +121,21 @@ export function RitualTimeRows() {
             <Button
               size="sm"
               onClick={() =>
-                run({ accept: true }, (d) => {
-                  setCurrent(d.ritualTime ?? current);
-                  setTime(d.ritualTime ?? current);
-                  setProposal(null);
-                  toast(`Agreed. Ritual at ${d.ritualTime}.`);
-                })
+                run(
+                  { accept: true },
+                  () => {
+                    setCurrent(proposal.time);
+                    setTime(proposal.time);
+                    setProposal(null);
+                  },
+                  (d) => {
+                    if (d.ritualTime) {
+                      setCurrent(d.ritualTime);
+                      setTime(d.ritualTime);
+                    }
+                    toast(`Agreed. Ritual at ${d.ritualTime}.`);
+                  },
+                )
               }
             >
               Agree

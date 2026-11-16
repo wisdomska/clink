@@ -7,6 +7,8 @@ import {
   siMessenger,
   siX,
   siGmail,
+  siSpotify,
+  siApplemusic,
 } from "simple-icons";
 import { cn } from "@/components/ui/cn";
 
@@ -29,7 +31,9 @@ export type Brand =
   | "telegram"
   | "messenger"
   | "x"
-  | "gmail";
+  | "gmail"
+  | "spotify"
+  | "apple_music";
 
 function GoogleG() {
   return (
@@ -63,6 +67,8 @@ const SIMPLE = {
   messenger: siMessenger,
   x: siX,
   gmail: siGmail,
+  spotify: siSpotify,
+  apple_music: siApplemusic,
 } as const;
 
 /** App-icon backgrounds, from each brand's own icon. */
@@ -78,6 +84,8 @@ const TILE_BG: Partial<Record<Brand, string>> = {
   youtube: "#FFFFFF",
   gmail: "#FFFFFF",
   google: "#FFFFFF",
+  spotify: "#1ED760",
+  apple_music: "#FA243C",
 };
 
 export function BrandLogo({

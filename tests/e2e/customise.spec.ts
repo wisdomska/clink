@@ -28,14 +28,54 @@ test("reactions toggle off, any emoji, custom blurred wallpaper, appearance", as
   await b.getByRole("button", { name: /Your reaction 🦄/ }).click();
   await expect(a.getByRole("group", { name: /Reactions/ })).toHaveCount(0, { timeout: 10000 });
 
+  // New looks: grouped pickers, a duotone theme and a drawn wallpaper, shown live in the preview.
+  await a.getByRole("button", { name: "More" }).click();
+  await a.getByRole("button", { name: "Customise chat" }).click();
+  const themes = a.getByRole("radiogroup", { name: "Chat theme" });
+  await expect(themes.getByRole("group", { name: "Duotone" })).toBeVisible();
+  await expect(themes.getByRole("radio")).toHaveCount(25);
+  await themes.getByRole("radio", { name: "Rouge and lilac" }).click();
+  await expect(themes.getByRole("radio", { name: "Rouge and lilac" })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
+  const walls = a.getByRole("radiogroup", { name: "Chat wallpaper" });
+  await expect(walls.getByRole("radio")).toHaveCount(22);
+  await walls.getByRole("radio", { name: "Two cities" }).click();
+  await expect
+    .poll(() =>
+      a
+        .getByTestId("look-preview")
+        .evaluate((el) => getComputedStyle(el).getPropertyValue("--bubble-in")),
+    )
+    .toContain("#2B2342");
+  const cidLook = (
+    await admin.from("couple_members").select("couple_id").eq("user_id", nia.id).single()
+  ).data!.couple_id;
+  await expect
+    .poll(
+      async () =>
+        (
+          await admin
+            .from("couples")
+            .select("chat_theme, chat_wallpaper")
+            .eq("id", cidLook)
+            .single()
+        ).data,
+    )
+    .toEqual({ chat_theme: "duo_rouge", chat_wallpaper: "two_cities" });
+  await expect
+    .poll(() =>
+      b.getByTestId("chat-wallpaper").evaluate((el) => getComputedStyle(el).backgroundImage),
+    )
+    .toContain("data:image/svg+xml");
+
   // Custom wallpaper from a photo, blurred.
   const img = await sharp({
     create: { width: 600, height: 900, channels: 3, background: "#6CB8FF" },
   })
     .jpeg()
     .toBuffer();
-  await a.getByRole("button", { name: "More" }).click();
-  await a.getByRole("button", { name: "Customise chat" }).click();
   await a
     .getByTestId("wallpaper-input")
     .setInputFiles({ name: "w.jpg", mimeType: "image/jpeg", buffer: img });
@@ -63,7 +103,7 @@ test("reactions toggle off, any emoji, custom blurred wallpaper, appearance", as
     .toContain("/api/media/");
 
   // Appearance: accent colour applies app-wide.
-  await a.goto("/settings");
+  await a.goto("/settings?tab=look");
   await a
     .getByRole("radiogroup", { name: "Accent colour" })
     .getByRole("radio", { name: "Mint" })

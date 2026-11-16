@@ -6,15 +6,17 @@ test("edit your profile (avatar, about, love language, birthday) and see your pa
 }) => {
   const { a, b, nia } = couple;
   await b.goto("/us");
+  // Profile is the first Settings tab, edited in place.
   await a.goto("/settings");
-  await a.getByRole("button", { name: "Edit profile" }).click();
-  const sheet = a.getByRole("dialog", { name: "Edit profile" });
+  await expect(a.getByRole("tab", { name: "Profile" })).toHaveAttribute("aria-selected", "true");
+  const sheet = a.getByRole("tabpanel");
   await sheet.getByRole("radio", { name: "Woman dancing, medium skin" }).click();
   await sheet.getByLabel("About you").fill("Coffee snob, terrible singer.");
   await sheet.getByRole("radio", { name: "Quality time" }).click();
   await sheet.getByRole("switch", { name: /Show my birthday/ }).click();
-  await sheet.getByRole("button", { name: "Save" }).click();
+  await sheet.getByRole("button", { name: "Save", exact: true }).click();
   await expect(a.getByText("Profile saved.")).toBeVisible();
+  await expect(sheet.getByText("All changes saved")).toBeVisible();
   await expect
     .poll(
       async () =>

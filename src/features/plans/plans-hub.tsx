@@ -123,44 +123,50 @@ export function PlansHub() {
             </div>
           )}
 
-          <div className="grid grid-cols-[1.3fr_1fr] gap-2.5">
-            <button
-              type="button"
-              onClick={() => router.push("/plans/roulette")}
-              className="press rounded-card border-line bg-s1 text-text flex cursor-pointer flex-col gap-5 border p-4 text-left"
-            >
-              <Shuffle size={26} className="text-accent" aria-hidden />
-              <span className="display text-[22px] leading-[1.05] tracking-normal">
-                Can&apos;t pick? Spin for a date.
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push("/plans/watch")}
-              className="press rounded-card border-line bg-s1 text-text flex cursor-pointer flex-col gap-5 border p-4 text-left"
-            >
-              <TelevisionSimple size={26} className="text-accent" aria-hidden />
-              <span className="display text-[22px] leading-[1.05] tracking-normal">
-                Watch party
-              </span>
-            </button>
+          <div className="grid grid-cols-2 items-stretch gap-2.5">
+            {[
+              { href: "/plans/roulette", Icon: Shuffle, title: "Can't pick? Spin for a date." },
+              { href: "/plans/watch", Icon: TelevisionSimple, title: "Watch party" },
+            ].map(({ href, Icon, title }) => (
+              <button
+                key={href}
+                type="button"
+                onClick={() => router.push(href)}
+                className="press rounded-card border-line bg-s1 text-text flex h-full min-h-[140px] w-full cursor-pointer flex-col justify-between gap-4 border p-4 text-left"
+              >
+                <Icon size={26} className="text-accent" aria-hidden />
+                <span className="display text-[22px] leading-[1.1] tracking-normal not-italic">
+                  {title}
+                </span>
+              </button>
+            ))}
           </div>
-          <Link
-            href="/plans/list"
-            className="press rounded-card border-line bg-s1 text-text hover:text-text flex items-center gap-3 border px-4 py-3.5"
-          >
-            <ListChecks size={24} className="text-accent" aria-hidden />
-            <span className="flex-1 text-base font-bold">Our list</span>
-            <span className="text-muted text-sm">Things to do together</span>
-          </Link>
-          <Link
-            href="/plans/listen"
-            className="press rounded-card border-line bg-s1 text-text hover:text-text flex items-center gap-3 border px-4 py-3.5"
-          >
-            <MusicNotes size={24} className="text-accent" aria-hidden />
-            <span className="flex-1 text-base font-bold">Listen together</span>
-            <span className="text-muted text-sm">Shared queue</span>
-          </Link>
+          <div className="rounded-card border-line bg-s1 divide-line flex flex-col divide-y overflow-hidden border">
+            {[
+              {
+                href: "/plans/list",
+                Icon: ListChecks,
+                title: "Our list",
+                sub: "Things to do together",
+              },
+              {
+                href: "/plans/listen",
+                Icon: MusicNotes,
+                title: "Listen together",
+                sub: "Shared queue",
+              },
+            ].map(({ href, Icon, title, sub }) => (
+              <Link
+                key={href}
+                href={href}
+                className="press text-text hover:text-text hover:bg-s2 flex min-h-14 items-center gap-3 px-4 py-3.5"
+              >
+                <Icon size={24} className="text-accent flex-none" aria-hidden />
+                <span className="min-w-0 flex-1 text-base font-bold">{title}</span>
+                <span className="text-muted truncate text-sm">{sub}</span>
+              </Link>
+            ))}
+          </div>
         </div>
 
         <div className="flex min-w-0 flex-col gap-5">

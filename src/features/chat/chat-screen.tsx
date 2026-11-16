@@ -54,7 +54,15 @@ import { StickerArt, STICKER_CAPTION } from "./sticker-art";
 import { MediaComposer } from "./media-composer";
 import { LiveWave } from "./live-wave";
 import { ChatSearch } from "./chat-search";
-import { CHAT_THEMES, WALLPAPERS, wallpaperSize, type ChatTheme, type Wallpaper } from "./themes";
+import {
+  CHAT_THEMES,
+  WALLPAPERS,
+  bubbleVars,
+  wallpaperStyle,
+  type ChatTheme,
+  type Wallpaper,
+} from "./themes";
+import { LookPicker } from "./wallpapers/look-picker";
 import { CameraCapture } from "./camera-capture";
 import { useCall } from "@/features/call/call-provider";
 import { useOpenPartner } from "@/features/partner/partner-sheet";
@@ -620,8 +628,7 @@ export function ChatScreen() {
                     scale: look.blur ? "1.08" : undefined,
                   }
                 : {
-                    backgroundImage: WALLPAPERS[look.wallpaper].css,
-                    backgroundSize: wallpaperSize(look.wallpaper),
+                    ...wallpaperStyle(look.wallpaper),
                     filter: look.blur && look.wallpaper !== "none" ? "blur(6px)" : undefined,
                   }
             }
@@ -633,8 +640,7 @@ export function ChatScreen() {
             style={
               {
                 filter: blurred ? "blur(14px)" : undefined,
-                "--bubble-out": CHAT_THEMES[look.theme].bg,
-                "--bubble-out-fg": CHAT_THEMES[look.theme].fg,
+                ...bubbleVars(look.theme),
               } as React.CSSProperties
             }
             onClick={() => blurred && setBlurred(false)}
@@ -1164,84 +1170,22 @@ export function ChatScreen() {
       <Sheet open={lookOpen} onOpenChange={setLookOpen} title="Customise chat" handle>
         <div className="display text-[28px]">Make it yours</div>
         <p className="text-muted m-0 text-sm">{partner.name} sees the same look.</p>
-        <div className="text-muted text-sm font-semibold">Bubbles</div>
-        <div className="grid grid-cols-4 gap-3" role="radiogroup" aria-label="Chat theme">
-          {(Object.keys(CHAT_THEMES) as ChatTheme[]).map((k) => (
-            <button
-              key={k}
-              type="button"
-              role="radio"
-              aria-checked={look.theme === k}
-              onClick={() => void saveLook({ ...look, theme: k })}
-              className="flex cursor-pointer flex-col items-center gap-1.5 border-0 bg-transparent p-0 text-xs font-medium text-[var(--text-muted)]"
-            >
-              <span
-                className={cn(
-                  "rounded-input relative flex h-14 w-full items-end justify-end p-1.5",
-                  look.theme === k && "shadow-[inset_0_0_0_2px_var(--accent)]",
-                )}
-                style={{ background: CHAT_THEMES[k].swatch }}
-              >
-                {look.theme === k && (
-                  <span className="bg-accent text-on-accent absolute top-1.5 left-1.5 flex h-5 w-5 items-center justify-center rounded-full">
-                    <Check size={12} weight="bold" aria-hidden />
-                  </span>
-                )}
-                <span
-                  className="rounded-[10px_10px_3px_10px] px-2 py-0.5 text-[10px] font-bold"
-                  style={{
-                    background: CHAT_THEMES[k].bg,
-                    color: CHAT_THEMES[k].fg,
-                    boxShadow: "0 0 0 1px rgba(255,255,255,.15)",
-                  }}
-                >
-                  hey
-                </span>
-              </span>
-              {CHAT_THEMES[k].label}
-            </button>
-          ))}
-        </div>
-        <div className="text-muted text-sm font-semibold">Wallpaper</div>
-        <div className="grid grid-cols-4 gap-3" role="radiogroup" aria-label="Chat wallpaper">
-          {(Object.keys(WALLPAPERS) as Wallpaper[])
-            .filter((k) => k !== "custom")
-            .map((k) => (
-              <button
-                key={k}
-                type="button"
-                role="radio"
-                aria-checked={look.wallpaper === k}
-                onClick={() => void saveLook({ ...look, wallpaper: k })}
-                className="flex cursor-pointer flex-col items-center gap-1.5 border-0 bg-transparent p-0 text-xs font-medium text-[var(--text-muted)]"
-              >
-                <span
-                  className={cn(
-                    "bg-app border-line rounded-input relative block h-16 w-full border",
-                    look.wallpaper === k && "border-accent border-2",
-                  )}
-                  style={{ backgroundImage: WALLPAPERS[k].css, backgroundSize: wallpaperSize(k) }}
-                >
-                  {look.wallpaper === k && (
-                    <span className="bg-accent text-on-accent absolute top-1.5 left-1.5 flex h-5 w-5 items-center justify-center rounded-full">
-                      <Check size={12} weight="bold" aria-hidden />
-                    </span>
-                  )}
-                </span>
-                {WALLPAPERS[k].label}
-              </button>
-            ))}
-        </div>
+        <LookPicker look={look} onChange={(next) => void saveLook(next)} />
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => wallInput.current?.click()}
             className={cn(
-              "rounded-input relative flex h-16 w-24 flex-none cursor-pointer items-center justify-center overflow-hidden border p-0",
-              look.wallpaper === "custom" ? "border-accent border-2" : "bg-s2 border-line",
+              "rounded-input bg-s2 relative flex h-16 w-24 flex-none cursor-pointer items-center justify-center overflow-hidden border-2 p-0",
+              look.wallpaper === "custom" ? "border-accent" : "border-line",
             )}
             aria-label={look.media ? "Change wallpaper photo" : "Use your own photo"}
           >
+            {look.wallpaper === "custom" && (
+              <span className="bg-accent text-on-accent absolute top-1.5 right-1.5 z-[1] flex h-5 w-5 items-center justify-center rounded-full">
+                <Check size={12} weight="bold" aria-hidden />
+              </span>
+            )}
             {look.media ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img

@@ -677,14 +677,14 @@ isOneToOne: false
                   ]
                 },"listen_queue": {
                   Row: {
-                    "added_by": string,"couple_id": string,"created_at": string,"id": string,"played_at": string | null,"position": number,"title": string | null,"video_id": string
+                    "added_by": string,"couple_id": string,"created_at": string,"id": string,"played_at": string | null,"position": number,"service": string,"title": string | null,"video_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "added_by": string,"couple_id": string,"created_at"?: string,"id"?: string,"played_at"?: string | null,"position"?: number,"title"?: string | null,"video_id": string
+                    "added_by": string,"couple_id": string,"created_at"?: string,"id"?: string,"played_at"?: string | null,"position"?: number,"service"?: string,"title"?: string | null,"video_id": string
                   }
                   Update: {
-                    "added_by"?: string,"couple_id"?: string,"created_at"?: string,"id"?: string,"played_at"?: string | null,"position"?: number,"title"?: string | null,"video_id"?: string
+                    "added_by"?: string,"couple_id"?: string,"created_at"?: string,"id"?: string,"played_at"?: string | null,"position"?: number,"service"?: string,"title"?: string | null,"video_id"?: string
                   }
                   Relationships: [
                     {
@@ -895,19 +895,51 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"reports": {
+                },"report_notes": {
                   Row: {
-                    "assigned_to": string | null,"attachment_media_ids": (string)[],"attachment_paths": (string)[],"category": string,"couple_id": string | null,"created_at": string,"details": string | null,"from_after_dark": boolean,"id": string,"priority": string,"reported_user_id": string | null,"reporter_id": string | null,"resolution": string | null,"status": string,"updated_at": string
+                    "admin_id": string | null,"body": string,"created_at": string,"id": string,"kind": string,"report_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "assigned_to"?: string | null,"attachment_media_ids"?: (string)[],"attachment_paths"?: (string)[],"category": string,"couple_id"?: string | null,"created_at"?: string,"details"?: string | null,"from_after_dark"?: boolean,"id"?: string,"priority"?: string,"reported_user_id"?: string | null,"reporter_id"?: string | null,"resolution"?: string | null,"status"?: string,"updated_at"?: string
+                    "admin_id"?: string | null,"body": string,"created_at"?: string,"id"?: string,"kind": string,"report_id": string
                   }
                   Update: {
-                    "assigned_to"?: string | null,"attachment_media_ids"?: (string)[],"attachment_paths"?: (string)[],"category"?: string,"couple_id"?: string | null,"created_at"?: string,"details"?: string | null,"from_after_dark"?: boolean,"id"?: string,"priority"?: string,"reported_user_id"?: string | null,"reporter_id"?: string | null,"resolution"?: string | null,"status"?: string,"updated_at"?: string
+                    "admin_id"?: string | null,"body"?: string,"created_at"?: string,"id"?: string,"kind"?: string,"report_id"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "report_notes_admin_id_fkey"
+      columns: ["admin_id"]
+isOneToOne: false
+      referencedRelation: "admin_accounts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "report_notes_report_id_fkey"
+      columns: ["report_id"]
+isOneToOne: false
+      referencedRelation: "reports"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"reports": {
+                  Row: {
+                    "assigned_admin_id": string | null,"assigned_at": string | null,"assigned_to": string | null,"attachment_media_ids": (string)[],"attachment_paths": (string)[],"category": string,"couple_id": string | null,"created_at": string,"details": string | null,"from_after_dark": boolean,"id": string,"priority": string,"reported_user_id": string | null,"reporter_id": string | null,"resolution": string | null,"status": string,"status_changed_at": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "assigned_admin_id"?: string | null,"assigned_at"?: string | null,"assigned_to"?: string | null,"attachment_media_ids"?: (string)[],"attachment_paths"?: (string)[],"category": string,"couple_id"?: string | null,"created_at"?: string,"details"?: string | null,"from_after_dark"?: boolean,"id"?: string,"priority"?: string,"reported_user_id"?: string | null,"reporter_id"?: string | null,"resolution"?: string | null,"status"?: string,"status_changed_at"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "assigned_admin_id"?: string | null,"assigned_at"?: string | null,"assigned_to"?: string | null,"attachment_media_ids"?: (string)[],"attachment_paths"?: (string)[],"category"?: string,"couple_id"?: string | null,"created_at"?: string,"details"?: string | null,"from_after_dark"?: boolean,"id"?: string,"priority"?: string,"reported_user_id"?: string | null,"reporter_id"?: string | null,"resolution"?: string | null,"status"?: string,"status_changed_at"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "reports_assigned_admin_id_fkey"
+      columns: ["assigned_admin_id"]
+isOneToOne: false
+      referencedRelation: "admin_accounts"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "reports_couple_id_fkey"
       columns: ["couple_id"]
 isOneToOne: false
@@ -1216,6 +1248,9 @@ isOneToOne: false
                            },
 "svc_admin_metrics":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"svc_admin_revoke_sessions":
+{ Args: { "p_user": string }; Returns: number
                            },
 "svc_admin_trends":
 { Args: { "p_days": number }; Returns: {

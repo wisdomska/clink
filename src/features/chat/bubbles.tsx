@@ -390,8 +390,14 @@ export function Bubble({
           className="w-fit max-w-full px-3.5 pt-2 pb-1.5 text-[length:var(--chat-text,16px)] leading-[1.35] [overflow-wrap:anywhere] whitespace-pre-wrap"
           style={{
             borderRadius: radius(mine, pos),
-            background: mine ? "var(--bubble-out, var(--surface-3))" : "var(--surface-1)",
-            border: mine ? "none" : "1px solid var(--line)",
+            // Chat theme (themes.ts bubbleVars): fill, text and edge for both sides.
+            background: mine
+              ? "var(--bubble-out, var(--surface-3))"
+              : "var(--bubble-in, var(--surface-1))",
+            color: mine ? "var(--bubble-out-fg, var(--text))" : "var(--bubble-in-fg, var(--text))",
+            border: mine
+              ? "var(--bubble-out-border, 1px solid transparent)"
+              : "var(--bubble-in-border, 1px solid var(--line))",
             opacity: m.local === "sending" ? 0.7 : 1,
           }}
         >

@@ -11,7 +11,7 @@ test("choose a discreet identity before installing", async ({ couple }) => {
   const manifest = await (await a.request.get("/manifest.webmanifest")).json();
   expect(manifest.name).toBe("Notes");
 
-  await a.goto("/settings");
+  await a.goto("/settings?tab=look");
   await expect(a.getByRole("radio", { name: "Notes" })).toHaveAttribute("aria-checked", "true");
   await a.getByRole("radio", { name: "Clink" }).click();
   await expect(a.getByText("Back to Clink.")).toBeVisible();

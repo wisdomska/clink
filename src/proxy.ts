@@ -28,7 +28,9 @@ function buildCsp(nonce: string, path: string) {
   const analytics = isPrivate
     ? ""
     : " https://eu.i.posthog.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io";
-  const frames = isPrivate ? "'none'" : "https://www.youtube-nocookie.com https://www.youtube.com";
+  const frames = isPrivate
+    ? "'none'"
+    : "https://www.youtube-nocookie.com https://www.youtube.com https://open.spotify.com https://embed.music.apple.com";
   const ytScripts = isPrivate ? "" : " https://www.youtube.com https://s.ytimg.com";
   const ytImg = isPrivate ? "" : " https://i.ytimg.com";
   return [
