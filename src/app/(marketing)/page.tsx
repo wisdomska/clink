@@ -15,7 +15,7 @@ import { RevealController } from "@/components/landing/reveal-controller";
 import "@/components/landing/landing.css";
 
 export const metadata: Metadata = {
-  title: { absolute: "Clink: do things together, from apart" },
+  title: { absolute: "Clink: Made for two" },
   description:
     "Calls, chat, games, letters and date nights for couples who live apart. One account links to exactly one person. 18+.",
   robots: { index: true, follow: true },

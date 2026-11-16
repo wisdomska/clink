@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(siteUrl()),
     title: {
-      default: id === "clink" ? "Clink: do things together, from apart" : name,
+      default: id === "clink" ? "Clink: Made for two" : name,
       template: `%s · ${name}`,
     },
     description:
