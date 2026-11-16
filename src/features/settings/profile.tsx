@@ -142,12 +142,7 @@ export function ProfileCard() {
     }
   }
 
-  const where = [
-    me.city || me.timezone,
-    partner.nickname && `${partner.name} calls you "${partner.nickname}"`,
-  ]
-    .filter(Boolean)
-    .join(". ");
+  const where = me.city || me.timezone;
 
   return (
     <form

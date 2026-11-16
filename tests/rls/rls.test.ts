@@ -362,6 +362,18 @@ describe("self-only tables", () => {
       }
     });
   }
+  it("the nickname you give your partner is never readable by them (or anyone in the browser)", async () => {
+    await admin.from("profiles").update({ partner_nickname: "Sunshine" }).eq("id", A.id);
+    const asPartner = await B.client.from("profiles").select("partner_nickname").eq("id", A.id);
+    expect(asPartner.error).not.toBeNull();
+    const all = await B.client.from("profiles").select("*").eq("id", A.id);
+    expect(all.error).not.toBeNull();
+    // Everything else on the partner's profile still reads fine.
+    const ok = await B.client.from("profiles").select("display_name, avatar_icon").eq("id", A.id);
+    expect(ok.error).toBeNull();
+    expect(ok.data).toHaveLength(1);
+  });
+
   it("date of birth is never visible to the partner", async () => {
     expect((await B.client.from("user_private").select("dob").eq("user_id", A.id)).data).toEqual(
       [],

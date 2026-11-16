@@ -25,7 +25,7 @@ export const PATCH = handler(async (req: NextRequest) => {
     .from("profiles")
     .update(patch)
     .eq("id", user.id)
-    .select()
+    .select("id, display_name, avatar_kind, avatar_icon, home_city, timezone, gender")
     .single();
   if (error) throw error;
   return ok({ profile: data });

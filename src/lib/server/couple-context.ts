@@ -73,7 +73,8 @@ export async function loadCoupleContext(nextPath: string): Promise<CoupleContext
     timezone: p.timezone,
     lat: p.latitude === null ? null : Number(p.latitude),
     lon: p.longitude === null ? null : Number(p.longitude),
-    nickname: p.partner_nickname,
+    // The nickname you give your partner is yours alone: never sent to them.
+    nickname: p.id === user.id ? p.partner_nickname : null,
     phone: p.phone,
     bio: p.bio,
     loveLanguage: p.love_language,
