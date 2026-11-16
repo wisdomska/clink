@@ -32,11 +32,13 @@ import {
   Wine,
   ArrowBendUpLeft,
   Copy,
+  Archive,
   Trash,
   PushPin,
   PushPinSlash,
   Clock,
 } from "@phosphor-icons/react";
+import { AddToKeepSheet } from "./add-to-keep";
 import Link from "next/link";
 import { useCouple, useCoupleNow, useCoupleEvent } from "@/features/couple/context";
 import { supabaseBrowser } from "@/lib/supabase/client";
@@ -182,6 +184,7 @@ export function ChatScreen() {
   const router = useRouter();
   const [replyTo, setReplyTo] = useState<UiMessage | null>(null);
   const [actionFor, setActionFor] = useState<UiMessage | null>(null);
+  const [keepFor, setKeepFor] = useState<{ ids: string[]; sentAt: string } | null>(null);
   const [typing, setTyping] = useState(false);
   const { start: startCall } = useCall();
   const openPartner = useOpenPartner();
@@ -1212,6 +1215,22 @@ export function ChatScreen() {
                   setActionFor(null);
                 }}
               />
+              {(() => {
+                // Photos in a chat message can go straight onto the Keep timeline.
+                const photos = actionFor.removed_at
+                  ? []
+                  : actionFor.media_ids.filter((id) => mediaInfo.get(id)?.kind === "image");
+                return photos.length ? (
+                  <SheetAction
+                    icon={<Archive size={20} />}
+                    label="Add to Keep"
+                    onClick={() => {
+                      setKeepFor({ ids: photos, sentAt: actionFor.sent_at });
+                      setActionFor(null);
+                    }}
+                  />
+                ) : null;
+              })()}
               {!actionFor.removed_at &&
                 ["text", "voice", "media", "sticker"].includes(actionFor.type) &&
                 (pinned.has(actionFor.id) ? (
@@ -1272,6 +1291,16 @@ export function ChatScreen() {
           </>
         )}
       </Sheet>
+
+      {keepFor && (
+        <AddToKeepSheet
+          key={keepFor.ids.join(",")}
+          open
+          onOpenChange={(v) => !v && setKeepFor(null)}
+          mediaIds={keepFor.ids}
+          sentAt={keepFor.sentAt}
+        />
+      )}
 
       <Sheet open={moreOpen} onOpenChange={setMoreOpen} title="Chat options" handle>
         <div className="rounded-card border-line bg-s2 overflow-hidden border">
