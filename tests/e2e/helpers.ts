@@ -95,7 +95,13 @@ export async function adminSignIn(
     .select("id")
     .single();
   if (error) throw error;
-  const r = await page.request.post("/api/admin/auth/login", { data: { email, password } });
+  // Each test signs in from its own documentation-range address, so a full run
+  // stays under the per-IP sign-in limit (30 an hour) that real visitors get.
+  const ip = `198.51.100.${1 + Math.floor(Math.random() * 254)}`;
+  const r = await page.request.post("/api/admin/auth/login", {
+    data: { email, password },
+    headers: { "x-forwarded-for": ip },
+  });
   if (!r.ok()) throw new Error(`admin login failed: ${r.status()}`);
   return { id: data.id, email, password };
 }
