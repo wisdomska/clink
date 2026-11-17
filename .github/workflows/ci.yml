@@ -26,6 +26,9 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test:coverage
       - name: Dependency scan
+        # GHSA-fc5q-39xc-vjpf (picomatch) is ignored in package.json: there is no
+        # fixed release yet, and it only reaches us through Sentry's build-time
+        # rollup plugin, which never sees user input.
         run: pnpm audit --prod --audit-level high
 
   integration:
@@ -39,7 +42,7 @@ jobs:
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - uses: supabase/setup-cli@v1
-        with: { version: latest }
+        with: { version: 3.1.0 }
       - name: Start Supabase (migrations + seed)
         run: supabase start
       - name: Write .env.local from the local stack

@@ -101,5 +101,12 @@
     "*.{css,json,md,mjs,mts}": [
       "prettier --write"
     ]
+  },
+  "pnpm": {
+    "auditConfig": {
+      "ignoreGhsas": [
+        "GHSA-fc5q-39xc-vjpf"
+      ]
+    }
   }
 }
