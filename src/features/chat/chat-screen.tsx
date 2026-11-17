@@ -318,7 +318,14 @@ export function ChatScreen() {
     [all, byId],
   );
   const { data: olderTargets } = useReplyTargets(missingReplies);
-  const composerRef = useRef<HTMLInputElement>(null);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
+  // Grow the composer with its text (up to its max height) where CSS field-sizing isn't supported.
+  useLayoutEffect(() => {
+    const el = composerRef.current;
+    if (!el || CSS.supports?.("field-sizing", "content")) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 128)}px`;
+  }, [text]);
   const myClientIds = useMemo(
     () => new Set(messages.filter((m) => m.sender_id === me.id).map((m) => m.client_id)),
     [messages, me.id],
@@ -1066,7 +1073,7 @@ export function ChatScreen() {
         )}
 
         <form
-          className="flex flex-none items-center gap-2 px-3 py-2.5"
+          className="flex flex-none items-end gap-2 px-3 py-2.5"
           onSubmit={(e) => {
             e.preventDefault();
             void sendText();
@@ -1135,10 +1142,19 @@ export function ChatScreen() {
                   e.target.value = "";
                 }}
               />
-              <div className="rounded-input border-line bg-s2 focus-within:border-accent flex h-11 min-w-0 flex-1 items-center gap-1.5 border pr-1.5 pl-3.5">
-                <input
+              <div className="rounded-input border-line bg-s2 focus-within:border-accent flex min-h-11 min-w-0 flex-1 items-end gap-1.5 border pr-1.5 pl-3.5">
+                {/* A text area: Enter starts a new line; the Send button sends
+                    (Ctrl or Cmd + Enter too, for keyboards). It grows to about five lines. */}
+                <textarea
                   ref={composerRef}
+                  rows={1}
+                  enterKeyHint="enter"
                   onKeyDown={(e) => {
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                      e.preventDefault();
+                      void sendText();
+                      return;
+                    }
                     if (e.key !== "Escape") return;
                     if (replyTo) setReplyTo(null);
                     else if (editing) {
@@ -1151,7 +1167,7 @@ export function ChatScreen() {
                   value={text}
                   maxLength={4000}
                   onChange={(e) => onType(e.target.value)}
-                  className="text-text min-w-0 flex-1 bg-transparent text-base outline-none focus-visible:shadow-none"
+                  className="text-text field-sizing-content max-h-32 min-h-[42px] min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-transparent py-[10px] text-base leading-[22px] outline-none focus-visible:shadow-none"
                 />
                 {text.trim() && !editing && (
                   <button
@@ -1159,7 +1175,7 @@ export function ChatScreen() {
                     onClick={() => setLaterOpen(true)}
                     aria-label="Schedule a message"
                     title="Schedule a message"
-                    className="text-muted hover:text-text flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent"
+                    className="text-muted hover:text-text mb-[3px] flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-full border-0 bg-transparent"
                   >
                     <Clock size={22} />
                   </button>
@@ -1169,7 +1185,7 @@ export function ChatScreen() {
                     type="button"
                     onClick={() => setCamera(true)}
                     aria-label="Camera"
-                    className="text-muted hover:text-text flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent"
+                    className="text-muted hover:text-text mb-[3px] flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-full border-0 bg-transparent"
                   >
                     <Camera size={22} />
                   </button>
@@ -1180,7 +1196,7 @@ export function ChatScreen() {
                   aria-label="Stickers"
                   aria-expanded={tray}
                   className={cn(
-                    "flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent",
+                    "mb-[3px] flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-full border-0 bg-transparent",
                     tray ? "text-accent" : "text-muted",
                   )}
                 >

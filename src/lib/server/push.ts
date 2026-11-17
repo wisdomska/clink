@@ -20,6 +20,108 @@ function configure(): boolean {
   return true;
 }
 
+export interface Delivery {
+  device: string;
+  ok: boolean;
+  status?: number;
+  reason?: string;
+}
+
+/** Where a subscription delivers, in words ("iPhone (Apple)"), for results people read. */
+function deviceName(endpoint: string, ua: string | null): string {
+  const host = (() => {
+    try {
+      return new URL(endpoint).host;
+    } catch {
+      return "";
+    }
+  })();
+  const service = host.includes("apple")
+    ? "Apple"
+    : host.includes("google")
+      ? "Google"
+      : host.includes("mozilla")
+        ? "Mozilla"
+        : host.includes("windows")
+          ? "Microsoft"
+          : host;
+  const kind = /iPhone/.test(ua ?? "")
+    ? "iPhone"
+    : /iPad/.test(ua ?? "")
+      ? "iPad"
+      : /Android/.test(ua ?? "")
+        ? "Android"
+        : /Mac OS X/.test(ua ?? "")
+          ? "Mac"
+          : /Windows/.test(ua ?? "")
+            ? "Windows"
+            : "Device";
+  return `${kind} (${service})`;
+}
+
+/**
+ * Send one payload to each subscription and record the outcome on it: when it
+ * last worked, or the push service's exact refusal. Gone subscriptions (404,
+ * 410) are removed. Nothing is swallowed silently any more.
+ */
+async function deliver(
+  subs: Array<{ id: string; endpoint: string; p256dh: string; auth: string; ua?: string | null }>,
+  payload: string,
+  options: webpush.RequestOptions,
+): Promise<Delivery[]> {
+  const admin = supabaseAdmin();
+  return Promise.all(
+    subs.map(async (s): Promise<Delivery> => {
+      const device = deviceName(s.endpoint, s.ua ?? null);
+      try {
+        await webpush.sendNotification(
+          { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+          payload,
+          options,
+        );
+        await admin
+          .from("push_subscriptions")
+          .update({ last_ok_at: new Date().toISOString(), last_error: null })
+          .eq("id", s.id);
+        return { device, ok: true };
+      } catch (err) {
+        const e = err as { statusCode?: number; body?: string; message?: string };
+        const reason =
+          `${e.statusCode ?? "error"} ${(e.body || e.message || "").slice(0, 300)}`.trim();
+        console.error("push failed", device, reason);
+        if (e.statusCode === 404 || e.statusCode === 410)
+          await admin.from("push_subscriptions").delete().eq("id", s.id);
+        else
+          await admin
+            .from("push_subscriptions")
+            .update({ last_error: reason, last_error_at: new Date().toISOString() })
+            .eq("id", s.id);
+        return { device, ok: false, status: e.statusCode, reason };
+      }
+    }),
+  );
+}
+
+/** A test notification to every device of this user, ignoring quiet hours and preferences. */
+export async function notifyTest(userId: string): Promise<Delivery[] | "no_vapid"> {
+  if (!configure()) return "no_vapid";
+  const { data: subs } = await supabaseAdmin()
+    .from("push_subscriptions")
+    .select("id, endpoint, p256dh, auth, ua")
+    .eq("user_id", userId);
+  return deliver(
+    subs ?? [],
+    JSON.stringify({
+      title: "Clink",
+      body: "Notifications work on this device.",
+      url: "/settings",
+      tag: "test",
+      icon: "/icons/clink-192.png",
+    }),
+    { TTL: 600, urgency: "high" },
+  );
+}
+
 const APP_NAMES: Record<string, string> = { clink: "Clink", notes: "Notes", weather: "Weather" };
 
 /**
@@ -70,33 +172,13 @@ export async function notify(
   });
   const { data: subs } = await admin
     .from("push_subscriptions")
-    .select("id, endpoint, p256dh, auth")
+    .select("id, endpoint, p256dh, auth, ua")
     .eq("user_id", userId);
-  let sent = 0;
-  await Promise.all(
-    (subs ?? []).map(async (s) => {
-      try {
-        await webpush.sendNotification(
-          { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
-          payload,
-          {
-            TTL: 60 * 60 * 12,
-            urgency: category === "clinks" ? "high" : "normal",
-          },
-        );
-        sent++;
-        await admin
-          .from("push_subscriptions")
-          .update({ last_ok_at: new Date().toISOString() })
-          .eq("id", s.id);
-      } catch (err) {
-        const code = (err as { statusCode?: number }).statusCode;
-        if (code === 404 || code === 410)
-          await admin.from("push_subscriptions").delete().eq("id", s.id);
-      }
-    }),
-  );
-  return { sent };
+  const results = await deliver(subs ?? [], payload, {
+    TTL: 60 * 60 * 12,
+    urgency: category === "clinks" ? "high" : "normal",
+  });
+  return { sent: results.filter((r) => r.ok).length };
 }
 
 /**
@@ -142,30 +224,14 @@ export async function notifyCall(
   });
   const { data: subs } = await admin
     .from("push_subscriptions")
-    .select("id, endpoint, p256dh, auth")
+    .select("id, endpoint, p256dh, auth, ua")
     .eq("user_id", userId);
-  let sent = 0;
-  await Promise.all(
-    (subs ?? []).map(async (s) => {
-      try {
-        await webpush.sendNotification(
-          { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
-          payload,
-          {
-            TTL: call.cancel ? 3600 : 45,
-            urgency: "high",
-            topic: `call${call.id.replace(/-/g, "").slice(0, 26)}`,
-          },
-        );
-        sent++;
-      } catch (err) {
-        const code = (err as { statusCode?: number }).statusCode;
-        if (code === 404 || code === 410)
-          await admin.from("push_subscriptions").delete().eq("id", s.id);
-      }
-    }),
-  );
-  return { sent };
+  const results = await deliver(subs ?? [], payload, {
+    TTL: call.cancel ? 3600 : 45,
+    urgency: "high",
+    topic: `call${call.id.replace(/-/g, "").slice(0, 26)}`,
+  });
+  return { sent: results.filter((r) => r.ok).length };
 }
 
 /**

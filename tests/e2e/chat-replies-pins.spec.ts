@@ -24,7 +24,7 @@ test("reply from the menu, then tap the quote to jump to the original", async ({
   // The composer is focused, ready to type.
   await expect(a.getByLabel("Message Theo")).toBeFocused();
   await a.keyboard.type("perfect, see you then");
-  await a.keyboard.press("Enter");
+  await a.getByRole("button", { name: "Send", exact: true }).click();
   await expect(preview).toBeHidden();
 
   // Theo sees the quote inside the reply bubble.

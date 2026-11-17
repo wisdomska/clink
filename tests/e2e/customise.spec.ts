@@ -9,7 +9,7 @@ test("reactions toggle off, any emoji, custom blurred wallpaper, appearance", as
   await b.goto("/chat");
   await a.goto("/chat");
   await a.getByRole("textbox", { name: "Message Theo" }).fill("react to me");
-  await a.keyboard.press("Enter");
+  await a.getByRole("button", { name: "Send", exact: true }).click();
 
   // Theo searches the emoji picker and reacts, then sees it highlighted.
   await b.getByRole("button", { name: /Nia: react to me/ }).click({ button: "right" });

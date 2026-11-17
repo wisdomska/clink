@@ -863,14 +863,14 @@ isOneToOne: false
                   ]
                 },"push_subscriptions": {
                   Row: {
-                    "auth": string,"created_at": string,"endpoint": string,"id": string,"last_ok_at": string | null,"p256dh": string,"ua": string | null,"user_id": string
+                    "auth": string,"created_at": string,"endpoint": string,"id": string,"last_error": string | null,"last_error_at": string | null,"last_ok_at": string | null,"p256dh": string,"ua": string | null,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "auth": string,"created_at"?: string,"endpoint": string,"id"?: string,"last_ok_at"?: string | null,"p256dh": string,"ua"?: string | null,"user_id": string
+                    "auth": string,"created_at"?: string,"endpoint": string,"id"?: string,"last_error"?: string | null,"last_error_at"?: string | null,"last_ok_at"?: string | null,"p256dh": string,"ua"?: string | null,"user_id": string
                   }
                   Update: {
-                    "auth"?: string,"created_at"?: string,"endpoint"?: string,"id"?: string,"last_ok_at"?: string | null,"p256dh"?: string,"ua"?: string | null,"user_id"?: string
+                    "auth"?: string,"created_at"?: string,"endpoint"?: string,"id"?: string,"last_error"?: string | null,"last_error_at"?: string | null,"last_ok_at"?: string | null,"p256dh"?: string,"ua"?: string | null,"user_id"?: string
                   }
                   Relationships: [
                     

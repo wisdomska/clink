@@ -19,7 +19,7 @@ const schema = z.object({
   R2_BUCKET_SENSITIVE: z.string().default("clink-sensitive"),
   NEXT_PUBLIC_VAPID_PUBLIC_KEY: z.string().optional(),
   VAPID_PRIVATE_KEY: z.string().optional(),
-  VAPID_SUBJECT: z.string().default("mailto:hello@clinkapp.invalid"),
+  VAPID_SUBJECT: z.string().default("https://clinkapp.vercel.app"),
   ADMIN_EMAILS: z.string().default(""),
 });
 

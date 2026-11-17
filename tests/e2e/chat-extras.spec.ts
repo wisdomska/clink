@@ -8,7 +8,7 @@ test("edit a message, search the chat, browse media, and see On this day", async
   await b.goto("/chat");
   await a.goto("/chat");
   await a.getByRole("textbox", { name: "Message Theo" }).fill("dinner at 8 tonite");
-  await a.keyboard.press("Enter");
+  await a.getByRole("button", { name: "Send", exact: true }).click();
   await expect(b.getByText("dinner at 8 tonite")).toBeVisible({ timeout: 10000 });
 
   // Edit (WhatsApp style).
@@ -16,7 +16,7 @@ test("edit a message, search the chat, browse media, and see On this day", async
   await a.getByRole("button", { name: "Edit", exact: true }).click();
   await expect(a.getByText("Editing message")).toBeVisible();
   await a.getByRole("textbox", { name: "Message Theo" }).fill("dinner at 8 tonight");
-  await a.keyboard.press("Enter");
+  await a.getByRole("button", { name: "Send", exact: true }).click();
   await expect(b.getByText("dinner at 8 tonight")).toBeVisible({ timeout: 10000 });
   await expect(b.getByText(/edited ·/)).toBeVisible();
   // The stamp sits inside its bubble, never hanging under the next one.
@@ -66,4 +66,23 @@ test("edit a message, search the chat, browse media, and see On this day", async
   await expect(a.getByText("1 year ago today")).toBeVisible({ timeout: 10000 });
   await a.goto("/chat/media");
   await expect(a.getByRole("link", { name: "Photo" }).first()).toBeVisible();
+});
+
+test("Enter starts a new line in the composer; Send sends the whole message", async ({
+  couple,
+}) => {
+  const { a, b } = couple;
+  await b.goto("/chat");
+  await a.goto("/chat");
+  const box = a.getByRole("textbox", { name: "Message Theo" });
+  await box.click();
+  await a.keyboard.type("first line");
+  await a.keyboard.press("Enter");
+  await a.keyboard.type("second line");
+  await expect(box).toHaveValue("first line\nsecond line");
+  // Nothing was sent by Enter.
+  await expect(b.getByText("first line")).toHaveCount(0);
+  await a.getByRole("button", { name: "Send", exact: true }).click();
+  await expect(box).toHaveValue("");
+  await expect(b.getByText(/first line\s+second line/)).toBeVisible();
 });

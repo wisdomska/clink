@@ -109,6 +109,32 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
   const [del, setDel] = useState(false);
   const [delText, setDelText] = useState("");
   const [quietOpen, setQuietOpen] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [tested, setTested] = useState<Array<{
+    device: string;
+    ok: boolean;
+    status?: number;
+    reason?: string;
+  }> | null>(null);
+  /** Push a test to each of my devices and show, per device, whether it went. */
+  async function sendTest() {
+    if (testing) return;
+    setTesting(true);
+    try {
+      const r = await fetch("/api/push/test", { method: "POST" });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.message ?? "Couldn't send a test.");
+      setTested(d.results);
+      const okCount = (d.results as Array<{ ok: boolean }>).filter((x) => x.ok).length;
+      if (d.results.length === 0) toast("No device is set up for notifications yet.");
+      else if (okCount === d.results.length) toast.ok("Sent. It should arrive in a few seconds.");
+      else toast.err("Some devices refused it. The reason is under the button.");
+    } catch (e) {
+      toast.err(e instanceof Error ? e.message : "Couldn't send a test.");
+    } finally {
+      setTesting(false);
+    }
+  }
   const [startedOn, setStartedOn] = useState(ctx.startedOn ?? "");
   const [busy, setBusy] = useState(false);
   const tab = useTab(SETTINGS_TABS);
@@ -219,20 +245,38 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
                 </span>
               </Row>
               <Row
-                last
                 onClick={async () => {
                   const r = await enablePush();
                   toast(
                     r === "granted"
-                      ? "This device gets notifications."
+                      ? "This device gets notifications. Sending a test now."
                       : r === "unsupported"
                         ? "Install Clink first, then turn these on."
                         : "Notifications are blocked in your browser settings.",
                   );
+                  if (r === "granted") void sendTest();
                 }}
               >
                 <span className="flex items-center gap-2">
                   <BellRinging size={18} aria-hidden /> Notifications on this device
+                </span>
+                <CaretRight size={18} className="text-faint" aria-hidden />
+              </Row>
+              <Row last onClick={() => void sendTest()}>
+                <span className="flex flex-col gap-0.5">
+                  <span>{testing ? "Sending a test…" : "Send a test notification"}</span>
+                  {tested && (
+                    <span className="text-muted text-xs" role="status">
+                      {tested.length === 0
+                        ? "No device is set up yet. Turn on notifications on this device first."
+                        : tested
+                            .map(
+                              (t) =>
+                                `${t.device}: ${t.ok ? "sent" : `refused (${t.reason ?? t.status})`}`,
+                            )
+                            .join(" · ")}
+                    </span>
+                  )}
                 </span>
                 <CaretRight size={18} className="text-faint" aria-hidden />
               </Row>

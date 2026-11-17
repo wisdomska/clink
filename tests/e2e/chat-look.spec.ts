@@ -6,7 +6,7 @@ test("chat theme and wallpaper are shared; double-tap hearts a message", async (
   await b.goto("/chat");
   await a.goto("/chat");
   await a.getByRole("textbox", { name: "Message Theo" }).fill("hello you");
-  await a.keyboard.press("Enter");
+  await a.getByRole("button", { name: "Send", exact: true }).click();
 
   await a.getByRole("button", { name: "More" }).click();
   await a.getByRole("button", { name: "Customise chat" }).click();
