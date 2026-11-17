@@ -241,14 +241,14 @@ isOneToOne: false
                   ]
                 },"countdowns": {
                   Row: {
-                    "couple_id": string,"created_at": string,"created_by": string,"id": string,"reveal_note": string | null,"subtitle": string | null,"target_at": string,"title": string
+                    "couple_id": string,"created_at": string,"created_by": string,"details": NonNullable<Json>,"id": string,"kind": string,"reveal_note": string | null,"subtitle": string | null,"target_at": string,"title": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "couple_id": string,"created_at"?: string,"created_by": string,"id"?: string,"reveal_note"?: string | null,"subtitle"?: string | null,"target_at": string,"title": string
+                    "couple_id": string,"created_at"?: string,"created_by": string,"details"?: NonNullable<Json>,"id"?: string,"kind"?: string,"reveal_note"?: string | null,"subtitle"?: string | null,"target_at": string,"title": string
                   }
                   Update: {
-                    "couple_id"?: string,"created_at"?: string,"created_by"?: string,"id"?: string,"reveal_note"?: string | null,"subtitle"?: string | null,"target_at"?: string,"title"?: string
+                    "couple_id"?: string,"created_at"?: string,"created_by"?: string,"details"?: NonNullable<Json>,"id"?: string,"kind"?: string,"reveal_note"?: string | null,"subtitle"?: string | null,"target_at"?: string,"title"?: string
                   }
                   Relationships: [
                     {
@@ -1272,14 +1272,14 @@ isOneToOne: false
           Views: {
             "countdowns_public": {
                   Row: {
-                    "couple_id": string,"created_at": string,"created_by": string,"has_note": boolean | null,"id": string,"reveal_note": string | null,"subtitle": string | null,"target_at": string,"title": string
+                    "couple_id": string,"created_at": string,"created_by": string,"details": NonNullable<Json>,"has_note": boolean | null,"id": string,"kind": string,"reveal_note": string | null,"subtitle": string | null,"target_at": string,"title": string
                   }
                   ComputedFields: never
                   Insert: {
-                           "couple_id"?: string | null,"created_at"?: string | null,"created_by"?: string | null,"has_note"?: never,"id"?: string | null,"reveal_note"?: never,"subtitle"?: string | null,"target_at"?: string | null,"title"?: string | null
+                           "couple_id"?: string | null,"created_at"?: string | null,"created_by"?: string | null,"details"?: Json | null,"has_note"?: never,"id"?: string | null,"kind"?: string | null,"reveal_note"?: never,"subtitle"?: string | null,"target_at"?: string | null,"title"?: string | null
                          }
                         Update: {
-                           "couple_id"?: string | null,"created_at"?: string | null,"created_by"?: string | null,"has_note"?: never,"id"?: string | null,"reveal_note"?: never,"subtitle"?: string | null,"target_at"?: string | null,"title"?: string | null
+                           "couple_id"?: string | null,"created_at"?: string | null,"created_by"?: string | null,"details"?: Json | null,"has_note"?: never,"id"?: string | null,"kind"?: string | null,"reveal_note"?: never,"subtitle"?: string | null,"target_at"?: string | null,"title"?: string | null
                          }
                         Relationships: [
                     {

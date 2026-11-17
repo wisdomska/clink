@@ -5,6 +5,66 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 import { useCouple } from "@/features/couple/context";
 import { countdownParts } from "@/lib/time";
 import { SplitFlap, EmptyBoard } from "./split-flap";
+import {
+  AirplaneTilt,
+  Cake,
+  Champagne,
+  HeartStraight,
+  Sparkle,
+  Suitcase,
+  Ticket,
+  type Icon,
+} from "@phosphor-icons/react";
+import { cn } from "@/components/ui/cn";
+import { isKind, type CountdownKind } from "@/lib/countdown-kinds";
+
+const KIND_ICON: Record<CountdownKind, Icon> = {
+  visit: AirplaneTilt,
+  trip: Suitcase,
+  date: Champagne,
+  anniversary: HeartStraight,
+  birthday: Cake,
+  event: Ticket,
+  other: Sparkle,
+};
+
+/** The icon for a countdown's kind (a flight for older ones). */
+export function KindIcon({
+  kind,
+  size = 18,
+  className,
+}: {
+  kind: string | null | undefined;
+  size?: number;
+  className?: string;
+}) {
+  const I = KIND_ICON[isKind(kind) ? kind : "visit"];
+  return <I size={size} weight="duotone" className={className} aria-hidden />;
+}
+
+/** The board line: airport-style for a flight, plain words for everything else. */
+export function BoardLine({
+  kind,
+  text,
+  className,
+}: {
+  kind: string | null | undefined;
+  text: string | null | undefined;
+  className?: string;
+}) {
+  if (!text) return null;
+  return (
+    <div
+      className={cn(
+        "text-muted truncate",
+        (kind ?? "visit") === "visit" ? "mono text-xs tracking-wide uppercase" : "text-sm",
+        className,
+      )}
+    >
+      {text}
+    </div>
+  );
+}
 
 export function useCountdowns() {
   const { coupleId } = useCouple();
@@ -54,12 +114,13 @@ export function CountdownCard({ now }: { now: Date }) {
       className="border-line bg-s1 rounded-card flex flex-none flex-col gap-3.5 border p-4"
     >
       <div className="flex items-center justify-between gap-3">
-        <h2 id="cd-h" className="m-0 text-lg font-bold">
-          <Link href="/us/countdowns" prefetch className="text-text hover:text-text">
+        <h2 id="cd-h" className="m-0 flex min-w-0 items-center gap-2 text-lg font-bold">
+          {next && <KindIcon kind={next.kind} size={20} className="text-accent flex-none" />}
+          <Link href="/us/countdowns" prefetch className="text-text hover:text-text truncate">
             {next?.title ?? "Next visit"}
           </Link>
         </h2>
-        {next?.subtitle && <div className="text-muted truncate text-sm">{next.subtitle}</div>}
+        <BoardLine kind={next?.kind} text={next?.subtitle} className="min-w-0" />
       </div>
       {isLoading ? (
         <div className="an-skel rounded-flap bg-s2 h-[78px]" />
@@ -100,7 +161,8 @@ export function CountdownCard({ now }: { now: Date }) {
         <>
           <EmptyBoard />
           <p className="text-muted m-0 text-base leading-[1.45]">
-            Nothing on the board yet. Add your next visit and we&apos;ll start the flip.
+            Nothing on the board yet. Add a visit, a trip or a date night and we&apos;ll start the
+            flip.
           </p>
           <Link
             href="/us/countdowns?new=1"

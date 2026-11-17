@@ -96,15 +96,10 @@ export function DareWheel() {
 
   return (
     <main className="an-screen mx-auto flex min-h-dvh max-w-[640px] flex-col gap-4 px-4 pt-[var(--screen-pt)] pb-8 [--screen-pt:calc(env(safe-area-inset-top)+8px)] md:[--screen-pt:2.0rem]">
-      <PageBar
-        title="Dare wheel"
-        back="/dark/home"
-        actions={
-          <span className="mono border-line text-muted rounded-full border px-3 py-1.5 text-xs">
-            {open.join(" · ") || "Locked"}
-          </span>
-        }
-      />
+      <PageBar title="Dare wheel" back="/dark/home" />
+      <p className="text-muted m-0 -mt-2 text-sm">
+        {open.length ? `Spins across ${open.join(", ")}` : "Open a tier together to spin."}
+      </p>
       <div className="relative flex min-h-[360px] flex-1 items-center justify-center">
         <div
           aria-hidden

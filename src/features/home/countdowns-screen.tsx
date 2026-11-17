@@ -12,7 +12,15 @@ import { Sheet } from "@/components/ui/sheet";
 import { countdownParts, zonedToUtc, localParts } from "@/lib/time";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/cn";
-import { useCountdowns, formatTarget } from "./countdown-card";
+import { useCountdowns, formatTarget, KindIcon, BoardLine } from "./countdown-card";
+import {
+  COUNTDOWN_KINDS,
+  KINDS,
+  boardLine,
+  cleanDetails,
+  isKind,
+  type CountdownKind,
+} from "@/lib/countdown-kinds";
 import { SplitFlap, EmptyBoard } from "./split-flap";
 import { DateField, TimeField } from "@/components/ui/pickers";
 import { PageBar } from "@/components/clink/page-bar";
@@ -26,7 +34,8 @@ export function CountdownsScreen() {
   const [open, setOpen] = useState(params.get("new") === "1");
   const now = useCoupleNow(30_000);
   const [title, setTitle] = useState("Next visit");
-  const [subtitle, setSubtitle] = useState("");
+  const [kind, setKind] = useState<CountdownKind>("visit");
+  const [details, setDetails] = useState<Record<string, string>>({});
   const [date, setDate] = useState("");
   const [time, setTime] = useState("18:00");
   const [note, setNote] = useState("");
@@ -46,8 +55,9 @@ export function CountdownsScreen() {
    */
   function openNew() {
     setEditing(null);
-    setTitle("Next visit");
-    setSubtitle("");
+    setTitle(KINDS.visit.title);
+    setKind("visit");
+    setDetails({});
     setDate("");
     setTime("18:00");
     setNote("");
@@ -60,7 +70,8 @@ export function CountdownsScreen() {
     const at = localParts(new Date(c.target_at!), me.timezone);
     setEditing(c);
     setTitle(c.title ?? "");
-    setSubtitle(c.subtitle ?? "");
+    setKind(isKind(c.kind) ? c.kind : "visit");
+    setDetails((c.details as Record<string, string> | null) ?? {});
     setDate(at.dateKey);
     setTime(`${String(at.hour).padStart(2, "0")}:${String(at.minute).padStart(2, "0")}`);
     setNote("");
@@ -68,17 +79,40 @@ export function CountdownsScreen() {
     setOpen(true);
   }
 
+  /** Switch kind; swap in its suggested name unless you've typed your own. */
+  function pickKind(k: CountdownKind) {
+    if (!title.trim() || title === KINDS[kind].title) setTitle(KINDS[k].title);
+    setKind(k);
+  }
+
+  /**
+   * The board line comes from the kind's details. An older countdown with a
+   * hand-written line and no details keeps its line until you fill the fields.
+   */
+  function lineFor(c: Row | null) {
+    const clean = cleanDetails(kind, details);
+    const line = boardLine(kind, clean);
+    const legacy =
+      c && !Object.keys((c.details as object | null) ?? {}).length ? (c.subtitle ?? null) : null;
+    return { clean, line: line ?? (c && kind === (c.kind ?? "visit") ? legacy : null) };
+  }
+
   /** Edits show at once; a refusal puts the old version back and says why. */
   async function saveEdit(c: Row, target: Date) {
+    const { clean, line } = lineFor(c);
     const patch: {
       title: string;
       subtitle: string | null;
       target_at: string;
+      kind: CountdownKind;
+      details: Record<string, string>;
       reveal_note?: string;
     } = {
       title: title.trim(),
-      subtitle: subtitle.trim() || null,
+      subtitle: line,
       target_at: target.toISOString(),
+      kind,
+      details: clean,
     };
     // The sealed note is only replaced when its writer types a new one.
     if (c.created_by === me.id && note.trim()) patch.reveal_note = note.trim();
@@ -93,6 +127,8 @@ export function CountdownsScreen() {
                 title: patch.title,
                 subtitle: patch.subtitle,
                 target_at: patch.target_at,
+                kind: patch.kind,
+                details: patch.details,
                 has_note: r.has_note || Boolean(patch.reveal_note),
               } as Row)
             : r,
@@ -126,11 +162,14 @@ export function CountdownsScreen() {
     const target = zonedToUtc(date, time, me.timezone);
     if (target <= new Date()) return setError("Pick a moment in the future.");
     if (editing) return saveEdit(editing, target);
+    const { clean, line } = lineFor(null);
     const row = {
       couple_id: coupleId,
       created_by: me.id,
       title: title.trim(),
-      subtitle: subtitle.trim() || null,
+      subtitle: line,
+      kind,
+      details: clean,
       target_at: target.toISOString(),
       reveal_note: note.trim() || null,
     };
@@ -218,7 +257,8 @@ export function CountdownsScreen() {
         <div className="fill-center rounded-card border-line bg-s1 mx-auto flex w-full max-w-[480px] flex-col items-center gap-4 border p-6 text-center">
           <EmptyBoard />
           <p className="text-muted m-0 text-base">
-            Nothing on the board yet. Add your next visit and we&apos;ll start the flip.
+            Nothing on the board yet. Add a visit, a trip or a date night and we&apos;ll start the
+            flip.
           </p>
           <Button size="md" onClick={openNew}>
             <Plus size={20} aria-hidden /> Add a countdown
@@ -235,9 +275,14 @@ export function CountdownsScreen() {
                 style={{ ["--i" as string]: i }}
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h2 className="m-0 text-lg font-bold">{c.title}</h2>
-                    {c.subtitle && <div className="text-muted mt-0.5 text-sm">{c.subtitle}</div>}
+                  <div className="flex min-w-0 items-start gap-2.5">
+                    <span className="bg-s2 text-accent mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-full">
+                      <KindIcon kind={c.kind} size={20} />
+                    </span>
+                    <div className="min-w-0">
+                      <h2 className="m-0 truncate text-lg font-bold">{c.title}</h2>
+                      <BoardLine kind={c.kind} text={c.subtitle} className="mt-0.5" />
+                    </div>
                   </div>
                   <div className="flex flex-none gap-1">
                     {/* Still counting down: you can change it. At zero it stays as it was. */}
@@ -287,24 +332,74 @@ export function CountdownsScreen() {
           {editing ? "Change of plans?" : "What are we counting to?"}
         </Display>
         <div>
+          <span id="cd-kind" className="text-muted mb-1.5 block text-sm font-medium">
+            What is it?
+          </span>
+          <div role="radiogroup" aria-labelledby="cd-kind" className="grid grid-cols-4 gap-1.5">
+            {COUNTDOWN_KINDS.map((k) => (
+              <button
+                key={k}
+                type="button"
+                role="radio"
+                aria-checked={kind === k}
+                onClick={() => pickKind(k)}
+                className={cn(
+                  "press flex min-h-[64px] cursor-pointer flex-col items-center justify-center gap-1 rounded-[14px] border px-1 py-2 text-center text-xs font-semibold transition-colors",
+                  kind === k
+                    ? "border-accent bg-accent/15 text-text"
+                    : "border-line bg-s2 text-muted hover:text-text",
+                )}
+              >
+                <KindIcon kind={k} size={20} className={kind === k ? "text-accent" : undefined} />
+                <span className="leading-tight">{KINDS[k].label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
           <Label htmlFor="cd-title">Name</Label>
           <Input
             id="cd-title"
             value={title}
             maxLength={60}
+            placeholder={kind === "event" ? "The concert" : "Name it"}
             onChange={(e) => setTitle(e.target.value)}
           />
         </div>
-        <div>
-          <Label htmlFor="cd-sub">Board line (optional)</Label>
-          <Input
-            id="cd-sub"
-            value={subtitle}
-            maxLength={60}
-            placeholder="ACC → LHR · GATE 2"
-            onChange={(e) => setSubtitle(e.target.value)}
-          />
+        {/* This kind's details. They build the line under the title. */}
+        <div
+          className={cn(
+            "grid gap-2",
+            KINDS[kind].fields.length === 3
+              ? "grid-cols-2 [&>*:last-child]:col-span-2"
+              : KINDS[kind].fields.length === 2
+                ? "grid-cols-1 sm:grid-cols-2"
+                : "grid-cols-1",
+          )}
+        >
+          {KINDS[kind].fields.map((f) => (
+            <div key={`${kind}-${f.key}`}>
+              <Label htmlFor={`cd-${f.key}`}>
+                {f.label}
+                {kind !== "other" && <span className="text-faint font-normal"> (optional)</span>}
+              </Label>
+              <Input
+                id={`cd-${f.key}`}
+                value={details[f.key] ?? ""}
+                maxLength={f.max}
+                placeholder={f.placeholder}
+                className={f.upper ? "uppercase" : undefined}
+                onChange={(e) => setDetails((d) => ({ ...d, [f.key]: e.target.value }))}
+              />
+            </div>
+          ))}
         </div>
+        {boardLine(kind, cleanDetails(kind, details)) && (
+          <div className="rounded-input bg-s2 flex items-center gap-2 px-3 py-2">
+            <KindIcon kind={kind} size={16} className="text-accent flex-none" />
+            <BoardLine kind={kind} text={boardLine(kind, cleanDetails(kind, details))} />
+          </div>
+        )}
         <div className="grid grid-cols-[1.4fr_1fr] gap-2">
           <div>
             <Label htmlFor="cd-date">Date</Label>

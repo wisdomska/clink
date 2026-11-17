@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   Moon,
   LockSimple,
+  SignOut,
   Fire,
   Cards,
   Vault,
@@ -96,7 +97,7 @@ export function DarkHub() {
               router.replace("/us");
             }}
           >
-            <LockSimple size={18} aria-hidden /> Lock
+            <SignOut size={18} aria-hidden /> Exit
           </Button>
         }
       />
@@ -208,7 +209,11 @@ export function DarkHub() {
           >
             <EnvelopeSimpleOpen size={22} className="text-ember" aria-hidden />
             <span className="flex-1 text-base font-bold">
-              {pending.length ? `${partner.name} sent you a request` : "Requests"}
+              {pending.length === 1
+                ? `${partner.name} sent you a request`
+                : pending.length > 1
+                  ? `${pending.length} requests from ${partner.name}`
+                  : "Requests"}
             </span>
             {pending.length > 0 && (
               <span role="img" className="bg-ember h-2 w-2 rounded-full" aria-label="New" />

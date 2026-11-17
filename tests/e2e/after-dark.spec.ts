@@ -261,6 +261,58 @@ test.describe("After Dark (spec section 7 and the must-pass safety tests)", () =
     expect(logs ?? []).toEqual([]);
   });
 
+  test("requests: several at once; see, edit and take back your own until answered", async ({
+    couple,
+  }) => {
+    const { a, b } = couple;
+    for (const p of [a, b]) {
+      await setUp(p, ["Flirty", "Steamy", "Spicy"]);
+      await verify(p);
+      await p.request.post("/api/dark/consent", {
+        data: { tiers: ["Flirty", "Steamy", "Spicy", "Unhinged"] },
+      });
+    }
+    expect((await a.request.post("/api/dark/unlock", { data: { pin: "2611" } })).ok()).toBeTruthy();
+    await a.goto("/dark/request");
+    const note = a.getByRole("textbox", { name: "A short note (optional)" });
+    await note.fill("the red one");
+    await a.getByRole("button", { name: "Send request" }).click();
+    await expect(a.getByText('"the red one"')).toBeVisible();
+    // A second one can follow straight away.
+    await note.fill("from last night");
+    await a.getByRole("button", { name: "Send request" }).click();
+    await expect(a.getByText('"from last night"')).toBeVisible();
+    await expect(a.getByText("Waiting")).toHaveCount(2);
+
+    // Reword the first, take back the second.
+    await a.getByRole("button", { name: "Edit request: the red one" }).click();
+    await a.getByRole("textbox", { name: "Edit your note" }).fill("the red one, please");
+    await a.getByRole("button", { name: "Save" }).click();
+    await expect(a.getByText('"the red one, please"')).toBeVisible();
+    await a.getByRole("button", { name: "Take back request: from last night" }).click();
+    await expect(a.getByText("Taken back")).toBeVisible();
+    await expect
+      .poll(async () => {
+        const r = await (await a.request.get("/api/dark/requests")).json();
+        return r.mine.map((m: { note: string; status: string }) => `${m.note}:${m.status}`);
+      })
+      .toEqual(["from last night:cancelled", "the red one, please:pending"]);
+
+    // Theo sees only the open one, reworded.
+    expect((await b.request.post("/api/dark/unlock", { data: { pin: "2611" } })).ok()).toBeTruthy();
+    await b.goto("/dark/request");
+    await expect(b.getByText('"the red one, please"')).toBeVisible();
+    await expect(b.getByText('"from last night"')).toHaveCount(0);
+    // Theo can't edit Nia's request.
+    const theirs = await (await a.request.get("/api/dark/requests")).json();
+    const id = theirs.mine.find((m: { status: string }) => m.status === "pending").id;
+    expect(
+      (
+        await b.request.post(`/api/dark/requests/${id}`, { data: { response: "edit", note: "x" } })
+      ).status(),
+    ).toBe(403);
+  });
+
   test("flow 10.6: unlink wipes every sensitive item for both and returns both to linking", async ({
     couple,
   }) => {

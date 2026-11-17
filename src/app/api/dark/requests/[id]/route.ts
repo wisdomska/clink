@@ -6,14 +6,17 @@ import { REQUEST_COOLDOWN_MS } from "@/lib/dark-logic";
 
 /**
  * POST /api/dark/requests/:id. The recipient answers: Accept, Not right now
- * (12 h cooldown) or Later (inbox, no reminders). The requester can take an
- * unanswered request back ("cancel"), with no cooldown.
+ * (12 h cooldown) or Later (inbox, no reminders). The requester can reword
+ * ("edit") or take back ("cancel") a request until it's answered.
  */
 export const POST = handler(async (req, ctx: { params: Promise<{ id: string }> }) => {
   const { id } = await ctx.params;
-  const { response } = await parseJson(
+  const { response, note } = await parseJson(
     req,
-    z.object({ response: z.enum(["accept", "decline", "later", "cancel"]) }),
+    z.object({
+      response: z.enum(["accept", "decline", "later", "cancel", "edit"]),
+      note: z.string().trim().max(120).optional(),
+    }),
   );
   const admin = supabaseAdmin();
   const [d, { data: r }] = await Promise.all([
@@ -25,6 +28,17 @@ export const POST = handler(async (req, ctx: { params: Promise<{ id: string }> }
       .maybeSingle(),
   ]);
   if (!r || r.couple_id !== d.coupleId) throw deny(404, "not_found", "Not found.");
+  if (response === "edit") {
+    // The requester can reword a request until it's answered.
+    if (r.requester_id !== d.user.id) throw deny(403, "not_requester", "Only you can edit it.");
+    if (!["pending", "later"].includes(r.status))
+      throw deny(409, "answered", "They've already answered.");
+    await admin
+      .from("nude_requests")
+      .update({ note: note || null })
+      .eq("id", id);
+    return ok({ ok: true });
+  }
   if (response === "cancel") {
     if (r.requester_id !== d.user.id)
       throw deny(403, "not_requester", "Only you can take it back.");
