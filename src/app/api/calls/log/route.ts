@@ -2,7 +2,7 @@ import { z } from "zod";
 import { randomUUID } from "node:crypto";
 import { handler, ok, parseJson, requireCouple, rateLimit } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 
 /**
  * Writes a call into the chat (WhatsApp style): "Missed video call",
@@ -35,7 +35,7 @@ export const POST = handler(async (req) => {
       .select("display_name")
       .eq("id", user.id)
       .single();
-    await notify(partnerId, "chat", {
+    notifyLater(partnerId, "chat", {
       body: `Missed ${video ? "video " : ""}call from ${me?.display_name ?? "your partner"}`,
       url: "/chat",
       tag: "call",

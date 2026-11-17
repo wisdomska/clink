@@ -56,7 +56,8 @@ test.describe("Pagination (cursor based)", () => {
     await expectNoHorizontalScroll(a);
     for (let i = 0; i < 5 && (await entries.count()) < 45; i++) {
       const more = a.getByRole("button", { name: "Load more" });
-      if (await more.isVisible()) await more.click();
+      // Scrolling the button into view can load the rest on its own, which removes it.
+      if (await more.isVisible()) await more.click({ timeout: 3000 }).catch(() => undefined);
       else await a.mouse.wheel(0, 4000);
       await a.waitForTimeout(400);
     }

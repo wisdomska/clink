@@ -2,7 +2,7 @@ import { z } from "zod";
 import { handler, ok, parseJson, requireCouple, rateLimit } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { initGame, playersFor, LIVE, asJson } from "@/lib/server/games";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 import { keysetFilter, pageParams, toPage } from "@/features/plans/cursor";
 
 const schema = z.object({
@@ -77,7 +77,7 @@ export const POST = handler(async (req) => {
     .select("display_name")
     .eq("id", user.id)
     .single();
-  await notify(partnerId, "games", {
+  notifyLater(partnerId, "games", {
     body: `${me?.display_name ?? "Your partner"} wants to play ${NAMES[body.type]}`,
     url: `/play/${body.type}/${game.id}`,
     tag: `game-${game.id}`,

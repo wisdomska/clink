@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -16,14 +16,14 @@ import {
   CircleDashed,
 } from "@phosphor-icons/react";
 import { startRegistration } from "@simplewebauthn/browser";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCouple } from "@/features/couple/context";
 import { Lead } from "@/components/ui/heading";
 import { Button } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
 import { toast } from "@/components/ui/toast";
 import { TIERS, tierStatus, type Tier } from "@/lib/dark-logic";
-import { useDarkState, darkFetch } from "./api";
+import { useDarkState, darkFetch, useBusy } from "./api";
 import { PageBar } from "@/components/clink/page-bar";
 
 const STATUS_COPY = {
@@ -40,6 +40,31 @@ export function DarkHub() {
   const { data: s } = useDarkState();
   const [verifyOpen, setVerifyOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
+  const [blocking, runBlock] = useBusy();
+  const [addingKey, runKey] = useBusy();
+  const qc = useQueryClient();
+  // Warm every After Dark screen (code and data) while the hub is open, so the
+  // next tap opens instantly instead of waiting on the network.
+  useEffect(() => {
+    for (const r of [
+      "/dark/wheel",
+      "/dark/decks/Flirty",
+      "/dark/vault",
+      "/dark/match",
+      "/dark/request",
+    ])
+      router.prefetch(r);
+    void qc.prefetchQuery({
+      queryKey: ["deck", "Flirty"],
+      queryFn: () => darkFetch("/api/dark/decks/Flirty"),
+      staleTime: 30_000,
+    });
+    void qc.prefetchQuery({
+      queryKey: ["match"],
+      queryFn: () => darkFetch("/api/dark/match"),
+      staleTime: 30_000,
+    });
+  }, [router, qc]);
   const { data: vault } = useQuery({
     queryKey: ["vault", "summary"],
     queryFn: () => darkFetch<{ kept?: number }>("/api/dark/vault?limit=1"),
@@ -65,8 +90,9 @@ export function DarkHub() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={async () => {
-              await fetch("/api/dark/lock", { method: "POST" });
+            onClick={() => {
+              // Lock now and leave at once; the request finishes in the background.
+              void fetch("/api/dark/lock", { method: "POST", keepalive: true });
               router.replace("/us");
             }}
           >
@@ -193,18 +219,21 @@ export function DarkHub() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={async () => {
-                  try {
-                    const opts = await darkFetch<
-                      Parameters<typeof startRegistration>[0]["optionsJSON"]
-                    >("/api/dark/passkey", { action: "register-options" });
-                    const response = await startRegistration({ optionsJSON: opts });
-                    await darkFetch("/api/dark/passkey", { action: "register", response });
-                    toast("Passkey added. Unlock with your face or fingerprint next time.");
-                  } catch {
-                    toast("Passkey not added. Your PIN still works.");
-                  }
-                }}
+                loading={addingKey}
+                onClick={() =>
+                  runKey(async () => {
+                    try {
+                      const opts = await darkFetch<
+                        Parameters<typeof startRegistration>[0]["optionsJSON"]
+                      >("/api/dark/passkey", { action: "register-options" });
+                      const response = await startRegistration({ optionsJSON: opts });
+                      await darkFetch("/api/dark/passkey", { action: "register", response });
+                      toast("Passkey added. Unlock with your face or fingerprint next time.");
+                    } catch {
+                      toast("Passkey not added. Your PIN still works.");
+                    }
+                  })
+                }
               >
                 <Fingerprint size={18} aria-hidden /> Use a passkey
               </Button>
@@ -245,14 +274,18 @@ export function DarkHub() {
         <Button
           variant="danger"
           size="lg"
-          onClick={async () => {
-            const r = await fetch("/api/couple/block", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: "{}",
-            });
-            if (r.ok) window.location.href = "/link";
-          }}
+          loading={blocking}
+          onClick={() =>
+            runBlock(async () => {
+              const r = await fetch("/api/couple/block", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: "{}",
+              });
+              if (!r.ok) throw new Error("Couldn't do that. Try again.");
+              window.location.href = "/link";
+            })
+          }
         >
           Block and unlink
         </Button>
@@ -274,6 +307,8 @@ export function VerifySheet({
 }) {
   const { partner } = useCouple();
   const [agree, setAgree] = useState(false);
+  const [signing, runSign] = useBusy();
+  const qc = useQueryClient();
   const { data } = useQuery({
     queryKey: ["declaration"],
     queryFn: async () =>
@@ -325,20 +360,24 @@ export function VerifySheet({
       {!meVerified ? (
         <Button
           disabled={!agree}
-          onClick={async () => {
-            const r = await fetch("/api/dark/verify-age", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ declaration: data?.declaration }),
-            });
-            if (!r.ok) return toast.err((await r.json()).message);
-            onOpenChange(false);
-            toast(
-              partnerVerified
-                ? "Verified. Turn on Unhinged in your tiers if you both want it."
-                : `Verified. Unhinged opens when ${partner.name} verifies too.`,
-            );
-          }}
+          loading={signing}
+          onClick={() =>
+            runSign(async () => {
+              const r = await fetch("/api/dark/verify-age", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ declaration: data?.declaration }),
+              });
+              if (!r.ok) throw new Error((await r.json()).message);
+              void qc.invalidateQueries({ queryKey: ["dark-state"] });
+              onOpenChange(false);
+              toast(
+                partnerVerified
+                  ? "Verified. Turn on Unhinged in your tiers if you both want it."
+                  : `Verified. Unhinged opens when ${partner.name} verifies too.`,
+              );
+            })
+          }
         >
           Sign and verify
         </Button>

@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { supabaseServer } from "@/lib/supabase/server";
+import { sessionUser } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { SettingsScreen } from "@/features/settings/settings-screen";
 
 export const metadata: Metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
-  const db = await supabaseServer();
-  const {
-    data: { user },
-  } = await db.auth.getUser();
+  const user = await sessionUser();
   // Session ran out between the layout and here: sign in again, don't crash.
   if (!user) redirect("/auth/reset?next=/settings");
   const { data: dark } = await supabaseAdmin()

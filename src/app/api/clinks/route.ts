@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { handler, ok, parseJson, requireCouple, rateLimit } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 import { track } from "@/lib/server/analytics";
 
 const schema = z.object({
@@ -56,7 +56,7 @@ export const POST = handler(async (req) => {
       .select("display_name")
       .eq("id", user.id)
       .single();
-    await notify(partnerId, "clinks", {
+    notifyLater(partnerId, "clinks", {
       body: `${me?.display_name ?? "Your partner"} sent a Clink`,
       url: "/us?clink=1",
       tag: "clink",

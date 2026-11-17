@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { handler, ok, parseJson, requireCouple, rateLimit, deny } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 import { track } from "@/lib/server/analytics";
 import { keysetFilter, pageParams, toPage } from "@/features/plans/cursor";
 
@@ -46,7 +46,7 @@ export const POST = handler(async (req) => {
     .select("id")
     .single();
   if (error) throw error;
-  await notify(partnerId, "keepsakes", {
+  notifyLater(partnerId, "keepsakes", {
     body: `A letter is waiting: "${condition}"`,
     url: `/keep/letters/${data.id}`,
   });

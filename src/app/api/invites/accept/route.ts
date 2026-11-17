@@ -11,11 +11,11 @@ import {
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { inviteCodeSchema } from "@/lib/validation";
 import { isVerified } from "@/lib/server/verified";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 
 /** POST /api/invites/accept: code valid and unused; both verified; neither already linked. */
 export const POST = handler(async (req) => {
-  const { user } = await requireUser();
+  const { user } = await requireUser({ full: true });
   await rateLimit(`invite-accept:${user.id}`, 10, 3600);
   const { code } = await parseJson(req, inviteCodeSchema);
   if (!isVerified(user))
@@ -84,7 +84,7 @@ export const POST = handler(async (req) => {
   await audit("couple_linked", user.id, { couple_id: couple.id });
   await audit("couple_linked", inv.inviter_id, { couple_id: couple.id });
   const me = names?.find((n) => n.id === user.id)?.display_name ?? "Your partner";
-  await notify(inv.inviter_id, "clinks", {
+  notifyLater(inv.inviter_id, "clinks", {
     title: "Clink",
     body: `${me} linked with you. Send your first Clink.`,
     url: "/link",

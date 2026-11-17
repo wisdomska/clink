@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { handler, ok, parseJson, requireCouple, rateLimit, deny } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 
 const schema = z.union([
   z.object({ suggest: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/) }),
@@ -31,7 +31,7 @@ export const POST = handler(async (req) => {
       .from("couples")
       .update({ ritual_time: time, ritual_time_proposed: null, ritual_time_proposed_by: null })
       .eq("id", coupleId);
-    await notify(partnerId, "clinks", { body: `Ritual time set to ${time}.`, url: "/us" });
+    notifyLater(partnerId, "clinks", { body: `Ritual time set to ${time}.`, url: "/us" });
     return ok({ ritualTime: time, proposed: null });
   };
 
@@ -55,7 +55,7 @@ export const POST = handler(async (req) => {
     .from("couples")
     .update({ ritual_time_proposed: body.suggest, ritual_time_proposed_by: user.id })
     .eq("id", coupleId);
-  await notify(partnerId, "clinks", {
+  notifyLater(partnerId, "clinks", {
     body: `New ritual time suggested: ${body.suggest}. Agree in Settings.`,
     url: "/settings",
   });

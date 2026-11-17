@@ -72,21 +72,70 @@ export interface Caller {
   db: Awaited<ReturnType<typeof supabaseServer>>;
 }
 
-/** Signed-in, not suspended, not deleted. */
-export async function requireUser(): Promise<Caller> {
+/**
+ * Who is calling. The session token is verified locally against the project's
+ * signing keys (cached for the process), so this costs no network round trip.
+ * Pass full: true when you need fields only the auth server has (identities,
+ * factors, email_confirmed_at, last_sign_in_at).
+ */
+async function authed(full = false): Promise<Caller> {
   const db = await supabaseServer();
-  const {
-    data: { user },
-  } = await db.auth.getUser();
-  if (!user) throw deny(401, "unauthenticated", "Sign in first.");
-  const { data: profile } = await supabaseAdmin()
-    .from("profiles")
-    .select("suspended_at, deleted_at")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (profile?.suspended_at) throw deny(403, "suspended", "This account is suspended.");
-  if (profile?.deleted_at) throw deny(403, "deleted", "This account is being deleted.");
+  if (full) {
+    const {
+      data: { user },
+    } = await db.auth.getUser();
+    if (!user) throw deny(401, "unauthenticated", "Sign in first.");
+    return { user, db };
+  }
+  const { data } = await db.auth.getClaims();
+  const c = data?.claims;
+  if (!c?.sub) throw deny(401, "unauthenticated", "Sign in first.");
+  const user = {
+    id: c.sub,
+    email: c.email,
+    phone: c.phone,
+    role: c.role,
+    aud: c.aud,
+    app_metadata: c.app_metadata ?? {},
+    user_metadata: c.user_metadata ?? {},
+  } as unknown as User;
   return { user, db };
+}
+
+/** The signed-in user's id and email, verified locally (no round trip), or null. */
+export async function sessionUser(): Promise<{ id: string; email: string | null } | null> {
+  const { data } = await (await supabaseServer()).auth.getClaims();
+  const c = data?.claims;
+  return c?.sub ? { id: c.sub, email: (c.email as string | undefined) ?? null } : null;
+}
+
+interface CallerRow {
+  suspended: boolean;
+  deleted: boolean;
+  couple_id: string | null;
+  role: "a" | "b" | null;
+  partner_id: string | null;
+  rank: number | null;
+}
+
+/** Account status, couple, partner and (optionally) tier in one round trip. */
+async function callerRow(userId: string, withRank = false): Promise<CallerRow> {
+  const { data, error } = await supabaseAdmin().rpc("svc_caller", {
+    p_user: userId,
+    p_with_rank: withRank,
+  });
+  if (error) throw error;
+  const row = data as unknown as CallerRow;
+  if (row.suspended) throw deny(403, "suspended", "This account is suspended.");
+  if (row.deleted) throw deny(403, "deleted", "This account is being deleted.");
+  return row;
+}
+
+/** Signed-in, not suspended, not deleted. */
+export async function requireUser(opts: { full?: boolean } = {}): Promise<Caller> {
+  const caller = await authed(opts.full);
+  await callerRow(caller.user.id);
+  return caller;
 }
 
 export interface CoupleCaller extends Caller {
@@ -95,12 +144,21 @@ export interface CoupleCaller extends Caller {
   partnerId: string;
 }
 
-/** Signed in AND in an active couple. Returns the partner too. */
-export async function requireCouple(): Promise<CoupleCaller> {
-  const caller = await requireUser();
-  const couple = await activeCouple(caller.user.id);
-  if (!couple) throw deny(409, "not_linked", "Link with your partner first.");
-  return { ...caller, ...couple };
+/** Signed in AND in an active couple. Returns the partner too (and the tier when asked). */
+export async function requireCouple(
+  opts: { withRank?: boolean } = {},
+): Promise<CoupleCaller & { rank: number }> {
+  const caller = await authed();
+  const row = await callerRow(caller.user.id, opts.withRank);
+  if (!row.couple_id || !row.partner_id)
+    throw deny(409, "not_linked", "Link with your partner first.");
+  return {
+    ...caller,
+    coupleId: row.couple_id,
+    role: (row.role ?? "a") as "a" | "b",
+    partnerId: row.partner_id,
+    rank: Number(row.rank ?? 0),
+  };
 }
 
 export async function activeCouple(userId: string) {

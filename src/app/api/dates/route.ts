@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { handler, ok, parseJson, requireCouple, rateLimit, deny } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 import { keysetFilter, pageParams, toPage } from "@/features/plans/cursor";
 
 const schema = z.object({ kitId: z.uuid(), startAt: z.iso.datetime({ offset: true }) });
@@ -32,7 +32,7 @@ export const POST = handler(async (req) => {
     .select("display_name")
     .eq("id", user.id)
     .single();
-  await notify(partnerId, "dates", {
+  notifyLater(partnerId, "dates", {
     body: `${me?.display_name ?? "Your partner"} booked ${kit.title}. Check the stub.`,
     url: "/plans",
   });

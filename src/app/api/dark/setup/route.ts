@@ -3,7 +3,7 @@ import { handler, ok, parseJson, requireCouple, rateLimit, audit } from "@/lib/s
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { hashPin } from "@/lib/server/pin";
 import { setDarkSession, ensureAdultFor } from "@/lib/server/dark";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 
 const schema = z.object({
   pin: z.string().regex(/^\d{4,8}$/, "PINs are 4 to 8 digits."),
@@ -47,6 +47,6 @@ export const POST = handler(async (req) => {
       .eq("id", coupleId);
   await setDarkSession(user.id);
   await audit("dark_setup", user.id, { tiers: tiers.length });
-  await notify(partnerId, "dark", { body: "" });
+  notifyLater(partnerId, "dark", { body: "" });
   return ok({ tiers });
 });

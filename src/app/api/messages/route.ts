@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { handler, ok, parseJson, requireCouple, rateLimit, deny } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 import { track } from "@/lib/server/analytics";
 
 const schema = z
@@ -157,7 +157,7 @@ export const POST = handler(async (req) => {
                   : "a photo"
             }`
           : `${name} ${PREVIEW[m.type]}`;
-    await notify(partnerId, "chat", { body: detail, url: "/chat", tag: "chat" });
+    notifyLater(partnerId, "chat", { body: detail, url: "/chat", tag: "chat" });
   }
   await track("message_sent", user.id, { type: m.type }, coupleId);
   return ok({ message: row }, { status: 201 });

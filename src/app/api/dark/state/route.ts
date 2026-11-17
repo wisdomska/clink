@@ -1,15 +1,15 @@
 import { handler, ok, requireCouple } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { hasDarkSession, effectiveRank, bothAllowSaved } from "@/lib/server/dark";
+import { hasDarkSession, bothAllowSaved } from "@/lib/server/dark";
 
 /**
  * What the lock screen and hub need. Reveals per-tier opt-in status (needed for
  * "Waiting on them"), never answers or content. Works while locked.
  */
 export const GET = handler(async () => {
-  const { user, coupleId, partnerId } = await requireCouple();
+  const { user, coupleId, partnerId, rank } = await requireCouple({ withRank: true });
   const admin = supabaseAdmin();
-  const [{ data: rows }, { data: privs }] = await Promise.all([
+  const [{ data: rows }, { data: privs }, allowSaved] = await Promise.all([
     admin
       .from("dark_settings")
       .select(
@@ -20,14 +20,15 @@ export const GET = handler(async () => {
       .from("user_private")
       .select("user_id, age_verified_at")
       .in("user_id", [user.id, partnerId]),
+    bothAllowSaved(coupleId),
   ]);
   const mine = rows?.find((r) => r.user_id === user.id);
   const theirs = rows?.find((r) => r.user_id === partnerId);
   const unlocked = await hasDarkSession(user.id);
   return ok({
     unlocked,
-    rank: await effectiveRank(coupleId),
-    allowSaved: await bothAllowSaved(coupleId),
+    rank,
+    allowSaved,
     me: {
       setUp: Boolean(mine?.pin_hash),
       tiers: mine?.opted_tiers ?? [],

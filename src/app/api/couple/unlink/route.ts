@@ -2,7 +2,7 @@ import { z } from "zod";
 import { handler, ok, parseJson, requireCouple, deny, rateLimit } from "@/lib/server/api";
 import { sign, unsign } from "@/lib/server/crypto";
 import { endCouple } from "@/lib/server/wipe";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 
 const schema = z.union([
   z.object({ step: z.literal("start") }),
@@ -25,6 +25,6 @@ export const POST = handler(async (req) => {
   if (uid !== user.id || cid !== coupleId || Number(exp) < Date.now())
     throw deny(400, "bad_token", "That took too long. Start again.");
   await endCouple(coupleId, "unlink", user.id);
-  await notify(partnerId, "clinks", { body: "Your Clink link has ended.", url: "/link" });
+  notifyLater(partnerId, "clinks", { body: "Your Clink link has ended.", url: "/link" });
   return ok({ ok: true });
 });

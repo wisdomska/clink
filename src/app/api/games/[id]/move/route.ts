@@ -2,7 +2,7 @@ import { z } from "zod";
 import { handler, ok, parseJson, requireCouple, rateLimit, deny } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { applyMove, playersFor, asJson } from "@/lib/server/games";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 import { track } from "@/lib/server/analytics";
 import type { GameType } from "@/features/play/engines/types";
 
@@ -84,7 +84,7 @@ export const POST = handler(async (req, ctx: { params: Promise<{ id: string }> }
       .select("display_name")
       .eq("id", user.id)
       .single();
-    await notify(r.notifyTurn, "games", {
+    notifyLater(r.notifyTurn, "games", {
       body: `Your turn. ${me?.display_name ?? "They"} just played.`,
       url: `/play/${g.type}/${id}`,
       tag: `game-${id}`,

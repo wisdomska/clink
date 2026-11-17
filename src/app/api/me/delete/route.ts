@@ -12,7 +12,7 @@ import {
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { endCouple } from "@/lib/server/wipe";
 import { clearDarkSession } from "@/lib/server/dark";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 
 /**
  * ACC-08: delete my account. Unlinks and wipes sensitive media now (SAF-05),
@@ -31,7 +31,7 @@ export const POST = handler(async (req) => {
   const couple = await activeCouple(user.id);
   if (couple) {
     await endCouple(couple.coupleId, "delete_account", user.id);
-    await notify(couple.partnerId, "clinks", { body: "Your Clink link has ended.", url: "/link" });
+    notifyLater(couple.partnerId, "clinks", { body: "Your Clink link has ended.", url: "/link" });
   }
   await admin.from("deletion_requests").upsert({ user_id: user.id });
   await admin

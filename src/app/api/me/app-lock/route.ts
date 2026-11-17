@@ -15,7 +15,7 @@ const schema = z.discriminatedUnion("action", [
 
 /** CHAT-07: turn the app-open PIN on or off, unlock, or relock. */
 export const POST = handler(async (req) => {
-  const { user } = await requireUser();
+  const { user } = await requireUser({ full: true });
   await rateLimit(`app-lock:${user.id}`, 40, 900);
   const body = await parseJson(req, schema);
   if (body.action === "lock") {

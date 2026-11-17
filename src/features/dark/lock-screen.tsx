@@ -23,6 +23,10 @@ export function LockScreen() {
   const lockedUntil =
     lockedOverride === undefined ? (state?.me.lockedUntil ?? null) : lockedOverride;
   const [now, setNow] = useState(() => Date.now());
+  const [opening, setOpening] = useState(false);
+  const dest = next?.startsWith("/dark/") ? next : "/dark/home";
+  // Load where you're going while you type, so the right PIN opens it at once.
+  useEffect(() => router.prefetch(dest), [router, dest]);
   const reduced =
     typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -50,7 +54,8 @@ export function LockScreen() {
     const d = await r.json();
     if (d.ok) {
       feedback("success", "unlock");
-      router.replace(next?.startsWith("/dark/") ? next : "/dark/home");
+      setOpening(true);
+      router.replace(dest);
       return;
     }
     if (d.lockedUntil) setLockedUntil(d.lockedUntil);
@@ -130,9 +135,11 @@ export function LockScreen() {
             style={{ color: wrong ? "var(--danger)" : "var(--text-muted)" }}
             aria-live="assertive"
           >
-            {wrong
-              ? `That's not it. ${tries} ${tries === 1 ? "try" : "tries"} left.`
-              : "Just the two of you. Enter your PIN."}
+            {opening
+              ? "Opening…"
+              : wrong
+                ? `That's not it. ${tries} ${tries === 1 ? "try" : "tries"} left.`
+                : "Just the two of you. Enter your PIN."}
           </p>
           <PinDots n={4} filled={pin.length} wrong={wrong} shake={wrong && !reduced} />
           <PinPad onKey={key} passkey={state?.me.passkey ? passkey : undefined} />

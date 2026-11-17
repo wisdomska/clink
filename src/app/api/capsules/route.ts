@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { handler, ok, parseJson, requireCouple, rateLimit, deny } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 import { track } from "@/lib/server/analytics";
 import { keysetFilter, pageParams, toPage } from "@/features/plans/cursor";
 
@@ -63,7 +63,7 @@ export const POST = handler(async (req) => {
     happened_on: new Date().toISOString().slice(0, 10),
     source_key: `capsule:${c.id}`,
   });
-  await notify(partnerId, "keepsakes", {
+  notifyLater(partnerId, "keepsakes", {
     body: "A time capsule was sealed. It opens on its date.",
     url: `/keep/capsules/${c.id}`,
   });

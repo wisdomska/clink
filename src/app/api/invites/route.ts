@@ -5,7 +5,7 @@ import { isVerified } from "@/lib/server/verified";
 
 /** POST /api/invites: caller not linked, verified, max 5 codes a day. Reuses a live code. */
 export const POST = handler(async (req) => {
-  const { user } = await requireUser();
+  const { user } = await requireUser({ full: true });
   if (!isVerified(user))
     throw deny(403, "unverified", "Confirm your email first, then you can link.");
   if (await activeCouple(user.id)) throw deny(409, "already_linked", "You're already linked.");

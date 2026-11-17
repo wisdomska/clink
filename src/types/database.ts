@@ -1321,6 +1321,9 @@ isOneToOne: false
 "svc_apply_game_move":
 { Args: { "p_current_turn_user": string,"p_expected_updated_at": string,"p_finished_at": string,"p_game_id": string,"p_is_draw": boolean,"p_scores": Json,"p_secrets": Json,"p_state": Json,"p_status": string,"p_winner_id": string }; Returns: boolean
                            },
+"svc_caller":
+{ Args: { "p_user": string,"p_with_rank"?: boolean }; Returns: Json
+                           },
 "svc_claim_scheduled_messages":
 { Args: { "p_limit": number }; Returns: {
               "body": string,

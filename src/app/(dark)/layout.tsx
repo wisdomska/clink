@@ -7,6 +7,7 @@ import { loadCoupleContext } from "@/lib/server/couple-context";
 import { CoupleProvider } from "@/features/couple/context";
 import { QueryProvider } from "@/features/couple/query-provider";
 import { hasDarkSession } from "@/lib/server/dark";
+import { sessionUser } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { DarkIdle } from "@/features/dark/idle";
 
@@ -28,13 +29,19 @@ export default function DarkLayout({ children }: { children: React.ReactNode }) 
 
 async function DarkShell({ children }: { children: React.ReactNode }) {
   const path = (await headers()).get("x-pathname") ?? "/dark";
-  const ctx = await loadCoupleContext(path);
   const pathname = path.split("?")[0]!;
-  const { data: mine } = await supabaseAdmin()
-    .from("dark_settings")
-    .select("pin_hash")
-    .eq("user_id", ctx.me.id)
-    .maybeSingle();
+  // The couple and your After Dark setup load together, not one after the other.
+  const user = await sessionUser();
+  const [ctx, { data: mine }] = await Promise.all([
+    loadCoupleContext(path),
+    user
+      ? supabaseAdmin()
+          .from("dark_settings")
+          .select("pin_hash")
+          .eq("user_id", user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
   const setUp = Boolean(mine?.pin_hash);
   if (!setUp && pathname !== "/dark/setup") redirect("/dark/setup");
   const unlocked = setUp && (await hasDarkSession(ctx.me.id));

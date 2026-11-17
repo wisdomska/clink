@@ -3,7 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import { serverEnv } from "@/lib/env";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { activeCouple } from "@/lib/server/api";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 
 export const maxDuration = 60;
 
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
           .single();
         names.set(s.sender_id, p?.display_name ?? "Your partner");
       }
-      await notify(
+      notifyLater(
         couple.partnerId,
         "chat",
         { body: `${names.get(s.sender_id)}: ${s.body.slice(0, 80)}`, url: "/chat", tag: "chat" },

@@ -33,10 +33,47 @@ export function RequestScreen() {
   const [result, setResult] = useState<null | "sent" | "declined" | "later">(null);
   const [sendFor, setSendFor] = useState<string | null>(null);
   const [verifyOpen, setVerifyOpen] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const received = data?.inbox.find((r) => r.status === "pending" || r.status === "later");
   const accepted = data?.inbox.find((r) => r.status === "accepted");
   const unhinged = (data?.rank ?? 0) >= 4;
   const refresh = () => qc.invalidateQueries({ queryKey: ["requests"] });
+
+  async function sendRequest() {
+    if (sending) return;
+    setSending(true);
+    try {
+      const r = await darkFetch<{ id: string }>("/api/dark/requests", { note: note || undefined });
+      // Show it as sent straight away; the server copy follows.
+      qc.setQueryData<Req>(["requests"], (d) =>
+        d ? { ...d, sent: { id: r.id, status: "pending", cooldown: false } } : d,
+      );
+      setNote("");
+      toast.ok(`Sent. ${partner.name} can say yes, not right now, or later.`);
+      void refresh();
+    } catch (e) {
+      toast.err(e instanceof Error ? e.message : "Couldn't send. Try again.");
+      void refresh();
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function takeBack(id: string) {
+    if (cancelling) return;
+    setCancelling(true);
+    try {
+      await darkFetch(`/api/dark/requests/${id}`, { response: "cancel" });
+      qc.setQueryData<Req>(["requests"], (d) => (d ? { ...d, sent: null } : d));
+      toast("Taken back. Nothing was sent.");
+      void refresh();
+    } catch (e) {
+      toast.err(e instanceof Error ? e.message : "Couldn't take it back. Try again.");
+    } finally {
+      setCancelling(false);
+    }
+  }
 
   async function respond(id: string, response: "accept" | "decline" | "later") {
     // Optimistic: show the outcome now, undo it if the server refuses.
@@ -130,9 +167,24 @@ export function RequestScreen() {
               </Button>
             </>
           ) : data?.sent && (data.sent.status === "pending" || data.sent.status === "later") ? (
-            <p className="text-muted m-0 text-base">
-              Your request is with {partner.name}. No rush, and no reminders.
-            </p>
+            <div className="an-reveal rounded-card border-line bg-s1 flex flex-col gap-3 border p-4">
+              <span className="flex items-center gap-2 text-base font-bold">
+                <Moon size={20} className="text-ember" aria-hidden /> Request sent
+              </span>
+              <p className="text-muted m-0 text-sm leading-normal">
+                It&apos;s with {partner.name}. They can say yes, not right now, or later. No rush,
+                and no reminders.
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                loading={cancelling}
+                onClick={() => takeBack(data.sent!.id)}
+                className="self-start"
+              >
+                Take it back
+              </Button>
+            </div>
           ) : data?.sent?.cooldown ? (
             <p className="text-muted m-0 text-base">
               Not right now. Requests pause for a little while.
@@ -141,23 +193,13 @@ export function RequestScreen() {
             <>
               <Input
                 aria-label="A short note (optional)"
+                onKeyDown={(e) => e.key === "Enter" && void sendRequest()}
                 placeholder="something just for me?"
                 value={note}
                 maxLength={120}
                 onChange={(e) => setNote(e.target.value)}
               />
-              <Button
-                onClick={async () => {
-                  try {
-                    await darkFetch("/api/dark/requests", { note: note || undefined });
-                    toast.err(`Sent. ${partner.name} can say yes, not right now, or later.`);
-                    setNote("");
-                    void refresh();
-                  } catch (e) {
-                    toast.err(e instanceof Error ? e.message : "Couldn't send.");
-                  }
-                }}
-              >
+              <Button loading={sending} onClick={sendRequest}>
                 Send request
               </Button>
             </>

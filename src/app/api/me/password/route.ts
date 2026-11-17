@@ -12,7 +12,7 @@ const PASSWORD_RULES = z
 
 /** Set or change your password. Also clears a "must change" flag on temporary passwords. */
 export const POST = handler(async (req) => {
-  const { user, db } = await requireUser();
+  const { user, db } = await requireUser({ full: true });
   await rateLimit(`password:${user.id}`, 10, 3600);
   const { password } = await parseJson(req, z.object({ password: PASSWORD_RULES }));
   // Through the user's own session, so this device stays signed in.

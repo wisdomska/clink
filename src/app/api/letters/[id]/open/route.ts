@@ -1,6 +1,6 @@
 import { handler, ok, requireCouple, deny } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 
 /** Break the seal. Only the recipient can open it, any time; the writer gets a little note. */
 export const POST = handler(async (_req, ctx: { params: Promise<{ id: string }> }) => {
@@ -21,7 +21,7 @@ export const POST = handler(async (_req, ctx: { params: Promise<{ id: string }> 
       .select("display_name")
       .eq("id", user.id)
       .single();
-    await notify(l.author_id, "keepsakes", {
+    notifyLater(l.author_id, "keepsakes", {
       body: `${me?.display_name ?? "They"} opened "${l.condition}"`,
       url: "/keep",
     });

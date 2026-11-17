@@ -1,11 +1,11 @@
 name: Keep Supabase awake
 
-# Supabase Free pauses a project after 7 days without activity.
-# This pings each environment's health endpoint (which touches the database)
-# and the Supabase REST API directly, every 3 days.
+# Supabase Free pauses a project after 7 days without activity, and an idle
+# app goes cold. Every hour this pings each environment's health endpoint
+# (which touches the database) and the Supabase REST API directly.
 on:
   schedule:
-    - cron: "17 6 */3 * *"
+    - cron: "23 * * * *"
   workflow_dispatch:
 
 permissions: {}

@@ -1,9 +1,8 @@
 import "server-only";
 import { redirect } from "next/navigation";
-import { supabaseServer } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { journeyStep, pathFor } from "@/lib/server/journey";
-import { activeCouple } from "@/lib/server/api";
+import { activeCouple, sessionUser } from "@/lib/server/api";
 import { storage } from "@/lib/storage";
 import { appLockEnabled, isAppUnlocked } from "@/lib/server/app-lock";
 import type { CoupleContextValue, Person } from "@/features/couple/types";
@@ -20,10 +19,8 @@ async function avatarUrl(path: string | null): Promise<string | null> {
 
 /** Everything the signed-in app shell needs. Redirects when the user isn't ready. */
 export async function loadCoupleContext(nextPath: string): Promise<CoupleContextValue> {
-  const db = await supabaseServer();
-  const {
-    data: { user },
-  } = await db.auth.getUser();
+  // Verified locally against the signing keys: no auth-server round trip per page.
+  const user = await sessionUser();
   if (!user) redirect(`/auth/reset?next=${encodeURIComponent(nextPath)}`);
   // These don't depend on each other: ask the database once, in parallel.
   const [step, appLock, couple] = await Promise.all([

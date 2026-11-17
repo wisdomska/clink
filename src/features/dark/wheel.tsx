@@ -25,6 +25,7 @@ export function DareWheel() {
   const { partner, send } = useCouple();
   const { data: s } = useDarkState();
   const [deg, setDeg] = useState(0);
+  const [adding, setAdding] = useState<string | null>(null);
   const [phase, setPhase] = useState<"idle" | "spinning" | "matchbook" | "struck">("idle");
   const [spin, setSpin] = useState<Spin | null>(null);
   const [strike, setStrike] = useState(0);
@@ -50,11 +51,14 @@ export function DareWheel() {
     if (phase === "spinning") return;
     setPhase("spinning");
     setStrike(0);
+    // Start turning on the tap; the landing spot is set once the server picks.
+    const startDeg = deg + 720;
+    if (!reduced) setDeg(startDeg);
     try {
       const r = await darkFetch<Spin>("/api/dark/wheel", {});
       const segIndex = segs.findIndex((t) => t === r.tier);
       const target = 360 - (segIndex * 45 + 22.5);
-      const next = deg - (deg % 360) + 1440 + target + (Math.random() * 20 - 10);
+      const next = startDeg - (startDeg % 360) + 1080 + target + (Math.random() * 20 - 10);
       setDeg(next);
       send("dark.spin", { tier: r.tier });
       setTimeout(
@@ -62,7 +66,7 @@ export function DareWheel() {
           setSpin(r);
           setPhase("matchbook");
         },
-        reduced ? 400 : 3300,
+        reduced ? 400 : 3000,
       );
     } catch (e) {
       setPhase("idle");
@@ -75,15 +79,18 @@ export function DareWheel() {
     haptic("heavy");
   }
 
-  async function outcome(o: "done" | "passed" | "respun") {
+  function outcome(o: "done" | "passed" | "respun") {
     if (!spin) return;
     if (o === "done" && spin.needsMedia) return setSendOpen(true);
-    await darkFetch(`/api/dark/wheel/${spin.spinId}`, { outcome: o });
-    void refetch();
+    const id = spin.spinId;
+    // Move on now; save in the background and say so only if it fails.
     setPhase("idle");
     setSpin(null);
     if (o === "passed") toast("Passed. No big deal.");
     if (o === "done") toast("Done. Nice.");
+    void darkFetch(`/api/dark/wheel/${id}`, { outcome: o })
+      .then(() => refetch())
+      .catch(() => toast.err("That didn't save. Your streak may be off by one."));
     if (o === "respun") setTimeout(doSpin, 50);
   }
 
@@ -269,11 +276,20 @@ export function DareWheel() {
               variant="secondary"
               size="sm"
               disabled={text.trim().length < 3}
+              loading={adding === t}
               onClick={async () => {
-                await darkFetch("/api/dark/dares", { tier: t, text });
-                setText("");
-                setCustom(false);
-                toast(`Added to ${t}.`);
+                if (adding) return;
+                setAdding(t);
+                try {
+                  await darkFetch("/api/dark/dares", { tier: t, text });
+                  setText("");
+                  setCustom(false);
+                  toast.ok(`Added to ${t}.`);
+                } catch (e) {
+                  toast.err(e instanceof Error ? e.message : "Couldn't add it. Try again.");
+                } finally {
+                  setAdding(null);
+                }
               }}
             >
               Add to {t}

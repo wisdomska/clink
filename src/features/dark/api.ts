@@ -1,5 +1,7 @@
 "use client";
+import { useCallback, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "@/components/ui/toast";
 
 export interface DarkState {
   unlocked: boolean;
@@ -45,4 +47,27 @@ export function useDarkState() {
     queryFn: () => darkFetch<DarkState>("/api/dark/state"),
     staleTime: 5_000,
   });
+}
+
+/**
+ * Wraps an async action for a button: shows a spinner, ignores repeat taps and
+ * turns a failure into a toast instead of silence.
+ */
+export function useBusy() {
+  const [busy, setBusy] = useState(false);
+  const live = useRef(false);
+  const run = useCallback(async (fn: () => Promise<unknown>) => {
+    if (live.current) return;
+    live.current = true;
+    setBusy(true);
+    try {
+      await fn();
+    } catch (e) {
+      toast.err(e instanceof Error ? e.message : "That didn't work. Try again.");
+    } finally {
+      live.current = false;
+      setBusy(false);
+    }
+  }, []);
+  return [busy, run] as const;
 }

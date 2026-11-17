@@ -53,14 +53,14 @@ export interface DarkCaller extends CoupleCaller {
 export async function requireDark(
   opts: { minRank?: number; refresh?: boolean } = {},
 ): Promise<DarkCaller> {
-  const caller = await requireCouple();
+  // The couple, the partner and the tier come back in one round trip.
+  const caller = await requireCouple({ withRank: true });
   if (!(await hasDarkSession(caller.user.id)))
     throw deny(401, "dark_locked", "After Dark is locked.");
   if (opts.refresh !== false) await setDarkSession(caller.user.id);
-  const rank = await effectiveRank(caller.coupleId);
-  if ((opts.minRank ?? 0) > rank)
+  if ((opts.minRank ?? 0) > caller.rank)
     throw deny(403, "tier_locked", "That tier isn't open for you both.");
-  return { ...caller, rank };
+  return caller;
 }
 
 export async function effectiveRank(coupleId: string): Promise<number> {

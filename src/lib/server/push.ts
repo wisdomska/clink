@@ -1,4 +1,5 @@
 import "server-only";
+import { after } from "next/server";
 import * as webpush from "web-push";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { serverEnv } from "@/lib/env";
@@ -165,4 +166,17 @@ export async function notifyCall(
     }),
   );
   return { sent };
+}
+
+/**
+ * Send a push after the response has gone out, so the person tapping never
+ * waits on push services. Failures are logged, never surfaced.
+ */
+export function notifyLater(...args: Parameters<typeof notify>): void {
+  after(() =>
+    notify(...args).then(
+      () => undefined,
+      (e) => console.error("push failed", e),
+    ),
+  );
 }

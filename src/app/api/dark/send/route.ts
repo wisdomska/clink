@@ -2,7 +2,7 @@ import { z } from "zod";
 import { handler, ok, parseJson, deny, rateLimit } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { requireDark } from "@/lib/server/dark";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 import { track } from "@/lib/server/analytics";
 
 /**
@@ -66,7 +66,7 @@ export const POST = handler(async (req) => {
     type: "sensitive",
     media_ids: [body.mediaId],
   });
-  await notify(d.partnerId, "dark", { body: "" });
+  notifyLater(d.partnerId, "dark", { body: "" });
   await track("sensitive_media_sent", d.user.id, { retention: m.retention }, d.coupleId);
   return ok({ ok: true }, { status: 201 });
 });

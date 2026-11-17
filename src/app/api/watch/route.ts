@@ -2,7 +2,7 @@ import { z } from "zod";
 import { handler, ok, parseJson, requireCouple, deny, rateLimit } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { youtubeId } from "@/lib/youtube";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 
 /** TOG-01: start a watch party from a YouTube link. */
 export const POST = handler(async (req) => {
@@ -58,7 +58,7 @@ export const POST = handler(async (req) => {
     .select("display_name")
     .eq("id", user.id)
     .single();
-  await notify(partnerId, "dates", {
+  notifyLater(partnerId, "dates", {
     body: `${me?.display_name ?? "Your partner"} started a watch party`,
     url: `/plans/watch/${data.id}`,
   });

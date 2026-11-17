@@ -2,7 +2,7 @@ import { z } from "zod";
 import { handler, ok, parseJson, deny, rateLimit } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { requireDark } from "@/lib/server/dark";
-import { notify } from "@/lib/server/push";
+import { notifyLater } from "@/lib/server/push";
 
 /**
  * DARK-06 nude request. POST requires Unhinged unlocked for both (so both are
@@ -42,7 +42,7 @@ export const POST = handler(async (req) => {
     })
     .select("id")
     .single();
-  await notify(d.partnerId, "dark", { body: "" });
+  notifyLater(d.partnerId, "dark", { body: "" });
   return ok({ id: r!.id }, { status: 201 });
 });
 
