@@ -113,7 +113,7 @@ export function PresencePair({ now }: { now: Date }) {
     <>
       <section
         aria-label="You two"
-        className="rounded-card border-line bg-s1 relative flex-none overflow-hidden border px-4 pt-5 pb-4"
+        className="rounded-card border-line bg-s1 relative flex-none overflow-hidden border px-4 pt-5 pb-4 lg:px-8 lg:pt-8 lg:pb-7"
       >
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
           <button
@@ -126,15 +126,16 @@ export function PresencePair({ now }: { now: Date }) {
                 name={me.name}
                 side="me"
                 size={84}
+                sizes={{ lg: 128, xl: 152 }}
                 ring={0}
                 photoUrl={me.avatarUrl}
                 icon={me.avatarIcon}
               />
-              <span className="bg-accent text-on-accent absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full shadow-[0_0_0_3px_var(--surface-1)]">
+              <span className="bg-accent text-on-accent absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full shadow-[0_0_0_3px_var(--surface-1)] lg:right-1 lg:bottom-1 lg:h-9 lg:w-9">
                 <PencilSimple size={14} weight="bold" aria-hidden />
               </span>
             </div>
-            <span className="text-[15px] font-bold">You</span>
+            <span className="text-[15px] font-bold lg:text-xl">You</span>
             {pill(
               beHere ? "just here" : statusLabel(myStatus),
               beHere ? Sparkle : iconFor(myStatus),
@@ -144,7 +145,7 @@ export function PresencePair({ now }: { now: Date }) {
           </button>
 
           {/* Heartbeat between you: pulses together, flat line when apart. */}
-          <svg viewBox="0 0 80 32" className="h-8 w-16 sm:w-20" aria-hidden>
+          <svg viewBox="0 0 80 32" className="h-8 w-16 sm:w-20 lg:h-12 lg:w-32" aria-hidden>
             <motion.path
               d={online ? "M0 16 H22 L28 6 L34 26 L40 10 L45 20 L50 16 H80" : "M0 16 H80"}
               fill="none"
@@ -176,6 +177,7 @@ export function PresencePair({ now }: { now: Date }) {
                 name={partner.name}
                 side="partner"
                 size={84}
+                sizes={{ lg: 128, xl: 152 }}
                 ring={0}
                 photoUrl={partner.avatarUrl}
                 icon={partner.avatarIcon}
@@ -184,11 +186,13 @@ export function PresencePair({ now }: { now: Date }) {
               {online && (
                 <span
                   aria-hidden
-                  className="an-dot absolute right-1 bottom-1 h-4 w-4 rounded-full bg-[#34C759] shadow-[0_0_0_3px_var(--surface-1)]"
+                  className="an-dot bg-online absolute right-1 bottom-1 h-4 w-4 rounded-full shadow-[0_0_0_3px_var(--surface-1)] lg:right-3 lg:bottom-3 lg:h-5 lg:w-5"
                 />
               )}
             </div>
-            <span className="max-w-full truncate text-[15px] font-bold">{partner.name}</span>
+            <span className="max-w-full truncate text-[15px] font-bold lg:text-xl">
+              {partner.name}
+            </span>
             <span className="sr-only">
               Open {partner.name}&apos;s profile. Long-press for quick actions.
             </span>

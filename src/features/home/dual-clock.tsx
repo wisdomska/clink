@@ -1,12 +1,29 @@
 "use client";
+import { useSyncExternalStore } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Moon, Sun } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
 import { formatClock, isNight } from "@/lib/time";
 import type { Person } from "@/features/couple/types";
 
+const noop = () => () => {};
+/** False during server render and hydration, true after: browser-only data waits for it. */
+function useHydrated() {
+  return useSyncExternalStore(
+    noop,
+    () => true,
+    () => false,
+  );
+}
+
+/**
+ * Today's weather where this person is. Cached in the browser, so it's held
+ * back until after hydration (the server never has it; showing it on the first
+ * render would mismatch the server HTML).
+ */
 export function useWeather(p: Person) {
-  return useQuery({
+  const hydrated = useHydrated();
+  const q = useQuery({
     queryKey: ["weather", p.lat, p.lon],
     enabled: p.lat !== null && p.lon !== null,
     staleTime: 30 * 60 * 1000,
@@ -15,6 +32,7 @@ export function useWeather(p: Person) {
       return (await r.json()) as { temp: number | null; label: string | null };
     },
   });
+  return hydrated ? q : { ...q, data: undefined };
 }
 
 function Half({ p, now, side }: { p: Person; now: Date; side: "me" | "partner" }) {
@@ -24,7 +42,7 @@ function Half({ p, now, side }: { p: Person; now: Date; side: "me" | "partner" }
   const right = side === "partner";
   return (
     <div
-      className={right ? "border-line border-l p-4 text-right" : "p-4"}
+      className={right ? "border-line border-l p-4 text-right lg:p-6" : "p-4 lg:p-6"}
       style={{
         background: night ? "var(--bg-night)" : right ? "var(--surface-2)" : "var(--surface-1)",
         transition: "background 600ms ease",
@@ -39,7 +57,7 @@ function Half({ p, now, side }: { p: Person; now: Date; side: "me" | "partner" }
         </span>
         {right && <Icon size={16} aria-label={night ? "Night" : "Day"} />}
       </div>
-      <div className="mono mt-1 text-[36px] leading-[1.2]">
+      <div className="mono mt-1 text-[36px] leading-[1.2] lg:text-[48px] 2xl:text-[56px]">
         <time dateTime={now.toISOString()}>{formatClock(now, p.timezone)}</time>
       </div>
       <div className="text-faint text-sm">{w?.temp != null ? `${w.temp}° · ${w.label}` : " "}</div>

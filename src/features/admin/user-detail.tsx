@@ -359,7 +359,9 @@ export function UserDetail({ id }: { id: string }) {
             <span
               className={cn(
                 "rounded-full px-2.5 py-1 text-xs font-semibold",
-                status === "Active" ? "bg-[#34C759]/15 text-[#34C759]" : "bg-danger/15 text-danger",
+                status === "Active"
+                  ? "bg-online/15 text-[var(--online)]"
+                  : "bg-danger/15 text-danger",
               )}
             >
               {status}

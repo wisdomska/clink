@@ -147,7 +147,7 @@ export function CalendarScreen() {
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-10">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-10 2xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <section aria-labelledby="cal-month" className="flex min-w-0 flex-col gap-3">
           <div className="flex items-center gap-2">
             <h2 id="cal-month" className="m-0 flex-1 text-lg font-bold" aria-live="polite">
@@ -207,7 +207,7 @@ export function CalendarScreen() {
                             }`}
                             onClick={() => select(key)}
                             className={cn(
-                              "relative flex h-12 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border text-sm transition-colors sm:h-14",
+                              "relative flex h-12 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border text-sm transition-colors sm:h-14 lg:h-24 lg:items-stretch lg:justify-start lg:gap-1.5 lg:p-2 lg:text-left 2xl:h-28",
                               isSel
                                 ? "bg-accent text-on-accent border-transparent font-bold"
                                 : isToday
@@ -217,7 +217,37 @@ export function CalendarScreen() {
                             )}
                           >
                             <span className="mono leading-none">{parseKey(key).d}</span>
-                            <span aria-hidden className="flex h-1.5 items-center gap-0.5">
+                            {/* Desktop: the day's events written out, like a wall calendar. */}
+                            <span aria-hidden className="hidden min-w-0 flex-col gap-0.5 lg:flex">
+                              {evs.slice(0, 2).map((e) => (
+                                <span
+                                  key={e.id}
+                                  className={cn(
+                                    "flex min-w-0 items-center gap-1 truncate text-[11px] leading-tight font-medium",
+                                    isSel ? "text-on-accent" : "text-muted",
+                                  )}
+                                >
+                                  <span
+                                    className={cn(
+                                      "h-1.5 w-1.5 flex-none rounded-full",
+                                      isSel ? "bg-on-accent" : KIND[e.kind].dot,
+                                    )}
+                                  />
+                                  <span className="truncate">{e.title}</span>
+                                </span>
+                              ))}
+                              {evs.length > 2 && (
+                                <span
+                                  className={cn(
+                                    "text-[11px]",
+                                    isSel ? "text-on-accent" : "text-faint",
+                                  )}
+                                >
+                                  +{evs.length - 2} more
+                                </span>
+                              )}
+                            </span>
+                            <span aria-hidden className="flex h-1.5 items-center gap-0.5 lg:hidden">
                               {evs.slice(0, 3).map((e) => (
                                 <span
                                   key={e.id}

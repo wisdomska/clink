@@ -91,8 +91,8 @@ function RoundBtn({
         onClick={onClick}
         className={cn(
           "flex h-14 w-14 cursor-pointer items-center justify-center rounded-full border-0 text-white sm:h-16 sm:w-16",
-          tone === "danger" && "bg-[#FF3B30]",
-          tone === "go" && "bg-[#34C759]",
+          tone === "danger" && "bg-end-call",
+          tone === "go" && "bg-online",
           tone === "glass" && (on ? "bg-white text-black" : "bg-s3"),
         )}
       >
@@ -182,7 +182,7 @@ export function CallScreen({
       <motion.div
         role="status"
         aria-label={`On a call with ${partnerName}`}
-        className="fixed top-[calc(env(safe-area-inset-top)+8px)] left-1/2 z-[90] flex -translate-x-1/2 items-center gap-1 rounded-full bg-[#34C759] p-1 pl-1 text-white shadow-[0_8px_24px_rgba(0,0,0,.35)]"
+        className="bg-online fixed top-[calc(env(safe-area-inset-top)+8px)] left-1/2 z-[90] flex -translate-x-1/2 items-center gap-1 rounded-full p-1 pl-1 text-white shadow-[0_8px_24px_rgba(0,0,0,.35)]"
         initial={{ y: -40, opacity: 0.01 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
@@ -218,7 +218,7 @@ export function CallScreen({
           type="button"
           aria-label="End call"
           onClick={hangUp}
-          className="press-icon flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 bg-[#FF3B30] text-white"
+          className="press-icon bg-end-call flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 text-white"
         >
           <PhoneDisconnect size={20} weight="fill" aria-hidden />
         </button>
@@ -282,7 +282,7 @@ export function CallScreen({
                 className={cn(
                   "h-2 w-2 rounded-full",
                   call.quality === "good"
-                    ? "bg-[#34C759]"
+                    ? "bg-online"
                     : call.quality === "weak"
                       ? "bg-warning"
                       : "bg-danger",
@@ -446,9 +446,9 @@ export function CallScreen({
               <div
                 role="group"
                 aria-label="Send a reaction"
-                className="bg-s3/90 flex gap-1 rounded-full p-1.5"
+                className="bg-s3/90 flex max-w-[312px] flex-wrap justify-center gap-1 rounded-[28px] p-1.5 sm:max-w-none sm:rounded-full"
               >
-                {["❤️", "😘", "😂", "🔥", "😮", "👏"].map((e) => (
+                {["❤️", "😘", "😂", "🤣", "😭", "😡", "😒", "🔥", "😮", "👏"].map((e) => (
                   <button
                     key={e}
                     type="button"

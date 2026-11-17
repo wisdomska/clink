@@ -33,6 +33,9 @@
   --partner-a: #ff4f7b; /* circle: Rouge */
   --partner-b: #b9a4ff; /* square: Lilac */
   --danger: #ff7a6b;
+  /* Presence and calls: the universal online green and end-call red. */
+  --online: #34c759;
+  --end-call: #ff3b30;
   --warning: #f2b84b;
 
   /* Brand extras: spicy, playful, romantic */

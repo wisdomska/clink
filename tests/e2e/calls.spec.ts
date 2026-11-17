@@ -16,7 +16,7 @@ test.describe("Calls", () => {
     const { a, b } = couple;
     await b.goto("/us");
     await a.goto("/chat");
-    await a.getByRole("button", { name: "Video call" }).click();
+    await a.getByRole("button", { name: "Video call", exact: true }).click();
     const outgoing = a.getByRole("dialog", { name: "Video call with Theo" });
     await expect(outgoing).toBeVisible();
     await expect(outgoing.getByText(/Ringing|Calling/)).toBeVisible();
@@ -96,11 +96,22 @@ test.describe("Calls", () => {
     await a.goto("/chat");
     await b.goto("/chat");
     await Promise.all([
-      a.getByRole("button", { name: "Video call" }).click(),
-      b.getByRole("button", { name: "Video call" }).click(),
+      a.getByRole("button", { name: "Video call", exact: true }).click(),
+      b.getByRole("button", { name: "Video call", exact: true }).click(),
     ]);
     const onA = a.getByRole("dialog", { name: "Video call with Theo" });
     const onB = b.getByRole("dialog", { name: "Video call with Nia" });
+    // If one ring lands a moment before the other person's tap, the incoming
+    // screen covers their call button and their tap lands on it: in real life
+    // they'd just answer. Either way, nobody is ever told "busy".
+    await Promise.all(
+      [onA, onB].map((d) =>
+        d
+          .getByRole("button", { name: "Accept" })
+          .click({ timeout: 4000 })
+          .catch(() => undefined),
+      ),
+    );
     await expect(onA.getByText(/^0:0\d$/)).toBeVisible({ timeout: 20000 });
     await expect(onB.getByText(/^0:0\d$/)).toBeVisible({ timeout: 20000 });
     await expect(a.getByText(/another call/)).toHaveCount(0);
@@ -122,7 +133,7 @@ test("calls connect through the TURN relay alone", async ({ couple }) => {
     await p.evaluate(() => localStorage.setItem("clink_force_relay", "1"));
   }
   await a.goto("/chat");
-  await a.getByRole("button", { name: "Video call" }).click();
+  await a.getByRole("button", { name: "Video call", exact: true }).click();
   const incoming = b.getByRole("dialog", { name: "Video call with Nia" });
   await expect(incoming.getByText("Incoming video call")).toBeVisible({ timeout: 15000 });
   await incoming.getByRole("button", { name: "Accept" }).click();

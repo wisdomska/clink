@@ -49,7 +49,10 @@ import { LoadingDots } from "@/components/ui/spinner";
 import { Toggle } from "@/components/ui/toggle";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/cn";
-import { formatClock } from "@/lib/time";
+import { countdownParts, formatClock } from "@/lib/time";
+import { useSendClink } from "@/features/home/use-send-clink";
+import { useWeather } from "@/features/home/dual-clock";
+import { useCountdowns, KindIcon } from "@/features/home/countdown-card";
 import { compressImage } from "@/lib/media/compress";
 import { prepareVideo } from "@/lib/media/video";
 import { uploadMedia } from "@/lib/media/upload";
@@ -93,7 +96,7 @@ import { MissedCallCard } from "@/features/call/missed-call-card";
 import type { Message, UiMessage } from "./types";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
 
-const REACTIONS = ["❤️", "😂", "😭", "🔥", "🥹", "👀"];
+const REACTIONS = ["❤️", "😂", "🤣", "😭", "😢", "😡", "😒", "🔥", "🥹", "👀"];
 
 function dayLabel(d: Date, tz: string) {
   const fmt = (x: Date) =>
@@ -775,7 +778,7 @@ export function ChatScreen() {
           <div
             ref={listRef}
             onScroll={onScroll}
-            className="no-scrollbar relative flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-4"
+            className="no-scrollbar relative flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-4 xl:px-[max(1rem,calc((100%-880px)/2))]"
             style={
               {
                 filter: blurred ? "blur(14px)" : undefined,
@@ -1073,7 +1076,7 @@ export function ChatScreen() {
         )}
 
         <form
-          className="flex flex-none items-end gap-2 px-3 py-2.5"
+          className="flex flex-none items-end gap-2 px-3 py-2.5 xl:px-[max(0.75rem,calc((100%-880px)/2))]"
           onSubmit={(e) => {
             e.preventDefault();
             void sendText();
@@ -1584,13 +1587,19 @@ export function ChatScreen() {
 function ReactRow({ current, onPick }: { current: string | null; onPick: (e: string) => void }) {
   const [custom, setCustom] = useState(false);
   const quick =
-    current && !REACTIONS.includes(current) ? [current, ...REACTIONS.slice(0, 5)] : REACTIONS;
+    current && !REACTIONS.includes(current)
+      ? [current, ...REACTIONS.slice(0, REACTIONS.length - 1)]
+      : REACTIONS;
   if (custom)
     return (
       <EmojiPicker label="React with any emoji" onPick={onPick} onClose={() => setCustom(false)} />
     );
   return (
-    <div className="flex justify-between gap-1.5" role="group" aria-label="React">
+    <div
+      className="grid grid-cols-6 justify-items-center gap-1.5 sm:grid-cols-11"
+      role="group"
+      aria-label="React"
+    >
       {quick.map((e) => {
         const on = current === e;
         return (
@@ -1601,7 +1610,7 @@ function ReactRow({ current, onPick }: { current: string | null; onPick: (e: str
             aria-label={on ? `Remove your ${e} reaction` : `React ${e}`}
             aria-pressed={on}
             className={cn(
-              "press flex aspect-square max-w-[52px] flex-1 cursor-pointer items-center justify-center rounded-full border-0 text-[22px]",
+              "press flex aspect-square w-full max-w-[52px] cursor-pointer items-center justify-center rounded-full border-0 text-[22px]",
               on ? "bg-accent/10 shadow-[inset_0_0_0_1.5px_var(--accent)]" : "bg-s2",
             )}
           >
@@ -1613,7 +1622,7 @@ function ReactRow({ current, onPick }: { current: string | null; onPick: (e: str
         type="button"
         onClick={() => setCustom(true)}
         aria-label="React with any emoji"
-        className="press bg-s2 text-muted flex aspect-square max-w-[52px] flex-1 cursor-pointer items-center justify-center rounded-full border-0"
+        className="press bg-s2 text-muted flex aspect-square w-full max-w-[52px] cursor-pointer items-center justify-center rounded-full border-0"
       >
         <Plus size={22} weight="bold" />
       </button>
@@ -1650,8 +1659,22 @@ function SheetAction({
   );
 }
 
+/**
+ * Desktop side panel (xl+): your partner, big, with what you need while you
+ * talk: their time and weather, one-click call, video and clink, what you're
+ * counting down to, and the photos you've shared lately.
+ */
 function SharedPanel() {
-  const { coupleId } = useCouple();
+  const { coupleId, partner, presence, me } = useCouple();
+  const now = useCoupleNow(30_000);
+  const openPartner = useOpenPartner();
+  const { start } = useCall();
+  const { sendClink } = useSendClink();
+  const weather = useWeather(partner).data;
+  const { data: countdowns } = useCountdowns();
+  const next = (countdowns ?? []).find((c) => Date.parse(c.target_at!) > now.getTime());
+  const left = next ? countdownParts(now, new Date(next.target_at!)) : null;
+  const online = presence.online;
   const { data } = useQuery({
     queryKey: ["shared-media", coupleId],
     queryFn: async () => {
@@ -1666,48 +1689,151 @@ function SharedPanel() {
       return data ?? [];
     },
   });
+  const action =
+    "press bg-s2 text-text hover:bg-s3 flex flex-col items-center gap-1.5 rounded-[16px] border-0 py-3 text-xs font-semibold cursor-pointer";
   return (
     <aside
-      className="border-line hidden w-[320px] flex-none flex-col gap-3 overflow-y-auto border-l p-5 xl:flex"
-      aria-label="Shared lately"
+      className="border-line hidden w-[340px] flex-none flex-col gap-5 overflow-y-auto border-l p-5 xl:flex 2xl:w-[380px] 2xl:p-6"
+      aria-label={`${partner.name} and what you share`}
     >
-      <h2 className="m-0 text-lg font-bold">Shared lately</h2>
-      {data && data.length ? (
-        <div className="grid grid-cols-3 gap-1.5">
-          {data.map((m) => (
-            <Link
-              key={m.id}
-              href={`/chat/media/${m.id}`}
-              className="stripe rounded-thumb block aspect-square overflow-hidden"
-              aria-label="Open shared media"
-            >
-              {m.kind === "video" ? (
-                <video
-                  src={`/api/media/${m.id}/view`}
-                  muted
-                  preload="metadata"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={`/api/media/${m.id}/view`}
-                  alt=""
-                  loading="lazy"
-                  className="h-full w-full object-cover"
-                />
-              )}
-            </Link>
-          ))}
+      <button
+        type="button"
+        onClick={openPartner}
+        className="press text-text flex cursor-pointer flex-col items-center gap-3 border-0 bg-transparent pt-2 text-center"
+      >
+        <span className="relative">
+          <Avatar
+            name={partner.name}
+            side="partner"
+            size={112}
+            sizes={{ xl: 136 }}
+            photoUrl={partner.avatarUrl}
+            icon={partner.avatarIcon}
+            dim={!online}
+          />
+          {online && (
+            <span
+              aria-hidden
+              className="bg-online absolute right-2 bottom-2 h-5 w-5 rounded-full shadow-[0_0_0_3px_var(--bg-app)]"
+            />
+          )}
+        </span>
+        <span className="display text-[26px] leading-none">{partner.name}</span>
+        <span className="text-muted text-sm">
+          {online ? "Online" : "Away"}
+          {partner.city ? ` · ${partner.city}` : ""}
+        </span>
+        <span className="sr-only">See {partner.name}&apos;s full profile</span>
+      </button>
+
+      <div className="rounded-card bg-s1 border-line flex items-center justify-between gap-3 border px-4 py-3">
+        <div>
+          <div className="text-faint text-xs">Their time</div>
+          <div className="mono text-[28px] leading-tight">{formatClock(now, partner.timezone)}</div>
         </div>
-      ) : (
-        <p className="text-muted m-0 text-sm">
-          Photos and videos you send each other show up here.
-        </p>
+        <div className="text-muted text-right text-sm">
+          {weather?.temp != null ? (
+            <>
+              <div className="text-text text-base font-semibold">{weather.temp}°</div>
+              <div>{weather.label}</div>
+            </>
+          ) : (
+            <div>{formatClock(now, me.timezone)} for you</div>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-4 gap-2">
+        <button
+          type="button"
+          className={action}
+          onClick={() => start(false)}
+          aria-label={`Call ${partner.name}`}
+        >
+          <Phone size={20} aria-hidden /> Call
+        </button>
+        <button
+          type="button"
+          className={action}
+          onClick={() => start(true)}
+          aria-label={`Video call ${partner.name}`}
+        >
+          <VideoCamera size={20} aria-hidden /> Video
+        </button>
+        <button
+          type="button"
+          className={action}
+          onClick={() => void sendClink("tap")}
+          aria-label={`Clink ${partner.name}`}
+        >
+          <Wine size={20} aria-hidden /> Clink
+        </button>
+        <button
+          type="button"
+          className={action}
+          onClick={openPartner}
+          aria-label={`${partner.name}'s profile`}
+        >
+          <UserCircle size={20} aria-hidden /> Profile
+        </button>
+      </div>
+
+      {next && left && (
+        <Link
+          href="/us/countdowns"
+          className="rounded-card bg-s1 border-line text-text hover:text-text hover:bg-s2 flex items-center gap-3 border px-4 py-3"
+        >
+          <KindIcon kind={next.kind} size={22} className="text-accent flex-none" />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-semibold">{next.title}</span>
+            <span className="text-muted block text-xs">
+              {left.days > 0
+                ? `${left.days} d ${left.hours} h to go`
+                : `${left.hours} h ${left.minutes} min to go`}
+            </span>
+          </span>
+        </Link>
       )}
-      <Link href="/keep" className="mt-2 text-sm font-medium">
-        Favourites live on the memory wall
-      </Link>
+
+      <section className="flex flex-col gap-3" aria-label="Shared lately">
+        <h2 className="m-0 text-base font-bold">Shared lately</h2>
+        {data && data.length ? (
+          <div className="grid grid-cols-3 gap-1.5">
+            {data.map((m) => (
+              <Link
+                key={m.id}
+                href={`/chat/media/${m.id}`}
+                className="stripe rounded-thumb block aspect-square overflow-hidden"
+                aria-label="Open shared media"
+              >
+                {m.kind === "video" ? (
+                  <video
+                    src={`/api/media/${m.id}/view`}
+                    muted
+                    preload="metadata"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={`/api/media/${m.id}/view`}
+                    alt=""
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                )}
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted m-0 text-sm">
+            Photos and videos you send each other show up here.
+          </p>
+        )}
+        <Link href="/keep" className="text-sm font-medium">
+          Favourites live on the memory wall
+        </Link>
+      </section>
     </aside>
   );
 }

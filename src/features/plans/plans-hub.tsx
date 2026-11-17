@@ -77,7 +77,7 @@ export function PlansHub() {
     <div className="screen an-screen flex flex-col gap-5">
       <PageBar title="Plans" actions={<FindLinks />} />
       <Lead className="-mt-2">Date nights, planned together.</Lead>
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-10">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-10 2xl:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <div className="flex min-w-0 flex-col gap-5">
           {next && nextKit ? (
             <>
@@ -178,7 +178,7 @@ export function PlansHub() {
 
         <div className="flex min-w-0 flex-col gap-5">
           <h2 className="m-0 text-lg font-bold">Date night kits</h2>
-          <div className="no-scrollbar -mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1 lg:mx-0 lg:grid lg:grid-cols-2 lg:overflow-visible lg:px-0">
+          <div className="no-scrollbar -mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1 lg:mx-0 lg:grid lg:grid-cols-2 lg:overflow-visible lg:px-0 2xl:grid-cols-3">
             {kits.map((k, i) => (
               <Link
                 key={k.id}

@@ -13,8 +13,9 @@ const schema = z.object({
   sensitive: z.boolean().default(false),
   retention: z.enum(["once", "24h", "7d", "vault"]).optional(),
   durationS: z.number().min(0).max(600).optional(),
-  width: z.number().int().positive().max(8192).optional(),
-  height: z.number().int().positive().max(8192).optional(),
+  // Panoramas can be very wide; the client caps what it uploads anyway.
+  width: z.number().int().positive().max(20000).optional(),
+  height: z.number().int().positive().max(20000).optional(),
   waveform: z.array(z.number().int().min(0).max(100)).max(64).optional(),
 });
 
@@ -49,7 +50,7 @@ export const POST = handler(async (req) => {
       413,
       "too_long",
       body.kind === "video"
-        ? "Videos can be up to 60 seconds."
+        ? "Videos can be up to 3 minutes."
         : "Voice notes can be up to 3 minutes.",
     );
   }

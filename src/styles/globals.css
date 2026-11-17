@@ -16,6 +16,8 @@
   --color-faint: var(--text-faint);
   --color-accent: var(--accent);
   --color-ember: var(--accent-dark);
+  --color-online: var(--online);
+  --color-end-call: var(--end-call);
   --color-on-accent: var(--on-accent);
   --color-champagne: var(--champagne);
   --color-blush: var(--blush);
@@ -508,6 +510,45 @@
     --chrome-bottom: 0px;
   }
 }
+/*
+ * Avatars that grow with the screen. The base size is --av-0; md (768+), lg
+ * (1024+) and xl (1536+) override it when set, each falling back to the one below.
+ */
+.avatar-r {
+  --s: var(--av-0);
+  width: var(--s);
+  height: var(--s);
+  font-size: calc(var(--s) * 0.393);
+}
+@media (min-width: 768px) {
+  .avatar-r {
+    --s: var(--av-md, var(--av-0));
+  }
+}
+@media (min-width: 1024px) {
+  .avatar-r {
+    --s: var(--av-lg, var(--av-md, var(--av-0)));
+  }
+}
+@media (min-width: 1536px) {
+  .avatar-r {
+    --s: var(--av-xl, var(--av-lg, var(--av-md, var(--av-0))));
+  }
+}
+
+/* Large displays get more room: a wider content area and a roomier rail. */
+@media (min-width: 1536px) {
+  :root {
+    --content-max: 1440px;
+    --rail-w: 264px;
+  }
+}
+@media (min-width: 1920px) {
+  :root {
+    --content-max: 1600px;
+  }
+}
+
 /* Screen container: phone gutter 16 px, content capped. */
 .screen {
   width: 100%;
@@ -578,6 +619,17 @@ body {
   background: var(--bg-app);
   box-shadow: 0 0 0 100vmax var(--bg-app);
   clip-path: inset(0 -100vmax);
+}
+
+/* A top bar that becomes a side column on desktop (Settings): no full-width backdrop there. */
+@media (min-width: 1024px) {
+  .app-topbar.topbar-side {
+    background: transparent;
+    box-shadow: none;
+    clip-path: none;
+    margin-top: 0;
+    padding-top: 0;
+  }
 }
 
 /* With pinned banners above, the banner already clears the notch: no double gap. */

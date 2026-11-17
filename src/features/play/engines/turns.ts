@@ -1,3 +1,4 @@
+import { matchGuess } from "./guess-match";
 import { MoveError, other, shuffle, type EngineResult, type Players } from "./types";
 
 /* ---------------------------------------------------------------------------
@@ -68,7 +69,8 @@ export function drawMove(
   } else {
     if (userId === s.drawer) throw new MoveError("You're drawing this one.");
     if (expired) throw new MoveError("Time's up.");
-    if (normaliseGuess(move.guess ?? "") !== word) return { state: s, secrets: x, correct: false };
+    // Close counts: typos, plurals, filler words and common synonyms (guess-match).
+    if (!matchGuess(move.guess ?? "", word)) return { state: s, secrets: x, correct: false };
     guessed = true;
   }
   const seconds = guessed ? Math.round(elapsed) : null;

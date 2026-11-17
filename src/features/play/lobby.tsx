@@ -122,7 +122,7 @@ export function Lobby() {
   return (
     <div className="screen an-screen flex flex-col gap-5">
       <PageBar title="Play together" />
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-10">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-10 2xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] 2xl:gap-14">
         <div className="flex min-w-0 flex-col gap-5">
           <section
             aria-label="Lifetime score"

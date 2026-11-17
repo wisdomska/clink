@@ -6,7 +6,7 @@ import { feedback, haptic, playSound } from "@/lib/feedback";
 
 /* ------------------------------------------------------------ reactions */
 
-const EMOTES = ["❤️", "😂", "😮", "🔥", "👏"] as const;
+const EMOTES = ["❤️", "😂", "🤣", "😭", "😡", "😒", "😮", "🔥", "👏"] as const;
 const COOLDOWN_MS = 1200;
 
 interface Bubble {
@@ -58,7 +58,7 @@ export function GameReactions({ gameId }: { gameId: string }) {
       <div
         role="group"
         aria-label="Send a reaction"
-        className="border-line bg-s1 mt-auto flex flex-none justify-center gap-1 self-center rounded-full border p-1"
+        className="border-line bg-s1 no-scrollbar mt-auto flex max-w-full flex-none justify-start gap-1 self-center overflow-x-auto rounded-full border p-1 sm:justify-center"
       >
         {EMOTES.map((e) => (
           <button

@@ -54,6 +54,20 @@ export function DrawRoom({ game }: { game: GameRow }) {
   const outbox = useRef<{ id: string; color: string; pts: Pt[] } | null>(null);
   const turnKey = `${s.turn}-${s.turnStartedAt}`;
 
+  // When a round ends, show both of you the word for a few seconds (adjusting
+  // state when a new result lands), worded for whoever's looking.
+  const [seenResults, setSeenResults] = useState(s.results.length);
+  const [reveal, setReveal] = useState<DrawState["results"][number] | null>(null);
+  if (seenResults !== s.results.length) {
+    setSeenResults(s.results.length);
+    if (s.results.length > seenResults) setReveal(s.results[s.results.length - 1] ?? null);
+  }
+  useEffect(() => {
+    if (!reveal) return;
+    const t = setTimeout(() => setReveal(null), 4500);
+    return () => clearTimeout(t);
+  }, [reveal]);
+
   // Fresh canvas and word every turn (adjusting state when the turn changes).
   const [seenTurn, setSeenTurn] = useState(turnKey);
   if (seenTurn !== turnKey) {
@@ -295,7 +309,29 @@ export function DrawRoom({ game }: { game: GameRow }) {
             <path key={st.id} d={pathFromStroke(st.pts, size)} fill={st.color} />
           ))}
         </svg>
-        {!strokes.length && (
+        {reveal && (
+          <button
+            type="button"
+            onClick={() => setReveal(null)}
+            className="an-reveal bg-app/85 absolute inset-0 z-10 flex cursor-pointer flex-col items-center justify-center gap-2 border-0 p-6 text-center backdrop-blur-sm"
+            aria-live="polite"
+          >
+            <span className="text-muted text-sm font-medium">
+              {reveal.drawer === me.id
+                ? reveal.guessed
+                  ? `${partner.name} got it in ${reveal.seconds} s`
+                  : `${partner.name} didn't get it`
+                : reveal.guessed
+                  ? `You got it in ${reveal.seconds} s`
+                  : "Time's up. The word was"}
+            </span>
+            <span className="display text-accent text-[44px] leading-none break-words">
+              {reveal.word}
+            </span>
+            <span className="text-faint mt-2 text-xs">Tap to carry on</span>
+          </button>
+        )}
+        {!strokes.length && !reveal && (
           <div className="text-faint pointer-events-none absolute inset-0 flex items-center justify-center text-sm">
             {drawing ? "Draw with your finger" : "Watch the canvas"}
           </div>

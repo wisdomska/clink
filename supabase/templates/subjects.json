@@ -1,0 +1,10 @@
+{
+  "magic_link": "Your Clink sign-in link",
+  "confirmation": "Confirm your email for Clink",
+  "email_change": "Confirm your new email for Clink",
+  "recovery": "Set a new Clink password",
+  "invite": "You're invited to Clink",
+  "reauthentication": "{{ .Token }} is your Clink code",
+  "password_changed_notification": "Your Clink password was changed",
+  "email_changed_notification": "Your Clink email was changed"
+}

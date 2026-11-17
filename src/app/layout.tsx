@@ -1,3 +1,4 @@
+import splash from "@/lib/splash.json";
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { cabinet, satoshi, geistMono } from "@/lib/fonts";
@@ -26,7 +27,13 @@ export async function generateMetadata(): Promise<Metadata> {
       icon: [{ url: "/favicon.png", type: "image/png" }],
       apple: `/icons/${id}-apple-180.png`,
     },
-    appleWebApp: { capable: true, title: name, statusBarStyle: "black-translucent" },
+    appleWebApp: {
+      capable: true,
+      title: name,
+      statusBarStyle: "black-translucent",
+      // Launch screens for the installed app (scripts/brand-splash.mjs): no white flash.
+      startupImage: splash,
+    },
     formatDetection: { telephone: false },
     robots: { index: false, follow: false },
   };

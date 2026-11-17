@@ -234,7 +234,7 @@ export function MoodCard() {
             <div key={g.label} className="flex flex-col gap-1.5">
               <div className="text-faint text-xs font-semibold">{g.label}</div>
               <div
-                className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pt-0.5 pb-1"
+                className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pt-0.5 pb-1 lg:mx-0 lg:grid lg:grid-cols-[repeat(auto-fill,minmax(72px,1fr))] lg:overflow-visible lg:px-0"
                 role="radiogroup"
                 aria-label={`Your mood: ${g.label}`}
               >
@@ -249,7 +249,7 @@ export function MoodCard() {
                       onClick={() => void choose(m)}
                       whileTap={{ scale: 0.97, transition: { duration: 0.06 } }}
                       className={cn(
-                        "an-rise flex w-[76px] flex-none cursor-pointer flex-col items-center gap-1 rounded-[14px] border-0 px-1 pt-2 pb-2 text-center text-[12px] leading-[1.15] font-semibold transition-colors",
+                        "an-rise flex w-[76px] flex-none cursor-pointer flex-col items-center gap-1 rounded-[14px] border-0 px-1 pt-2 pb-2 text-center text-[12px] leading-[1.15] font-semibold transition-colors lg:w-auto",
                         on
                           ? "bg-accent/10 text-text shadow-[inset_0_0_0_1.5px_var(--accent)]"
                           : "bg-s2 text-muted hover:bg-s3",

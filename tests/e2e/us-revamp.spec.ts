@@ -16,7 +16,9 @@ test("Us: custom status, 3D moods, missed call card with call back, picture stic
   await a.getByRole("button", { name: /You .*Change your status/ }).click();
   await a.getByLabel("Or write your own").fill("on the train");
   await a.getByRole("button", { name: "Set", exact: true }).click();
-  await expect(b.getByText("on the train")).toBeVisible({ timeout: 10000 });
+  await expect(b.getByRole("region", { name: "You two" }).getByText("on the train")).toBeVisible({
+    timeout: 10000,
+  });
 
   // Mood tiles are pictures now.
   await expect(a.getByRole("radio", { name: "Missing you" }).locator("img")).toBeVisible();

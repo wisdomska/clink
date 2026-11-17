@@ -147,10 +147,10 @@ export function KeepHub() {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-10">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-10 2xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-5">
           {fromThemQ.isPending && (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3" aria-hidden>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 2xl:grid-cols-4" aria-hidden>
               <EnvelopeSkeleton count={2} />
             </div>
           )}
@@ -159,7 +159,7 @@ export function KeepHub() {
               <h2 id="ow-h" className="m-0 text-lg font-bold">
                 Open when, from {partner.name}
               </h2>
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 2xl:grid-cols-4">
                 {fromThem.map((l) => (
                   <Link
                     key={l.id}
@@ -333,7 +333,7 @@ export function KeepHub() {
               Memory wall
             </h2>
             {data?.wall.length ? (
-              <div className="grid grid-cols-[2fr_1fr] grid-rows-[96px_96px] gap-1.5 md:grid-rows-[140px_140px]">
+              <div className="grid grid-cols-[2fr_1fr] grid-rows-[96px_96px] gap-1.5 md:grid-rows-[140px_140px] 2xl:grid-rows-[190px_190px]">
                 {data.wall.slice(0, 3).map((m, i) => (
                   <Link
                     key={m.id}

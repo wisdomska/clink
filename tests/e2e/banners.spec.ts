@@ -17,11 +17,13 @@ test("banners are pinned and stand out", async ({ couple }) => {
     await a.goto("/us");
     const banner = a.getByRole("status").filter({ hasText: body });
     await expect(banner).toBeVisible();
+    // Over the content, not the sidebar (which scrolls on its own on short windows).
+    await a.mouse.move(a.viewportSize()!.width * 0.6, 300);
     await a.mouse.wheel(0, 1500);
     await expect.poll(() => a.evaluate(() => window.scrollY)).toBeGreaterThan(100);
     const b = (await banner.boundingBox())!;
     expect(b.y).toBeLessThan(40);
-    const keep = a.getByRole("link", { name: "Keep", exact: true });
+    const keep = a.locator(".app-topbar").getByRole("link", { name: "Keep", exact: true });
     if (await keep.isVisible()) {
       expect((await keep.boundingBox())!.y).toBeGreaterThanOrEqual(b.y + b.height - 1);
     }

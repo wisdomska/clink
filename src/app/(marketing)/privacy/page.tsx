@@ -11,7 +11,7 @@ export default function Privacy() {
       <p>
         We keep your email, name, home city and time zone, your date of birth (never shown to your
         partner), what you create together, and the media you send. Photos are stripped of location
-        and camera data on your phone and again on our servers.
+        and camera data on your device and again on our servers.
       </p>
       <h2 className="text-text m-0 text-lg font-bold">Private media</h2>
       <p>

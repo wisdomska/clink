@@ -39,7 +39,7 @@ export function FeelCard() {
           <span className="text-base font-medium">
             Motion
             <span className="text-faint block text-[13px] font-normal">
-              System follows your phone. Reduced keeps fades and drops movement.
+              System follows your device. Reduced keeps fades and drops movement.
             </span>
           </span>
           <Segmented<MotionPref>

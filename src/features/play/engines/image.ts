@@ -1,3 +1,4 @@
+import { matchGuess } from "./guess-match";
 import { MoveError, other, shuffle, type EngineResult, type Players } from "./types";
 
 /* ---------------------------------------------------------------------------
@@ -201,14 +202,14 @@ function distance(a: string, b: string) {
   return d[a.length]![b.length]!;
 }
 
-/** Forgiving match: ignores case, accents, articles; allows a small typo or a plural. */
+/** Forgiving match: typos, plurals, filler words and common synonyms (see guess-match). */
 export function closeEnough(guess: string, answer: string) {
+  if (matchGuess(guess, answer)) return true;
+  // Answers here are typed by your partner ("coffee mug"): a key word of 4+
+  // letters from a longer answer counts too ("coffee").
   const g = normalise(guess);
-  const a = normalise(answer);
-  if (!g || !a) return false;
-  if (g === a || g.replace(/s$/, "") === a.replace(/s$/, "")) return true;
-  if (a.split(" ").length > 1 && a.split(" ").includes(g) && g.length >= 4) return true;
-  return distance(g, a) <= (a.length >= 8 ? 2 : a.length >= 4 ? 1 : 0);
+  const words = normalise(answer).split(" ");
+  return words.length > 1 && g.length >= 4 && words.some((w) => w.length >= 4 && matchGuess(g, w));
 }
 
 export function zoomMove(

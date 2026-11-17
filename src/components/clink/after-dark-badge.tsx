@@ -10,7 +10,7 @@ export function AfterDarkBadge({ size = 44, className }: { size?: number; classN
     <span
       aria-hidden
       className={cn(
-        "display inline-flex flex-none items-center justify-center rounded-full font-extrabold tracking-[-0.02em] text-[#1a0a10] select-none",
+        "display text-on-accent inline-flex flex-none items-center justify-center rounded-full font-extrabold tracking-[-0.02em] select-none",
         className,
       )}
       style={{

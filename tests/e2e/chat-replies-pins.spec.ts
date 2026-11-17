@@ -175,3 +175,51 @@ test("pins are capped at 10", async ({ couple }) => {
     timeout: 10000,
   });
 });
+
+test("reply by hovering (mouse) or by swiping a message to the right (touch)", async ({
+  couple,
+}, info) => {
+  const { a, b } = couple;
+  const original = `swipe me ${Date.now()}`;
+  await b.goto("/chat");
+  await b.getByLabel("Message Nia").fill(original);
+  await b.getByRole("button", { name: "Send" }).click();
+  await a.goto("/chat");
+  const bubble = a.getByRole("button", {
+    name: new RegExp(`^Theo: ${esc(original)}.*Press for reactions`),
+  });
+  await expect(bubble).toBeVisible({ timeout: 10000 });
+  const preview = a.getByTestId("reply-preview");
+
+  if (info.project.name === "desktop") {
+    // A mouse: hovering shows a reply button beside the message.
+    const reply = a.getByRole("button", { name: "Reply to Theo's message" }).last();
+    await bubble.hover();
+    await expect(reply).toBeVisible();
+    await reply.click();
+    await expect(preview).toContainText(original);
+    await a.getByRole("button", { name: "Cancel reply" }).click();
+    await expect(preview).toBeHidden();
+  } else {
+    // Touch devices: no hover button, ever.
+    await expect(a.getByRole("button", { name: "Reply to Theo's message" }).last()).toBeHidden();
+  }
+
+  // Drag it right past the threshold: reply mode.
+  const box = (await bubble.boundingBox())!;
+  const y = box.y + box.height / 2;
+  await a.mouse.move(box.x + 20, y);
+  await a.mouse.down();
+  for (let dx = 10; dx <= 110; dx += 10) await a.mouse.move(box.x + 20 + dx, y + 2);
+  await a.mouse.up();
+  await expect(preview).toContainText("Replying to Theo");
+  await expect(preview).toContainText(original);
+
+  // A short drag doesn't.
+  await a.getByRole("button", { name: "Cancel reply" }).click();
+  await a.mouse.move(box.x + 20, y);
+  await a.mouse.down();
+  await a.mouse.move(box.x + 50, y);
+  await a.mouse.up();
+  await expect(preview).toBeHidden();
+});

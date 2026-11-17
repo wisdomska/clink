@@ -14,6 +14,7 @@ import {
   type StoryState,
 } from "../engines/turns";
 import { RoomHeader, sendMove, type GameRow } from "./shared";
+import { haptic } from "@/lib/feedback";
 import { startGame } from "../meta";
 
 function adjacent(a: number, b: number) {
@@ -43,7 +44,9 @@ export function WordRoom({ game }: { game: GameRow }) {
     setBusy(true);
     const r = await sendMove(game.id, pass ? { pass: true } : { word });
     setBusy(false);
-    if (r) setPath([]);
+    // Played, or refused (not a word, already used): either way, start the next pick fresh.
+    if (!r && !pass) haptic("error");
+    setPath([]);
   }
 
   return (

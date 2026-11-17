@@ -13,14 +13,26 @@ import {
   Books,
   CookingPot,
   Laptop,
+  Archive,
+  CalendarBlank,
+  MagnifyingGlass,
   type Icon,
 } from "@phosphor-icons/react";
+import { formatClock } from "@/lib/time";
+import { useCoupleNow } from "@/features/couple/context";
 import { cn } from "@/components/ui/cn";
 import { useCouple } from "@/features/couple/context";
 import { statusLabel } from "@/features/couple/types";
 import { Avatar } from "@/components/ui/avatar";
 import { Logo, LogoMark } from "@/components/brand/logo";
 import { AfterDarkBadge } from "@/components/clink/after-dark-badge";
+
+/** Desktop rail extras: places phones reach from inside other screens. */
+const MORE = [
+  { href: "/keep", label: "Keep", Icon: Archive },
+  { href: "/calendar", label: "Calendar", Icon: CalendarBlank },
+  { href: "/search", label: "Search", Icon: MagnifyingGlass },
+] as const;
 
 export const TABS = [
   { href: "/us", label: "Us", Icon: Heart },
@@ -118,11 +130,11 @@ export function TabBar({ unread = 0 }: { unread?: number }) {
 /** Side rail: compact on tablets in landscape, full with labels from 1024 px. */
 export function Rail({ unread = 0 }: { unread?: number }) {
   const { path, active, onTap } = useActiveTab();
-  const { darkVisible, discreet } = useCouple();
+  const { darkVisible, discreet, solo } = useCouple();
   return (
     <nav
       aria-label="Main"
-      className="rail border-line bg-app fixed inset-y-0 left-0 z-20 flex flex-col border-r px-3 py-6"
+      className="rail border-line bg-app no-scrollbar fixed inset-y-0 left-0 z-20 flex flex-col overflow-y-auto border-r px-3 py-6"
     >
       <Link
         href="/us"
@@ -135,6 +147,7 @@ export function Rail({ unread = 0 }: { unread?: number }) {
           <LogoMark size={34} />
         </span>
       </Link>
+      {!solo && <PartnerRow />}
       <div className="flex flex-col gap-1">
         {TABS.map(({ href, label, Icon }) => {
           const on = active(href);
@@ -147,7 +160,7 @@ export function Rail({ unread = 0 }: { unread?: number }) {
               aria-current={on ? "page" : undefined}
               title={label}
               className={cn(
-                "press flex h-12 items-center gap-3 rounded-full px-3 text-[15px] font-medium",
+                "press flex h-12 items-center gap-3 rounded-full px-3 text-[15px] font-medium 2xl:h-14 2xl:text-base",
                 on ? "bg-s1 text-text hover:text-text" : "text-muted hover:bg-s1 hover:text-text",
               )}
             >
@@ -168,6 +181,35 @@ export function Rail({ unread = 0 }: { unread?: number }) {
           );
         })}
       </div>
+      {!solo && (
+        <div className="mt-6 flex flex-col gap-1">
+          <span className="rail-full text-faint px-4 pb-1 text-xs font-semibold tracking-wide uppercase">
+            More
+          </span>
+          {MORE.map(({ href, label, Icon }) => {
+            const on = active(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                prefetch
+                onClick={onTap(href)}
+                aria-current={on ? "page" : undefined}
+                title={label}
+                className={cn(
+                  "press flex h-11 items-center gap-3 rounded-full px-3 text-[15px] font-medium 2xl:h-12",
+                  on ? "bg-s1 text-text hover:text-text" : "text-muted hover:bg-s1 hover:text-text",
+                )}
+              >
+                <span className="flex h-[30px] w-11 flex-none items-center justify-center">
+                  <Icon size={22} aria-hidden weight={on ? "fill" : "regular"} />
+                </span>
+                <span className="rail-full">{label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      )}
       <div className="mt-auto flex flex-col gap-1">
         {darkVisible && !discreet && (
           <a
@@ -208,7 +250,14 @@ function AccountRow({ on }: { on: boolean }) {
       )}
     >
       <span className="flex w-11 flex-none items-center justify-center">
-        <Avatar name={me.name} side="me" size={36} photoUrl={me.avatarUrl} icon={me.avatarIcon} />
+        <Avatar
+          name={me.name}
+          side="me"
+          size={36}
+          sizes={{ xl: 44 }}
+          photoUrl={me.avatarUrl}
+          icon={me.avatarIcon}
+        />
       </span>
       <span className="rail-full min-w-0 flex-1">
         <span className="block truncate text-[15px] leading-tight font-semibold">{me.name}</span>
@@ -221,6 +270,56 @@ function AccountRow({ on }: { on: boolean }) {
       </span>
       <span className="sr-only">Profile and settings</span>
       <GearSix size={18} aria-hidden className="rail-full text-faint mr-2 flex-none" />
+    </Link>
+  );
+}
+
+/**
+ * Top of the desktop rail: your partner, always in view. Online dot, what
+ * they're up to and their local time; one click opens your chat.
+ */
+function PartnerRow() {
+  const { partner, presence } = useCouple();
+  const now = useCoupleNow(30_000);
+  const online = presence.online;
+  const status = online ? statusLabel(presence.status) : "away";
+  return (
+    <Link
+      href="/chat"
+      prefetch
+      title={`Chat with ${partner.name}`}
+      className="press bg-s1 border-line text-text hover:text-text hover:bg-s2 mb-6 flex items-center gap-3 rounded-[20px] border p-2.5"
+    >
+      <span className="relative flex w-11 flex-none items-center justify-center">
+        <Avatar
+          name={partner.name}
+          side="partner"
+          size={40}
+          sizes={{ xl: 52 }}
+          photoUrl={partner.avatarUrl}
+          icon={partner.avatarIcon}
+          dim={!online}
+        />
+        {online && (
+          <span
+            aria-hidden
+            className="bg-online absolute right-0 bottom-0 h-3 w-3 rounded-full shadow-[0_0_0_2px_var(--surface-1)]"
+          />
+        )}
+      </span>
+      <span className="rail-full min-w-0 flex-1">
+        <span className="block truncate text-[15px] leading-tight font-semibold">
+          {partner.name}
+        </span>
+        <span className="text-muted mt-0.5 block truncate text-xs">
+          {status ? status[0]!.toUpperCase() + status.slice(1) : ""}
+          {" · "}
+          <span className="mono">{formatClock(now, partner.timezone)}</span>
+        </span>
+      </span>
+      <span className="sr-only">
+        {online ? "Online" : "Away"}. Open your chat with {partner.name}.
+      </span>
     </Link>
   );
 }

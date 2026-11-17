@@ -138,7 +138,7 @@ export function PartnerSheetProvider({ children }: { children: React.ReactNode }
             {online && (
               <span
                 aria-hidden
-                className="absolute right-2 bottom-2 h-5 w-5 rounded-full bg-[#34C759] shadow-[0_0_0_4px_var(--surface-1)]"
+                className="bg-online absolute right-2 bottom-2 h-5 w-5 rounded-full shadow-[0_0_0_4px_var(--surface-1)]"
               />
             )}
           </div>
@@ -150,7 +150,7 @@ export function PartnerSheetProvider({ children }: { children: React.ReactNode }
             <span
               className={cn(
                 "rounded-full px-3 py-1 text-xs font-semibold",
-                online ? "bg-[#34C759]/15 text-[#34C759]" : "bg-s2 text-muted",
+                online ? "bg-online/15 text-[var(--online)]" : "bg-s2 text-muted",
               )}
             >
               {online ? statusLabel(presence.status).replace(/^./, (c) => c.toUpperCase()) : "Away"}

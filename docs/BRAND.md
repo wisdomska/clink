@@ -158,10 +158,50 @@ Clink talks like a confident friend who's rooting for you both.
 ## 8. Imagery
 
 - 3D Fluent Emoji art (MIT) for avatars, moods, stickers and empty states. Fetched by the scripts in `scripts/fetch-*.mjs`.
-- People pick from 168 pose avatars (14 poses, woman or man, 6 skin tones) or upload a photo.
+- People pick from the memoji cast (8 women, 8 men, 16 poses each) or upload a photo.
 - Photos always sit on a dark scrim when text overlays them.
 
-## 9. Where things live
+## 9. Status colours
+
+| Name     | Token        | Use                                          |
+| -------- | ------------ | -------------------------------------------- |
+| Online   | `--online`   | The live dot on avatars, Answer on a call    |
+| End call | `--end-call` | Decline and End on calls                     |
+| Danger   | `--danger`   | Destructive actions and errors               |
+| Warning  | `--warning`  | Maintenance banners, things that need a look |
+
+Never type a hex colour into a component. `tests/unit/brand-tokens.test.ts` fails CI if one appears outside the allowed artwork files (logo, posters, link previews, drawing pens, canvas exports).
+
+## 10. Layout and screen sizes
+
+Clink is designed phone first and then given room, never stretched.
+
+| Width       | Shell                                                                                    |
+| ----------- | ---------------------------------------------------------------------------------------- |
+| Under 768   | Bottom tab bar, one column, 16 px gutters                                                |
+| 768 to 1023 | Tablet: tab bar in portrait, compact rail in landscape, 32 px gutters                    |
+| 1024 and up | Rail with your partner on top and a More section (Keep, Calendar, Search); 48 px gutters |
+| 1536 and up | Content up to 1440 px (1600 from 1920), rail 264 px, three-column dashboards             |
+
+- Avatars grow with the screen through `Avatar sizes={{ md, lg, xl }}` (Us hero: 84 / 128 / 152 px).
+- Us: you two, your mood and what's coming sit side by side on large screens; a desktop header carries Message, Call, Video and Keep.
+- Chat: messages keep a readable 880 px column on wide screens; from 1280 px a partner panel shows their time, weather, quick actions, the next countdown and shared photos.
+- Settings: a side menu on desktop (`NavTabs vertical`), tabs across the top on phones.
+- Calendar: wall-calendar cells with event titles on desktop, dots on phones.
+- Hover-only controls (the reply button on a message) appear only on devices with a fine pointer; touch gets gestures instead (swipe right to reply).
+
+## 11. Outside the app
+
+| Surface            | Where                                                                        |
+| ------------------ | ---------------------------------------------------------------------------- |
+| Link previews      | `src/lib/og/render.tsx`, one `opengraph-image.tsx` per public page           |
+| Sign-in emails     | `supabase/templates/*.html` (pushed by `scripts/setup-cloud.ts`)             |
+| iOS launch screens | `scripts/brand-splash.mjs` writes `public/splash/` and `src/lib/splash.json` |
+| App icons          | `scripts/brand-icons.mjs`                                                    |
+
+Emails are dark, table-based and inline-styled so Gmail, Apple Mail and Outlook all render them; links go through `/auth/callback` with a token hash so they work on any device.
+
+## 12. Where things live
 
 | Thing          | File                             |
 | -------------- | -------------------------------- |
@@ -171,3 +211,6 @@ Clink talks like a confident friend who's rooting for you both.
 | Accent presets | `src/lib/appearance.ts`          |
 | Chat themes    | `src/features/chat/themes.ts`    |
 | Tabs           | `src/components/ui/nav-tabs.tsx` |
+| Link previews  | `src/lib/og/`                    |
+| Email HTML     | `supabase/templates/`            |
+| Launch screens | `scripts/brand-splash.mjs`       |

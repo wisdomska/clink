@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Archive } from "@phosphor-icons/react";
+import { Archive, ChatCircle, Phone, VideoCamera } from "@phosphor-icons/react";
+import { useCall } from "@/features/call/call-provider";
 import { useCouple, useCoupleNow } from "@/features/couple/context";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { PresencePair } from "./presence-pair";
@@ -21,11 +22,14 @@ import { LogoMark, Wordmark } from "@/components/brand/logo";
 import { AfterDarkBadge } from "@/components/clink/after-dark-badge";
 
 export function UsScreen() {
-  const { darkVisible, discreet, coupleId } = useCouple();
+  const { darkVisible, discreet, coupleId, linkedAt } = useCouple();
   const router = useRouter();
   const params = useSearchParams();
   const now = useCoupleNow();
   const { sendClink } = useSendClink();
+  const linkedDays = linkedAt
+    ? Math.max(0, Math.floor((now.getTime() - Date.parse(linkedAt)) / 86_400_000))
+    : null;
   const wordTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const firstSent = useRef(false);
 
@@ -91,31 +95,83 @@ export function UsScreen() {
           </Link>
         </div>
       </div>
-      <h1
-        onPointerDown={wordDown}
-        onPointerUp={wordUp}
-        onPointerLeave={wordUp}
-        className="display m-0 hidden text-[48px] leading-[1.05] select-none lg:block"
-      >
-        Us
-      </h1>
-      {/* Phones: one column in the prototype order. Desktop: the Clink side and the day side. */}
-      <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-4 lg:mt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-8">
-        <div className="flex min-w-0 flex-col gap-4">
+      {/* Desktop header: the day, how long you've been linked, and quick ways to reach them. */}
+      <div className="hidden items-end justify-between gap-6 lg:flex">
+        <div className="min-w-0">
+          <h1
+            onPointerDown={wordDown}
+            onPointerUp={wordUp}
+            onPointerLeave={wordUp}
+            className="display m-0 text-[48px] leading-[1.05] select-none 2xl:text-[56px]"
+          >
+            Us
+          </h1>
+          <p className="text-muted m-0 mt-1 text-base">
+            {now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
+            {linkedDays !== null && ` · day ${linkedDays + 1} together on Clink`}
+          </p>
+        </div>
+        <DesktopActions />
+      </div>
+      {/*
+        Phones: one column in the prototype order.
+        Laptop: the two of you on the left, your day on the right.
+        Large desktop: you two, how you feel, and what's coming, side by side.
+      */}
+      <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-4 lg:mt-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-6 2xl:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] 2xl:gap-8">
+        <div className="flex min-w-0 flex-col gap-4 lg:gap-6">
           <MissedCallCard />
           <PresencePair now={now} />
           <DualClock now={now} />
           <AsleepCard now={now} />
           <ClinkButton streak={streak ?? null} />
         </div>
-        <div className="flex min-w-0 flex-col gap-4">
-          <MoodCard />
-          <OnThisDay />
-          <CountdownCard now={now} />
-          <RitualCard />
-          <MilestoneMoment />
+        <div className="flex min-w-0 flex-col gap-4 lg:gap-6 2xl:grid 2xl:grid-cols-2 2xl:items-start">
+          <div className="flex min-w-0 flex-col gap-4 lg:gap-6">
+            <MoodCard />
+            <OnThisDay />
+          </div>
+          <div className="flex min-w-0 flex-col gap-4 lg:gap-6">
+            <CountdownCard now={now} />
+            <RitualCard />
+            <MilestoneMoment />
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Desktop only: reach them in one click from the top of Us. */
+function DesktopActions() {
+  const { partner } = useCouple();
+  const { start } = useCall();
+  const item =
+    "press border-line bg-s1 text-text hover:text-text hover:bg-s2 flex h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold";
+  return (
+    <div className="flex flex-none items-center gap-2">
+      <Link href="/chat" className={item}>
+        <ChatCircle size={18} aria-hidden /> Message {partner.name}
+      </Link>
+      <button
+        type="button"
+        onClick={() => start(false)}
+        className={item}
+        aria-label={`Call ${partner.name}`}
+      >
+        <Phone size={18} aria-hidden /> Call
+      </button>
+      <button
+        type="button"
+        onClick={() => start(true)}
+        className={item}
+        aria-label={`Video call ${partner.name}`}
+      >
+        <VideoCamera size={18} aria-hidden /> Video
+      </button>
+      <Link href="/keep" className={item}>
+        <Archive size={18} aria-hidden /> Keep
+      </Link>
     </div>
   );
 }

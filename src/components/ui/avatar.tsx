@@ -12,6 +12,7 @@ export function Avatar({
   name,
   side,
   size = 56,
+  sizes,
   ring = 0,
   photoUrl,
   icon,
@@ -22,6 +23,8 @@ export function Avatar({
   name: string;
   side: "me" | "partner";
   size?: number;
+  /** Bigger on larger screens: tablet (md), laptop (lg), large desktop (xl, 1536+). */
+  sizes?: { md?: number; lg?: number; xl?: number };
   ring?: number;
   photoUrl?: string | null;
   icon?: AvatarIcon | null;
@@ -36,17 +39,20 @@ export function Avatar({
   return (
     <div
       className={cn(
-        "display relative flex flex-none items-center justify-center rounded-full",
+        "display avatar-r relative flex flex-none items-center justify-center rounded-full",
         className,
       )}
-      style={{
-        width: size,
-        height: size,
-        background: side === "me" ? "var(--surface-2)" : "var(--surface-3)",
-        border: `${ring}px solid ${ringColor}`,
-        fontSize: Math.round(size * 0.393),
-        opacity: dim ? 0.6 : 1,
-      }}
+      style={
+        {
+          "--av-0": `${size}px`,
+          ...(sizes?.md ? { "--av-md": `${sizes.md}px` } : {}),
+          ...(sizes?.lg ? { "--av-lg": `${sizes.lg}px` } : {}),
+          ...(sizes?.xl ? { "--av-xl": `${sizes.xl}px` } : {}),
+          background: side === "me" ? "var(--surface-2)" : "var(--surface-3)",
+          border: `${ring}px solid ${ringColor}`,
+          opacity: dim ? 0.6 : 1,
+        } as React.CSSProperties
+      }
     >
       {photoUrl ? (
         // eslint-disable-next-line @next/next/no-img-element

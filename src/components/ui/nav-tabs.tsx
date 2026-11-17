@@ -28,11 +28,14 @@ export function NavTabs<T extends string>({
   label,
   param = "tab",
   className,
+  vertical,
 }: {
   tabs: readonly NavTab<T>[];
   label: string;
   param?: string;
   className?: string;
+  /** A side menu on desktop (lg+) instead of a row of pills. */
+  vertical?: boolean;
 }) {
   const pathname = usePathname();
   const params = useSearchParams();
@@ -56,13 +59,21 @@ export function NavTabs<T extends string>({
     <div
       role="tablist"
       aria-label={label}
+      aria-orientation={vertical ? undefined : "horizontal"}
       className={cn(
         "no-scrollbar border-line bg-s1 -mx-1 flex max-w-full gap-1 overflow-x-auto rounded-full border p-1",
+        vertical &&
+          "lg:mx-0 lg:flex-col lg:overflow-visible lg:rounded-[22px] lg:border-0 lg:bg-transparent lg:p-0",
         className,
       )}
       onKeyDown={(e) => {
         const i = tabs.findIndex((t) => t.value === active);
-        const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+        const d =
+          e.key === "ArrowRight" || e.key === "ArrowDown"
+            ? 1
+            : e.key === "ArrowLeft" || e.key === "ArrowUp"
+              ? -1
+              : 0;
         if (!d) return;
         e.preventDefault();
         const n = (i + d + tabs.length) % tabs.length;
@@ -86,7 +97,9 @@ export function NavTabs<T extends string>({
             onClick={() => go(t.value)}
             className={cn(
               "relative flex h-11 flex-none cursor-pointer items-center gap-2 rounded-full border-0 bg-transparent px-4 text-sm font-semibold whitespace-nowrap transition-colors duration-100",
+              vertical && "lg:h-12 lg:w-full lg:justify-start lg:px-5 lg:text-[15px]",
               on ? "text-on-accent" : "text-muted hover:text-text",
+              vertical && !on && "lg:hover:bg-s1",
             )}
           >
             {on && (

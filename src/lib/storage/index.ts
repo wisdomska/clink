@@ -23,6 +23,6 @@ export async function storage(): Promise<StorageAdapter> {
 /** Hard caps (free-tier friendly). Supabase Storage gets stricter caps than R2. */
 export function limits(driver: "r2" | "supabase") {
   return driver === "r2"
-    ? { image: 15 * 1024 * 1024, video: 50 * 1024 * 1024, audio: 8 * 1024 * 1024 }
-    : { image: 8 * 1024 * 1024, video: 25 * 1024 * 1024, audio: 5 * 1024 * 1024 };
+    ? { image: 15 * 1024 * 1024, video: 100 * 1024 * 1024, audio: 8 * 1024 * 1024 }
+    : { image: 8 * 1024 * 1024, video: 50 * 1024 * 1024, audio: 5 * 1024 * 1024 };
 }

@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useRef } from "react";
 import {
+  ArrowBendUpLeft,
   Wine,
   Microphone,
   WarningCircle,
@@ -14,6 +15,7 @@ import { VoicePlayer } from "./voice-player";
 import { CallLogRow } from "@/features/call/call-log-row";
 import { StickerArt } from "./sticker-art";
 import { cn } from "@/components/ui/cn";
+import { haptic } from "@/lib/feedback";
 
 export const STICKER_LABEL = new Map<string, string>();
 
@@ -193,11 +195,18 @@ export function Bubble({
   onSwipeReply: (m: UiMessage) => void;
   onRetry: (m: UiMessage) => void;
 }) {
-  const press = useRef<{ x: number; t: ReturnType<typeof setTimeout> | null; dx: number }>({
-    x: 0,
-    t: null,
-    dx: 0,
-  });
+  // One press: where it started, the long-press timer, how far it has moved,
+  // and which way it locked (x = swipe to reply, y = the list is scrolling).
+  const press = useRef<{
+    x: number;
+    y: number;
+    t: ReturnType<typeof setTimeout> | null;
+    dx: number;
+    down: boolean;
+    axis: "x" | "y" | null;
+    armed: boolean;
+  }>({ x: 0, y: 0, t: null, dx: 0, down: false, axis: null, armed: false });
+  const arrow = useRef<HTMLSpanElement>(null);
   const el = useRef<HTMLDivElement>(null);
 
   if (m.type === "system" && m.body?.startsWith("call:")) {
@@ -222,12 +231,28 @@ export function Bubble({
     );
   }
 
+  const SWIPE = 64;
+  const resetSwipe = () => {
+    if (el.current) el.current.style.transform = "";
+    if (arrow.current) {
+      arrow.current.style.opacity = "0";
+      arrow.current.style.transform = "translateY(-50%) scale(0.6)";
+    }
+    press.current.dx = 0;
+    press.current.axis = null;
+    press.current.armed = false;
+    press.current.down = false;
+  };
   const handlers = {
     onPointerDown: (e: React.PointerEvent) => {
       press.current.x = e.clientX;
+      press.current.y = e.clientY;
       press.current.dx = 0;
-      // Only a primary press can become a long press; right-click uses onContextMenu.
+      press.current.axis = null;
+      press.current.armed = false;
+      // Only a primary press can become a long press or a swipe; right-click uses onContextMenu.
       if (e.button !== 0) return;
+      press.current.down = true;
       if (press.current.t) clearTimeout(press.current.t);
       press.current.t = setTimeout(() => {
         press.current.t = null;
@@ -235,25 +260,51 @@ export function Bubble({
       }, 450);
     },
     onPointerMove: (e: React.PointerEvent) => {
-      const dx = Math.max(0, e.clientX - press.current.x);
-      if (dx > 8 && press.current.t) {
+      if (!press.current.down) return;
+      const rawX = e.clientX - press.current.x;
+      const dy = e.clientY - press.current.y;
+      // Lock to the first clear direction: sideways replies, up and down scrolls.
+      if (!press.current.axis) {
+        if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(rawX)) press.current.axis = "y";
+        else if (rawX > 10 && rawX > Math.abs(dy)) {
+          press.current.axis = "x";
+          try {
+            (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+          } catch {
+            /* not capturable: fine */
+          }
+        }
+      }
+      if (press.current.axis && press.current.t) {
         clearTimeout(press.current.t);
         press.current.t = null;
       }
-      if (e.pointerType === "touch" && el.current) {
-        press.current.dx = dx;
-        el.current.style.transform = `translateX(${Math.min(dx, 80)}px)`;
+      if (press.current.axis !== "x") return;
+      const dx = Math.max(0, rawX);
+      press.current.dx = dx;
+      // Follows the finger, then resists past the threshold.
+      const shown = dx < SWIPE ? dx : SWIPE + (dx - SWIPE) * 0.25;
+      if (el.current) el.current.style.transform = `translateX(${Math.min(shown, 96)}px)`;
+      const k = Math.min(dx / SWIPE, 1);
+      if (arrow.current) {
+        arrow.current.style.opacity = String(k);
+        arrow.current.style.transform = `translateY(-50%) scale(${0.6 + k * 0.4})`;
       }
+      if (dx >= SWIPE && !press.current.armed) {
+        press.current.armed = true;
+        haptic("select");
+      } else if (dx < SWIPE && press.current.armed) press.current.armed = false;
     },
     onPointerUp: () => {
       if (press.current.t) clearTimeout(press.current.t);
-      if (press.current.dx > 64) onSwipeReply(m);
-      if (el.current) el.current.style.transform = "";
-      press.current.dx = 0;
+      press.current.t = null;
+      if (press.current.axis === "x" && press.current.dx >= SWIPE) onSwipeReply(m);
+      resetSwipe();
     },
     onPointerCancel: () => {
       if (press.current.t) clearTimeout(press.current.t);
-      if (el.current) el.current.style.transform = "";
+      press.current.t = null;
+      resetSwipe();
     },
     onDoubleClick: () => onDoubleTap?.(m),
     onContextMenu: (e: React.MouseEvent) => {
@@ -491,12 +542,23 @@ export function Bubble({
     <div
       data-mid={m.id}
       className={cn(
-        "relative flex flex-col rounded-2xl transition-colors duration-700",
+        "group/msg relative flex flex-col rounded-2xl transition-colors duration-700",
         mine ? "items-end" : "items-start",
         (pos === "middle" || pos === "last") && "-mt-1.5",
         reactions.length > 0 && "mb-3",
       )}
     >
+      {/* Shows behind the message as you swipe it right: let go past it to reply. */}
+      {!removed && (
+        <span
+          ref={arrow}
+          aria-hidden
+          className="bg-s2 text-muted pointer-events-none absolute top-1/2 left-1 flex h-8 w-8 items-center justify-center rounded-full opacity-0"
+          style={{ transform: "translateY(-50%) scale(0.6)" }}
+        >
+          <ArrowBendUpLeft size={16} weight="bold" />
+        </span>
+      )}
       <div
         ref={el}
         role="button"
@@ -521,6 +583,25 @@ export function Bubble({
         )}
         <div className="relative max-w-[80%] md:max-w-[min(80%,560px)]">
           {content}
+          {/* Mouse and trackpad: hover a message for a reply button beside it. */}
+          {!removed && !m.local && (
+            <button
+              type="button"
+              aria-label={`Reply to ${mine ? "your" : `${partnerName}'s`} message`}
+              title="Reply"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSwipeReply(m);
+              }}
+              className={cn(
+                "bg-s2 text-muted hover:text-text hover:bg-s3 absolute top-1/2 hidden h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-0 opacity-0 transition-opacity duration-150 group-focus-within/msg:opacity-100 group-hover/msg:opacity-100 focus-visible:opacity-100 [@media(hover:hover)_and_(pointer:fine)]:flex",
+                mine ? "right-full mr-2" : "left-full ml-2",
+              )}
+            >
+              <ArrowBendUpLeft size={16} weight="bold" aria-hidden />
+            </button>
+          )}
           <ReactionPill
             reactions={reactions}
             meId={meId}

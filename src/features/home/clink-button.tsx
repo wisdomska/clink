@@ -34,7 +34,7 @@ export function ClinkButton({ streak }: { streak: number | null }) {
 
   return (
     <div className="flex flex-none flex-col items-center gap-2.5 pt-3 pb-1">
-      <div className="relative h-[188px] w-[188px]">
+      <div className="relative h-[188px] w-[188px] lg:h-[220px] lg:w-[220px]">
         {clinking && (
           <>
             <motion.div
@@ -67,7 +67,7 @@ export function ClinkButton({ streak }: { streak: number | null }) {
             alt=""
             aria-hidden
             draggable={false}
-            className="pointer-events-none h-[112px] w-[112px] object-contain drop-shadow-[0_10px_12px_rgba(0,0,0,.35)] select-none"
+            className="pointer-events-none h-[112px] w-[112px] object-contain drop-shadow-[0_10px_12px_rgba(0,0,0,.35)] select-none lg:h-[132px] lg:w-[132px]"
             animate={
               clinking ? { rotate: [0, -10, 8, 0], scale: [1, 1.06, 1] } : { rotate: 0, scale: 1 }
             }
@@ -75,7 +75,7 @@ export function ClinkButton({ streak }: { streak: number | null }) {
           />
         </button>
       </div>
-      <div className="display text-[22px]" aria-live="polite">
+      <div className="display text-[22px] lg:text-[26px]" aria-live="polite">
         {clinking ? "Clink!" : "Send a Clink"}
       </div>
       <div className="text-muted text-sm">

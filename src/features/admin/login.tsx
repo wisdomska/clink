@@ -29,19 +29,19 @@ const MOMENTS: Moment[] = [
   },
   {
     icon: <Flag size={22} weight="fill" />,
-    tone: "#FF4F7B",
+    tone: "var(--rouge)",
     title: "2 reports waiting",
     meta: "Reports · oldest 3 h ago",
   },
   {
     icon: <ShieldCheck size={22} weight="fill" />,
-    tone: "#B9A4FF",
+    tone: "var(--lilac)",
     title: "Every look is logged",
     meta: "Audit log · reasons required",
   },
   {
     icon: <Database size={22} weight="fill" />,
-    tone: "#FF8A7A",
+    tone: "var(--danger)",
     title: "Storage at 41% of free tier",
     meta: "Usage · no action needed",
   },
