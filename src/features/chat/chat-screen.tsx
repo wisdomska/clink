@@ -404,23 +404,36 @@ export function ChatScreen() {
 
   // Older messages: keep your place while the earlier page slots in above.
   const loadingOlder = useRef(false);
+  // Where you were before the earlier page arrived; restored once it's on screen.
+  const anchor = useRef<{ before: number; top: number } | null>(null);
   function loadOlder() {
     const el = listRef.current;
     if (!el || !hasNextPage || isFetchingNextPage || loadingOlder.current) return;
     loadingOlder.current = true;
-    const before = el.scrollHeight;
-    const top = el.scrollTop;
-    void fetchNextPage().finally(() =>
+    anchor.current = { before: el.scrollHeight, top: el.scrollTop };
+    void fetchNextPage().finally(() => {
+      loadingOlder.current = false;
+      // Nothing new came back (or it failed): drop the anchor so nothing jumps.
       requestAnimationFrame(() => {
-        el.scrollTop = el.scrollHeight - before + top;
-        loadingOlder.current = false;
-      }),
-    );
+        if (anchor.current && listRef.current?.scrollHeight === anchor.current.before)
+          anchor.current = null;
+      });
+    });
   }
   // The top of the list is watched too, so a fast fling (where phones skip
   // scroll events) or a short list that can't scroll still loads more.
   const topRef = useRef<HTMLDivElement>(null);
   const loadOlderEvent = useEffectEvent(loadOlder);
+  // Runs after the earlier page is drawn (not just fetched), so your place holds.
+  // Still at the top afterwards (tall screens): keep going without a scroll event.
+  useLayoutEffect(() => {
+    const el = listRef.current;
+    const a = anchor.current;
+    if (!el || !a || el.scrollHeight === a.before) return;
+    anchor.current = null;
+    el.scrollTop = el.scrollHeight - a.before + a.top;
+    if (el.scrollTop < 120) requestAnimationFrame(() => loadOlderEvent());
+  }, [messages.length]);
   useEffect(() => {
     const el = topRef.current;
     const root = listRef.current;

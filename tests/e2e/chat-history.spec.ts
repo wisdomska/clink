@@ -26,12 +26,17 @@ test("chat scrolls back through the whole history", async ({ couple }) => {
   await a.goto("/chat");
   await expect(a.getByText("history line 129")).toBeVisible({ timeout: 15000 });
   const list = a.locator("[aria-live=polite].overflow-y-auto").first();
-  for (let i = 0; i < 15; i++) {
-    if (await a.getByText(/^history line 001/).isVisible()) break;
-    await list.evaluate((el) => (el.scrollTop = 0));
-    await a.waitForTimeout(700);
-  }
-  await expect(a.getByText(/^history line 001/)).toBeVisible();
+  // Keep scrolling to the top until the first message has loaded (pages load
+  // one at a time, slower on a busy CI runner).
+  await expect
+    .poll(
+      async () => {
+        await list.evaluate((el) => (el.scrollTop = 0));
+        return a.getByText(/^history line 001/).isVisible();
+      },
+      { timeout: 45_000, intervals: [700] },
+    )
+    .toBe(true);
   // At the very top, it says so: nothing is hidden.
   await expect(a.getByText(/^Start of your chat with Theo/)).toBeVisible();
 });

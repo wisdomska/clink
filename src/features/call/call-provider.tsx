@@ -121,6 +121,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const iCalled = useRef(false);
   const restarted = useRef(false);
   const reannounce = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Their call won a same-moment race while our camera was still starting: answer it once it is.
+  const pendingMerge = useRef(false);
   const monitor = useRef<ReturnType<typeof setInterval> | null>(null);
   const lostSince = useRef<number | null>(null);
   const pendingAnswer = useRef<string | null>(null);
@@ -176,6 +178,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     if (ringTimer.current) clearTimeout(ringTimer.current);
     if (ringTone.current) clearInterval(ringTone.current);
     if (reannounce.current) clearInterval(reannounce.current);
+    pendingMerge.current = false;
     ringTimer.current = null;
     ringTone.current = null;
     reannounce.current = null;
@@ -358,46 +361,6 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     for (const c of pendingIce.current.splice(0)) await p.addIceCandidate(c).catch(() => undefined);
   };
 
-  /* ------------------------------------------------------------- outgoing */
-  const start = useCallback(
-    async (video: boolean) => {
-      if (callRef.current) return;
-      if (!navigator.mediaDevices?.getUserMedia || typeof RTCPeerConnection === "undefined")
-        return toast.err("This browser can't make calls. Try Chrome or Safari.");
-      const id = crypto.randomUUID();
-      const base = baseState(id, video, "outgoing");
-      callRef.current = base;
-      setCall(base);
-      iCalled.current = true;
-      try {
-        await getMedia(video);
-      } catch {
-        cleanup("media");
-        return;
-      }
-      send("call:ring", { id, video });
-      // Keep announcing while it rings, so a partner who opens Clink from the
-      // notification (or a second device) picks the call up straight away.
-      reannounce.current = setInterval(() => {
-        if (callRef.current?.phase === "outgoing") send("call:ring", { id, video });
-      }, 3000);
-      void fetch("/api/calls/ring", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, video }),
-      }).catch(() => undefined);
-      startTone("ringback");
-      ringTimer.current = setTimeout(() => {
-        if (callRef.current?.phase === "outgoing") {
-          send("call:end", { id, reason: "missed" });
-          cleanup("missed");
-        }
-      }, RING_TIMEOUT);
-    },
-
-    [send, cleanup],
-  );
-
   /* ------------------------------------------------------------- incoming */
   const accept = useCallback(
     async (reuse?: MediaStream | null) => {
@@ -422,6 +385,63 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     [send, update, cleanup, me.id],
   );
 
+  /* ------------------------------------------------------------- outgoing */
+  const start = useCallback(
+    async (video: boolean) => {
+      if (callRef.current) {
+        // Their call reached us a moment before our tap: calling them back means yes.
+        if (callRef.current.phase === "incoming") void accept();
+        return;
+      }
+      if (!navigator.mediaDevices?.getUserMedia || typeof RTCPeerConnection === "undefined")
+        return toast.err("This browser can't make calls. Try Chrome or Safari.");
+      const id = crypto.randomUUID();
+      const base = baseState(id, video, "outgoing");
+      callRef.current = base;
+      setCall(base);
+      iCalled.current = true;
+      try {
+        await getMedia(video);
+      } catch {
+        cleanup("media");
+        return;
+      }
+      if (callRef.current?.id !== id) {
+        // While the camera started, they called too and their call won (or this
+        // one ended). Never announce ours now: it would knock out the real call.
+        if (pendingMerge.current) {
+          pendingMerge.current = false;
+          void accept(localRef.current);
+        } else if (!callRef.current) {
+          localRef.current?.getTracks().forEach((t) => t.stop());
+          localRef.current = null;
+          setLocal(null);
+        }
+        return;
+      }
+      send("call:ring", { id, video });
+      // Keep announcing while it rings, so a partner who opens Clink from the
+      // notification (or a second device) picks the call up straight away.
+      reannounce.current = setInterval(() => {
+        if (callRef.current?.phase === "outgoing") send("call:ring", { id, video });
+      }, 3000);
+      void fetch("/api/calls/ring", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, video }),
+      }).catch(() => undefined);
+      startTone("ringback");
+      ringTimer.current = setTimeout(() => {
+        if (callRef.current?.phase === "outgoing") {
+          send("call:end", { id, reason: "missed" });
+          cleanup("missed");
+        }
+      }, RING_TIMEOUT);
+    },
+
+    [send, cleanup, accept],
+  );
+
   useCoupleEvent("call:ring", (p) => {
     const id = String(p.id);
     const cur = callRef.current;
@@ -436,7 +456,9 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         const merged: CallState = { ...cur, id, video: cur.video || Boolean(p.video) };
         callRef.current = { ...merged, phase: "incoming" };
         setCall(callRef.current);
-        void accept(keep);
+        // Still starting our camera? start() answers as soon as it's ready.
+        if (keep) void accept(keep);
+        else pendingMerge.current = true;
       }
       return;
     }
