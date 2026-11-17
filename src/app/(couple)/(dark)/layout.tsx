@@ -2,10 +2,8 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { DarkSkeleton } from "@/features/dark/dark-skeleton";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { DarkGo } from "@/features/dark/go";
 import { loadCoupleContext } from "@/lib/server/couple-context";
-import { CoupleProvider } from "@/features/couple/context";
-import { QueryProvider } from "@/features/couple/query-provider";
 import { hasDarkSession } from "@/lib/server/dark";
 import { sessionUser } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -43,24 +41,26 @@ async function DarkShell({ children }: { children: React.ReactNode }) {
       : Promise.resolve({ data: null }),
   ]);
   const setUp = Boolean(mine?.pin_hash);
-  if (!setUp && pathname !== "/dark/setup") redirect("/dark/setup");
+  const go = (href: string) => (
+    <>
+      <DarkSkeleton />
+      <DarkGo href={href} />
+    </>
+  );
+  if (!setUp && pathname !== "/dark/setup") return go("/dark/setup");
   const unlocked = setUp && (await hasDarkSession(ctx.me.id));
   const open = ["/dark", "/dark/setup"];
   if (setUp && !unlocked && !open.includes(pathname))
-    redirect(`/dark?next=${encodeURIComponent(path)}`);
+    return go(`/dark?next=${encodeURIComponent(path)}`);
   // Already unlocked: skip the lock screen (and its round trip) and go straight in.
   if (unlocked && pathname === "/dark") {
     const next = new URLSearchParams(path.split("?")[1] ?? "").get("next");
-    redirect(next?.startsWith("/dark/") ? next : "/dark/home");
+    return go(next?.startsWith("/dark/") ? next : "/dark/home");
   }
   return (
-    <QueryProvider>
-      <CoupleProvider value={ctx}>
-        <div data-mode="dark" className="bg-app min-h-dvh">
-          {unlocked && <DarkIdle />}
-          {children}
-        </div>
-      </CoupleProvider>
-    </QueryProvider>
+    <div data-mode="dark" className="bg-app min-h-dvh">
+      {unlocked && <DarkIdle />}
+      {children}
+    </div>
   );
 }

@@ -13,7 +13,7 @@ import {
   type WordState,
   type StoryState,
 } from "../engines/turns";
-import { RoomHeader, sendMove, type GameRow } from "./shared";
+import { RoomHeader, sendMove, FinalScore, ForfeitNote, BackToLobby, type GameRow } from "./shared";
 import { haptic } from "@/lib/feedback";
 import { startGame } from "../meta";
 
@@ -167,9 +167,7 @@ export function WordRoom({ game }: { game: GameRow }) {
       </div>
       {game.status === "finished" && (
         <div className="flex flex-col gap-2">
-          <div className="display text-[28px]">
-            {my === their ? "A draw." : my > their ? <>You win.</> : <>{partner.name} wins.</>}
-          </div>
+          <FinalScore game={game} mine={my} theirs={their} />
           <Button
             onClick={async () => {
               const id = await startGame("word").catch(() => null);
@@ -178,6 +176,7 @@ export function WordRoom({ game }: { game: GameRow }) {
           >
             New board
           </Button>
+          <BackToLobby />
         </div>
       )}
     </>
@@ -190,7 +189,9 @@ export function StoryRoom({ game }: { game: GameRow }) {
   const router = useRouter();
   const s = game.state as StoryState;
   const [line, setLine] = useState("");
-  const myTurn = s.turn === me.id && !s.ended;
+  // A forfeit finishes the game without the story's own "The end".
+  const ended = s.ended || game.status === "finished";
+  const myTurn = s.turn === me.id && !ended;
   const all = useMemo(() => [{ by: "", text: s.starter }, ...s.lines], [s]);
 
   async function exportCard() {
@@ -299,9 +300,10 @@ export function StoryRoom({ game }: { game: GameRow }) {
             </Button>
           </div>
         </form>
-      ) : s.ended ? (
+      ) : ended ? (
         <div className="flex flex-col gap-2">
           <div className="display text-[28px]">The end.</div>
+          <ForfeitNote game={game} />
           <Button onClick={exportCard}>
             <DownloadSimple size={20} aria-hidden /> Save as an image
           </Button>
@@ -315,13 +317,14 @@ export function StoryRoom({ game }: { game: GameRow }) {
           >
             Start another
           </Button>
+          <BackToLobby />
         </div>
       ) : (
         <p className="text-muted m-0 text-center text-sm">
           {partner.name}&apos;s line. We&apos;ll ping you.
         </p>
       )}
-      {!s.ended && (
+      {!ended && (
         <button
           type="button"
           onClick={() => exportCard().catch(() => toast.err("Couldn't make the image."))}

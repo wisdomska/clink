@@ -29,6 +29,8 @@ test("admin portal: own sign-in, forced password, change email and password, sep
   // Temporary password: must choose one first; the API refuses until then.
   await expect(p).toHaveURL(/\/admin\/password/);
   expect((await p.request.get("/api/admin/metrics")).status()).toBe(403);
+  // Type only once the form has hydrated, or the first keystrokes can be lost.
+  await p.waitForFunction(() => document.documentElement.dataset.hydrated === "true");
   await p.getByLabel("New password").fill("Boss-Own-Pass-2026");
   await p.getByLabel("Type it again").fill("Boss-Own-Pass-2026");
   await p.getByLabel("Current password").fill("Temp-Admin-Pass-1");

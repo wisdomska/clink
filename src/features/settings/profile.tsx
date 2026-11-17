@@ -166,20 +166,26 @@ export function ProfileCard() {
             photoUrl={draft.photo}
             icon={(draft.photo ? me.avatarIcon : draft.icon) as AvatarIcon}
           />
-          <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <div className="min-w-0">
+          {/* Name and city on the left, the photo action on the right; wraps under on narrow screens. */}
+          <div className="flex min-w-0 flex-1 items-center justify-between gap-3 sm:gap-4">
+            <div className="min-w-0 flex-1">
               <div className="truncate text-lg font-bold">{draft.name.trim() || me.name}</div>
               {where && <div className="text-muted truncate text-sm">{where}</div>}
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-none flex-col items-end gap-1">
               <Button
                 size="sm"
                 variant="secondary"
                 loading={uploading}
+                aria-label={draft.photo ? "Change photo" : "Upload a photo"}
                 onClick={() => fileRef.current?.click()}
               >
                 <Camera size={18} aria-hidden />
-                {draft.photo ? "Change photo" : "Upload a photo"}
+                {/* Short on phones so it fits beside the name; the full label everywhere else. */}
+                <span className="sm:hidden">Photo</span>
+                <span className="hidden sm:inline">
+                  {draft.photo ? "Change photo" : "Upload a photo"}
+                </span>
               </Button>
               {draft.photo && (
                 <Button

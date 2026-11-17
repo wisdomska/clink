@@ -326,7 +326,7 @@ export function Bubble({
   if (m.type === "sensitive") {
     // SAF-02: private media is only ever a covered card in chat; it opens in After Dark.
     return (
-      <a
+      <Link
         href={`/dark/view/${m.media_ids[0]}`}
         className={cn(
           "press rounded-thumb border-line bg-s2 text-text hover:text-text relative flex h-[120px] w-[180px] flex-col items-center justify-center gap-1 overflow-hidden border",
@@ -338,7 +338,7 @@ export function Bubble({
         <span className="text-xs font-medium">
           {mine ? "You sent something private" : "Something private"}
         </span>
-      </a>
+      </Link>
     );
   }
   let content: React.ReactNode;

@@ -31,7 +31,15 @@ export function DarkIdle() {
       if (document.visibilityState === "visible" && Date.now() - last.current >= IDLE_MS) lock();
     };
     document.addEventListener("visibilitychange", onVis);
+    // A request found the session locked: back to the lock screen without a reload.
+    const onLocked = (e: Event) => {
+      e.preventDefault();
+      const here = window.location.pathname;
+      router.replace(`/dark?next=${encodeURIComponent(here)}`);
+    };
+    window.addEventListener("clink:dark-locked", onLocked);
     return () => {
+      window.removeEventListener("clink:dark-locked", onLocked);
       clearInterval(check);
       events.forEach((e) => window.removeEventListener(e, touch));
       document.removeEventListener("visibilitychange", onVis);

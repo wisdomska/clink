@@ -25,7 +25,9 @@ test.describe("Play polish", () => {
     await b.request.post(`/api/games/${id}/join`);
     await a.goto(`/play/trivia/${id}`);
     await a.getByRole("button", { name: "Leave game" }).click();
-    await expect(a.getByText(/Leave\s*mid-round/)).toBeVisible();
+    await expect(a.getByRole("dialog", { name: "Leave the game?" })).toBeVisible();
+    // Forfeit is offered too, naming who would win.
+    await expect(a.getByRole("button", { name: "Forfeit, Theo wins" })).toBeVisible();
     await a.getByRole("button", { name: "Keep playing" }).click();
     await expect(a).toHaveURL(new RegExp(`/play/trivia/${id}`));
     await a.getByRole("button", { name: "Leave game" }).click();

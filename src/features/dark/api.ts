@@ -31,7 +31,11 @@ export async function darkFetch<T>(url: string, body?: unknown): Promise<T> {
   );
   const d = await r.json().catch(() => ({}));
   if (r.status === 401 && d.error === "dark_locked") {
-    window.location.href = `/dark?next=${encodeURIComponent(window.location.pathname)}`;
+    // The After Dark shell takes you to the lock screen in-app (so a call keeps
+    // going); a full reload is only the fallback when nothing handled it.
+    const ev = new CustomEvent("clink:dark-locked", { cancelable: true });
+    if (window.dispatchEvent(ev))
+      window.location.href = `/dark?next=${encodeURIComponent(window.location.pathname)}`;
   }
   if (!r.ok)
     throw Object.assign(new Error(d.message ?? "Something went wrong."), {

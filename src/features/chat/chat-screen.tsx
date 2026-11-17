@@ -997,9 +997,9 @@ export function ChatScreen() {
                   Spicy stickers open when you both turn on After Dark. Nobody gets them unless you
                   both say yes.
                 </p>
-                <a href="/dark" className="text-accent text-sm font-bold">
+                <Link href="/dark" className="text-accent text-sm font-bold">
                   Open After Dark
-                </a>
+                </Link>
               </div>
             ) : (
               <div className="no-scrollbar grid max-h-[230px] grid-cols-4 gap-2.5 overflow-y-auto sm:grid-cols-6 lg:grid-cols-8">

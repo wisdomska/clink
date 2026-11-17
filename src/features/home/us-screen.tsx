@@ -56,10 +56,7 @@ export function UsScreen() {
   // Discreet mode: long-press the wordmark for 2 s to open After Dark.
   const wordDown = () => {
     if (wordTimer.current) clearTimeout(wordTimer.current);
-    wordTimer.current = setTimeout(
-      () => discreet && darkVisible && window.location.assign("/dark"),
-      2000,
-    );
+    wordTimer.current = setTimeout(() => discreet && darkVisible && router.push("/dark"), 2000);
   };
   const wordUp = () => wordTimer.current && clearTimeout(wordTimer.current);
 
@@ -77,14 +74,14 @@ export function UsScreen() {
         </h1>
         <div className="flex gap-2">
           {darkVisible && !discreet && (
-            <a
+            <Link
               href="/dark"
               aria-label="After Dark, 18+"
               title="After Dark"
               className="press flex h-11 w-11 items-center justify-center rounded-full"
             >
               <AfterDarkBadge />
-            </a>
+            </Link>
           )}
           <Link
             href="/keep"

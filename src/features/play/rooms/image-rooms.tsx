@@ -23,7 +23,7 @@ import {
   type Throw,
   type ZoomState,
 } from "../engines/image";
-import { RoomHeader, ResultMoment, sendMove, type GameRow } from "./shared";
+import { RoomHeader, ResultMoment, FinalScore, sendMove, type GameRow } from "./shared";
 import { startGame } from "../meta";
 
 const view = (id: string) => `/api/media/${id}/view`;
@@ -67,22 +67,7 @@ function GameOver({ game, type }: { game: GameRow; type: GameType }) {
         <ResultMoment gameId={game.id} celebrate={my >= their} />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/art/trophy.webp" alt="" aria-hidden className="h-20 w-20 object-contain" />
-        <div className="mono text-[72px] leading-none">
-          <CountUp value={my} className="text-accent" />
-          <span className="text-faint"> : </span>
-          <span style={{ color: "var(--partner-b)" }}>
-            <CountUp value={their} />
-          </span>
-        </div>
-        <div className="display text-[28px] leading-[1.05]">
-          {my === their ? (
-            <>A draw. Rematch?</>
-          ) : my > their ? (
-            <>You win this one.</>
-          ) : (
-            <>{partner.name} wins. For now.</>
-          )}
-        </div>
+        <FinalScore game={game} mine={my} theirs={their} />
       </div>
       <div className="flex flex-col gap-2">
         <Button

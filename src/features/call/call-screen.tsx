@@ -90,15 +90,18 @@ function RoundBtn({
         whileTap={{ scale: 0.94, transition: { duration: 0.06 } }}
         onClick={onClick}
         className={cn(
-          "flex h-14 w-14 cursor-pointer items-center justify-center rounded-full border-0 text-white sm:h-16 sm:w-16",
-          tone === "danger" && "bg-end-call",
-          tone === "go" && "bg-online",
-          tone === "glass" && (on ? "bg-white text-black" : "bg-s3"),
+          "flex h-14 w-14 cursor-pointer items-center justify-center rounded-full border-0 transition-colors duration-150 sm:h-16 sm:w-16",
+          tone === "danger" && "bg-end-call text-white",
+          tone === "go" && "bg-online text-white",
+          // Lit means that thing is on: a white button with a dark icon.
+          tone === "glass" && (on ? "bg-[var(--text)] text-[var(--bg-app)]" : "bg-s3 text-white"),
         )}
       >
         {children}
       </motion.button>
-      <span className="text-xs font-medium text-white/80">{label}</span>
+      <span className={cn("text-xs font-medium", on ? "text-white" : "text-white/70")}>
+        {label}
+      </span>
     </div>
   );
 }
@@ -461,8 +464,18 @@ export function CallScreen({
                 ))}
               </div>
             )}
+            {(call.muted || (call.video && call.cameraOff)) && (
+              <p role="status" className="m-0 text-sm font-medium text-white/80">
+                {[
+                  call.muted && "You're muted",
+                  call.video && call.cameraOff && "Your camera is off",
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            )}
             <div className="flex items-center justify-center gap-3 sm:gap-5">
-              <RoundBtn label={call.muted ? "Unmute" : "Mute"} on={call.muted} onClick={toggleMute}>
+              <RoundBtn label="Mute" on={call.muted} onClick={toggleMute}>
                 {call.muted ? (
                   <MicrophoneSlash size={26} weight="fill" />
                 ) : (
@@ -479,11 +492,7 @@ export function CallScreen({
                 </RoundBtn>
               )}
               {call.video && local?.getVideoTracks().length ? (
-                <RoundBtn
-                  label={call.cameraOff ? "Camera on" : "Camera off"}
-                  on={call.cameraOff}
-                  onClick={toggleCamera}
-                >
+                <RoundBtn label="Camera off" on={call.cameraOff} onClick={toggleCamera}>
                   {call.cameraOff ? (
                     <VideoCameraSlash size={26} weight="fill" />
                   ) : (

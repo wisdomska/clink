@@ -60,7 +60,7 @@ test.describe("Photo games", () => {
       await a.getByRole("button", { name: "Vote for Theo's photo" }).click();
       await b.getByRole("button", { name: "Vote for Nia's photo" }).click();
     }
-    await expect(a.getByText(/A draw/)).toBeVisible({ timeout: 15000 });
+    await expect(a.getByText("It's a draw.")).toBeVisible({ timeout: 15000 });
   });
 
   test("zoom guess: wrong guess zooms out, right guess scores, roles swap", async ({ couple }) => {
@@ -92,7 +92,7 @@ test.describe("Photo games", () => {
     await b.getByRole("button", { name: "Send it" }).click();
     await a.getByRole("textbox", { name: "Your guess" }).fill("sky", { timeout: 15000 });
     await a.getByRole("button", { name: "Guess" }).click();
-    await expect(a.getByText(/A draw|You win|wins/)).toBeVisible({ timeout: 15000 });
+    await expect(a.getByText(/It's a draw|You win|wins!/)).toBeVisible({ timeout: 15000 });
     const { data } = await admin
       .from("games")
       .select("scores, status")

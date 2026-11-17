@@ -10,6 +10,9 @@ import {
   RoomHeader,
   ResultBars,
   ResultMoment,
+  FinalScore,
+  ForfeitNote,
+  BackToLobby,
   sendMove,
   useRevealFeedback,
   type GameRow,
@@ -105,6 +108,7 @@ export function KnowMeRoom({ game }: { game: GameRow }) {
           <ResultBars type="know_me" current={s.score} />
         </div>
         <div className="flex flex-col gap-2">
+          <ForfeitNote game={game} />
           <Button
             onClick={async () => {
               const id = await startGame("know_me", {
@@ -224,23 +228,7 @@ export function TriviaRoom({ game }: { game: GameRow }) {
       <div className="an-reveal flex flex-1 flex-col">
         <div className="flex flex-1 flex-col justify-center gap-3">
           <ResultMoment gameId={game.id} celebrate={my >= their} />
-          <div className="mono text-faint text-xs">DUEL OVER</div>
-          <div className="mono text-[72px] leading-none">
-            <CountUp value={my} className="text-accent" />
-            <span className="text-faint"> : </span>
-            <span style={{ color: "var(--partner-b)" }}>
-              <CountUp value={their} />
-            </span>
-          </div>
-          <div className="display text-[28px] leading-[1.05]">
-            {my === their ? (
-              <>A draw. Rematch?</>
-            ) : my > their ? (
-              <>You win this one.</>
-            ) : (
-              <>{partner.name} wins. For now.</>
-            )}
-          </div>
+          <FinalScore game={game} mine={my} theirs={their} kicker="Duel over" />
         </div>
         <div className="flex flex-col gap-2">
           <Button
@@ -344,7 +332,9 @@ export function WyrRoom({ game }: { game: GameRow }) {
           </div>
         </div>
         <div className="flex flex-col gap-2">
+          <ForfeitNote game={game} />
           <Button onClick={() => router.push("/play")}>Another deck</Button>
+          <BackToLobby />
         </div>
       </div>
     );

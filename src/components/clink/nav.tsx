@@ -207,7 +207,7 @@ export function Rail() {
       )}
       <div className="mt-auto flex flex-col gap-1">
         {darkVisible && !discreet && (
-          <a
+          <Link
             href="/dark"
             title="After Dark"
             className="press text-muted hover:bg-s1 hover:text-text flex h-12 items-center gap-3 rounded-full px-3 text-[15px] font-medium"
@@ -216,7 +216,7 @@ export function Rail() {
               <AfterDarkBadge size={30} />
             </span>
             <span className="rail-full">After Dark</span>
-          </a>
+          </Link>
         )}
         <AccountRow on={isActive(path, "/settings")} />
       </div>

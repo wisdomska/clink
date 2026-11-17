@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { journeyStep, pathFor } from "@/lib/server/journey";
@@ -18,7 +19,13 @@ async function avatarUrl(path: string | null): Promise<string | null> {
 }
 
 /** Everything the signed-in app shell needs. Redirects when the user isn't ready. */
-export async function loadCoupleContext(nextPath: string): Promise<CoupleContextValue> {
+/**
+ * Loaded once per request: the shared couple layout and the app or After Dark
+ * layout under it both ask for it, and share the one result.
+ */
+export const loadCoupleContext = cache(loadCoupleContextUncached);
+
+async function loadCoupleContextUncached(nextPath: string): Promise<CoupleContextValue> {
   // Verified locally against the signing keys: no auth-server round trip per page.
   const user = await sessionUser();
   if (!user) redirect(`/auth/reset?next=${encodeURIComponent(nextPath)}`);

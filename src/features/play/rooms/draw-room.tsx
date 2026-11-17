@@ -7,7 +7,7 @@ import { useCouple, useCoupleEvent } from "@/features/couple/context";
 import { Button, IconButton } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { DRAW_ROUNDS, TURN_SECONDS, type DrawState } from "../engines/turns";
-import { RoomHeader, ResultMoment, sendMove, type GameRow } from "./shared";
+import { RoomHeader, ResultMoment, FinalScore, sendMove, type GameRow } from "./shared";
 import { CountUp } from "@/components/fx/count-up";
 import { startGame } from "../meta";
 
@@ -180,23 +180,7 @@ export function DrawRoom({ game }: { game: GameRow }) {
       <div className="an-reveal flex flex-1 flex-col">
         <div className="flex flex-1 flex-col justify-center gap-3">
           <ResultMoment gameId={game.id} celebrate={myScore >= theirScore} />
-          <div className="mono text-faint text-xs">GAME OVER</div>
-          <div className="mono text-[72px] leading-none">
-            <CountUp value={myScore} className="text-accent" />
-            <span className="text-faint"> : </span>
-            <span style={{ color: "var(--partner-b)" }}>
-              <CountUp value={theirScore} />
-            </span>
-          </div>
-          <div className="display text-[28px] leading-[1.05]">
-            {myScore === theirScore ? (
-              <>Level. Rematch?</>
-            ) : myScore > theirScore ? (
-              <>Artist and mind reader.</>
-            ) : (
-              <>{partner.name} takes the easel.</>
-            )}
-          </div>
+          <FinalScore game={game} mine={myScore} theirs={theirScore} />
           <ul className="text-muted m-0 mt-2 flex list-none flex-col gap-1 p-0 text-sm">
             {s.results.map((r, i) => (
               <li key={i}>

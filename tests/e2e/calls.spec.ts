@@ -43,12 +43,20 @@ test.describe("Calls", () => {
       await expect.poll(() => p.evaluate(remoteAudioPlaying)).toBe(true);
     }
 
-    await outgoing.getByRole("button", { name: "Mute" }).click();
-    await expect(outgoing.getByRole("button", { name: "Unmute" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
-    await outgoing.getByRole("button", { name: "Camera off" }).click();
+    const mute = outgoing.getByRole("button", { name: "Mute" });
+    await expect(mute).toHaveAttribute("aria-pressed", "false");
+    await mute.click();
+    await expect(mute).toHaveAttribute("aria-pressed", "true");
+    await expect(outgoing.getByRole("status").filter({ hasText: "You're muted" })).toBeVisible();
+    // The lit button keeps a visible icon: dark on white, not white on white.
+    const colors = await mute.evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return [cs.color, cs.backgroundColor];
+    });
+    expect(colors[0]).not.toBe(colors[1]);
+    const cam = outgoing.getByRole("button", { name: "Camera off" });
+    await cam.click();
+    await expect(cam).toHaveAttribute("aria-pressed", "true");
     await expect(incoming.getByText("Nia's camera is off")).toBeVisible();
 
     await incoming.getByRole("button", { name: "End" }).click();
@@ -175,7 +183,7 @@ test.describe("Calls: features and closed-app ringing", () => {
     // Mute shows on the other side.
     await onA.getByRole("button", { name: "Mute" }).click();
     await expect(b.getByText("Nia is muted")).toBeVisible();
-    await onA.getByRole("button", { name: "Unmute" }).click();
+    await onA.getByRole("button", { name: "Mute" }).click();
     await expect(b.getByText("Nia is muted")).toHaveCount(0);
 
     // Reactions float up on both screens.

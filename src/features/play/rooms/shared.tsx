@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { X } from "@phosphor-icons/react";
+import { X, Crown, Flag } from "@phosphor-icons/react";
+import { CountUp } from "@/components/fx/count-up";
+import { cn } from "@/components/ui/cn";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { IconButton, Button } from "@/components/ui/button";
 import { useCouple, useCoupleNow } from "@/features/couple/context";
@@ -96,7 +98,14 @@ export function RoomHeader({
   live?: boolean;
 }) {
   const router = useRouter();
+  const qc = useQueryClient();
+  const { partner } = useCouple();
+  const { id } = useParams<{ id?: string }>();
+  // The room already loaded the game; read it from the cache, no extra fetch.
+  const { data: game } = useQuery<GameRow>({ queryKey: ["game", id], enabled: false });
+  const active = game?.status === "active";
   const [confirm, setConfirm] = useState(false);
+  const [quitting, setQuitting] = useState(false);
   const liveRef = useRef(live);
   useEffect(() => {
     liveRef.current = live;
@@ -123,7 +132,10 @@ export function RoomHeader({
   return (
     <>
       <div className="flex flex-none items-center gap-3">
-        <IconButton label="Leave game" onClick={() => (live ? setConfirm(true) : leave())}>
+        <IconButton
+          label="Leave game"
+          onClick={() => (live || active ? setConfirm(true) : leave())}
+        >
           <X size={20} />
         </IconButton>
         <div className="text-muted flex-1 text-sm font-medium">{GAME_META[type].name}</div>
@@ -147,14 +159,37 @@ export function RoomHeader({
         </div>
       )}
       <Sheet open={confirm} onOpenChange={setConfirm} title="Leave the game?" handle>
-        <div className="display text-[28px] leading-[1.05]">Leave mid-round?</div>
+        <div className="display text-[28px] leading-[1.05]">Leave the game?</div>
         <p className="text-muted m-0 text-base leading-normal">
-          The game stays open, so you can come back to it from Play.
+          Leave for now and it stays open, so you can come back from Play. Forfeit and it ends here,
+          with {partner.name} taking the win.
         </p>
         <Button onClick={() => setConfirm(false)}>Keep playing</Button>
         <Button variant="ghost" size="lg" onClick={leave}>
           Leave for now
         </Button>
+        {active && (
+          <Button
+            variant="danger-outline"
+            size="lg"
+            loading={quitting}
+            onClick={async () => {
+              setQuitting(true);
+              const r = await fetch(`/api/games/${id}/forfeit`, { method: "POST" });
+              setQuitting(false);
+              if (!r.ok) {
+                const d = await r.json().catch(() => ({}));
+                return toast.err(d.message ?? "Couldn't forfeit. Try again.");
+              }
+              liveRef.current = false;
+              setConfirm(false);
+              feedback("tap", "pop");
+              await qc.invalidateQueries({ queryKey: ["game", id] });
+            }}
+          >
+            <Flag size={18} weight="bold" aria-hidden /> Forfeit, {partner.name} wins
+          </Button>
+        )}
       </Sheet>
     </>
   );
@@ -327,4 +362,114 @@ export function useRevealFeedback(key: string | null, good: boolean) {
     if (good) feedback("success", "success");
     else feedback("tap", "pop");
   }, [key, good]);
+}
+
+/** Who quit, if the game ended that way. */
+export function useForfeit(game: GameRow): { by: string; mine: boolean; name: string } | null {
+  const { me, partner } = useCouple();
+  const by = (game.state as { forfeitBy?: string } | null)?.forfeitBy;
+  if (!by) return null;
+  return { by, mine: by === me.id, name: by === me.id ? "You" : partner.name };
+}
+
+/**
+ * The final score with names on it: who won, by how much, and whether
+ * someone forfeited. Each side wears its partner colour.
+ */
+export function FinalScore({
+  game,
+  mine,
+  theirs,
+  kicker = "Game over",
+}: {
+  game: GameRow;
+  mine: number;
+  theirs: number;
+  kicker?: string;
+}) {
+  const { me, partner } = useCouple();
+  const forfeit = useForfeit(game);
+  const iWon = game.winner_id ? game.winner_id === me.id : mine > theirs;
+  const draw = !game.winner_id && (game.is_draw || mine === theirs);
+  const headline = draw ? "It's a draw." : iWon ? "You win!" : `${partner.name} wins!`;
+  const side = (who: "me" | "them") => {
+    const isMe = who === "me";
+    const won = !draw && (isMe ? iWon : !iWon);
+    return (
+      <div className="flex min-w-0 flex-1 flex-col items-center gap-1">
+        <span
+          className={cn(
+            "flex max-w-full items-center gap-1.5 truncate text-base font-bold",
+            won ? "text-text" : "text-muted",
+          )}
+        >
+          {won && (
+            <Crown
+              size={18}
+              weight="fill"
+              className="flex-none text-[var(--champagne)]"
+              aria-hidden
+            />
+          )}
+          {isMe ? "You" : partner.name}
+        </span>
+        <span
+          className="mono text-[64px] leading-none"
+          style={{ color: `var(--partner-${isMe ? me.role : partner.role})` }}
+        >
+          <CountUp value={isMe ? mine : theirs} />
+        </span>
+        {won && (
+          <span className="mono text-[11px] tracking-[.12em] text-[var(--champagne)] uppercase">
+            Winner
+          </span>
+        )}
+      </div>
+    );
+  };
+  return (
+    <section aria-label="Final score" className="flex flex-col gap-3">
+      <div className="mono text-faint text-xs uppercase">{kicker}</div>
+      <div className="display text-[36px] leading-[1.05]" role="status">
+        {headline}
+      </div>
+      {forfeit && (
+        <p className="text-muted m-0 text-base">
+          {forfeit.mine ? "You forfeited." : `${forfeit.name} forfeited.`}
+        </p>
+      )}
+      <div className="border-line bg-s1 rounded-card flex items-center gap-2 border px-3 py-5">
+        {side("me")}
+        <span className="mono text-faint text-[28px]" aria-hidden>
+          :
+        </span>
+        {side("them")}
+      </div>
+      <span className="sr-only">
+        You {mine}, {partner.name} {theirs}.
+      </span>
+    </section>
+  );
+}
+
+/** "Theo forfeited." on games without a scoreboard (story, would you rather, know me). */
+export function ForfeitNote({ game }: { game: GameRow }) {
+  const f = useForfeit(game);
+  if (!f) return null;
+  return (
+    <p className="text-muted m-0 flex items-center gap-1.5 text-base" role="status">
+      <Flag size={16} weight="bold" aria-hidden />
+      {f.mine ? "You forfeited this one." : `${f.name} forfeited this one.`}
+    </p>
+  );
+}
+
+/** Every finished game offers a way back to the games. */
+export function BackToLobby() {
+  const router = useRouter();
+  return (
+    <Button variant="ghost" size="lg" onClick={() => router.push("/play")}>
+      Back to the lobby
+    </Button>
+  );
 }
