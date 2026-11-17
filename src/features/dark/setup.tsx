@@ -138,7 +138,7 @@ export function DarkSetup() {
                   className="press rounded-card bg-s2 text-text flex min-h-16 cursor-pointer items-center justify-between gap-3 px-[18px] text-left disabled:cursor-default disabled:opacity-60"
                   style={{ border: on ? "2px solid var(--accent-dark)" : "1px solid var(--line)" }}
                 >
-                  <span className="display text-[24px] tracking-normal">{t}</span>
+                  <span className="display text-[22px] tracking-normal">{t}</span>
                   <span className="text-muted text-sm">{on ? "Yes" : "Not yet"}</span>
                 </button>
               );

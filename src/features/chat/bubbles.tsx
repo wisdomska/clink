@@ -347,7 +347,7 @@ export function Bubble({
     content = (
       <div
         className={cn(
-          "border-line text-faint rounded-[20px] border border-dashed px-3.5 py-2.5 text-sm",
+          "border-line text-faint rounded-card border border-dashed px-3.5 py-2.5 text-sm",
           side,
         )}
       >
@@ -487,7 +487,7 @@ export function Bubble({
     content =
       emojiOnly && !replyTarget ? (
         <div
-          className="px-1 text-[40px] leading-[1.15]"
+          className="px-1 text-[36px] leading-[1.15]"
           style={{ opacity: m.local === "sending" ? 0.7 : 1 }}
         >
           {m.body}
@@ -542,7 +542,7 @@ export function Bubble({
     <div
       data-mid={m.id}
       className={cn(
-        "group/msg relative flex flex-col rounded-2xl transition-colors duration-700",
+        "group/msg rounded-ticket relative flex flex-col transition-colors duration-700",
         mine ? "items-end" : "items-start",
         (pos === "middle" || pos === "last") && "-mt-1.5",
         reactions.length > 0 && "mb-3",

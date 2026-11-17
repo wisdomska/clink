@@ -75,7 +75,7 @@ export function ClinkButton({ streak }: { streak: number | null }) {
           />
         </button>
       </div>
-      <div className="display text-[22px] lg:text-[26px]" aria-live="polite">
+      <div className="display text-[22px] lg:text-[28px]" aria-live="polite">
         {clinking ? "Clink!" : "Send a Clink"}
       </div>
       <div className="text-muted text-sm">

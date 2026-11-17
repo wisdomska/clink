@@ -47,7 +47,7 @@ export function GameReactions({ gameId }: { gameId: string }) {
               initial={{ opacity: 0, y: 6, scale: 0.6 }}
               animate={{ opacity: [0, 1, 1, 0], y: [6, 0, -60, -120], scale: [0.6, 1.08, 1, 1] }}
               transition={{ duration: 1.5, ease: [0.23, 1, 0.32, 1], times: [0, 0.2, 0.6, 1] }}
-              className="absolute bottom-0 text-[34px]"
+              className="absolute bottom-0 text-[36px]"
               style={{ left: `${(b.mine ? 30 : 62) + ((b.n * 13) % 14)}%` }}
             >
               {b.emoji}

@@ -290,7 +290,7 @@ test.describe("After Dark (spec section 7 and the must-pass safety tests)", () =
     await a.getByRole("button", { name: "Save" }).click();
     await expect(a.getByText('"the red one, please"')).toBeVisible();
     await a.getByRole("button", { name: "Take back request: from last night" }).click();
-    await expect(a.getByText("Taken back")).toBeVisible();
+    await expect(a.getByText("Taken back", { exact: true })).toBeVisible();
     await expect
       .poll(async () => {
         const r = await (await a.request.get("/api/dark/requests")).json();

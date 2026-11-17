@@ -24,6 +24,7 @@ import { clearUserCaches } from "@/lib/account-scope";
 import { messageToneOn, setMessageTone, playMessageTone } from "@/lib/tones";
 import { asIdentity } from "@/lib/app-identity";
 import { ProfileCard } from "./profile";
+import { Display } from "@/components/ui/heading";
 
 async function patchSettings(body: Record<string, unknown>) {
   const r = await fetch("/api/me/settings", {
@@ -162,7 +163,9 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
       <div className="mx-auto flex w-full max-w-[720px] flex-col gap-4 lg:grid lg:max-w-[1180px] lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start lg:gap-10 2xl:max-w-[1320px] 2xl:grid-cols-[264px_minmax(0,1fr)]">
         <div className="app-topbar topbar-side flex flex-col gap-3 lg:top-6 lg:gap-5">
           <div className="flex min-h-11 items-center">
-            <h1 className="display m-0 text-[28px] leading-[1.15] lg:text-[40px]">Settings</h1>
+            <Display size={28} className="lg:text-[36px]">
+              Settings
+            </Display>
           </div>
           <NavTabs label="Settings sections" tabs={SETTINGS_TABS} vertical />
         </div>

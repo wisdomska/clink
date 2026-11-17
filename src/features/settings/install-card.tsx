@@ -16,7 +16,7 @@ export function InstallCard() {
       aria-labelledby="install-h"
       className="rounded-card border-line bg-s1 flex items-center gap-4 border p-4"
     >
-      <span className="bg-s2 text-accent flex h-12 w-12 flex-none items-center justify-center rounded-2xl">
+      <span className="bg-s2 text-accent rounded-ticket flex h-12 w-12 flex-none items-center justify-center">
         {state === "installed" ? (
           <CheckCircle size={26} weight="fill" aria-hidden />
         ) : (

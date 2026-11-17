@@ -255,7 +255,7 @@ export function LinkScreen({
               <div
                 key={i}
                 aria-hidden
-                className="mono rounded-thumb border-line bg-s1 flex h-16 flex-1 items-center justify-center border text-[30px]"
+                className="mono rounded-thumb border-line bg-s1 flex h-16 flex-1 items-center justify-center border text-[28px]"
                 style={{ opacity: expired ? 0.35 : 1, marginRight: i === 2 ? 8 : 0 }}
               >
                 {ch.trim() ? ch : <span className="an-skel bg-s2 block h-7 w-4 rounded" />}

@@ -179,7 +179,7 @@ export function Deck({ tier }: { tier: string }) {
   const firstNew = cards.findIndex((c) => !c.mine);
 
   return (
-    <main className="an-screen mx-auto flex min-h-dvh max-w-[600px] flex-col gap-4 px-4 pt-[var(--screen-pt)] pb-8 [--screen-pt:calc(env(safe-area-inset-top)+8px)] md:[--screen-pt:2.0rem]">
+    <main className="an-screen mx-auto flex min-h-dvh w-full max-w-[600px] flex-col gap-4 px-4 pt-[var(--screen-pt)] pb-8 [--screen-pt:calc(env(safe-area-inset-top)+8px)] md:[--screen-pt:2.0rem] lg:max-w-[760px]">
       <PageBar
         title={`${tier} deck`}
         back="/dark/home"
@@ -215,7 +215,7 @@ export function Deck({ tier }: { tier: string }) {
 
       {locked && !isLoading ? (
         <div className="an-reveal mt-4 flex flex-col gap-4">
-          <div className="display text-[32px] leading-[1.05]">{tier} isn&apos;t open yet</div>
+          <div className="display text-[28px] leading-[1.05]">{tier} isn&apos;t open yet</div>
           <p className="text-muted m-0 text-base">
             A tier opens only when you both choose it
             {tier === "Unhinged" ? ", and Unhinged needs you both verified" : ""}. Here&apos;s
@@ -237,7 +237,7 @@ export function Deck({ tier }: { tier: string }) {
         </div>
       ) : isLoading || !card ? (
         <div className="mt-2 flex flex-col gap-4" aria-busy>
-          <div className="an-skel rounded-card bg-s2 mx-auto h-[300px] w-full max-w-[380px]" />
+          <div className="an-skel rounded-card bg-s2 mx-auto h-[300px] w-full max-w-[380px] lg:h-[370px] lg:max-w-[440px]" />
           <div className="an-skel bg-s2 h-11 rounded-full" />
         </div>
       ) : (
@@ -251,7 +251,7 @@ export function Deck({ tier }: { tier: string }) {
           {/* The fan: the chosen card in front, its neighbours peeking either side. */}
           <div className="-mx-4 overflow-x-clip px-4 py-2">
             <div
-              className="relative mx-auto h-[290px] w-[78%] max-w-[360px] select-none"
+              className="relative mx-auto h-[290px] w-[78%] max-w-[360px] select-none lg:h-[360px] lg:max-w-[420px]"
               aria-roledescription="carousel"
               aria-label={`${tier} cards`}
             >
@@ -477,10 +477,7 @@ function CardFace({
         <span className="mono text-faint text-xs tabular-nums">No. {n}</span>
       </div>
       <div
-        className={cn(
-          "display leading-[1.12]",
-          card.text.length > 80 ? "text-[19px]" : "text-[23px]",
-        )}
+        className={cn("display leading-[1.12]", card.text.length > 80 ? "text-lg" : "text-[22px]")}
       >
         {card.text}
       </div>
@@ -623,7 +620,7 @@ function DeckStrip({
               aria-current={here || undefined}
               onClick={() => onPick(i)}
               className={cn(
-                "press mono relative flex h-12 w-9 flex-none cursor-pointer snap-center flex-col items-center justify-center rounded-[10px] border text-[11px] tabular-nums transition-transform duration-200",
+                "press mono rounded-thumb relative flex h-12 w-9 flex-none cursor-pointer snap-center flex-col items-center justify-center border text-[11px] tabular-nums transition-transform duration-200",
                 here && "border-ember -translate-y-1",
                 !here && "border-line",
                 st === "both"

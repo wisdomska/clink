@@ -106,7 +106,7 @@ export function CountBadge({ n, label }: { n: number; label: string }) {
     <span
       role="status"
       aria-label={`${n} ${label}`}
-      className="bg-accent text-on-accent mono absolute -top-1 right-0 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] leading-none font-bold shadow-[0_0_0_2px_var(--bg-app)]"
+      className="bg-accent text-on-accent mono absolute -top-1 right-0 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[11px] leading-none font-bold shadow-[0_0_0_2px_var(--bg-app)]"
     >
       {n > 9 ? "9+" : n}
     </span>

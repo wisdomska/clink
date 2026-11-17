@@ -344,7 +344,7 @@ export function CountdownsScreen() {
                 aria-checked={kind === k}
                 onClick={() => pickKind(k)}
                 className={cn(
-                  "press flex min-h-[64px] cursor-pointer flex-col items-center justify-center gap-1 rounded-[14px] border px-1 py-2 text-center text-xs font-semibold transition-colors",
+                  "press rounded-input flex min-h-[64px] cursor-pointer flex-col items-center justify-center gap-1 border px-1 py-2 text-center text-xs font-semibold transition-colors",
                   kind === k
                     ? "border-accent bg-accent/15 text-text"
                     : "border-line bg-s2 text-muted hover:text-text",

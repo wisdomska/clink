@@ -150,7 +150,7 @@ export function DarkHub() {
                   ) : (
                     <LockSimple size={16} className="text-faint flex-none" aria-hidden />
                   )}
-                  <span className={`display text-[24px] ${open ? "" : "text-muted"}`}>{t}</span>
+                  <span className={`display text-[22px] ${open ? "" : "text-muted"}`}>{t}</span>
                 </span>
                 <span className="flex flex-col items-end gap-0.5 text-right">
                   <span className="text-sm font-medium">{STATUS_COPY[st]}</span>

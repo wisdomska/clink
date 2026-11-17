@@ -57,7 +57,7 @@ function Half({ p, now, side }: { p: Person; now: Date; side: "me" | "partner" }
         </span>
         {right && <Icon size={16} aria-label={night ? "Night" : "Day"} />}
       </div>
-      <div className="mono mt-1 text-[36px] leading-[1.2] lg:text-[48px] 2xl:text-[56px]">
+      <div className="mono mt-1 text-[36px] leading-[1.2] lg:text-[48px] 2xl:text-[64px]">
         <time dateTime={now.toISOString()}>{formatClock(now, p.timezone)}</time>
       </div>
       <div className="text-faint text-sm">{w?.temp != null ? `${w.temp}° · ${w.label}` : " "}</div>

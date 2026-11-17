@@ -88,12 +88,12 @@ export function VaultScreen() {
                     <EyeSlash size={20} aria-hidden />
                     <span className="text-[11px] font-medium">Tap to reveal</span>
                   </span>
-                  <span className="mono text-muted absolute top-1.5 right-1.5 text-[10px]">
+                  <span className="mono text-muted absolute top-1.5 right-1.5 text-[11px]">
                     {v.kind === "video"
                       ? `video${v.duration ? ` 0:${String(Math.round(v.duration)).padStart(2, "0")}` : ""}`
                       : "photo"}
                   </span>
-                  <span className="mono text-muted absolute bottom-1.5 left-1.5 text-[10px]">
+                  <span className="mono text-muted absolute bottom-1.5 left-1.5 text-[11px]">
                     {v.retention === "once"
                       ? "once"
                       : v.retention === "vault"

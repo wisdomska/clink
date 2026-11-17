@@ -135,7 +135,7 @@ export function Rail() {
     >
       <Link
         href="/us"
-        className="display rail-word text-text hover:text-text mb-8 px-3 text-[30px]"
+        className="display rail-word text-text hover:text-text mb-8 px-3 text-[28px]"
       >
         <span className="rail-full">
           <Logo size={28} />
@@ -283,7 +283,7 @@ function PartnerRow() {
       href="/chat"
       prefetch
       title={`Chat with ${partner.name}`}
-      className="press bg-s1 border-line text-text hover:text-text hover:bg-s2 mb-6 flex items-center gap-3 rounded-[20px] border p-2.5"
+      className="press bg-s1 border-line text-text hover:text-text hover:bg-s2 rounded-card mb-6 flex items-center gap-3 border p-2.5"
     >
       <span className="relative flex w-11 flex-none items-center justify-center">
         <Avatar

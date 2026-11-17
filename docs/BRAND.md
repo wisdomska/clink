@@ -104,13 +104,43 @@ People can pick their own accent in Settings > Look and feel: Rouge (default), O
 
 Emphasis uses italic or bold of the same family. Never mix in a serif.
 
+### Type scale
+
+Use these sizes and nothing in between. Headings go through `Display` (`src/components/ui/heading.tsx`), never a hand-styled `<h1>`.
+
+| Size   | Where                                  | How                          |
+| ------ | -------------------------------------- | ---------------------------- |
+| 96, 72 | Landing hero only                      | `text-[96px]`, `text-[72px]` |
+| 64     | Big moments (countdown zero, landing)  | `<Display size={64}>`        |
+| 48     | Sign in, celebration screens           | `<Display size={48}>`        |
+| 36     | Screen titles                          | `<Display>` (default)        |
+| 28     | Section titles, big numbers            | `<Display size={28}>`        |
+| 22     | Card titles                            | `<Display size={22}>`        |
+| 18     | Group labels ("Play with photos")      | `SectionTitle` (`text-lg`)   |
+| 16     | Body and inputs, the floor for reading | `text-base`                  |
+| 15     | Secondary lines                        | `text-[15px]`                |
+| 13     | Captions, meta, chips                  | `text-[13px]`                |
+| 11     | Mono labels and count badges           | `mono text-[11px]`           |
+
+Decorative art (the 120px emote burst in live games) is the only exception.
+
 ## 5. Shape
 
-- Interactive controls are pills (`--r-pill`).
-- Cards are 20 to 28px (`--r-card`, home cards use 28px).
-- Inputs 14px, thumbnails 12px.
+- Interactive controls are pills (`rounded-full`).
+- One radius scale, as Tailwind tokens: `rounded-card` 20 (cards, sheets), `rounded-ticket` 16 (tickets, media), `rounded-input` 14 (inputs, tiles in grids), `rounded-thumb` 12 (thumbnails, small tiles), `rounded-flap` 6 (tags, checkboxes). Home hero cards may go to 28.
+- No stock Tailwind radii (`rounded-xl`, `rounded-lg` and so on) and no one-off pixel values, except marks under 12px (3px) and the chat bubble shapes people choose.
 - Chat bubbles round on three corners with a 6px tail corner; people can change the shape.
 - No focus rings or decorative rings around avatars. Focus is shown with a soft accent glow.
+
+### Icons
+
+Phosphor only, one rule for weight:
+
+- **Bold** for every control and inline icon (the default).
+- **Fill** for the selected or active state (the current tab, a liked item).
+- **Duotone** only for big illustrative icons, 28px and up (countdown kinds, landing trust row).
+- **Regular** only for resting tab bar icons, so the active filled one stands out.
+- **Light** only in landing artwork.
 
 ## 6. Motion
 
@@ -131,6 +161,8 @@ Shared pieces:
 - `an-screen`, `an-rise`: screen and list entrances (staggered with `--i`).
 - `.press`: tactile press on every control.
 - Sheets slide on `--ease-drawer`.
+
+Audit (November 2026): every CSS loop is cut to one pass under reduced motion (`globals.css`), the spinner slows down, and `MotionConfig` in `feedback-root.tsx` switches Motion to reduced mode for both the system setting and the in-app switch, which stops the JavaScript loops (live dots, hold-together, call pulse).
 
 ## 7. Voice and tone
 
@@ -202,6 +234,8 @@ Clink is designed phone first and then given room, never stretched.
 Emails are dark, table-based and inline-styled so Gmail, Apple Mail and Outlook all render them; links go through `/auth/callback` with a token hash so they work on any device.
 
 ## 12. Where things live
+
+The live brand sheet is at `/admin/brand`: every swatch, size, radius, icon weight and control there renders from the real tokens and components, so it is the quickest way to check a change.
 
 | Thing          | File                             |
 | -------------- | -------------------------------- |

@@ -244,12 +244,7 @@ export function PresencePair({ now }: { now: Date }) {
               }}
               className="press text-text hover:bg-s3 flex h-14 w-full cursor-pointer items-center gap-3 border-0 bg-transparent px-4 text-left text-base font-medium"
             >
-              <ActionIcon
-                size={20}
-                weight="regular"
-                aria-hidden
-                className="text-accent flex-none"
-              />
+              <ActionIcon size={20} weight="bold" aria-hidden className="text-accent flex-none" />
               <span className="flex-1">{label}</span>
               <CaretRight size={20} aria-hidden className="text-faint flex-none" />
             </button>

@@ -11,7 +11,7 @@ function Flap({ ch, size }: { ch: string; size: "lg" | "md" }) {
       setGen((g) => g + 1);
     }
   }, [ch]);
-  const dims = size === "lg" ? "h-14 w-10 text-[32px]" : "h-[50px] w-9 text-[26px]";
+  const dims = size === "lg" ? "h-14 w-10 text-[28px]" : "h-[50px] w-9 text-[28px]";
   return (
     <div
       key={gen}
@@ -75,7 +75,7 @@ export function EmptyBoard() {
       {[0, 1, 2, 3, 4, 5].map((i) => (
         <div
           key={i}
-          className="mono rounded-flap border-line text-faint flex h-[50px] w-9 items-center justify-center border border-dashed text-[26px]"
+          className="mono rounded-flap border-line text-faint flex h-[50px] w-9 items-center justify-center border border-dashed text-[28px]"
           style={{ marginRight: i === 1 || i === 3 ? 8 : 0 }}
         >
           -

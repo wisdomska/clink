@@ -124,7 +124,7 @@ export function AdminConversation({ userId }: { userId: string }) {
               </span>
               <div
                 className={cn(
-                  "rounded-[16px] px-3 py-2 text-sm [overflow-wrap:anywhere] whitespace-pre-wrap",
+                  "rounded-ticket px-3 py-2 text-sm [overflow-wrap:anywhere] whitespace-pre-wrap",
                   subject ? "bg-s3" : "bg-s1 border-line border",
                 )}
               >
@@ -149,14 +149,14 @@ export function AdminConversation({ userId }: { userId: string }) {
                           key={x.id}
                           src={`/api/admin/media/${x.id}`}
                           alt="Shared photo"
-                          className="mb-1 max-h-60 rounded-xl"
+                          className="rounded-thumb mb-1 max-h-60"
                         />
                       ) : x.kind === "video" ? (
                         <video
                           key={x.id}
                           src={`/api/admin/media/${x.id}`}
                           controls
-                          className="mb-1 max-h-60 rounded-xl"
+                          className="rounded-thumb mb-1 max-h-60"
                         />
                       ) : (
                         <span key={x.id} className="mb-1 flex items-center gap-2">

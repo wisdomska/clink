@@ -86,7 +86,7 @@ function ReportNotes({ id }: { id: string }) {
   return (
     <div className="bg-s2 rounded-input flex flex-col gap-3 p-3">
       {isLoading ? (
-        <div className="an-skel bg-s3 h-10 rounded-md" />
+        <div className="an-skel bg-s3 rounded-flap h-10" />
       ) : data?.notes.length ? (
         <ol className="m-0 flex list-none flex-col gap-2 p-0">
           {data.notes.map((n) => (

@@ -253,7 +253,7 @@ export function TimeField({
   const col = "no-scrollbar flex max-h-[232px] flex-col gap-0.5 overflow-y-auto scroll-py-2 pr-0.5";
   const cell = (on: boolean) =>
     cn(
-      "mono flex h-10 w-16 flex-none cursor-pointer items-center justify-center rounded-[10px] border-0 text-base",
+      "mono flex h-10 w-16 flex-none cursor-pointer items-center justify-center rounded-thumb border-0 text-base",
       on ? "bg-accent text-on-accent font-bold" : "text-text hover:bg-s2 bg-transparent",
     );
   return (

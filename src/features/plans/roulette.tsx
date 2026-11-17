@@ -23,7 +23,7 @@ function ReelRow({ i, y, title }: { i: number; y: MotionValue<number>; title: st
   return (
     <motion.div
       aria-hidden
-      className="display absolute inset-x-0 flex items-center justify-center px-6 text-center text-[26px] leading-none"
+      className="display absolute inset-x-0 flex items-center justify-center px-6 text-center text-[28px] leading-none"
       style={{ top: i * ROW, height: ROW, y, rotateX, opacity, scale }}
     >
       <span className="truncate">{title}</span>

@@ -196,7 +196,7 @@ export function CallScreen({
             dragMomentum={false}
             aria-label={`Show ${partnerName}'s video full screen`}
             onClick={() => setMini(false)}
-            className="fixed right-4 bottom-[calc(var(--chrome-bottom,0px)+16px)] h-44 w-28 cursor-grab overflow-hidden rounded-[14px] border-0 bg-black p-0 shadow-[0_8px_24px_rgba(0,0,0,.45)]"
+            className="rounded-input fixed right-4 bottom-[calc(var(--chrome-bottom,0px)+16px)] h-44 w-28 cursor-grab overflow-hidden border-0 bg-black p-0 shadow-[0_8px_24px_rgba(0,0,0,.45)]"
           >
             <Video stream={remote} className="h-full w-full" />
           </motion.button>
@@ -316,7 +316,7 @@ export function CallScreen({
           {reactions.map((r, i) => (
             <motion.span
               key={r.key}
-              className="absolute bottom-40 text-[44px]"
+              className="absolute bottom-40 text-[48px]"
               style={{ left: `${(r.mine ? 62 : 18) + ((i * 7) % 18)}%` }}
               initial={{ y: 0, opacity: 0, scale: 0.6 }}
               animate={{ y: -320, opacity: [0, 1, 1, 0], scale: [0.6, 1.15, 1, 1] }}
@@ -357,7 +357,7 @@ export function CallScreen({
             />
           </motion.div>
         )}
-        <div className={cn("display", showRemoteVideo ? "text-[22px]" : "text-[34px]")}>
+        <div className={cn("display", showRemoteVideo ? "text-[22px]" : "text-[36px]")}>
           {partnerName}
         </div>
         <div className="flex items-center gap-2 text-base text-white/80" aria-live="polite">
@@ -413,7 +413,7 @@ export function CallScreen({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             className={cn(
-              "absolute overflow-hidden rounded-[14px] shadow-[0_8px_24px_rgba(0,0,0,.35)]",
+              "rounded-input absolute overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,.35)]",
               live || showRemoteVideo
                 ? "top-[calc(env(safe-area-inset-top)+16px)] right-4 z-[2] h-44 w-28 cursor-grab"
                 : "inset-0 rounded-none opacity-40",
@@ -454,7 +454,7 @@ export function CallScreen({
                     type="button"
                     aria-label={`React ${e}`}
                     onClick={() => react(e)}
-                    className="press flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-[26px]"
+                    className="press flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-[28px]"
                   >
                     {e}
                   </button>

@@ -178,7 +178,7 @@ export function SendSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby="send-title"
-        className="an-sheet border-line bg-s1 fixed inset-x-0 bottom-0 z-[61] mx-auto flex max-h-[94dvh] max-w-[560px] flex-col gap-3.5 overflow-y-auto rounded-t-[20px] border-t px-5 pt-5 pb-[calc(32px+env(safe-area-inset-bottom))] md:bottom-6 md:rounded-[20px] md:border"
+        className="an-sheet border-line bg-s1 md:rounded-card fixed inset-x-0 bottom-0 z-[61] mx-auto flex max-h-[94dvh] max-w-[560px] flex-col gap-3.5 overflow-y-auto rounded-t-[20px] border-t px-5 pt-5 pb-[calc(32px+env(safe-area-inset-bottom))] md:bottom-6 md:border"
         style={{ boxShadow: "var(--shadow-sheet)" }}
       >
         <div className="flex items-center justify-between">

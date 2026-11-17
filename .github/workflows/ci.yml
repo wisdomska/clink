@@ -58,6 +58,8 @@ jobs:
       - run: pnpm test:rls
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium
+      - name: ffmpeg (the video send test makes its own clip)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends ffmpeg
       - name: e2e (two partners, mobile, tablet, desktop) and axe
         run: pnpm test:e2e --trace off
       - name: Visual regression (informational)

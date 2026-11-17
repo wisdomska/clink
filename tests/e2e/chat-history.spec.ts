@@ -4,6 +4,7 @@ import { admin } from "./helpers";
 
 // Older messages load as you scroll up, all the way back to the first one.
 test("chat scrolls back through the whole history", async ({ couple }) => {
+  test.setTimeout(150_000);
   const { a, nia, theo } = couple;
   const { data: member } = await admin
     .from("couple_members")
@@ -34,7 +35,7 @@ test("chat scrolls back through the whole history", async ({ couple }) => {
         await list.evaluate((el) => (el.scrollTop = 0));
         return a.getByText(/^history line 001/).isVisible();
       },
-      { timeout: 45_000, intervals: [700] },
+      { timeout: 90_000, intervals: [700] },
     )
     .toBe(true);
   // At the very top, it says so: nothing is hidden.

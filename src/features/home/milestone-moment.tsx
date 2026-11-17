@@ -55,7 +55,7 @@ export function MilestoneMoment() {
       {open && <Confetti count={48} seed={data.source_key!.length} />}
       <Sheet open={open} onOpenChange={setOpen} title={data.title} handle>
         <ConfettiIcon size={40} className="text-accent" aria-hidden />
-        <div className="display text-[32px] leading-[1.05]">{data.title}</div>
+        <div className="display text-[28px] leading-[1.05]">{data.title}</div>
         <p className="text-muted m-0 text-base leading-normal">
           It&apos;s on your timeline. Send a Clink to mark it.
         </p>

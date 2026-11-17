@@ -160,7 +160,7 @@ function Stat({
         {icon}
         {label}
       </span>
-      <span className="mono text-[26px] leading-none tabular-nums">{value}</span>
+      <span className="mono text-[28px] leading-none tabular-nums">{value}</span>
       {sub && <span className="text-faint text-xs">{sub}</span>}
     </div>
   );
@@ -451,7 +451,7 @@ export function UserDetail({ id }: { id: string }) {
                       opacity: c.n ? 1 : 0.2,
                     }}
                   />
-                  <span className="bg-s3 pointer-events-none absolute -top-8 left-1/2 z-10 hidden -translate-x-1/2 rounded-md px-2 py-1 text-[11px] whitespace-nowrap group-hover:block">
+                  <span className="bg-s3 rounded-flap pointer-events-none absolute -top-8 left-1/2 z-10 hidden -translate-x-1/2 px-2 py-1 text-[11px] whitespace-nowrap group-hover:block">
                     {c.day.slice(5)}: {c.n}
                   </span>
                 </div>

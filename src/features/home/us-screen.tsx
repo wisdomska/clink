@@ -102,7 +102,7 @@ export function UsScreen() {
             onPointerDown={wordDown}
             onPointerUp={wordUp}
             onPointerLeave={wordUp}
-            className="display m-0 text-[48px] leading-[1.05] select-none 2xl:text-[56px]"
+            className="display m-0 text-[48px] leading-[1.05] select-none 2xl:text-[64px]"
           >
             Us
           </h1>

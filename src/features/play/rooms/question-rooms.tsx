@@ -272,7 +272,7 @@ export function TriviaRoom({ game }: { game: GameRow }) {
           you {my} · {partner.name} {their}
         </span>
       </div>
-      <h2 className="display mt-3 mb-2 text-[30px] leading-[1.1]">{q.text}</h2>
+      <h2 className="display mt-3 mb-2 text-[28px] leading-[1.1]">{q.text}</h2>
       <div className="flex flex-col gap-2">
         {q.options.map((o, i) => (
           <Option
@@ -357,7 +357,7 @@ export function WyrRoom({ game }: { game: GameRow }) {
         counter={`${String(idx + 1).padStart(2, "0")}/${s.cards.length}`}
         progress={(idx + (reveal ? 1 : 0)) / s.cards.length}
       />
-      <h2 className="display mt-3 text-[30px] leading-[1.1]">Would you rather</h2>
+      <h2 className="display mt-3 text-[28px] leading-[1.1]">Would you rather</h2>
       {!reveal && !waiting && (
         <div className="md:hidden">
           <SwipePick

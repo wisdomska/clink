@@ -168,7 +168,7 @@ export function EmojiPicker({
             }}
             whileHover={{ scale: 1.15, transition: { duration: 0.1 } }}
             whileTap={{ scale: 0.88, transition: { duration: 0.06 } }}
-            className="hover:bg-s2 flex aspect-square cursor-pointer items-center justify-center rounded-xl border-0 bg-transparent text-[26px] leading-none"
+            className="hover:bg-s2 rounded-thumb flex aspect-square cursor-pointer items-center justify-center border-0 bg-transparent text-[28px] leading-none"
           >
             {e}
           </motion.button>

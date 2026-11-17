@@ -838,7 +838,7 @@ export function ChatScreen() {
                     <Coffee size={44} className="text-text" />
                     <Coffee size={44} className="text-accent" style={{ transform: "scaleX(-1)" }} />
                   </div>
-                  <div className="bg-line mt-0.5 h-0.5 w-40 rounded-sm" />
+                  <div className="bg-line rounded-flap mt-0.5 h-0.5 w-40" />
                 </div>
                 <div className="display text-[28px] leading-[1.05]">
                   Say something.
@@ -1019,7 +1019,7 @@ export function ChatScreen() {
                     type="button"
                     onClick={() => sendSticker(id)}
                     aria-label={`Send sticker ${STICKER_LABEL.get(id)}`}
-                    className="press hover:bg-s2 flex aspect-square cursor-pointer items-center justify-center rounded-2xl border-0 bg-transparent p-0"
+                    className="press hover:bg-s2 rounded-ticket flex aspect-square cursor-pointer items-center justify-center border-0 bg-transparent p-0"
                     style={{ ["--i" as string]: i }}
                   >
                     <StickerArt id={id} label={STICKER_LABEL.get(id) ?? ""} size={72} />
@@ -1690,7 +1690,7 @@ function SharedPanel() {
     },
   });
   const action =
-    "press bg-s2 text-text hover:bg-s3 flex flex-col items-center gap-1.5 rounded-[16px] border-0 py-3 text-xs font-semibold cursor-pointer";
+    "press bg-s2 text-text hover:bg-s3 flex flex-col items-center gap-1.5 rounded-ticket border-0 py-3 text-xs font-semibold cursor-pointer";
   return (
     <aside
       className="border-line hidden w-[340px] flex-none flex-col gap-5 overflow-y-auto border-l p-5 xl:flex 2xl:w-[380px] 2xl:p-6"
@@ -1718,7 +1718,7 @@ function SharedPanel() {
             />
           )}
         </span>
-        <span className="display text-[26px] leading-none">{partner.name}</span>
+        <span className="display text-[28px] leading-none">{partner.name}</span>
         <span className="text-muted text-sm">
           {online ? "Online" : "Away"}
           {partner.city ? ` · ${partner.city}` : ""}

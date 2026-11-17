@@ -85,7 +85,7 @@ export function Consent() {
               )}
             >
               <span className="min-w-0">
-                <span className="display block text-[24px] tracking-normal">{t}</span>
+                <span className="display block text-[22px] tracking-normal">{t}</span>
                 <span className="text-muted block text-sm">{BLURB[t]}</span>
               </span>
               <span className="text-muted flex flex-none items-center gap-2 text-sm">

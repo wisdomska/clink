@@ -188,7 +188,7 @@ export function DareWheel() {
               )}
               <div className="rounded-card bg-ember text-on-accent relative h-[170px] w-[250px] overflow-hidden p-[18px]">
                 <div className="mono text-xs">Clink · After Dark</div>
-                <div className="display mt-2.5 text-[40px] leading-none">{spin.tier}</div>
+                <div className="display mt-2.5 text-[36px] leading-none">{spin.tier}</div>
                 <div
                   aria-hidden
                   className="absolute inset-x-0 bottom-0 h-7"

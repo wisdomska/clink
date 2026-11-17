@@ -170,7 +170,7 @@ export function MoodCard() {
       {theirs ? (
         <div
           className={cn(
-            "flex items-center gap-3 rounded-[14px] p-2.5 pr-3",
+            "rounded-input flex items-center gap-3 p-2.5 pr-3",
             HARD.has(theirs.mood) ? "bg-danger/10" : "bg-s2",
           )}
         >
@@ -249,7 +249,7 @@ export function MoodCard() {
                       onClick={() => void choose(m)}
                       whileTap={{ scale: 0.97, transition: { duration: 0.06 } }}
                       className={cn(
-                        "an-rise flex w-[76px] flex-none cursor-pointer flex-col items-center gap-1 rounded-[14px] border-0 px-1 pt-2 pb-2 text-center text-[12px] leading-[1.15] font-semibold transition-colors lg:w-auto",
+                        "an-rise rounded-input flex w-[76px] flex-none cursor-pointer flex-col items-center gap-1 border-0 px-1 pt-2 pb-2 text-center text-[13px] leading-[1.15] font-semibold transition-colors lg:w-auto",
                         on
                           ? "bg-accent/10 text-text shadow-[inset_0_0_0_1.5px_var(--accent)]"
                           : "bg-s2 text-muted hover:bg-s3",

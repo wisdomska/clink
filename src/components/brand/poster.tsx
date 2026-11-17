@@ -65,7 +65,7 @@ export function BrandPoster({
         <LogoMark size={compact ? 30 : 38} decorative />
         <Wordmark size={compact ? 24 : 30} className="text-[#FBF3F6]" />
         {eyebrow && (
-          <span className="ml-1 rounded-md border border-[#4A2A3A] px-2 py-0.5 text-xs font-semibold text-white/75">
+          <span className="rounded-flap ml-1 border border-[#4A2A3A] px-2 py-0.5 text-xs font-semibold text-white/75">
             {eyebrow}
           </span>
         )}
@@ -92,10 +92,10 @@ export function BrandPoster({
               }}
               exit={{ opacity: 0, y: -18, scale: 0.96 }}
               transition={{ type: "spring", stiffness: 260, damping: 28 }}
-              className="flex items-center gap-3 rounded-2xl border border-[#3F2230] bg-[#2A1520] p-3 pr-4"
+              className="rounded-ticket flex items-center gap-3 border border-[#3F2230] bg-[#2A1520] p-3 pr-4"
             >
               <span
-                className="flex h-10 w-10 flex-none items-center justify-center rounded-xl text-[#1A0A10]"
+                className="rounded-thumb flex h-10 w-10 flex-none items-center justify-center text-[#1A0A10]"
                 style={{ background: m.tone }}
               >
                 {m.icon}
@@ -134,7 +134,7 @@ export function BrandPoster({
         </div>
       )}
       {compact && (
-        <div className="display mt-4 text-[26px] leading-[1.05] font-extrabold tracking-[-0.02em]">
+        <div className="display mt-4 text-[28px] leading-[1.05] font-extrabold tracking-[-0.02em]">
           {headline}
         </div>
       )}

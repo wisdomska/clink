@@ -57,7 +57,7 @@ export function useConfirm() {
     >
       {opts && (
         <>
-          <div className="display text-[26px] leading-[1.1]">{opts.title}</div>
+          <div className="display text-[28px] leading-[1.1]">{opts.title}</div>
           <p className="text-muted m-0 text-base leading-normal">{opts.body}</p>
           {opts.reason && (
             <div>
@@ -145,7 +145,7 @@ export function usePrompt() {
             close(value.trim() ? value : null);
           }}
         >
-          <div className="display text-[26px] leading-[1.1]">{opts.title}</div>
+          <div className="display text-[28px] leading-[1.1]">{opts.title}</div>
           <div>
             <Label htmlFor="prompt-value">{opts.label}</Label>
             <textarea

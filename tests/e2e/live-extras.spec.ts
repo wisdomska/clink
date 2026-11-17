@@ -17,7 +17,7 @@ test("countdown on start and live reactions", async ({ couple }) => {
   await expect(a.getByRole("group", { name: "Send a reaction" })).toBeVisible();
   await expect(b.getByRole("group", { name: "Send a reaction" })).toBeVisible();
   // Reactions are fire-and-forget; retry until Theo's live connection has joined.
-  const bubble = b.locator("span.text-\\[34px\\]", { hasText: "🔥" });
+  const bubble = b.locator("span.text-\\[36px\\]", { hasText: "🔥" });
   await expect(async () => {
     await a.getByRole("button", { name: "React 🔥" }).click();
     await expect(bubble).toBeVisible({ timeout: 1400 });

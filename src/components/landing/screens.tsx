@@ -76,7 +76,7 @@ export function ChatScreen() {
         <Phone size={20} className="text-text" />
         <VideoCamera size={20} className="text-text ml-2" />
       </div>
-      <div className="flex flex-1 flex-col justify-end gap-2 overflow-hidden px-3 pb-3 text-[14px] leading-snug">
+      <div className="flex flex-1 flex-col justify-end gap-2 overflow-hidden px-3 pb-3 text-sm leading-snug">
         <div className="bg-s1 border-line text-text max-w-[78%] self-start rounded-[var(--r-bubble-in)] border px-3 py-2">
           Landed. It&apos;s raining, obviously.
         </div>
@@ -194,7 +194,7 @@ export function LetterScreen() {
     <>
       <TopBar title="Time capsule" sub="From Ama" />
       <div className="flex flex-1 flex-col gap-5 overflow-hidden px-4 pt-6 pb-5">
-        <div className="bg-s2 border-line relative aspect-[4/3] overflow-hidden rounded-[16px] border">
+        <div className="bg-s2 border-line rounded-ticket relative aspect-[4/3] overflow-hidden border">
           <div
             className="bg-s3 absolute inset-x-0 top-0 h-[62%]"
             style={{ clipPath: "polygon(0 0,100% 0,50% 100%)" }}
@@ -216,7 +216,7 @@ export function LetterScreen() {
             ["22", "hours"],
             ["46", "mins"],
           ].map(([v, l]) => (
-            <div key={l} className="bg-s1 border-line rounded-[12px] border py-2.5 text-center">
+            <div key={l} className="bg-s1 border-line rounded-thumb border py-2.5 text-center">
               <div className="mono text-text text-2xl leading-none">{v}</div>
               <div className="text-muted mt-1 text-xs">{l}</div>
             </div>

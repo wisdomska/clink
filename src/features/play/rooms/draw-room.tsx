@@ -325,7 +325,7 @@ export function DrawRoom({ game }: { game: GameRow }) {
                   ? `You got it in ${reveal.seconds} s`
                   : "Time's up. The word was"}
             </span>
-            <span className="display text-accent text-[44px] leading-none break-words">
+            <span className="display text-accent text-[48px] leading-none break-words">
               {reveal.word}
             </span>
             <span className="text-faint mt-2 text-xs">Tap to carry on</span>

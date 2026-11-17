@@ -46,7 +46,7 @@ function Highlight({ text, q }: { text: string; q: string }) {
   return (
     <>
       {text.slice(0, i)}
-      <mark className="bg-accent/25 text-text rounded-sm px-0.5">
+      <mark className="bg-accent/25 text-text rounded-flap px-0.5">
         {text.slice(i, i + q.length)}
       </mark>
       {text.slice(i + q.length)}

@@ -17,6 +17,7 @@ import { Input, Label, FieldError } from "@/components/ui/field";
 import { feedback } from "@/lib/feedback";
 import { cn } from "@/components/ui/cn";
 import { BrandPoster, type Moment } from "@/components/brand/poster";
+import { Display } from "@/components/ui/heading";
 
 const REMEMBER = "clink.adminEmail";
 
@@ -147,7 +148,7 @@ export function AdminLogin({ next }: { next: string }) {
           }}
         >
           <div className="flex flex-col gap-2">
-            <h1 className="display m-0 text-[40px] leading-[1.05]">Admin sign in</h1>
+            <Display>Admin sign in</Display>
             <p className="text-muted m-0 text-sm">
               Separate from your Clink account. Signing in here doesn&apos;t sign you into the app.
             </p>
@@ -156,7 +157,7 @@ export function AdminLogin({ next }: { next: string }) {
           {locked && (
             <div
               role="alert"
-              className="bg-danger/12 text-danger flex items-start gap-2 rounded-2xl p-3 text-sm"
+              className="bg-danger/12 text-danger rounded-ticket flex items-start gap-2 p-3 text-sm"
             >
               <LockKey size={18} className="mt-0.5 flex-none" aria-hidden />
               Too many tries, so this login is paused for 15 minutes. Try again after that. Every

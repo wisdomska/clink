@@ -77,7 +77,7 @@ export function Sheet({
             style={{ y, boxShadow: "var(--shadow-sheet)" }}
             className={cn(
               "an-sheet border-line bg-s1 fixed inset-x-0 bottom-0 z-[61] flex max-h-[92dvh] flex-col gap-4 overflow-y-auto overscroll-contain rounded-t-[20px] border-t px-5 pt-6 pb-[calc(36px+env(safe-area-inset-bottom))] outline-none [&>*]:flex-none",
-              "md:inset-x-auto md:top-1/2 md:bottom-auto md:left-1/2 md:w-[440px] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-[20px] md:border md:pb-8",
+              "md:rounded-card md:inset-x-auto md:top-1/2 md:bottom-auto md:left-1/2 md:w-[440px] md:-translate-x-1/2 md:-translate-y-1/2 md:border md:pb-8",
               className,
             )}
           >

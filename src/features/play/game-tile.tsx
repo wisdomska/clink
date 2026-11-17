@@ -57,7 +57,7 @@ export function GameTile({
         )}
       />
       <span className={cn("relative flex min-w-0 flex-col gap-1", hero && "order-1")}>
-        <span className={cn("leading-[1.15] font-bold", hero ? "text-[22px]" : "text-[16px]")}>
+        <span className={cn("leading-[1.15] font-bold", hero ? "text-[22px]" : "text-base")}>
           {name}
         </span>
         <span className="text-muted text-[13px]">{meta}</span>

@@ -19,6 +19,7 @@ const ALLOWED = [
   "src/features/play/rooms/turn-rooms.tsx", // canvas export of your story
   "src/features/dark/wheel.tsx", // the matchbook illustration
   "src/features/admin/login.tsx", // poster art
+  "src/features/admin/brand.tsx", // the brand sheet labels each token with its hex
   "src/app/layout.tsx", // theme-color meta for the browser chrome
 ];
 

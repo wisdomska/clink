@@ -390,7 +390,7 @@ export function HoldInvite() {
           initial={reduced ? { opacity: 0 } : { opacity: 0, y: -24 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: reduced ? 0 : -16 }}
-          className="border-line bg-s1 fixed inset-x-3 top-[calc(env(safe-area-inset-top)+10px)] z-[31] mx-auto flex max-w-[480px] items-center gap-3 rounded-[24px] border p-3 pl-4 shadow-[var(--shadow-float)]"
+          className="border-line bg-s1 rounded-card fixed inset-x-3 top-[calc(env(safe-area-inset-top)+10px)] z-[31] mx-auto flex max-w-[480px] items-center gap-3 border p-3 pl-4 shadow-[var(--shadow-float)]"
         >
           <motion.span
             className="flex-none"

@@ -8,6 +8,7 @@ import { IconButton } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { PinPad, PinDots } from "./pin-pad";
 import { useDarkState, darkFetch } from "./api";
+import { Display } from "@/components/ui/heading";
 
 /** /dark: PIN, passkey, wrong PIN, locked out (DARK-01). 5 tries, then 15 minutes. */
 export function LockScreen() {
@@ -113,7 +114,7 @@ export function LockScreen() {
         <X size={20} />
       </IconButton>
       <Moon size={36} className="text-ember mt-3" aria-hidden />
-      <h1 className="display mt-2.5 mb-0 text-[36px]">After Dark</h1>
+      <Display className="mt-2.5">After Dark</Display>
       {lockedUntil ? (
         <div
           className="an-reveal flex flex-1 flex-col items-center justify-center gap-3 text-center"

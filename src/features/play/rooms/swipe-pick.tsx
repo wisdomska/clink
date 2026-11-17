@@ -69,7 +69,7 @@ export function SwipePick({
       >
         <motion.span
           style={{ opacity: aOpacity }}
-          className="border-accent text-accent max-w-[45%] -rotate-6 rounded-lg border-2 px-2 py-1 text-sm font-bold"
+          className="border-accent text-accent rounded-thumb max-w-[45%] -rotate-6 border-2 px-2 py-1 text-sm font-bold"
         >
           {a}
         </motion.span>
@@ -79,7 +79,7 @@ export function SwipePick({
         </span>
         <motion.span
           style={{ opacity: bOpacity, borderColor: "var(--partner-b)", color: "var(--partner-b)" }}
-          className="max-w-[45%] rotate-6 rounded-lg border-2 px-2 py-1 text-right text-sm font-bold"
+          className="rounded-thumb max-w-[45%] rotate-6 border-2 px-2 py-1 text-right text-sm font-bold"
         >
           {b}
         </motion.span>

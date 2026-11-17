@@ -207,7 +207,7 @@ export function CalendarScreen() {
                             }`}
                             onClick={() => select(key)}
                             className={cn(
-                              "relative flex h-12 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border text-sm transition-colors sm:h-14 lg:h-24 lg:items-stretch lg:justify-start lg:gap-1.5 lg:p-2 lg:text-left 2xl:h-28",
+                              "rounded-thumb relative flex h-12 w-full cursor-pointer flex-col items-center justify-center gap-1 border text-sm transition-colors sm:h-14 lg:h-24 lg:items-stretch lg:justify-start lg:gap-1.5 lg:p-2 lg:text-left 2xl:h-28",
                               isSel
                                 ? "bg-accent text-on-accent border-transparent font-bold"
                                 : isToday

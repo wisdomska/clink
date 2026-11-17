@@ -202,7 +202,7 @@ export function RpsRoom({ game }: { game: GameRow }) {
               initial={{ opacity: 0.01, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <div className="display text-[30px] leading-[1.1]">
+              <div className="display text-[28px] leading-[1.1]">
                 {thrown ? <>Locked in.</> : <>Rock, paper, scissors...</>}
               </div>
               {thrown && <WaitingOn text={`Waiting on ${partner.name}`} />}
@@ -210,7 +210,7 @@ export function RpsRoom({ game }: { game: GameRow }) {
           )}
         </AnimatePresence>
         {revealing && (
-          <div className="display absolute bottom-0 text-[24px]" aria-live="polite">
+          <div className="display absolute bottom-0 text-[22px]" aria-live="polite">
             {revealing.winner === me.id ? (
               <>You take it</>
             ) : revealing.winner ? (
@@ -277,7 +277,7 @@ export function SnapRoom({ game }: { game: GameRow }) {
       />
       <Scoreline mine={s.scores[me.id] ?? 0} theirs={s.scores[partner.id] ?? 0} />
       <div className="text-faint mt-2 text-xs">The prompt</div>
-      <h2 className="display m-0 text-[32px] leading-[1.08]">{s.prompts[s.index]}</h2>
+      <h2 className="display m-0 text-[28px] leading-[1.08]">{s.prompts[s.index]}</h2>
 
       {s.phase === "shoot" ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
@@ -433,7 +433,7 @@ export function ZoomRoom({ game }: { game: GameRow }) {
             alt={rr.answer ?? ""}
             className="rounded-card max-h-[46dvh] object-contain"
           />
-          <div className="display text-[30px] leading-[1.1]">
+          <div className="display text-[28px] leading-[1.1]">
             {rr.solved ? <>Got it: {rr.answer}</> : <>It was {rr.answer}</>}
           </div>
         </div>
@@ -457,7 +457,7 @@ export function ZoomRoom({ game }: { game: GameRow }) {
     return (
       <>
         {header}
-        <h2 className="display m-0 text-[30px] leading-[1.1]">
+        <h2 className="display m-0 text-[28px] leading-[1.1]">
           Pick a photo for {partner.name} to guess
         </h2>
         <input
@@ -496,7 +496,7 @@ export function ZoomRoom({ game }: { game: GameRow }) {
               />
               <span
                 aria-hidden
-                className="bg-accent/30 absolute h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-2xl shadow-[0_0_0_9999px_rgba(0,0,0,.45)]"
+                className="bg-accent/30 rounded-ticket absolute h-16 w-16 -translate-x-1/2 -translate-y-1/2 shadow-[0_0_0_9999px_rgba(0,0,0,.45)]"
                 style={{ left: `${focus.x * 100}%`, top: `${focus.y * 100}%` }}
               />
             </button>

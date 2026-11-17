@@ -190,7 +190,7 @@ export function KitDetail({ id }: { id: string }) {
         </h2>
         <div className="rounded-card border-line bg-s1 divide-line flex flex-col divide-y border">
           {prompts.map((p, i) => (
-            <p key={i} className="display m-0 p-4 text-[20px] leading-[1.2] tracking-normal">
+            <p key={i} className="display m-0 p-4 text-xl leading-[1.2] tracking-normal">
               {p}
             </p>
           ))}

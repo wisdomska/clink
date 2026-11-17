@@ -208,21 +208,21 @@ export function MediaComposer({
               src={it.url}
               controls
               playsInline
-              className="max-h-[62dvh] max-w-full rounded-2xl"
+              className="rounded-ticket max-h-[62dvh] max-w-full"
             />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={it.url}
               alt={`Photo ${active + 1} of ${items.length}`}
-              className="max-h-[62dvh] max-w-full rounded-2xl object-contain transition-[filter,transform] duration-300"
+              className="rounded-ticket max-h-[62dvh] max-w-full object-contain transition-[filter,transform] duration-300"
               style={{ filter: filterCss, transform: `rotate(${it.rotate}deg)` }}
             />
           )}
           {it.text.trim() && !it.video && (
             <div
               onPointerDown={dragText}
-              className="absolute -translate-x-1/2 -translate-y-1/2 cursor-grab touch-none px-2 text-center text-[26px] leading-tight font-extrabold whitespace-pre select-none"
+              className="absolute -translate-x-1/2 -translate-y-1/2 cursor-grab touch-none px-2 text-center text-[28px] leading-tight font-extrabold whitespace-pre select-none"
               style={{
                 left: `${it.tx * 100}%`,
                 top: `${it.ty * 100}%`,
@@ -266,7 +266,7 @@ export function MediaComposer({
                   src={it.url}
                   alt=""
                   className={cn(
-                    "h-14 w-14 rounded-xl object-cover transition-transform",
+                    "rounded-thumb h-14 w-14 object-cover transition-transform",
                     it.filter === f.key
                       ? "outline-2 outline-offset-2 outline-[var(--accent)] outline-solid"
                       : "",
@@ -326,7 +326,7 @@ export function MediaComposer({
               aria-current={i === active}
               onClick={() => setActive(i)}
               className={cn(
-                "block h-14 w-14 cursor-pointer overflow-hidden rounded-xl border-0 p-0 transition-transform",
+                "rounded-thumb block h-14 w-14 cursor-pointer overflow-hidden border-0 p-0 transition-transform",
                 i === active
                   ? "outline-2 outline-offset-2 outline-[var(--accent)] outline-solid"
                   : "opacity-70",
@@ -368,7 +368,7 @@ export function MediaComposer({
             type="button"
             aria-label="Add more"
             onClick={() => addRef.current?.click()}
-            className="flex h-14 w-14 flex-none cursor-pointer items-center justify-center rounded-xl border border-dashed border-white/30 bg-transparent text-white/80"
+            className="rounded-thumb flex h-14 w-14 flex-none cursor-pointer items-center justify-center border border-dashed border-white/30 bg-transparent text-white/80"
           >
             <Plus size={22} />
           </button>

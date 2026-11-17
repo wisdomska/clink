@@ -111,7 +111,7 @@ export function RequestScreen() {
   }
 
   return (
-    <main className="an-screen mx-auto flex min-h-dvh max-w-[560px] flex-col gap-6 px-4 pt-[var(--screen-pt)] pb-10 [--screen-pt:calc(env(safe-area-inset-top)+8px)] md:[--screen-pt:2.0rem]">
+    <main className="an-screen mx-auto flex min-h-dvh w-full max-w-[560px] flex-col gap-6 px-4 pt-[var(--screen-pt)] pb-10 [--screen-pt:calc(env(safe-area-inset-top)+8px)] md:[--screen-pt:2.0rem] lg:max-w-[1040px]">
       <PageBar title="Requests" back="/dark/home" />
 
       {isLoading ? (
@@ -120,7 +120,7 @@ export function RequestScreen() {
           <div className="an-skel rounded-card bg-s2 h-20" />
         </div>
       ) : !unhinged ? (
-        <section className="flex flex-col gap-4">
+        <section className="flex max-w-[560px] flex-col gap-4">
           <h2 className="display m-0 text-[28px] leading-[1.1]">Ask for something</h2>
           <p className="text-muted m-0 text-base leading-normal">
             Requests open with Unhinged, once you&apos;ve both opted in and both verified
@@ -135,64 +135,66 @@ export function RequestScreen() {
           </Button>
         </section>
       ) : (
-        <>
-          {forYou.length > 0 && (
-            <section className="flex flex-col gap-3" aria-labelledby="for-you">
-              <h2 id="for-you" className="m-0 text-lg font-bold">
-                From {partner.name}
-              </h2>
-              {forYou.map((r) => (
-                <IncomingCard
-                  key={r.id}
-                  note={r.note}
-                  status={r.status}
-                  at={r.created_at}
-                  answered={answered[r.id]}
-                  partner={partner.name}
-                  onRespond={(resp) => respond(r.id, resp)}
-                  onSend={() => setSendFor(r.id)}
-                />
-              ))}
-            </section>
-          )}
-
-          <section className="flex flex-col gap-3" aria-labelledby="ask">
-            <h2 id="ask" className="display m-0 text-[26px] leading-[1.1]">
-              Ask for something
-            </h2>
-            {coolingDown ? (
-              <p className="rounded-input bg-s2 text-muted m-0 p-3.5 text-sm leading-normal">
-                {partner.name} said not right now, so new requests pause for a little while. No
-                pressure either way.
-              </p>
-            ) : open.length >= maxOpen ? (
-              <p className="rounded-input bg-s2 text-muted m-0 p-3.5 text-sm leading-normal">
-                {maxOpen} are waiting with {partner.name}. Give them a moment, or take one back.
-              </p>
-            ) : (
-              <form
-                className="flex flex-col gap-2"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void sendRequest();
-                }}
-              >
-                <Input
-                  aria-label="A short note (optional)"
-                  placeholder={DEFAULT_NOTE}
-                  value={note}
-                  maxLength={120}
-                  onChange={(e) => setNote(e.target.value)}
-                />
-                <Button type="submit" loading={sending}>
-                  Send request
-                </Button>
-                <p className="text-faint m-0 text-xs">
-                  {partner.name} sees your note blurred until they open it. No reminders, ever.
-                </p>
-              </form>
+        <div className="grid gap-6 lg:grid-cols-2 lg:items-start lg:gap-10">
+          <div className="flex min-w-0 flex-col gap-6">
+            {forYou.length > 0 && (
+              <section className="flex flex-col gap-3" aria-labelledby="for-you">
+                <h2 id="for-you" className="m-0 text-lg font-bold">
+                  From {partner.name}
+                </h2>
+                {forYou.map((r) => (
+                  <IncomingCard
+                    key={r.id}
+                    note={r.note}
+                    status={r.status}
+                    at={r.created_at}
+                    answered={answered[r.id]}
+                    partner={partner.name}
+                    onRespond={(resp) => respond(r.id, resp)}
+                    onSend={() => setSendFor(r.id)}
+                  />
+                ))}
+              </section>
             )}
-          </section>
+
+            <section className="flex flex-col gap-3" aria-labelledby="ask">
+              <h2 id="ask" className="display m-0 text-[28px] leading-[1.1]">
+                Ask for something
+              </h2>
+              {coolingDown ? (
+                <p className="rounded-input bg-s2 text-muted m-0 p-3.5 text-sm leading-normal">
+                  {partner.name} said not right now, so new requests pause for a little while. No
+                  pressure either way.
+                </p>
+              ) : open.length >= maxOpen ? (
+                <p className="rounded-input bg-s2 text-muted m-0 p-3.5 text-sm leading-normal">
+                  {maxOpen} are waiting with {partner.name}. Give them a moment, or take one back.
+                </p>
+              ) : (
+                <form
+                  className="flex flex-col gap-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void sendRequest();
+                  }}
+                >
+                  <Input
+                    aria-label="A short note (optional)"
+                    placeholder={DEFAULT_NOTE}
+                    value={note}
+                    maxLength={120}
+                    onChange={(e) => setNote(e.target.value)}
+                  />
+                  <Button type="submit" loading={sending}>
+                    Send request
+                  </Button>
+                  <p className="text-faint m-0 text-xs">
+                    {partner.name} sees your note blurred until they open it. No reminders, ever.
+                  </p>
+                </form>
+              )}
+            </section>
+          </div>
 
           {mine.length > 0 && (
             <section className="flex flex-col gap-2" aria-labelledby="you-sent">
@@ -206,7 +208,7 @@ export function RequestScreen() {
               </ul>
             </section>
           )}
-        </>
+        </div>
       )}
 
       <SendSheet

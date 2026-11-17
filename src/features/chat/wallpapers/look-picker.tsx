@@ -146,7 +146,7 @@ export function LookPicker({ look, onChange }: { look: Look; onChange: (next: Lo
                       {on && <Badge />}
                       <span className="h-3.5 w-9 self-start" style={bubble(false)} />
                       <span
-                        className="self-end px-2 py-px text-[10px] leading-[14px] font-bold"
+                        className="self-end px-2 py-px text-[11px] leading-[14px] font-bold"
                         style={bubble(true)}
                       >
                         hey

@@ -80,7 +80,7 @@ function Fact({
   value: React.ReactNode;
 }) {
   return (
-    <div className="bg-s2 flex flex-col gap-1 rounded-[14px] p-3">
+    <div className="bg-s2 rounded-input flex flex-col gap-1 p-3">
       <span className="text-muted flex items-center gap-1.5 text-xs font-medium">
         {icon}
         {label}
@@ -142,7 +142,7 @@ export function PartnerSheetProvider({ children }: { children: React.ReactNode }
               />
             )}
           </div>
-          <div className="display text-[30px] leading-none">{partner.name}</div>
+          <div className="display text-[28px] leading-none">{partner.name}</div>
           {me.nickname && (
             <div className="text-muted text-sm">You call them &ldquo;{me.nickname}&rdquo;</div>
           )}
@@ -192,7 +192,7 @@ export function PartnerSheetProvider({ children }: { children: React.ReactNode }
                 setOpen(false);
                 a.onClick();
               }}
-              className="press bg-s2 text-text flex cursor-pointer flex-col items-center gap-1 rounded-[14px] border-0 py-3 text-xs font-semibold"
+              className="press bg-s2 text-text rounded-input flex cursor-pointer flex-col items-center gap-1 border-0 py-3 text-xs font-semibold"
             >
               <span className="text-accent">{a.icon}</span>
               {a.label}
@@ -248,7 +248,7 @@ export function PartnerSheetProvider({ children }: { children: React.ReactNode }
           )}
         </div>
         {mood?.note && (
-          <div className="bg-s2 text-muted rounded-[14px] p-3 text-sm">
+          <div className="bg-s2 text-muted rounded-input p-3 text-sm">
             Latest mood note: &ldquo;{mood.note}&rdquo;
           </div>
         )}

@@ -74,7 +74,7 @@ export function MediaGallery() {
       {isLoading ? (
         <div className="grid grid-cols-3 gap-1 md:grid-cols-5">
           {Array.from({ length: 9 }, (_, i) => (
-            <div key={i} className="an-skel bg-s2 aspect-square rounded-lg" />
+            <div key={i} className="an-skel bg-s2 rounded-thumb aspect-square" />
           ))}
         </div>
       ) : isError && !items.length ? (
@@ -95,7 +95,7 @@ export function MediaGallery() {
                   key={m.id}
                   href={`/chat/media/${m.id}`}
                   aria-label={m.kind === "video" ? "Video" : "Photo"}
-                  className="stripe relative block aspect-square overflow-hidden rounded-lg"
+                  className="stripe rounded-thumb relative block aspect-square overflow-hidden"
                 >
                   {m.kind === "video" ? (
                     <>
@@ -144,7 +144,7 @@ export function MediaGallery() {
               className="grid grid-cols-3 gap-1 md:grid-cols-5"
             >
               {Array.from({ length: 6 }, (_, i) => (
-                <div key={i} className="an-skel bg-s2 aspect-square rounded-lg" />
+                <div key={i} className="an-skel bg-s2 rounded-thumb aspect-square" />
               ))}
             </div>
           )}

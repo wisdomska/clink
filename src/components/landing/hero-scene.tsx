@@ -51,7 +51,7 @@ export function HeroScene() {
             )}
           >
             <div className={cn("flex flex-col gap-1", right && "items-end")}>
-              <span className="display text-text text-[24px] leading-none sm:text-[32px] lg:text-[40px]">
+              <span className="display text-text text-[22px] leading-none sm:text-[28px] lg:text-[36px]">
                 {c.place}
               </span>
               <span className="mono text-muted text-sm sm:text-base">
@@ -72,7 +72,7 @@ export function HeroScene() {
                   right ? "-mr-2" : "-ml-2",
                 )}
               />
-              <span className="text-text text-[22px] leading-tight font-bold sm:text-[28px] lg:text-[32px]">
+              <span className="text-text text-[22px] leading-tight font-bold sm:text-[28px] lg:text-[28px]">
                 {c.name}
               </span>
               <span className="border-line bg-s2 text-text mt-2 rounded-full border px-3 py-1 text-xs font-semibold whitespace-nowrap sm:text-sm">

@@ -40,7 +40,7 @@ function Cell({
       <div>
         <h3
           className={cn(
-            "display m-0 text-[26px] leading-[1.05] tracking-[-0.02em] md:text-[30px]",
+            "display m-0 text-[28px] leading-[1.05] tracking-[-0.02em] md:text-[28px]",
             tone === "accent" ? "text-on-accent" : "text-text",
           )}
         >
@@ -61,7 +61,7 @@ function Cell({
 
 function Flap({ ch }: { ch: string }) {
   return (
-    <span className="mono rounded-flap flex h-[60px] w-[44px] items-center justify-center bg-[var(--on-accent)] text-[34px] text-[var(--blush)] md:h-[72px] md:w-[52px] md:text-[42px]">
+    <span className="mono rounded-flap flex h-[60px] w-[44px] items-center justify-center bg-[var(--on-accent)] text-[36px] text-[var(--blush)] md:h-[72px] md:w-[52px] md:text-[48px]">
       {ch}
     </span>
   );
@@ -78,7 +78,7 @@ export function FeatureBento() {
         body="Voice and video, one tap from your chat. Missed one? It waits for you, with a way to call straight back."
       >
         <div aria-hidden className="relative flex flex-1 items-center justify-center pt-4">
-          <div className="bg-app border-line relative w-full max-w-[420px] overflow-hidden rounded-[16px] border">
+          <div className="bg-app border-line rounded-ticket relative w-full max-w-[420px] overflow-hidden border">
             <div className="grid aspect-[16/10] grid-cols-2">
               <div className="flex items-center justify-center bg-[var(--bg-night)]">
                 <Image

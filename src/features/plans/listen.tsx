@@ -86,7 +86,7 @@ function RowSkeleton() {
   return (
     <li aria-hidden className="flex items-center gap-3 px-4 py-3">
       <Skeleton className="h-2.5 w-2.5 rounded-full" />
-      <Skeleton className="h-4 flex-1 rounded-md" />
+      <Skeleton className="rounded-flap h-4 flex-1" />
       <Skeleton className="h-6 w-6 rounded-full" />
     </li>
   );

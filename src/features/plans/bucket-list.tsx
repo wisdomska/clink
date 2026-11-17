@@ -72,7 +72,7 @@ function DoneBox({
       <span
         aria-hidden
         className={cn(
-          "flex h-6 w-6 items-center justify-center rounded-[7px] border-[1.5px] transition-colors duration-150",
+          "rounded-flap flex h-6 w-6 items-center justify-center border-[1.5px] transition-colors duration-150",
           checked
             ? "bg-accent border-accent text-on-accent"
             : "border-line-strong group-hover:border-accent bg-transparent",
@@ -101,10 +101,10 @@ function SkeletonRows({ n = 3 }: { n?: number }) {
     <>
       {Array.from({ length: n }, (_, k) => (
         <li key={k} aria-hidden className="flex items-center gap-3 p-3">
-          <Skeleton className="h-6 w-6 flex-none rounded-[7px]" />
+          <Skeleton className="rounded-flap h-6 w-6 flex-none" />
           <span className="flex flex-1 flex-col gap-1.5">
-            <Skeleton className="h-4 w-3/5 rounded-md" />
-            <Skeleton className="h-3 w-1/4 rounded-md" />
+            <Skeleton className="rounded-flap h-4 w-3/5" />
+            <Skeleton className="rounded-flap h-3 w-1/4" />
           </span>
         </li>
       ))}

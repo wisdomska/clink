@@ -9,6 +9,7 @@ import {
   ChartBar,
   Flag,
   ListMagnifyingGlass,
+  Palette,
   MagnifyingGlass,
   SlidersHorizontal,
   User,
@@ -24,6 +25,7 @@ const PAGES = [
   { href: "/admin/content", label: "Content library", keys: "g c", Icon: Books },
   { href: "/admin/settings", label: "Settings", keys: "g s", Icon: SlidersHorizontal },
   { href: "/admin/audit", label: "Audit log", keys: "g a", Icon: ListMagnifyingGlass },
+  { href: "/admin/brand", label: "Brand", keys: "g b", Icon: Palette },
 ] as const;
 const GO: Record<string, string> = Object.fromEntries(
   PAGES.map((p) => [p.keys.split(" ")[1]!, p.href]),
@@ -60,7 +62,7 @@ function typing(t: EventTarget | null) {
 }
 
 const panel =
-  "border-line bg-s1 fixed top-[12dvh] left-1/2 z-[61] flex max-h-[76dvh] w-[calc(100vw-32px)] max-w-[600px] -translate-x-1/2 flex-col overflow-hidden rounded-[20px] border shadow-[0_8px_24px_rgba(0,0,0,.35)] outline-none";
+  "border-line bg-s1 fixed top-[12dvh] left-1/2 z-[61] flex max-h-[76dvh] w-[calc(100vw-32px)] max-w-[600px] -translate-x-1/2 flex-col overflow-hidden rounded-card border shadow-[0_8px_24px_rgba(0,0,0,.35)] outline-none";
 
 /**
  * The admin shell's keyboard layer: Ctrl/Cmd+K command palette (jump to a page
@@ -199,7 +201,7 @@ export function AdminCommands({ trigger }: { trigger?: (open: () => void) => Rea
                 }}
                 className="text-text h-14 min-w-0 flex-1 bg-transparent text-base outline-none focus-visible:shadow-none"
               />
-              <kbd className="border-line text-faint mono rounded-md border px-1.5 py-0.5 text-[11px]">
+              <kbd className="border-line text-faint mono rounded-flap border px-1.5 py-0.5 text-[11px]">
                 Esc
               </kbd>
             </div>
@@ -265,7 +267,7 @@ export function AdminCommands({ trigger }: { trigger?: (open: () => void) => Rea
                 <div key={k} className="flex items-center justify-between gap-4 py-2 text-sm">
                   <dt className="text-muted">{v}</dt>
                   <dd className="m-0">
-                    <kbd className="border-line mono rounded-md border px-2 py-0.5 text-xs">
+                    <kbd className="border-line mono rounded-flap border px-2 py-0.5 text-xs">
                       {k}
                     </kbd>
                   </dd>

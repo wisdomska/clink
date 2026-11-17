@@ -102,7 +102,7 @@ export function WordRoom({ game }: { game: GameRow }) {
               }
               aria-pressed={on}
               aria-label={`${t}${on ? `, letter ${path.indexOf(i) + 1}` : ""}`}
-              className="flap mono rounded-flap flex aspect-square cursor-pointer items-center justify-center text-[30px] disabled:cursor-default"
+              className="flap mono rounded-flap flex aspect-square cursor-pointer items-center justify-center text-[28px] disabled:cursor-default"
               style={{
                 border: on ? "2px solid var(--accent)" : "1px solid var(--line)",
                 color: on
@@ -258,7 +258,7 @@ export function StoryRoom({ game }: { game: GameRow }) {
         {all.map((l, i) => (
           <p
             key={i}
-            className="m-0 flex gap-2.5 text-[17px] leading-[1.5]"
+            className="m-0 flex gap-2.5 text-lg leading-[1.5]"
             style={{ color: l.by === "" ? "var(--text-muted)" : "var(--text)" }}
           >
             {l.by && (

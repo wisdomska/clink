@@ -20,7 +20,7 @@ export function TicketStub({
       <div className="absolute inset-0 flex">
         <div className="bg-s2 rounded-l-card flex flex-1 flex-col justify-between p-[18px] md:p-6">
           <div className="mono text-muted text-xs">{label}</div>
-          <div className="display text-[36px] leading-none md:text-[44px]">{title}</div>
+          <div className="display text-[36px] leading-none md:text-[48px]">{title}</div>
           <div className="mono text-text flex flex-wrap gap-3 text-[13px]">{times}</div>
         </div>
         <div className="border-app relative w-0 border-l-2 border-dashed" aria-hidden>

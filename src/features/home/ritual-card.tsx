@@ -88,13 +88,13 @@ export function RitualCard() {
       </h2>
       {mine && theirs ? (
         <div className="an-reveal grid grid-cols-2 gap-1.5">
-          <div className="bg-s2 flex flex-col gap-2 rounded-[14px] p-3.5">
+          <div className="bg-s2 rounded-input flex flex-col gap-2 p-3.5">
             <span className="text-muted flex items-center gap-1.5 text-xs font-semibold">
               <PartnerMark who="a" /> You
             </span>
             <span className="text-base leading-[1.4]">{mine.answer}</span>
           </div>
-          <div className="bg-s2 flex flex-col gap-2 rounded-[14px] p-3.5">
+          <div className="bg-s2 rounded-input flex flex-col gap-2 p-3.5">
             <span className="text-muted flex items-center gap-1.5 text-xs font-semibold">
               <PartnerMark who="b" /> {partner.name}
             </span>

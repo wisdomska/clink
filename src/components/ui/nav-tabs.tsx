@@ -63,7 +63,7 @@ export function NavTabs<T extends string>({
       className={cn(
         "no-scrollbar border-line bg-s1 -mx-1 flex max-w-full gap-1 overflow-x-auto rounded-full border p-1",
         vertical &&
-          "lg:mx-0 lg:flex-col lg:overflow-visible lg:rounded-[22px] lg:border-0 lg:bg-transparent lg:p-0",
+          "lg:rounded-card lg:mx-0 lg:flex-col lg:overflow-visible lg:border-0 lg:bg-transparent lg:p-0",
         className,
       )}
       onKeyDown={(e) => {

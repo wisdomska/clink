@@ -12,6 +12,7 @@ import {
   Books,
   SlidersHorizontal,
   ListMagnifyingGlass,
+  Palette,
   List,
   MagnifyingGlass,
   X,
@@ -28,6 +29,7 @@ const ITEMS = [
   { href: "/admin/content", label: "Content library", Icon: Books },
   { href: "/admin/settings", label: "Settings", Icon: SlidersHorizontal },
   { href: "/admin/audit", label: "Audit log", Icon: ListMagnifyingGlass },
+  { href: "/admin/brand", label: "Brand", Icon: Palette },
 ] as const;
 
 export function AdminRail({ name }: { name: string }) {
