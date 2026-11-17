@@ -141,3 +141,89 @@ test("calls connect through the TURN relay alone", async ({ couple }) => {
   }
   await outgoing.getByRole("button", { name: "End" }).click();
 });
+
+test.describe("Calls: features and closed-app ringing", () => {
+  test("speaker, voice to video, reactions and mute indicator", async ({ couple }) => {
+    test.setTimeout(90_000);
+    const { a, b } = couple;
+    await b.goto("/us");
+    await a.goto("/chat");
+    await a.getByRole("button", { name: "Call", exact: true }).click();
+    const incoming = b.getByRole("dialog", { name: "Voice call with Nia" });
+    await expect(incoming.getByText("Incoming voice call")).toBeVisible({ timeout: 15000 });
+    await incoming.getByRole("button", { name: "Accept" }).click();
+    const onA = a.getByRole("dialog", { name: /call with Theo/ });
+    await expect(onA.getByText(/^0:0\d$/)).toBeVisible({ timeout: 20000 });
+
+    // Speaker: off by default on a voice call, toggles on.
+    const speaker = onA.getByRole("button", { name: "Speaker" });
+    await expect(speaker).toHaveAttribute("aria-pressed", "false");
+    await speaker.click();
+    await expect(speaker).toHaveAttribute("aria-pressed", "true");
+
+    // Mute shows on the other side.
+    await onA.getByRole("button", { name: "Mute" }).click();
+    await expect(b.getByText("Nia is muted")).toBeVisible();
+    await onA.getByRole("button", { name: "Unmute" }).click();
+    await expect(b.getByText("Nia is muted")).toHaveCount(0);
+
+    // Reactions float up on both screens.
+    await onA.getByRole("button", { name: "React", exact: true }).click();
+    await onA.getByRole("button", { name: "React ❤️" }).click();
+    await expect(b.locator("span", { hasText: "❤️" }).first()).toBeAttached();
+
+    // Voice to video mid-call: Theo now gets Nia's camera.
+    await onA.getByRole("button", { name: "Video", exact: true }).click();
+    await expect(a.getByRole("dialog", { name: "Video call with Theo" })).toBeVisible();
+    await expect(b.getByRole("dialog", { name: "Video call with Nia" })).toBeVisible();
+    await expect
+      .poll(
+        () =>
+          b.evaluate(
+            () =>
+              Array.from(document.querySelectorAll("video")).filter((v) => v.videoWidth > 0).length,
+          ),
+        { timeout: 20000 },
+      )
+      .toBeGreaterThanOrEqual(1);
+    await a
+      .getByRole("dialog", { name: "Video call with Theo" })
+      .getByRole("button", { name: "End" })
+      .click();
+  });
+
+  test("Decline from the notification tells the caller, without opening Clink", async ({
+    couple,
+  }) => {
+    const { a, b } = couple;
+    await a.goto("/chat");
+    const ring = a.waitForRequest((r) => r.url().endsWith("/api/calls/ring"));
+    await a.getByRole("button", { name: "Call", exact: true }).click();
+    const { id } = (await ring).postDataJSON() as { id: string };
+    // What the service worker does for the notification's Decline action.
+    await b.goto("/settings");
+    const r = await b.request.post("/api/calls/decline", { data: { id } });
+    expect(r.ok()).toBeTruthy();
+    await expect(
+      a
+        .getByRole("dialog", { name: "Voice call with Theo" })
+        .getByText("They can't pick up right now."),
+    ).toBeVisible({ timeout: 15000 });
+  });
+
+  test("Answer from the notification opens Clink straight into the call", async ({ couple }) => {
+    test.setTimeout(60_000);
+    const { a, b } = couple;
+    await a.goto("/chat");
+    const ring = a.waitForRequest((r) => r.url().endsWith("/api/calls/ring"));
+    await a.getByRole("button", { name: "Call", exact: true }).click();
+    const { id } = (await ring).postDataJSON() as { id: string };
+    // Theo had Clink closed; the notification's Answer opens this URL.
+    await b.goto(`/us?answer=${id}`);
+    await expect(
+      a.getByRole("dialog", { name: "Voice call with Theo" }).getByText(/^0:0\d$/),
+    ).toBeVisible({ timeout: 25000 });
+    await expect(b.getByRole("dialog", { name: "Voice call with Nia" })).toBeVisible();
+    await expect(b).not.toHaveURL(/answer=/);
+  });
+});

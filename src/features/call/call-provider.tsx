@@ -5,6 +5,7 @@ import { toast } from "@/components/ui/toast";
 import { haptic } from "@/lib/feedback";
 import { startTone, stopTones, primeTones } from "@/lib/tones";
 import { iceServers } from "./ice";
+import { tuneSdp, prioritise, makeSampler, shapeVideo, type Quality } from "./call-net";
 import { CallScreen } from "./call-screen";
 
 export type CallPhase = "idle" | "outgoing" | "incoming" | "connecting" | "live" | "ended";
@@ -19,6 +20,23 @@ export interface CallState {
   facing: "user" | "environment";
   remoteCameraOff: boolean;
   endReason: string | null;
+  /** Their audio on the loudspeaker (vs the earpiece). */
+  speaker: boolean;
+  /** Live connection quality while the call is up. */
+  quality: Quality | null;
+  /** The network dropped: trying to get the call back. */
+  reconnecting: boolean;
+  remoteMuted: boolean;
+  /** Our video is paused because the connection is too weak for it. */
+  videoPaused: boolean;
+  /** Their video is paused for the same reason. */
+  remoteVideoPaused: boolean;
+}
+
+export interface CallReaction {
+  key: string;
+  emoji: string;
+  mine: boolean;
 }
 
 interface CallApi {
@@ -32,6 +50,11 @@ interface CallApi {
   toggleMute: () => void;
   toggleCamera: () => void;
   flipCamera: () => void;
+  toggleSpeaker: () => void;
+  /** Turn a voice call into a video call (or turn your camera on in one). */
+  upgradeToVideo: () => void;
+  react: (emoji: string) => void;
+  reactions: CallReaction[];
 }
 
 const Ctx = createContext<CallApi | null>(null);
@@ -42,6 +65,27 @@ export const useCall = () => {
 };
 
 const RING_TIMEOUT = 45_000;
+/** Wall-clock time; only ever called from event handlers, never while rendering. */
+const nowMs = () => Date.now();
+/** How long a dropped call keeps trying to come back before it ends. */
+const RECONNECT_FOR = 30_000;
+const baseState = (id: string, video: boolean, phase: CallPhase): CallState => ({
+  id,
+  video,
+  phase,
+  startedAt: null,
+  muted: false,
+  cameraOff: false,
+  facing: "user",
+  remoteCameraOff: false,
+  endReason: null,
+  speaker: video,
+  quality: null,
+  reconnecting: false,
+  remoteMuted: false,
+  videoPaused: false,
+  remoteVideoPaused: false,
+});
 const forceRelay = () => {
   try {
     return localStorage.getItem("clink_force_relay") === "1";
@@ -76,12 +120,29 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const ringTone = useRef<ReturnType<typeof setInterval> | null>(null);
   const iCalled = useRef(false);
   const restarted = useRef(false);
+  const reannounce = useRef<ReturnType<typeof setInterval> | null>(null);
+  const monitor = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lostSince = useRef<number | null>(null);
+  const pendingAnswer = useRef<string | null>(null);
+  const [reactions, setReactions] = useState<CallReaction[]>([]);
 
   // Warm up: audio unlock on the first tap, and relay credentials ahead of time.
   useEffect(() => {
     primeTones();
     void iceServers();
-  }, []);
+    // Opened from a call notification's Answer: pick that call up as soon as it
+    // arrives (the caller re-announces it every few seconds), and nudge them now.
+    const params = new URLSearchParams(window.location.search);
+    const answer = params.get("answer");
+    if (answer) {
+      pendingAnswer.current = answer;
+      params.delete("answer");
+      const q = params.toString();
+      window.history.replaceState(null, "", `${window.location.pathname}${q ? `?${q}` : ""}`);
+      setTimeout(() => send("call:wake", { id: answer }), 800);
+      setTimeout(() => (pendingAnswer.current = null), RING_TIMEOUT);
+    }
+  }, [send]);
 
   /** The caller writes the call into the chat once it's over. */
   const logCall = (c: CallState | null, reason: string | null) => {
@@ -114,15 +175,29 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const stopRinging = () => {
     if (ringTimer.current) clearTimeout(ringTimer.current);
     if (ringTone.current) clearInterval(ringTone.current);
+    if (reannounce.current) clearInterval(reannounce.current);
     ringTimer.current = null;
     ringTone.current = null;
+    reannounce.current = null;
     stopTones();
   };
 
   const cleanup = useCallback(
     (reason: string | null) => {
+      const was = callRef.current;
+      // Nobody picked up (or we gave up): their ringing notification becomes a missed call.
+      if (was && iCalled.current && was.phase === "outgoing" && reason !== "declined")
+        void fetch("/api/calls/ring", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: was.id, video: was.video, cancel: true }),
+        }).catch(() => undefined);
       stopRinging();
+      if (monitor.current) clearInterval(monitor.current);
+      monitor.current = null;
+      lostSince.current = null;
       restarted.current = false;
+      setReactions([]);
       pc.current?.close();
       pc.current = null;
       localRef.current?.getTracks().forEach((t) => t.stop());
@@ -161,8 +236,67 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const goLive = () => {
     if (callRef.current && callRef.current.phase !== "live" && callRef.current.phase !== "ended") {
       stopRinging();
-      update({ phase: "live", startedAt: callRef.current.startedAt ?? Date.now() });
+      update({ phase: "live", startedAt: callRef.current.startedAt ?? nowMs() });
       haptic("success");
+      startMonitor();
+    } else if (callRef.current?.reconnecting) {
+      lostSince.current = null;
+      update({ reconnecting: false });
+    }
+  };
+
+  /** Every 2 s: read the connection, show it, and shape our video to fit. */
+  const startMonitor = () => {
+    const p = pc.current;
+    if (!p || monitor.current) return;
+    void prioritise(p);
+    const sample = makeSampler(p);
+    let low = 0;
+    let high = 0;
+    let lastLevel: Quality | "off" | null = null;
+    monitor.current = setInterval(async () => {
+      const c = callRef.current;
+      if (!c || pc.current !== p) return;
+      const s = await sample();
+      if (!s) return;
+      if (s.quality !== c.quality) update({ quality: s.quality });
+      if (!c.video || c.cameraOff) return;
+      // Very little bandwidth for a while: pause our video (voice keeps going),
+      // bring it back once the connection has recovered for a few seconds.
+      const kbps = s.outKbps ?? 1000;
+      low = kbps < 120 ? low + 1 : 0;
+      high = kbps > 350 ? high + 1 : 0;
+      let level: Quality | "off" = s.quality;
+      if (c.videoPaused) level = high >= 3 ? s.quality : "off";
+      else if (low >= 3) level = "off";
+      if (level !== lastLevel) {
+        lastLevel = level;
+        void shapeVideo(p, level);
+        const paused = level === "off";
+        if (paused !== c.videoPaused) {
+          update({ videoPaused: paused });
+          send("call:videopause", { id: c.id, paused });
+        }
+      }
+    }, 2000);
+  };
+
+  /** Ask for a fresh network path (new Wi-Fi, mobile data, a blip). Only the caller offers. */
+  const restartIce = async () => {
+    const p = pc.current;
+    const c = callRef.current;
+    if (!p || !c) return;
+    if (!iCalled.current) {
+      send("call:restart", { id: c.id });
+      return;
+    }
+    try {
+      p.restartIce?.();
+      const offer = await p.createOffer({ iceRestart: true });
+      await p.setLocalDescription({ type: "offer", sdp: tuneSdp(offer.sdp) });
+      send("call:sdp", { id: c.id, sdp: p.localDescription?.toJSON() });
+    } catch {
+      /* next state change tries again */
     }
   };
 
@@ -182,36 +316,34 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       // Media actually flowing is the surest sign the call is up.
       e.track.onunmute = () => goLive();
     };
-    let lostTimer: ReturnType<typeof setTimeout> | null = null;
     const onState = () => {
       const st = p.connectionState ?? p.iceConnectionState;
       const ice = p.iceConnectionState;
       if (st === "connected" || ice === "connected" || ice === "completed") {
-        if (lostTimer) clearTimeout(lostTimer);
-        lostTimer = null;
+        lostSince.current = null;
         goLive();
-      } else if (st === "failed" || ice === "failed") {
-        // One automatic retry over a fresh path (the relay, if direct failed).
-        if (!restarted.current && iCalled.current) {
-          restarted.current = true;
-          void (async () => {
-            const offer = await p.createOffer({ iceRestart: true });
-            await p.setLocalDescription(offer);
-            send("call:sdp", { id, sdp: p.localDescription?.toJSON() });
-          })().catch(() => undefined);
+        return;
+      }
+      if (st === "failed" || ice === "failed" || ice === "disconnected") {
+        // Don't drop the call on a blip: show "Reconnecting…" and try fresh
+        // network paths (relay included) for up to 30 s before giving up.
+        if (callRef.current?.phase !== "live" && callRef.current?.phase !== "connecting") return;
+        if (lostSince.current === null) lostSince.current = Date.now();
+        update({ reconnecting: true });
+        if (Date.now() - lostSince.current > RECONNECT_FOR) {
+          send("call:end", { id, reason: "failed" });
+          cleanup("failed");
           return;
         }
-        if (restarted.current && !iCalled.current) return; // the caller is retrying
-        send("call:end", { id, reason: "failed" });
-        cleanup("failed");
-      } else if (ice === "disconnected" && !lostTimer) {
-        // Networks blip (lift, tunnel). Give it a moment before calling it.
-        lostTimer = setTimeout(() => {
-          if (pc.current === p && p.iceConnectionState === "disconnected") {
-            send("call:end", { id, reason: "failed" });
-            cleanup("failed");
-          }
-        }, 12000);
+        const wait = ice === "disconnected" ? 2500 : 0;
+        setTimeout(() => {
+          if (pc.current !== p) return;
+          const now = p.iceConnectionState;
+          if (now === "connected" || now === "completed") return;
+          void restartIce();
+          // Keep checking until it's back or the 30 s run out.
+          setTimeout(() => pc.current === p && onState(), 5000);
+        }, wait);
       }
     };
     p.onconnectionstatechange = onState;
@@ -233,17 +365,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       if (!navigator.mediaDevices?.getUserMedia || typeof RTCPeerConnection === "undefined")
         return toast.err("This browser can't make calls. Try Chrome or Safari.");
       const id = crypto.randomUUID();
-      const base: CallState = {
-        id,
-        video,
-        phase: "outgoing",
-        startedAt: null,
-        muted: false,
-        cameraOff: false,
-        facing: "user",
-        remoteCameraOff: false,
-        endReason: null,
-      };
+      const base = baseState(id, video, "outgoing");
       callRef.current = base;
       setCall(base);
       iCalled.current = true;
@@ -254,10 +376,15 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       send("call:ring", { id, video });
+      // Keep announcing while it rings, so a partner who opens Clink from the
+      // notification (or a second device) picks the call up straight away.
+      reannounce.current = setInterval(() => {
+        if (callRef.current?.phase === "outgoing") send("call:ring", { id, video });
+      }, 3000);
       void fetch("/api/calls/ring", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ video }),
+        body: JSON.stringify({ id, video }),
       }).catch(() => undefined);
       startTone("ringback");
       ringTimer.current = setTimeout(() => {
@@ -324,19 +451,15 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       stopRinging();
     }
     iCalled.current = false;
-    const next: CallState = {
-      id,
-      video: Boolean(p.video),
-      phase: "incoming",
-      startedAt: null,
-      muted: false,
-      cameraOff: false,
-      facing: "user",
-      remoteCameraOff: false,
-      endReason: null,
-    };
+    const next = baseState(id, Boolean(p.video), "incoming");
     callRef.current = next;
     setCall(next);
+    // Opened from the notification's Answer: no second tap needed.
+    if (pendingAnswer.current === id) {
+      pendingAnswer.current = null;
+      void accept();
+      return;
+    }
     startTone("ringtone");
     haptic([300, 200, 300, 200, 300]);
     ringTone.current = setInterval(() => haptic([300, 200, 300]), 2200);
@@ -373,7 +496,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     update({ phase: "connecting" });
     const peer = await makePeer(c.id, localRef.current);
     const offer = await peer.createOffer();
-    await peer.setLocalDescription(offer);
+    await peer.setLocalDescription({ type: "offer", sdp: tuneSdp(offer.sdp) });
     send("call:sdp", { id: c.id, sdp: peer.localDescription?.toJSON() });
   });
 
@@ -382,11 +505,16 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     const peer = pc.current;
     if (!c || p.id !== c.id || !peer) return;
     const desc = p.sdp as RTCSessionDescriptionInit;
+    if (desc.type === "offer" && peer.signalingState !== "stable") {
+      // Both sides renegotiated at once: the caller's offer wins, the callee rolls back.
+      if (iCalled.current) return;
+      await peer.setLocalDescription({ type: "rollback" });
+    }
     await peer.setRemoteDescription(desc);
     await flushIce();
     if (desc.type === "offer") {
       const answer = await peer.createAnswer();
-      await peer.setLocalDescription(answer);
+      await peer.setLocalDescription({ type: "answer", sdp: tuneSdp(answer.sdp) });
       send("call:sdp", { id: c.id, sdp: peer.localDescription?.toJSON() });
     }
   });
@@ -407,6 +535,42 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     cleanup(reason === "busy" ? "declined" : reason);
   });
 
+  // Floating reactions, mine and theirs; each drifts away after a moment.
+  const addReaction = (emoji: string, mine: boolean) => {
+    const key = crypto.randomUUID();
+    setReactions((r) => [...r.slice(-11), { key, emoji, mine }]);
+    setTimeout(() => setReactions((r) => r.filter((x) => x.key !== key)), 2600);
+  };
+
+  useCoupleEvent("call:wake", (p) => {
+    const c = callRef.current;
+    if (c && p.id === c.id && c.phase === "outgoing")
+      send("call:ring", { id: c.id, video: c.video });
+  });
+
+  useCoupleEvent("call:restart", (p) => {
+    if (callRef.current && p.id === callRef.current.id && iCalled.current) void restartIce();
+  });
+
+  useCoupleEvent("call:mute", (p) => {
+    if (callRef.current && p.id === callRef.current.id) update({ remoteMuted: Boolean(p.muted) });
+  });
+
+  useCoupleEvent("call:videopause", (p) => {
+    if (callRef.current && p.id === callRef.current.id)
+      update({ remoteVideoPaused: Boolean(p.paused) });
+  });
+
+  useCoupleEvent("call:video", (p) => {
+    // They turned their camera on in a voice call: this becomes a video call.
+    if (callRef.current && p.id === callRef.current.id && !callRef.current.video)
+      update({ video: true, cameraOff: true, speaker: true });
+  });
+
+  useCoupleEvent("call:react", (p) => {
+    if (callRef.current && p.id === callRef.current.id) addReaction(String(p.e), false);
+  });
+
   useCoupleEvent("call:camera", (p) => {
     if (callRef.current && p.id === callRef.current.id) update({ remoteCameraOff: Boolean(p.off) });
   });
@@ -416,9 +580,10 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     const c = callRef.current;
     if (!c) return;
     localRef.current?.getAudioTracks().forEach((t) => (t.enabled = c.muted));
+    send("call:mute", { id: c.id, muted: !c.muted });
     update({ muted: !c.muted });
     haptic("select");
-  }, [update]);
+  }, [send, update]);
 
   const toggleCamera = useCallback(() => {
     const c = callRef.current;
@@ -451,6 +616,82 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     }
   }, [update]);
 
+  const toggleSpeaker = useCallback(() => {
+    const c = callRef.current;
+    if (!c) return;
+    update({ speaker: !c.speaker });
+    haptic("select");
+  }, [update]);
+
+  const react = useCallback(
+    (emoji: string) => {
+      const c = callRef.current;
+      if (!c) return;
+      send("call:react", { id: c.id, e: emoji });
+      addReaction(emoji, true);
+      haptic("tap");
+    },
+    [send],
+  );
+
+  /** Voice to video mid-call (or camera back on): add a camera track and renegotiate. */
+  const upgradeToVideo = useCallback(async () => {
+    const c = callRef.current;
+    const p = pc.current;
+    if (!c || !p) return;
+    const existing = localRef.current?.getVideoTracks()[0];
+    if (existing && existing.readyState === "live") {
+      existing.enabled = true;
+      send("call:camera", { id: c.id, off: false });
+      update({ cameraOff: false, video: true });
+      return;
+    }
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: c.facing, width: { ideal: 1280 }, height: { ideal: 720 } },
+      });
+      const track = s.getVideoTracks()[0]!;
+      const stream = localRef.current ?? new MediaStream();
+      stream.addTrack(track);
+      localRef.current = stream;
+      setLocal(new MediaStream(stream.getTracks()));
+      const free = p
+        .getTransceivers()
+        .find((t) => t.receiver.track.kind === "video" && !t.sender.track);
+      if (free) {
+        await free.sender.replaceTrack(track);
+        free.direction = "sendrecv";
+      } else p.addTrack(track, stream);
+      const offer = await p.createOffer();
+      await p.setLocalDescription({ type: "offer", sdp: tuneSdp(offer.sdp) });
+      send("call:sdp", { id: c.id, sdp: p.localDescription?.toJSON() });
+      send("call:video", { id: c.id });
+      send("call:camera", { id: c.id, off: false });
+      update({ video: true, cameraOff: false, speaker: true });
+      void prioritise(p);
+    } catch {
+      toast.err("Couldn't turn your camera on.");
+    }
+  }, [send, update]);
+
+  // A new network (Wi-Fi to mobile data, back online): find a fresh path now
+  // rather than waiting for the old one to time out.
+  useEffect(() => {
+    const onNet = () => {
+      const c = callRef.current;
+      if (c && (c.phase === "live" || c.phase === "connecting")) void restartIce();
+    };
+    window.addEventListener("online", onNet);
+    const conn = (navigator as Navigator & { connection?: EventTarget }).connection;
+    conn?.addEventListener?.("change", onNet);
+    return () => {
+      window.removeEventListener("online", onNet);
+      conn?.removeEventListener?.("change", onNet);
+    };
+    // restartIce reads refs only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Hang up cleanly if the tab closes mid-call.
   useEffect(() => {
     const bye = () => {
@@ -474,6 +715,10 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         toggleMute,
         toggleCamera,
         flipCamera,
+        toggleSpeaker,
+        upgradeToVideo: () => void upgradeToVideo(),
+        react,
+        reactions,
       }}
     >
       {children}

@@ -91,6 +91,9 @@ self.addEventListener("message", (event) => {
 
 self.addEventListener("push", (event) => {
   let data: {
+    type?: string;
+    id?: string;
+    video?: boolean;
     title?: string;
     body?: string;
     url?: string;
@@ -103,12 +106,52 @@ self.addEventListener("push", (event) => {
   } catch {
     data = { body: "New moment in Clink" };
   }
+  const icon = data.icon ?? "/icons/clink-192.png";
+  if (data.type === "call") {
+    // Ring like a phone call, as far as the web allows: stays up until handled,
+    // re-alerts, vibrates in a ring pattern, and offers Answer / Decline.
+    event.waitUntil(
+      self.registration.showNotification(data.title ?? "Clink", {
+        body: data.body ?? "Incoming call",
+        tag: data.tag,
+        icon,
+        badge: "/icons/badge-96.png",
+        requireInteraction: true,
+        renotify: true,
+        vibrate: [600, 300, 600, 300, 600, 300, 600],
+        actions: [
+          { action: "answer", title: data.video ? "Answer with video" : "Answer" },
+          { action: "decline", title: "Decline" },
+        ],
+        data: { url: data.url ?? "/us", type: "call", id: data.id },
+      } as NotificationOptions),
+    );
+    return;
+  }
+  if (data.type === "call-cancel") {
+    // The caller gave up: the ringing notification becomes a quiet missed call.
+    event.waitUntil(
+      (async () => {
+        const open = await self.registration.getNotifications({ tag: data.tag });
+        open.forEach((n) => n.close());
+        await self.registration.showNotification(data.title ?? "Clink", {
+          body: data.body ?? "Missed call",
+          tag: data.tag,
+          icon,
+          badge: "/icons/badge-96.png",
+          silent: true,
+          data: { url: data.url ?? "/chat" },
+        });
+      })(),
+    );
+    return;
+  }
   event.waitUntil(
     self.registration.showNotification(data.title ?? "Clink", {
       body: data.body ?? "New moment in Clink",
       tag: data.tag,
       silent: data.silent ?? false,
-      icon: data.icon ?? "/icons/clink-192.png",
+      icon,
       badge: "/icons/badge-96.png",
       data: { url: data.url ?? "/us" },
     }),
@@ -117,7 +160,21 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = (event.notification.data?.url as string) ?? "/us";
+  const d = (event.notification.data ?? {}) as { url?: string; type?: string; id?: string };
+  if (d.type === "call" && event.action === "decline") {
+    // Tell the caller without opening the app.
+    event.waitUntil(
+      fetch("/api/calls/decline", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: d.id }),
+      }).catch(() => undefined),
+    );
+    return;
+  }
+  // Answer (or a tap on the call) opens the app straight into the call.
+  const url = d.url ?? "/us";
   event.waitUntil(
     (async () => {
       const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });

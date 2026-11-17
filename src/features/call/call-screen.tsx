@@ -4,6 +4,10 @@ import { AnimatePresence, motion } from "motion/react";
 import {
   CaretDown,
   CameraRotate,
+  PictureInPicture,
+  SpeakerHigh,
+  SpeakerSimpleLow,
+  Smiley,
   Microphone,
   MicrophoneSlash,
   Phone,
@@ -21,11 +25,13 @@ function Video({
   muted,
   mirror,
   className,
+  id,
 }: {
   stream: MediaStream | null;
   muted?: boolean;
   mirror?: boolean;
   className?: string;
+  id?: string;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
@@ -38,6 +44,7 @@ function Video({
   return (
     <video
       ref={ref}
+      id={id}
       autoPlay
       playsInline
       // Sound always comes from the <audio> element; video stays muted so it can autoplay.
@@ -83,7 +90,7 @@ function RoundBtn({
         whileTap={{ scale: 0.94, transition: { duration: 0.06 } }}
         onClick={onClick}
         className={cn(
-          "flex h-16 w-16 cursor-pointer items-center justify-center rounded-full border-0 text-white",
+          "flex h-14 w-14 cursor-pointer items-center justify-center rounded-full border-0 text-white sm:h-16 sm:w-16",
           tone === "danger" && "bg-[#FF3B30]",
           tone === "go" && "bg-[#34C759]",
           tone === "glass" && (on ? "bg-white text-black" : "bg-s3"),
@@ -94,6 +101,11 @@ function RoundBtn({
       <span className="text-xs font-medium text-white/80">{label}</span>
     </div>
   );
+}
+
+/** Browsers that can route call audio (Chrome, Edge, Android). iPhone Safari can't. */
+function canPickSpeaker(): boolean {
+  return typeof HTMLMediaElement !== "undefined" && "setSinkId" in HTMLMediaElement.prototype;
 }
 
 /** Full-screen call UI: ringing, connecting, live (voice or video), ended. */
@@ -110,8 +122,22 @@ export function CallScreen({
   partnerOnline: boolean;
   endMessage: string | null;
 }) {
-  const { call, local, remote, accept, decline, hangUp, toggleMute, toggleCamera, flipCamera } =
-    useCall();
+  const {
+    call,
+    local,
+    remote,
+    accept,
+    decline,
+    hangUp,
+    toggleMute,
+    toggleCamera,
+    flipCamera,
+    toggleSpeaker,
+    upgradeToVideo,
+    react,
+    reactions,
+  } = useCall();
+  const [reactOpen, setReactOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [mini, setMini] = useState(false);
   const [needsTap, setNeedsTap] = useState(false);
@@ -126,6 +152,27 @@ export function CallScreen({
       .then(() => setNeedsTap(false))
       .catch(() => setNeedsTap(true));
   }, [remote, mini]);
+
+  // Speaker vs earpiece: route their audio where the browser lets us choose.
+  const speaker = call?.speaker ?? false;
+  useEffect(() => {
+    const a = audioRef.current as
+      (HTMLAudioElement & { setSinkId?: (id: string) => Promise<void> }) | null;
+    if (!a?.setSinkId || !navigator.mediaDevices?.enumerateDevices) return;
+    void navigator.mediaDevices
+      .enumerateDevices()
+      .then((all) => {
+        const outs = all.filter((d) => d.kind === "audiooutput");
+        const pick = speaker
+          ? (outs.find((d) => /speaker/i.test(d.label)) ??
+            outs.find((d) => d.deviceId === "default"))
+          : (outs.find((d) => /earpiece|receiver|handset/i.test(d.label)) ??
+            outs.find((d) => d.deviceId === "communications"));
+        return a.setSinkId!(pick?.deviceId ?? "default");
+      })
+      .catch(() => undefined);
+  }, [speaker, remote, mini]);
+
   if (!call) return null;
   const live = call.phase === "live";
 
@@ -141,6 +188,19 @@ export function CallScreen({
         transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
       >
         <audio ref={audioRef} autoPlay />
+        {call.video && remote?.getVideoTracks().length ? (
+          // Their video keeps playing in a small window you can drag anywhere.
+          <motion.button
+            type="button"
+            drag
+            dragMomentum={false}
+            aria-label={`Show ${partnerName}'s video full screen`}
+            onClick={() => setMini(false)}
+            className="fixed right-4 bottom-[calc(var(--chrome-bottom,0px)+16px)] h-44 w-28 cursor-grab overflow-hidden rounded-[14px] border-0 bg-black p-0 shadow-[0_8px_24px_rgba(0,0,0,.45)]"
+          >
+            <Video stream={remote} className="h-full w-full" />
+          </motion.button>
+        ) : null}
         <button
           type="button"
           onClick={() => setMini(false)}
@@ -206,7 +266,67 @@ export function CallScreen({
           <CaretDown size={22} weight="bold" />
         </button>
       )}
-      {showRemoteVideo && <Video stream={remote} className="absolute inset-0 h-full w-full" />}
+      {showRemoteVideo && (
+        <Video id="clink-remote-video" stream={remote} className="absolute inset-0 h-full w-full" />
+      )}
+      {(live || call.phase === "connecting") && (
+        <div className="absolute top-[calc(env(safe-area-inset-top)+12px)] right-4 z-10 flex items-center gap-2">
+          {call.quality && (
+            <span
+              role="img"
+              aria-label={`Connection ${call.quality}`}
+              title={`Connection ${call.quality}`}
+              className="bg-s3/80 flex h-11 items-center gap-1.5 rounded-full px-3 text-xs font-semibold"
+            >
+              <span
+                className={cn(
+                  "h-2 w-2 rounded-full",
+                  call.quality === "good"
+                    ? "bg-[#34C759]"
+                    : call.quality === "weak"
+                      ? "bg-warning"
+                      : "bg-danger",
+                )}
+              />
+              {call.quality === "good" ? "Good" : call.quality === "weak" ? "Weak" : "Poor"}
+            </span>
+          )}
+          {showRemoteVideo &&
+            typeof document !== "undefined" &&
+            document.pictureInPictureEnabled && (
+              <button
+                type="button"
+                aria-label="Picture in picture"
+                onClick={() => {
+                  const v = document.getElementById(
+                    "clink-remote-video",
+                  ) as HTMLVideoElement | null;
+                  void v?.requestPictureInPicture?.().catch(() => undefined);
+                }}
+                className="bg-s3/80 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 text-white"
+              >
+                <PictureInPicture size={22} weight="bold" />
+              </button>
+            )}
+        </div>
+      )}
+      {/* Reactions float up on both screens. */}
+      <div className="pointer-events-none absolute inset-0 z-[5] overflow-hidden" aria-hidden>
+        <AnimatePresence>
+          {reactions.map((r, i) => (
+            <motion.span
+              key={r.key}
+              className="absolute bottom-40 text-[44px]"
+              style={{ left: `${(r.mine ? 62 : 18) + ((i * 7) % 18)}%` }}
+              initial={{ y: 0, opacity: 0, scale: 0.6 }}
+              animate={{ y: -320, opacity: [0, 1, 1, 0], scale: [0.6, 1.15, 1, 1] }}
+              transition={{ duration: 2.4, ease: "easeOut" }}
+            >
+              {r.emoji}
+            </motion.span>
+          ))}
+        </AnimatePresence>
+      </div>
       {showRemoteVideo && (
         <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/60 to-transparent" />
       )}
@@ -241,7 +361,12 @@ export function CallScreen({
           {partnerName}
         </div>
         <div className="flex items-center gap-2 text-base text-white/80" aria-live="polite">
-          {live && call.startedAt ? (
+          {live && call.reconnecting ? (
+            <>
+              Reconnecting
+              <LoadingDots />
+            </>
+          ) : live && call.startedAt ? (
             <Elapsed since={call.startedAt} />
           ) : (
             <>
@@ -261,7 +386,20 @@ export function CallScreen({
             Tap to hear {partnerName}
           </button>
         )}
-        {live && call.video && call.remoteCameraOff && (
+        {live && call.remoteMuted && (
+          <div className="text-sm text-white/70">{partnerName} is muted</div>
+        )}
+        {live && call.video && call.remoteVideoPaused && (
+          <div className="text-sm text-white/70">
+            {partnerName}&apos;s video is paused while their connection is weak
+          </div>
+        )}
+        {live && call.videoPaused && (
+          <div className="text-sm text-white/70">
+            Your video is paused while the connection is weak. Voice keeps going.
+          </div>
+        )}
+        {live && call.video && call.remoteCameraOff && !call.remoteVideoPaused && (
           <div className="text-sm text-white/70">{partnerName}&apos;s camera is off</div>
         )}
       </div>
@@ -303,35 +441,87 @@ export function CallScreen({
             </RoundBtn>
           </div>
         ) : call.phase === "ended" ? null : (
-          <div className="flex items-center justify-center gap-5">
-            <RoundBtn label={call.muted ? "Unmute" : "Mute"} on={call.muted} onClick={toggleMute}>
-              {call.muted ? (
-                <MicrophoneSlash size={26} weight="fill" />
-              ) : (
-                <Microphone size={26} weight="fill" />
-              )}
-            </RoundBtn>
-            {call.video && (
-              <RoundBtn
-                label={call.cameraOff ? "Camera on" : "Camera off"}
-                on={call.cameraOff}
-                onClick={toggleCamera}
+          <div className="flex flex-col items-center gap-4">
+            {reactOpen && live && (
+              <div
+                role="group"
+                aria-label="Send a reaction"
+                className="bg-s3/90 flex gap-1 rounded-full p-1.5"
               >
-                {call.cameraOff ? (
-                  <VideoCameraSlash size={26} weight="fill" />
+                {["❤️", "😘", "😂", "🔥", "😮", "👏"].map((e) => (
+                  <button
+                    key={e}
+                    type="button"
+                    aria-label={`React ${e}`}
+                    onClick={() => react(e)}
+                    className="press flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-[26px]"
+                  >
+                    {e}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center justify-center gap-3 sm:gap-5">
+              <RoundBtn label={call.muted ? "Unmute" : "Mute"} on={call.muted} onClick={toggleMute}>
+                {call.muted ? (
+                  <MicrophoneSlash size={26} weight="fill" />
                 ) : (
-                  <VideoCamera size={26} weight="fill" />
+                  <Microphone size={26} weight="fill" />
                 )}
               </RoundBtn>
-            )}
-            {call.video && (
-              <RoundBtn label="Flip" onClick={() => void flipCamera()}>
-                <CameraRotate size={26} weight="fill" />
+              {canPickSpeaker() && (
+                <RoundBtn label="Speaker" on={call.speaker} onClick={toggleSpeaker}>
+                  {call.speaker ? (
+                    <SpeakerHigh size={26} weight="fill" />
+                  ) : (
+                    <SpeakerSimpleLow size={26} weight="fill" />
+                  )}
+                </RoundBtn>
+              )}
+              {call.video && local?.getVideoTracks().length ? (
+                <RoundBtn
+                  label={call.cameraOff ? "Camera on" : "Camera off"}
+                  on={call.cameraOff}
+                  onClick={toggleCamera}
+                >
+                  {call.cameraOff ? (
+                    <VideoCameraSlash size={26} weight="fill" />
+                  ) : (
+                    <VideoCamera size={26} weight="fill" />
+                  )}
+                </RoundBtn>
+              ) : (
+                live && (
+                  <RoundBtn label="Video" onClick={upgradeToVideo}>
+                    <VideoCamera size={26} weight="fill" />
+                  </RoundBtn>
+                )
+              )}
+              {call.video && !call.cameraOff && local?.getVideoTracks().length ? (
+                <RoundBtn label="Flip" onClick={() => void flipCamera()}>
+                  <CameraRotate size={26} weight="fill" />
+                </RoundBtn>
+              ) : (
+                live && (
+                  <RoundBtn label="React" on={reactOpen} onClick={() => setReactOpen((o) => !o)}>
+                    <Smiley size={26} weight="fill" />
+                  </RoundBtn>
+                )
+              )}
+              <RoundBtn label="End" tone="danger" onClick={hangUp}>
+                <PhoneDisconnect size={28} weight="fill" />
               </RoundBtn>
-            )}
-            <RoundBtn label="End" tone="danger" onClick={hangUp}>
-              <PhoneDisconnect size={28} weight="fill" />
-            </RoundBtn>
+            </div>
+            {live && call.video && local?.getVideoTracks().length && !call.cameraOff ? (
+              <button
+                type="button"
+                onClick={() => setReactOpen((o) => !o)}
+                aria-pressed={reactOpen}
+                className="bg-s3/80 flex h-10 cursor-pointer items-center gap-2 rounded-full border-0 px-4 text-sm font-semibold text-white"
+              >
+                <Smiley size={18} weight="fill" aria-hidden /> React
+              </button>
+            ) : null}
           </div>
         )}
       </div>

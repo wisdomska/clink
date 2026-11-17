@@ -1,22 +1,30 @@
 import { z } from "zod";
 import { handler, ok, parseJson, requireCouple, rateLimit } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { notify } from "@/lib/server/push";
+import { notifyCall } from "@/lib/server/push";
 
-/** Push "X is calling" so a partner with Clink closed can still pick up. */
+/**
+ * Ring your partner's devices even when Clink is closed (high-urgency push
+ * with Answer / Decline). With cancel: true (you hung up, or nobody answered)
+ * the ringing notification becomes a quiet missed call.
+ */
 export const POST = handler(async (req) => {
   const { user, partnerId } = await requireCouple();
-  await rateLimit(`call-ring:${user.id}`, 30, 3600);
-  const { video } = await parseJson(req, z.object({ video: z.boolean() }));
+  await rateLimit(`call-ring:${user.id}`, 60, 3600);
+  const body = await parseJson(
+    req,
+    z.object({ id: z.uuid(), video: z.boolean(), cancel: z.boolean().optional() }),
+  );
   const { data: me } = await supabaseAdmin()
     .from("profiles")
     .select("display_name")
     .eq("id", user.id)
     .single();
-  await notify(partnerId, "chat", {
-    body: `${me?.display_name ?? "Your partner"} is ${video ? "video " : ""}calling you`,
-    url: "/chat",
-    tag: "call",
+  const r = await notifyCall(partnerId, {
+    id: body.id,
+    video: body.video,
+    from: me?.display_name ?? "Your partner",
+    cancel: body.cancel,
   });
-  return ok({ ok: true });
+  return ok({ sent: r.sent });
 });

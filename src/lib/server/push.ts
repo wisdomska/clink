@@ -97,3 +97,72 @@ export async function notify(
   );
   return { sent };
 }
+
+/**
+ * An incoming call, as close to a phone ring as Web Push allows: high
+ * urgency, a short life (a call nobody can answer any more is useless), one
+ * tag per call so the follow-up replaces it, and Answer / Decline actions.
+ * Calls ring unless the person turned call alerts off; the text stays
+ * discreet ("Incoming call") unless they chose detailed notifications.
+ * `cancel` swaps a ringing notification for a quiet "missed call".
+ */
+export async function notifyCall(
+  userId: string,
+  call: { id: string; video: boolean; from: string; cancel?: boolean },
+): Promise<{ sent: number; skipped?: string }> {
+  if (!configure()) return { sent: 0, skipped: "no_vapid" };
+  const admin = supabaseAdmin();
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("notify, app_icon, suspended_at, deleted_at")
+    .eq("id", userId)
+    .single();
+  if (!profile || profile.suspended_at || profile.deleted_at)
+    return { sent: 0, skipped: "inactive" };
+  const prefs = (profile.notify ?? {}) as PushPrefs & { calls?: boolean };
+  if (prefs.calls === false) return { sent: 0, skipped: "pref_off" };
+  const app = APP_NAMES[profile.app_icon] ?? "Clink";
+  const kind = call.video ? "Video call" : "Voice call";
+  const payload = JSON.stringify({
+    type: call.cancel ? "call-cancel" : "call",
+    id: call.id,
+    video: call.video,
+    title: app,
+    body: call.cancel
+      ? prefs.detailed
+        ? `Missed ${kind.toLowerCase()} from ${call.from}`
+        : "Missed call"
+      : prefs.detailed
+        ? `${call.from}: incoming ${kind.toLowerCase()}`
+        : `Incoming ${kind.toLowerCase()}`,
+    url: call.cancel ? "/chat" : `/us?answer=${encodeURIComponent(call.id)}`,
+    tag: `call-${call.id}`,
+    icon: `/icons/${profile.app_icon}-192.png`,
+  });
+  const { data: subs } = await admin
+    .from("push_subscriptions")
+    .select("id, endpoint, p256dh, auth")
+    .eq("user_id", userId);
+  let sent = 0;
+  await Promise.all(
+    (subs ?? []).map(async (s) => {
+      try {
+        await webpush.sendNotification(
+          { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+          payload,
+          {
+            TTL: call.cancel ? 3600 : 45,
+            urgency: "high",
+            topic: `call${call.id.replace(/-/g, "").slice(0, 26)}`,
+          },
+        );
+        sent++;
+      } catch (err) {
+        const code = (err as { statusCode?: number }).statusCode;
+        if (code === 404 || code === 410)
+          await admin.from("push_subscriptions").delete().eq("id", s.id);
+      }
+    }),
+  );
+  return { sent };
+}
