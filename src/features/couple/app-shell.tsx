@@ -15,6 +15,7 @@ import { useQueue } from "@/features/chat/queue";
 import { loadAppearanceFor } from "@/lib/appearance";
 import { claimPush } from "@/lib/pwa";
 import { MessageTone } from "@/features/chat/message-tone";
+import { BadgeSync } from "@/features/couple/badges";
 import { SoloHome, SoloGate, SOLO_OPEN } from "@/features/couple/solo";
 
 const HIDE_TABS = [/^\/play\/[^/]+\/[^/]+/, /^\/help/, /^\/plans\/watch\//];
@@ -135,6 +136,7 @@ export function AppShell({
       {tabs && <TabBar />}
       {!solo && <IncomingClink />}
       {!solo && <MessageTone />}
+      {!solo && <BadgeSync />}
       {!solo && <PushAsk />}
     </>
   );

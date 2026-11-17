@@ -102,7 +102,7 @@ export async function renderOg({
             display: "flex",
             flexDirection: "column",
             gap: 18,
-            maxWidth: people ? 640 : 960,
+            maxWidth: people ? 560 : 960,
           }}
         >
           {eyebrow && (

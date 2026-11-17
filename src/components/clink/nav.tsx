@@ -26,6 +26,7 @@ import { statusLabel } from "@/features/couple/types";
 import { Avatar } from "@/components/ui/avatar";
 import { Logo, LogoMark } from "@/components/brand/logo";
 import { AfterDarkBadge } from "@/components/clink/after-dark-badge";
+import { useBadges, CountBadge, type Badges } from "@/features/couple/badges";
 
 /** Desktop rail extras: places phones reach from inside other screens. */
 const MORE = [
@@ -77,8 +78,9 @@ function useActiveTab() {
 }
 
 /** Prototype bottom bar: 5 tabs, pill around the active icon. */
-export function TabBar({ unread = 0 }: { unread?: number }) {
+export function TabBar() {
   const { active, onTap } = useActiveTab();
+  const badges = useBadges();
   return (
     <nav
       aria-label="Main"
@@ -111,13 +113,7 @@ export function TabBar({ unread = 0 }: { unread?: number }) {
               }}
             >
               <Icon size={24} weight="regular" aria-hidden />
-              {href === "/chat" && unread > 0 && !on && (
-                <span
-                  role="img"
-                  className="bg-accent absolute top-0 right-3 h-2 w-2 rounded-full"
-                  aria-label={`${unread} unread`}
-                />
-              )}
+              {!on && <NavBadge href={href} badges={badges} />}
             </span>
             {label}
           </Link>
@@ -128,7 +124,8 @@ export function TabBar({ unread = 0 }: { unread?: number }) {
 }
 
 /** Side rail: compact on tablets in landscape, full with labels from 1024 px. */
-export function Rail({ unread = 0 }: { unread?: number }) {
+export function Rail() {
+  const badges = useBadges();
   const { path, active, onTap } = useActiveTab();
   const { darkVisible, discreet, solo } = useCouple();
   return (
@@ -172,9 +169,7 @@ export function Rail({ unread = 0 }: { unread?: number }) {
                 }}
               >
                 <Icon size={24} aria-hidden />
-                {href === "/chat" && unread > 0 && !on && (
-                  <span className="bg-accent absolute top-0 right-2 h-2 w-2 rounded-full" />
-                )}
+                {!on && <NavBadge href={href} badges={badges} />}
               </span>
               <span className="rail-full">{label}</span>
             </Link>
@@ -322,4 +317,11 @@ function PartnerRow() {
       </span>
     </Link>
   );
+}
+
+/** The count on a nav icon: unread messages on Chat, your turns and invites on Play. */
+function NavBadge({ href, badges }: { href: string; badges: Badges }) {
+  if (href === "/chat") return <CountBadge n={badges.chat} label="unread" />;
+  if (href === "/play") return <CountBadge n={badges.play} label="waiting on you" />;
+  return null;
 }

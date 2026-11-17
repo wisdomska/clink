@@ -100,6 +100,7 @@ self.addEventListener("push", (event) => {
     tag?: string;
     silent?: boolean;
     icon?: string;
+    badge?: number;
   } = {};
   try {
     data = event.data?.json() ?? {};
@@ -107,6 +108,10 @@ self.addEventListener("push", (event) => {
     data = { body: "New moment in Clink" };
   }
   const icon = data.icon ?? "/icons/clink-192.png";
+  // The count on the installed app's icon, sent with the push (never After Dark).
+  const nav = self.navigator as Navigator & { setAppBadge?: (n?: number) => Promise<void> };
+  if (typeof data.badge === "number" && nav.setAppBadge)
+    event.waitUntil(nav.setAppBadge(data.badge).catch(() => undefined));
   if (data.type === "call") {
     // Ring like a phone call, as far as the web allows: stays up until handled,
     // re-alerts, vibrates in a ring pattern, and offers Answer / Decline.

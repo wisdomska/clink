@@ -122,6 +122,48 @@ export async function notifyTest(userId: string): Promise<Delivery[] | "no_vapid
   );
 }
 
+/**
+ * The number for the app icon when this push lands: their partner's unread
+ * messages plus games waiting on them. After Dark is never counted.
+ */
+async function badgeFor(userId: string): Promise<number | undefined> {
+  try {
+    const admin = supabaseAdmin();
+    const { data: m } = await admin
+      .from("couple_members")
+      .select("couple_id")
+      .eq("user_id", userId)
+      .is("left_at", null)
+      .maybeSingle();
+    if (!m) return undefined;
+    const [chat, turns, invites] = await Promise.all([
+      admin
+        .from("messages")
+        .select("id", { count: "exact", head: true })
+        .eq("couple_id", m.couple_id)
+        .neq("sender_id", userId)
+        .is("read_at", null)
+        .is("removed_at", null)
+        .not("type", "in", "(system,clink)"),
+      admin
+        .from("games")
+        .select("id", { count: "exact", head: true })
+        .eq("couple_id", m.couple_id)
+        .eq("status", "active")
+        .eq("current_turn_user", userId),
+      admin
+        .from("games")
+        .select("id", { count: "exact", head: true })
+        .eq("couple_id", m.couple_id)
+        .eq("status", "invited")
+        .neq("created_by", userId),
+    ]);
+    return (chat.count ?? 0) + (turns.count ?? 0) + (invites.count ?? 0);
+  } catch {
+    return undefined;
+  }
+}
+
 const APP_NAMES: Record<string, string> = { clink: "Clink", notes: "Notes", weather: "Weather" };
 
 /**
@@ -162,9 +204,11 @@ export async function notify(
     prefs,
     APP_NAMES[profile.app_icon] ?? "Clink",
   );
+  const badge = await badgeFor(userId);
   const payload = JSON.stringify({
     title,
     body,
+    badge,
     url: category === "dark" ? "/dark" : (msg.url ?? "/us"),
     tag: msg.tag ?? category,
     silent: quiet,
