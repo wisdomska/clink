@@ -3,7 +3,8 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { useCouple, useCoupleEvent } from "@/features/couple/context";
 import { toast } from "@/components/ui/toast";
 import { haptic } from "@/lib/feedback";
-import { startTone, stopTones, primeTones } from "@/lib/tones";
+import { startTone, stopTones, primeTones, playHangupTone } from "@/lib/tones";
+import { setCallActive } from "@/lib/call-flag";
 import { iceServers } from "./ice";
 import { tuneSdp, prioritise, makeSampler, shapeVideo, type Quality } from "./call-net";
 import { CallScreen } from "./call-screen";
@@ -69,6 +70,17 @@ const RING_TIMEOUT = 45_000;
 const nowMs = () => Date.now();
 /** How long a dropped call keeps trying to come back before it ends. */
 const RECONNECT_FOR = 30_000;
+/** A page reloaded mid-call has this long to come back to the same call. */
+const RESUME_FOR = 15_000;
+const RESUME_KEY = "clink.call.resume";
+interface Resume {
+  id: string;
+  video: boolean;
+  startedAt: number | null;
+  iCalled: boolean;
+  muted: boolean;
+  at: number;
+}
 const baseState = (id: string, video: boolean, phase: CallPhase): CallState => ({
   id,
   video,
@@ -108,7 +120,7 @@ const ENDED_MESSAGES: Record<string, string> = {
  * encrypted with DTLS-SRTP). The caller sends the offer once the callee accepts.
  */
 export function CallProvider({ children }: { children: React.ReactNode }) {
-  const { send, partner, presence, me } = useCouple();
+  const { send, partner, presence, me, connected } = useCouple();
   const [call, setCall] = useState<CallState | null>(null);
   const [local, setLocal] = useState<MediaStream | null>(null);
   const [remote, setRemote] = useState<MediaStream | null>(null);
@@ -210,6 +222,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       setRemote(null);
       if (!callRef.current) return;
       if (reason !== "media") logCall(callRef.current, reason);
+      if (reason && reason !== "local" && reason !== "media") playHangupTone();
       if (reason && reason !== "local") {
         update({ phase: "ended", endReason: reason });
         setTimeout(() => {
@@ -245,6 +258,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     } else if (callRef.current?.reconnecting) {
       lostSince.current = null;
       update({ reconnecting: false });
+      // After a resume the old connection's monitor is gone; watch the new one.
+      startMonitor();
     }
   };
 
@@ -501,6 +516,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     const c = callRef.current;
     if (!c) return;
     send("call:end", { id: c.id, reason: "ended" });
+    playHangupTone();
     cleanup("local");
   }, [send, cleanup]);
 
@@ -563,6 +579,38 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     setReactions((r) => [...r.slice(-11), { key, emoji, mine }]);
     setTimeout(() => setReactions((r) => r.filter((x) => x.key !== key)), 2600);
   };
+
+  // Their page reloaded mid-call: hold the call and wait for them to come back.
+  const awayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useCoupleEvent("call:away", (p) => {
+    const c = callRef.current;
+    if (!c || p.id !== c.id) return;
+    update({ reconnecting: true });
+    if (awayTimer.current) clearTimeout(awayTimer.current);
+    awayTimer.current = setTimeout(() => {
+      awayTimer.current = null;
+      if (callRef.current?.id === c.id && callRef.current.reconnecting) cleanup("ended");
+    }, RESUME_FOR + 3000);
+  });
+
+  // They're back: a fresh connection on the same call, their offer, our answer.
+  useCoupleEvent("call:resume", async (p) => {
+    const c = callRef.current;
+    if (!c || p.id !== c.id || !localRef.current) return;
+    if (awayTimer.current) clearTimeout(awayTimer.current);
+    awayTimer.current = null;
+    if (monitor.current) clearInterval(monitor.current);
+    monitor.current = null;
+    pc.current?.close();
+    pc.current = null;
+    pendingIce.current = [];
+    const peer = await makePeer(c.id, localRef.current);
+    await peer.setRemoteDescription(p.sdp as RTCSessionDescriptionInit);
+    await flushIce();
+    const answer = await peer.createAnswer();
+    await peer.setLocalDescription({ type: "answer", sdp: tuneSdp(answer.sdp) });
+    send("call:sdp", { id: c.id, sdp: peer.localDescription?.toJSON() });
+  });
 
   useCoupleEvent("call:wake", (p) => {
     const c = callRef.current;
@@ -714,11 +762,79 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Hang up cleanly if the tab closes mid-call.
+  // Reloads (a new version, a stale screen) wait while a call is up.
+  useEffect(() => {
+    setCallActive(Boolean(call && call.phase !== "ended"));
+  }, [call]);
+  useEffect(() => () => setCallActive(false), []);
+
+  // Back from a reload mid-call: pick the same call up again, as soon as the
+  // couple channel is connected so they hear about it.
+  const resumed = useRef(false);
+  useEffect(() => {
+    if (!connected || resumed.current) return;
+    resumed.current = true;
+    let r: Resume | null = null;
+    try {
+      r = JSON.parse(sessionStorage.getItem(RESUME_KEY) ?? "null") as Resume | null;
+      sessionStorage.removeItem(RESUME_KEY);
+    } catch {
+      r = null;
+    }
+    if (!r || callRef.current || nowMs() - r.at > RESUME_FOR) return;
+    const back = r;
+    void (async () => {
+      const state: CallState = {
+        ...baseState(back.id, back.video, "live"),
+        startedAt: back.startedAt ?? nowMs(),
+        muted: back.muted,
+        reconnecting: true,
+      };
+      callRef.current = state;
+      setCall(state);
+      iCalled.current = back.iCalled;
+      try {
+        const stream = await getMedia(back.video);
+        if (back.muted) stream.getAudioTracks().forEach((t) => (t.enabled = false));
+        const peer = await makePeer(back.id, stream);
+        const offer = await peer.createOffer();
+        await peer.setLocalDescription({ type: "offer", sdp: tuneSdp(offer.sdp) });
+        send("call:resume", { id: back.id, sdp: peer.localDescription?.toJSON() });
+        if (back.muted) send("call:mute", { id: back.id, muted: true });
+      } catch {
+        send("call:end", { id: back.id, reason: "ended" });
+        cleanup("media");
+      }
+    })();
+    // Runs once, when the channel first connects; the helpers read refs only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connected]);
+
+  // The page is going away mid-call (closed, or reloaded for a new version).
+  // A call that's up is handed over: we note it, tell them we'll be right
+  // back, and a reloaded page picks it up again (see "resume" below). If we
+  // don't come back, their side ends it after a short wait. A call still
+  // ringing just ends.
   useEffect(() => {
     const bye = () => {
       const c = callRef.current;
-      if (c) send("call:end", { id: c.id, reason: "ended" });
+      if (!c) return;
+      if ((c.phase === "live" || c.phase === "connecting") && pc.current) {
+        try {
+          const r: Resume = {
+            id: c.id,
+            video: c.video && !c.cameraOff,
+            startedAt: c.startedAt,
+            iCalled: iCalled.current,
+            muted: c.muted,
+            at: nowMs(),
+          };
+          sessionStorage.setItem(RESUME_KEY, JSON.stringify(r));
+        } catch {
+          /* storage blocked: it just ends */
+        }
+        send("call:away", { id: c.id });
+      } else send("call:end", { id: c.id, reason: "ended" });
     };
     window.addEventListener("pagehide", bye);
     return () => window.removeEventListener("pagehide", bye);

@@ -54,14 +54,6 @@ function Row({
     danger ? "text-danger hover:text-danger" : "text-text hover:text-text",
     (onClick || href) && "cursor-pointer",
   );
-  // After Dark is its own private area with its own security policy: open it as a
-  // fresh page load rather than an in-app jump.
-  if (href?.startsWith("/dark"))
-    return (
-      <a href={href} className={cls}>
-        {children}
-      </a>
-    );
   if (href)
     return (
       <Link href={href} className={cls}>

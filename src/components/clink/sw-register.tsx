@@ -1,12 +1,14 @@
 "use client";
 import { useEffect } from "react";
 import { installCapture } from "@/lib/install";
+import { inCall, whenNoCall } from "@/lib/call-flag";
 
 /**
  * Registers the service worker and keeps Clink current without asking:
  * new versions install and take over on their own (skipWaiting), so a
  * refresh always shows the latest. An open tab isn't reloaded under you;
- * it switches over quietly the next time you come back to the app.
+ * it switches over quietly the next time you come back to the app. Never
+ * during a call: a reload would hang up, so it waits until the call ends.
  */
 export function ServiceWorker() {
   useEffect(() => {
@@ -15,7 +17,7 @@ export function ServiceWorker() {
     let hadController = Boolean(navigator.serviceWorker.controller);
     let pending = false;
     const reloadIfPending = () => {
-      if (pending && document.visibilityState === "visible") window.location.reload();
+      if (pending && document.visibilityState === "visible" && !inCall()) window.location.reload();
     };
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       // The very first install also fires this; nothing to refresh then.
@@ -24,7 +26,11 @@ export function ServiceWorker() {
         return;
       }
       pending = true;
-      if (document.visibilityState === "hidden") window.location.reload();
+      // Hidden mid-call is the normal case on a phone (another app, the lock
+      // screen): wait for the call to end, then switch over when it's safe.
+      whenNoCall(() => {
+        if (document.visibilityState === "hidden") window.location.reload();
+      });
     });
     document.addEventListener("visibilitychange", reloadIfPending);
 
@@ -32,6 +38,7 @@ export function ServiceWorker() {
     const onChunkError = (e: PromiseRejectionEvent | ErrorEvent) => {
       const msg = String(("reason" in e ? e.reason?.message : e.message) ?? "");
       if (/ChunkLoadError|Loading chunk|Failed to fetch dynamically imported module/.test(msg)) {
+        if (inCall()) return;
         if (!sessionStorage.getItem("clink.chunkReload")) {
           sessionStorage.setItem("clink.chunkReload", "1");
           window.location.reload();

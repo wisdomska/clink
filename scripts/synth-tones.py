@@ -57,3 +57,11 @@ msg = []
 mix(msg, mallet(1318.51, 0.6, 1.0), 0.0)
 mix(msg, mallet(1975.53, 0.7, 0.8), 0.09)
 write("message.wav", msg)
+
+# Hang-up: three soft notes falling away (G#5, E5, B4), so the end of a call
+# is heard as clearly as its start, without being harsh.
+bye = []
+mix(bye, mallet(830.61, 0.5, 0.8), 0.00)
+mix(bye, mallet(659.25, 0.5, 0.7), 0.13)
+mix(bye, mallet(493.88, 0.8, 0.6), 0.26)
+write("hangup.wav", bye)
