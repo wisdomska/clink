@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash } from "@phosphor-icons/react";
+import { PencilSimple, Plus, Trash } from "@phosphor-icons/react";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useCouple, useCoupleNow } from "@/features/couple/context";
 import { Button, IconButton } from "@/components/ui/button";
@@ -18,10 +18,11 @@ import { DateField, TimeField } from "@/components/ui/pickers";
 import { PageBar } from "@/components/clink/page-bar";
 
 export function CountdownsScreen() {
-  const { me, coupleId } = useCouple();
+  const { me, partner, coupleId } = useCouple();
   const params = useSearchParams();
   const qc = useQueryClient();
   const { data = [], isLoading } = useCountdowns();
+  type Row = (typeof data)[number];
   const [open, setOpen] = useState(params.get("new") === "1");
   const now = useCoupleNow(30_000);
   const [title, setTitle] = useState("Next visit");
@@ -30,11 +31,12 @@ export function CountdownsScreen() {
   const [time, setTime] = useState("18:00");
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // The countdown being edited, or null when adding a new one.
+  const [editing, setEditing] = useState<Row | null>(null);
 
   const active = data.filter((c) => new Date(c.target_at!) > now);
   const reached = data.filter((c) => new Date(c.target_at!) <= now);
 
-  type Row = (typeof data)[number];
   const key = ["countdowns", coupleId];
 
   /**
@@ -42,11 +44,88 @@ export function CountdownsScreen() {
    * board straight away; the insert runs behind it. A failed save takes the
    * card back off and reopens the sheet with the reason.
    */
+  function openNew() {
+    setEditing(null);
+    setTitle("Next visit");
+    setSubtitle("");
+    setDate("");
+    setTime("18:00");
+    setNote("");
+    setError(null);
+    setOpen(true);
+  }
+
+  /** Open the sheet filled in with this countdown, in your own time zone. */
+  function openEdit(c: Row) {
+    const at = localParts(new Date(c.target_at!), me.timezone);
+    setEditing(c);
+    setTitle(c.title ?? "");
+    setSubtitle(c.subtitle ?? "");
+    setDate(at.dateKey);
+    setTime(`${String(at.hour).padStart(2, "0")}:${String(at.minute).padStart(2, "0")}`);
+    setNote("");
+    setError(null);
+    setOpen(true);
+  }
+
+  /** Edits show at once; a refusal puts the old version back and says why. */
+  async function saveEdit(c: Row, target: Date) {
+    const patch: {
+      title: string;
+      subtitle: string | null;
+      target_at: string;
+      reveal_note?: string;
+    } = {
+      title: title.trim(),
+      subtitle: subtitle.trim() || null,
+      target_at: target.toISOString(),
+    };
+    // The sealed note is only replaced when its writer types a new one.
+    if (c.created_by === me.id && note.trim()) patch.reveal_note = note.trim();
+    const prev = qc.getQueryData<Row[]>(key);
+    void qc.cancelQueries({ queryKey: key });
+    qc.setQueryData<Row[]>(key, (rows) =>
+      (rows ?? [])
+        .map((r) =>
+          r.id === c.id
+            ? ({
+                ...r,
+                title: patch.title,
+                subtitle: patch.subtitle,
+                target_at: patch.target_at,
+                has_note: r.has_note || Boolean(patch.reveal_note),
+              } as Row)
+            : r,
+        )
+        .sort((a, b) => Date.parse(a.target_at!) - Date.parse(b.target_at!)),
+    );
+    setOpen(false);
+    toast.ok("Updated. The board has the new time.");
+    const { error } = await supabaseBrowser().from("countdowns").update(patch).eq("id", c.id!);
+    if (error) {
+      qc.setQueryData(key, prev);
+      setOpen(true);
+      const m = error.message;
+      return setError(
+        m.includes("already reached zero")
+          ? "That one has already reached zero, so it stays as it was."
+          : m.includes("future")
+            ? "Pick a moment in the future."
+            : m.includes("wrote the note")
+              ? "Only the person who wrote the note can change it."
+              : "Couldn't save that. Try again.",
+      );
+    }
+    setNote("");
+    void qc.invalidateQueries({ queryKey: key });
+  }
+
   async function save() {
     setError(null);
     if (!title.trim() || !date) return setError("Give it a name and a date.");
     const target = zonedToUtc(date, time, me.timezone);
     if (target <= new Date()) return setError("Pick a moment in the future.");
+    if (editing) return saveEdit(editing, target);
     const row = {
       couple_id: coupleId,
       created_by: me.id,
@@ -127,7 +206,7 @@ export function CountdownsScreen() {
         title="Countdowns"
         back="/us"
         actions={
-          <Button size="sm" disabled={active.length >= 5} onClick={() => setOpen(true)}>
+          <Button size="sm" disabled={active.length >= 5} onClick={openNew}>
             <Plus size={20} aria-hidden /> Add
           </Button>
         }
@@ -141,7 +220,7 @@ export function CountdownsScreen() {
           <p className="text-muted m-0 text-base">
             Nothing on the board yet. Add your next visit and we&apos;ll start the flip.
           </p>
-          <Button size="md" onClick={() => setOpen(true)}>
+          <Button size="md" onClick={openNew}>
             <Plus size={20} aria-hidden /> Add a countdown
           </Button>
         </div>
@@ -160,9 +239,17 @@ export function CountdownsScreen() {
                     <h2 className="m-0 text-lg font-bold">{c.title}</h2>
                     {c.subtitle && <div className="text-muted mt-0.5 text-sm">{c.subtitle}</div>}
                   </div>
-                  <IconButton label={`Remove ${c.title}`} dim={40} onClick={() => remove(c)}>
-                    <Trash size={20} />
-                  </IconButton>
+                  <div className="flex flex-none gap-1">
+                    {/* Still counting down: you can change it. At zero it stays as it was. */}
+                    {!p.done && !String(c.id).startsWith("pending-") && (
+                      <IconButton label={`Edit ${c.title}`} dim={40} onClick={() => openEdit(c)}>
+                        <PencilSimple size={20} />
+                      </IconButton>
+                    )}
+                    <IconButton label={`Remove ${c.title}`} dim={40} onClick={() => remove(c)}>
+                      <Trash size={20} />
+                    </IconButton>
+                  </div>
                 </div>
                 <SplitFlap
                   size="md"
@@ -190,9 +277,14 @@ export function CountdownsScreen() {
           })}
         </div>
       )}
-      <Sheet open={open} onOpenChange={setOpen} title="New countdown" handle>
+      <Sheet
+        open={open}
+        onOpenChange={setOpen}
+        title={editing ? "Edit countdown" : "New countdown"}
+        handle
+      >
         <Display as="h2" size={28}>
-          What are we counting to?
+          {editing ? "Change of plans?" : "What are we counting to?"}
         </Display>
         <div>
           <Label htmlFor="cd-title">Name</Label>
@@ -223,18 +315,32 @@ export function CountdownsScreen() {
             <TimeField id="cd-time" value={time} onChange={setTime} />
           </div>
         </div>
-        <div>
-          <Label htmlFor="cd-note">Note that flips over at zero (optional)</Label>
-          <Textarea
-            id="cd-note"
-            maxLength={500}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Stays sealed until the board hits zero."
-          />
-        </div>
+        {!editing || editing.created_by === me.id ? (
+          <div>
+            <Label htmlFor="cd-note">
+              {editing?.has_note
+                ? "Replace the sealed note (optional)"
+                : "Note that flips over at zero (optional)"}
+            </Label>
+            <Textarea
+              id="cd-note"
+              maxLength={500}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder={
+                editing?.has_note
+                  ? "Your note stays sealed. Leave this empty to keep it."
+                  : "Stays sealed until the board hits zero."
+              }
+            />
+          </div>
+        ) : editing.has_note ? (
+          <p className="text-muted m-0 text-sm">
+            {partner.name}&apos;s sealed note stays as it is. Only they can change it.
+          </p>
+        ) : null}
         <FieldError>{error}</FieldError>
-        <Button onClick={save}>Put it on the board</Button>
+        <Button onClick={save}>{editing ? "Save changes" : "Put it on the board"}</Button>
       </Sheet>
     </div>
   );

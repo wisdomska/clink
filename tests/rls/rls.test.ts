@@ -461,6 +461,63 @@ describe("write protections", () => {
     const { data } = await admin.from("messages").select("body").eq("id", ids.message).single();
     expect(data!.body).toBe("secret c1");
   });
+  it("countdowns: the partner can edit details but never swap the sealed note; reached ones are frozen", async () => {
+    const { data: cd } = await admin
+      .from("countdowns")
+      .select("id")
+      .eq("couple_id", c1)
+      .eq("title", "Visit")
+      .single();
+    // B didn't write the note: changing it is refused, and nothing changes.
+    const swap = await B.client
+      .from("countdowns")
+      .update({ reveal_note: "swapped" })
+      .eq("id", cd!.id);
+    expect(swap.error).toBeTruthy();
+    // B can still move it, and can't claim to be its creator.
+    const later = new Date(Date.now() + 2 * 86400000).toISOString();
+    expect(
+      (
+        await B.client
+          .from("countdowns")
+          .update({ target_at: later, created_by: B.id })
+          .eq("id", cd!.id)
+      ).error,
+    ).toBeNull();
+    const row = (
+      await admin
+        .from("countdowns")
+        .select("reveal_note, created_by, target_at")
+        .eq("id", cd!.id)
+        .single()
+    ).data!;
+    expect(row.reveal_note).toBe("sealed note");
+    expect(row.created_by).toBe(A.id);
+    expect(Date.parse(row.target_at)).toBe(Date.parse(later));
+    // Not into the past, and nothing once it has reached zero.
+    expect(
+      (
+        await A.client
+          .from("countdowns")
+          .update({ target_at: new Date(Date.now() - 1000).toISOString() })
+          .eq("id", cd!.id)
+      ).error,
+    ).toBeTruthy();
+    const { data: past } = await admin
+      .from("countdowns")
+      .insert({
+        couple_id: c1,
+        title: "Done",
+        target_at: new Date(Date.now() - 86400000).toISOString(),
+        created_by: A.id,
+      })
+      .select("id")
+      .single();
+    expect(
+      (await A.client.from("countdowns").update({ title: "Changed" }).eq("id", past!.id)).error,
+    ).toBeTruthy();
+    await admin.from("countdowns").delete().eq("id", past!.id);
+  });
   it("cannot grant yourself admin or lift a suspension", async () => {
     await A.client.from("profiles").update({ is_admin: true }).eq("id", A.id);
     await A.client.from("profiles").update({ suspended_at: null }).eq("id", A.id);
