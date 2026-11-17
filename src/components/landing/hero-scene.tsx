@@ -59,13 +59,14 @@ export function HeroScene() {
               </span>
             </div>
             <div className={cn("flex flex-col gap-2.5", right && "items-end")}>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <Image
                   src={c.avatar}
                   alt=""
-                  width={56}
-                  height={56}
-                  className="bg-s2 h-11 w-11 flex-none rounded-full object-contain p-[8%] sm:h-14 sm:w-14"
+                  width={96}
+                  height={96}
+                  // Raw memoji, no frame: bigger and free to overlap their own space.
+                  className="h-16 w-16 flex-none object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,.35)] sm:h-20 sm:w-20 lg:h-24 lg:w-24"
                 />
                 <span className="text-text text-[20px] leading-none font-bold sm:text-[26px] lg:text-[30px]">
                   {c.name}
