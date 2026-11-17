@@ -19,6 +19,14 @@ const dobLabel = (iso: string) =>
     year: "numeric",
   });
 
+/** A timestamp as a readable date ("16 Nov 2026"). */
+const dateLabel = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
 interface U {
   id: string;
   email: string;
@@ -32,6 +40,7 @@ interface U {
   suspended: string | null;
   suspendedReason: string | null;
   deleted: string | null;
+  deletesAt: string | null;
   admin: boolean;
   coupleId: string | null;
   linkedAt: string | null;
@@ -103,6 +112,14 @@ export function AdminUsers() {
       danger: true,
       reason: "required" as const,
     },
+    delete_now: {
+      title: "Delete this account now?",
+      body: "They already asked to delete it. This skips the rest of the 30-day wait and removes everything now. This can't be undone.",
+      confirm: "Delete now",
+      danger: true,
+      reason: "required" as const,
+      typed: "DELETE",
+    },
     delete: {
       title: "Delete this account?",
       body: "Their account and everything they made are removed. This can't be undone.",
@@ -117,7 +134,9 @@ export function AdminUsers() {
     const answer = await ask(COPY[action]);
     if (!answer) return;
     try {
-      await adminFetch(`/api/admin/users/${u.id}`, { body: { action, reason: answer.reason } });
+      await adminFetch(`/api/admin/users/${u.id}`, {
+        body: { action: action === "delete_now" ? "delete" : action, reason: answer.reason },
+      });
       toast.ok("Saved. Added to the audit log.");
       void qc.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (e) {
@@ -244,7 +263,13 @@ export function AdminUsers() {
                       </span>
                     )}
                   </td>
-                  <td className="mono text-muted px-4 py-3 text-xs">{u.createdAt.slice(0, 10)}</td>
+                  <td
+                    className="px-4 py-3 text-xs whitespace-nowrap"
+                    title={new Date(u.createdAt).toLocaleString("en-GB")}
+                  >
+                    <span className="text-text">{dateLabel(u.createdAt)}</span>
+                    <span className="text-faint block">{timeAgo(u.createdAt)}</span>
+                  </td>
                   <td
                     className="text-muted px-4 py-3 text-xs whitespace-nowrap"
                     title={
@@ -253,8 +278,17 @@ export function AdminUsers() {
                   >
                     {timeAgo(u.lastActive)}
                   </td>
-                  <td className="text-muted px-4 py-3 text-xs">
-                    {u.coupleId ? `Linked ${u.linkedAt?.slice(0, 10) ?? ""}` : "Not linked"}
+                  <td className="text-muted px-4 py-3 text-xs whitespace-nowrap">
+                    {u.coupleId ? (
+                      <>
+                        <span className="text-text">Linked</span>
+                        {u.linkedAt && (
+                          <span className="text-faint block">{dateLabel(u.linkedAt)}</span>
+                        )}
+                      </>
+                    ) : (
+                      "Not linked"
+                    )}
                   </td>
                   <td className="px-4 py-3 text-xs whitespace-nowrap">
                     {u.dob ? (
@@ -271,7 +305,16 @@ export function AdminUsers() {
                   </td>
                   <td className="px-4 py-3 text-xs">
                     {u.deleted ? (
-                      <span className="text-danger">Deleting</span>
+                      <span title={`Asked to delete on ${dateLabel(u.deleted)}`}>
+                        <span className="text-danger">
+                          {u.deletesAt && new Date(u.deletesAt) > new Date()
+                            ? `Deletes ${dateLabel(u.deletesAt)}`
+                            : "Deleting today"}
+                        </span>
+                        <span className="text-faint block">
+                          Requested {timeAgo(u.deleted).toLowerCase()}
+                        </span>
+                      </span>
                     ) : u.suspended ? (
                       <span className="text-warning">Suspended: {u.suspendedReason}</span>
                     ) : u.confirmed ? (
@@ -282,7 +325,16 @@ export function AdminUsers() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap justify-end gap-1.5">
-                      {u.suspended ? (
+                      {u.deleted ? (
+                        // Already on its way out: suspending or unlinking means nothing now.
+                        <Button
+                          size="xs"
+                          variant="danger-outline"
+                          onClick={() => act(u, "delete_now")}
+                        >
+                          Delete now
+                        </Button>
+                      ) : u.suspended ? (
                         <Button size="xs" variant="ghost" onClick={() => act(u, "unsuspend")}>
                           Lift suspension
                         </Button>

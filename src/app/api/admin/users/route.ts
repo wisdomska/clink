@@ -115,12 +115,19 @@ export const GET = handler(async (req: NextRequest) => {
   const ageVerified = new Set<string>();
   const dobs = new Map<string, string>();
   const seen = new Map<string, string>();
+  const deletesAt = new Map<string, string>();
   for (let i = 0; i < slice.length; i += 200) {
     const ids = slice.slice(i, i + 200).map((u) => u.id);
-    const [{ data: priv }, { data: pres }] = await Promise.all([
+    const [{ data: priv }, { data: pres }, { data: dels }] = await Promise.all([
       admin.from("user_private").select("user_id, dob, age_verified_at").in("user_id", ids),
       admin.from("presence").select("user_id, last_seen_at").in("user_id", ids),
+      admin
+        .from("deletion_requests")
+        .select("user_id, execute_after")
+        .is("done_at", null)
+        .in("user_id", ids),
     ]);
+    for (const x of dels ?? []) deletesAt.set(x.user_id, x.execute_after);
     for (const x of priv ?? []) {
       if (x.age_verified_at) ageVerified.add(x.user_id);
       if (x.dob) dobs.set(x.user_id, x.dob);
@@ -150,6 +157,8 @@ export const GET = handler(async (req: NextRequest) => {
       suspended: pr?.suspended_at ?? null,
       suspendedReason: pr?.suspended_reason ?? null,
       deleted: pr?.deleted_at ?? null,
+      // Self-service deletions wait out a 30-day grace period; this is when it runs.
+      deletesAt: pr?.deleted_at ? (deletesAt.get(u.id) ?? null) : null,
       admin: Boolean(pr?.is_admin),
       coupleId: c?.coupleId ?? null,
       linkedAt: c?.linkedAt ?? null,

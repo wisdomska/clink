@@ -678,7 +678,7 @@ export function UserDetail({ id }: { id: string }) {
                       href={`/admin/reports?id=${r.id}`}
                       className="text-accent hover:underline"
                     >
-                      {r.status} · {r.created_at.slice(0, 10)}
+                      {r.status} · {when(r.created_at)}
                     </Link>
                   }
                 />
@@ -694,7 +694,7 @@ export function UserDetail({ id }: { id: string }) {
                 <Row
                   key={r.id}
                   k={r.category.replace(/_/g, " ")}
-                  v={`${r.status} · ${r.created_at.slice(0, 10)}`}
+                  v={`${r.status} · ${when(r.created_at)}`}
                 />
               ))
             ) : (

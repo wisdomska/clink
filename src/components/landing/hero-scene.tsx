@@ -13,7 +13,7 @@ const PEOPLE = [
     place: "Accra",
     name: "Ama",
     mood: "Feeling flirty",
-    avatar: "/memoji/w1-hearteyes.webp",
+    avatar: "/memoji/w1-callme.webp",
   },
   {
     zone: "America/New_York",
@@ -58,21 +58,24 @@ export function HeroScene() {
                 {minute === null ? "--:--" : clockIn(minute, c.zone)}
               </span>
             </div>
-            <div className={cn("flex flex-col gap-2.5", right && "items-end")}>
-              <div className="flex items-center gap-2">
-                <Image
-                  src={c.avatar}
-                  alt=""
-                  width={96}
-                  height={96}
-                  // Raw memoji, no frame: bigger and free to overlap their own space.
-                  className="h-16 w-16 flex-none object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,.35)] sm:h-20 sm:w-20 lg:h-24 lg:w-24"
-                />
-                <span className="text-text text-[20px] leading-none font-bold sm:text-[26px] lg:text-[30px]">
-                  {c.name}
-                </span>
-              </div>
-              <span className="border-line bg-s2 text-text rounded-full border px-3 py-1 text-xs font-semibold sm:text-sm">
+            {/* One person, one block: avatar on top, then name, then mood, all on the outer edge. */}
+            <div className={cn("flex flex-col", right ? "items-end" : "items-start")}>
+              <Image
+                src={c.avatar}
+                alt=""
+                width={160}
+                height={160}
+                // Raw memoji, no frame. The art carries its own transparent margin,
+                // so pull it in to sit tight on the name.
+                className={cn(
+                  "-mb-1 h-24 w-24 flex-none object-contain drop-shadow-[0_10px_18px_rgba(0,0,0,.4)] sm:h-32 sm:w-32 lg:h-40 lg:w-40",
+                  right ? "-mr-2" : "-ml-2",
+                )}
+              />
+              <span className="text-text text-[22px] leading-tight font-bold sm:text-[28px] lg:text-[32px]">
+                {c.name}
+              </span>
+              <span className="border-line bg-s2 text-text mt-2 rounded-full border px-3 py-1 text-xs font-semibold whitespace-nowrap sm:text-sm">
                 {c.mood}
               </span>
             </div>
