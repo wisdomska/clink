@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Check, Plus, X, CaretRight, EnvelopeSimple, LockKey } from "@phosphor-icons/react";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { useCouple } from "@/features/couple/context";
 import { Avatar } from "@/components/ui/avatar";
 import { Sheet } from "@/components/ui/sheet";

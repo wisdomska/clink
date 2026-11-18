@@ -1,7 +1,7 @@
 "use client";
 import { haptic } from "@/lib/feedback";
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {

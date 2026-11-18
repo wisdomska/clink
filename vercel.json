@@ -8,5 +8,11 @@
       "preview": true
     }
   },
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)docs' ':(exclude)tests' ':(exclude)*.md' ':(exclude).github' ':(exclude)scripts' ':(exclude).husky' ':(exclude)lighthouserc.json'"
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)docs' ':(exclude)tests' ':(exclude)*.md' ':(exclude).github' ':(exclude)scripts' ':(exclude).husky' ':(exclude)lighthouserc.json'",
+  "crons": [
+    {
+      "path": "/api/health",
+      "schedule": "17 6 * * *"
+    }
+  ]
 }

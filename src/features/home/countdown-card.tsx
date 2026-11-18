@@ -1,5 +1,6 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/ui/link";
+import { IntentLink } from "@/components/ui/intent-link";
 import { useQuery } from "@tanstack/react-query";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useCouple } from "@/features/couple/context";
@@ -116,9 +117,9 @@ export function CountdownCard({ now }: { now: Date }) {
       <div className="flex items-center justify-between gap-3">
         <h2 id="cd-h" className="m-0 flex min-w-0 items-center gap-2 text-lg font-bold">
           {next && <KindIcon kind={next.kind} size={20} className="text-accent flex-none" />}
-          <Link href="/us/countdowns" prefetch className="text-text hover:text-text truncate">
+          <IntentLink href="/us/countdowns" className="text-text hover:text-text truncate">
             {next?.title ?? "Next visit"}
-          </Link>
+          </IntentLink>
         </h2>
         <BoardLine kind={next?.kind} text={next?.subtitle} className="min-w-0" />
       </div>
@@ -164,13 +165,12 @@ export function CountdownCard({ now }: { now: Date }) {
             Nothing on the board yet. Add a visit, a trip or a date night and we&apos;ll start the
             flip.
           </p>
-          <Link
+          <IntentLink
             href="/us/countdowns?new=1"
-            prefetch
             className="press border-line bg-s2 text-text hover:text-text flex h-11 items-center self-start rounded-full border px-[18px] text-sm font-medium"
           >
             Add a countdown
-          </Link>
+          </IntentLink>
         </>
       )}
     </section>

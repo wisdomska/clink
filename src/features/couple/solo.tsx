@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { useRouter } from "next/navigation";
 import {
   ChatCircle,

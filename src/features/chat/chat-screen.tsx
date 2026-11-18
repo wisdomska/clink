@@ -39,7 +39,7 @@ import {
   Clock,
 } from "@phosphor-icons/react";
 import { AddToKeepSheet } from "./add-to-keep";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { useCouple, useCoupleNow, useCoupleEvent } from "@/features/couple/context";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/avatar";

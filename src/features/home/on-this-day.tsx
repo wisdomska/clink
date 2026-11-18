@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { supabaseBrowser } from "@/lib/supabase/client";

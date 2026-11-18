@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { CheckCircle, DeviceMobile, CaretRight } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { DownloadSimple, Megaphone, ToggleRight, Warning } from "@phosphor-icons/react";
 import { Display } from "@/components/ui/heading";

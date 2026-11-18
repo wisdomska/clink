@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/link";
+import { IntentLink } from "@/components/ui/intent-link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -252,14 +253,13 @@ export function PartnerSheetProvider({ children }: { children: React.ReactNode }
             Latest mood note: &ldquo;{mood.note}&rdquo;
           </div>
         )}
-        <Link
+        <IntentLink
           href="/settings"
-          prefetch
           onClick={() => setOpen(false)}
           className="text-muted hover:text-text flex h-11 items-center justify-center text-sm"
         >
           Edit your own profile
-        </Link>
+        </IntentLink>
       </Sheet>
     </Ctx.Provider>
   );

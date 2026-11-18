@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { LogoMark } from "@/components/brand/logo";
 import { Display } from "@/components/ui/heading";
 

@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { useCouple } from "@/features/couple/context";
 import { Mono } from "@/components/ui/heading";
 import {

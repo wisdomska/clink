@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { EyeSlash, HandHeart, Lock, SignOut } from "@phosphor-icons/react/dist/ssr";
 
 const POINTS = [

@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { X } from "@phosphor-icons/react";

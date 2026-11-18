@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, Microphone, Image as ImageIcon } from "@phosphor-icons/react/dist/ssr";
 import { supabaseServer } from "@/lib/supabase/server";

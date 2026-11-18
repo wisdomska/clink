@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { Plus, Minus, ShieldCheck, Paperclip, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Textarea, FieldError } from "@/components/ui/field";

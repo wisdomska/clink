@@ -2,7 +2,8 @@
 import { OnThisDay } from "./on-this-day";
 import { MissedCallCard } from "@/features/call/missed-call-card";
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/link";
+import { IntentLink } from "@/components/ui/intent-link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Archive, ChatCircle, Phone, VideoCamera } from "@phosphor-icons/react";
@@ -47,12 +48,6 @@ export function UsScreen() {
     }
   }, [params, router, sendClink]);
 
-  // The likely next stops from Us, fetched ahead so they open instantly.
-  useEffect(() => {
-    router.prefetch("/us/countdowns");
-    router.prefetch("/keep");
-  }, [router]);
-
   // Discreet mode: long-press the wordmark for 2 s to open After Dark.
   const wordDown = () => {
     if (wordTimer.current) clearTimeout(wordTimer.current);
@@ -74,22 +69,22 @@ export function UsScreen() {
         </h1>
         <div className="flex gap-2">
           {darkVisible && !discreet && (
-            <Link
+            <IntentLink
               href="/dark"
               aria-label="After Dark, 18+"
               title="After Dark"
               className="press flex h-11 w-11 items-center justify-center rounded-full"
             >
               <AfterDarkBadge />
-            </Link>
+            </IntentLink>
           )}
-          <Link
+          <IntentLink
             href="/keep"
             aria-label="Keep"
             className="press border-line bg-s1 text-text hover:text-text flex h-11 w-11 items-center justify-center rounded-full border"
           >
             <Archive size={24} aria-hidden />
-          </Link>
+          </IntentLink>
         </div>
       </div>
       {/* Desktop header: the day, how long you've been linked, and quick ways to reach them. */}
@@ -166,9 +161,9 @@ function DesktopActions() {
       >
         <VideoCamera size={18} aria-hidden /> Video
       </button>
-      <Link href="/keep" className={item}>
+      <IntentLink href="/keep" className={item}>
         <Archive size={18} aria-hidden /> Keep
-      </Link>
+      </IntentLink>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/ui/link";
+import { IntentLink } from "@/components/ui/intent-link";
 import { MoonStars, Microphone, EnvelopeSimple } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
 import { localParts } from "@/lib/time";
@@ -27,10 +28,10 @@ export function AsleepCard({ now }: { now: Date }) {
           <Microphone size={18} aria-hidden />
           Voice note
         </Link>
-        <Link href="/keep?write=letter" className={pill}>
+        <IntentLink href="/keep?write=letter" className={pill}>
           <EnvelopeSimple size={18} aria-hidden />
           Open when letter
-        </Link>
+        </IntentLink>
       </div>
     </div>
   );

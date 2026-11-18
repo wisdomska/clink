@@ -1,7 +1,7 @@
 "use client";
 import { BirthdayField } from "@/components/ui/pickers";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Fingerprint, Check, ShieldCheck } from "@phosphor-icons/react";
 import { BrandLogo } from "@/components/clink/brand-logo";

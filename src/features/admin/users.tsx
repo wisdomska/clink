@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MagnifyingGlass, X } from "@phosphor-icons/react";
 import { Display } from "@/components/ui/heading";

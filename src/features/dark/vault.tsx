@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { EyeSlash, Plus, Vault } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";

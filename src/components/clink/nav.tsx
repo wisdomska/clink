@@ -1,6 +1,7 @@
 "use client";
 import { useState, type MouseEvent } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/link";
+import { IntentLink } from "@/components/ui/intent-link";
 import { usePathname } from "next/navigation";
 import {
   Heart,
@@ -52,6 +53,14 @@ const STATUS_ICON: Record<string, Icon> = {
   away: Moon,
 };
 
+/**
+ * The main tabs load ahead so they open instantly. Settings is rarely the
+ * next stop, so it loads when you reach for it (see IntentLink).
+ */
+function TabLink(props: React.ComponentProps<typeof Link> & { href: string }) {
+  return props.href === "/settings" ? <IntentLink {...props} /> : <Link prefetch {...props} />;
+}
+
 function isActive(path: string, href: string) {
   return path === href || path.startsWith(`${href}/`);
 }
@@ -93,11 +102,9 @@ export function TabBar() {
       {TABS.map(({ href, label, Icon }) => {
         const on = active(href);
         return (
-          <Link
+          <TabLink
             key={href}
             href={href}
-            // Full prefetch: the next tab's payload is already here when it's tapped.
-            prefetch
             onClick={onTap(href)}
             aria-current={on ? "page" : undefined}
             className={cn(
@@ -116,7 +123,7 @@ export function TabBar() {
               {!on && <NavBadge href={href} badges={badges} />}
             </span>
             {label}
-          </Link>
+          </TabLink>
         );
       })}
     </nav>
@@ -135,6 +142,8 @@ export function Rail() {
     >
       <Link
         href="/us"
+        // The Us tab below already loads it ahead; don't fetch it twice.
+        prefetch={false}
         className="display rail-word text-text hover:text-text mb-8 px-3 text-[28px]"
       >
         <span className="rail-full">
@@ -149,10 +158,9 @@ export function Rail() {
         {TABS.map(({ href, label, Icon }) => {
           const on = active(href);
           return (
-            <Link
+            <TabLink
               key={href}
               href={href}
-              prefetch
               onClick={onTap(href)}
               aria-current={on ? "page" : undefined}
               title={label}
@@ -172,7 +180,7 @@ export function Rail() {
                 {!on && <NavBadge href={href} badges={badges} />}
               </span>
               <span className="rail-full">{label}</span>
-            </Link>
+            </TabLink>
           );
         })}
       </div>
@@ -184,10 +192,9 @@ export function Rail() {
           {MORE.map(({ href, label, Icon }) => {
             const on = active(href);
             return (
-              <Link
+              <IntentLink
                 key={href}
                 href={href}
-                prefetch
                 onClick={onTap(href)}
                 aria-current={on ? "page" : undefined}
                 title={label}
@@ -200,14 +207,14 @@ export function Rail() {
                   <Icon size={22} aria-hidden weight={on ? "fill" : "regular"} />
                 </span>
                 <span className="rail-full">{label}</span>
-              </Link>
+              </IntentLink>
             );
           })}
         </div>
       )}
       <div className="mt-auto flex flex-col gap-1">
         {darkVisible && !discreet && (
-          <Link
+          <IntentLink
             href="/dark"
             title="After Dark"
             className="press text-muted hover:bg-s1 hover:text-text flex h-12 items-center gap-3 rounded-full px-3 text-[15px] font-medium"
@@ -216,7 +223,7 @@ export function Rail() {
               <AfterDarkBadge size={30} />
             </span>
             <span className="rail-full">After Dark</span>
-          </Link>
+          </IntentLink>
         )}
         <AccountRow on={isActive(path, "/settings")} />
       </div>
@@ -234,9 +241,8 @@ function AccountRow({ on }: { on: boolean }) {
   const status = label ? label[0]!.toUpperCase() + label.slice(1) : "";
   const StatusIcon = STATUS_ICON[myStatus] ?? ChatCircle;
   return (
-    <Link
+    <IntentLink
       href="/settings?tab=profile"
-      prefetch
       title={`${me.name}: profile and settings`}
       aria-current={on ? "page" : undefined}
       className={cn(
@@ -265,7 +271,7 @@ function AccountRow({ on }: { on: boolean }) {
       </span>
       <span className="sr-only">Profile and settings</span>
       <GearSix size={18} aria-hidden className="rail-full text-faint mr-2 flex-none" />
-    </Link>
+    </IntentLink>
   );
 }
 
@@ -279,9 +285,8 @@ function PartnerRow() {
   const online = presence.online;
   const status = online ? statusLabel(presence.status) : "away";
   return (
-    <Link
+    <IntentLink
       href="/chat"
-      prefetch
       title={`Chat with ${partner.name}`}
       className="press bg-s1 border-line text-text hover:text-text hover:bg-s2 rounded-card mb-6 flex items-center gap-3 border p-2.5"
     >
@@ -315,7 +320,7 @@ function PartnerRow() {
       <span className="sr-only">
         {online ? "Online" : "Away"}. Open your chat with {partner.name}.
       </span>
-    </Link>
+    </IntentLink>
   );
 }
 
