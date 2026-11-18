@@ -74,6 +74,7 @@ import {
 import { usePins, PinnedBar, PinsSheet } from "./pins";
 import { useScheduled, SendLaterSheet, ScheduledBar, ScheduledSheet } from "./scheduled";
 import { usePrefersReducedMotion } from "@/lib/hooks";
+import { useDraft } from "./draft";
 import { useQueue, newClientId, type QueuedPayload } from "./queue";
 import { Bubble, STICKER_LABEL, previewText } from "./bubbles";
 import { StickerArt, STICKER_CAPTION } from "./sticker-art";
@@ -183,6 +184,7 @@ export function ChatScreen() {
   const [tray, setTray] = useState(false);
   const [composing, setComposing] = useState<File[] | null>(null);
   const [editing, setEditing] = useState<UiMessage | null>(null);
+  useDraft(coupleId, text, Boolean(editing), setText);
   const [searchOpen, setSearchOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const router = useRouter();

@@ -18,6 +18,7 @@ import {
 import { Avatar, type AvatarIcon } from "@/components/ui/avatar";
 import { LoadingDots } from "@/components/ui/spinner";
 import { cn } from "@/components/ui/cn";
+import { isIOS } from "@/lib/device";
 import { useCall } from "./call-provider";
 
 function Video({
@@ -143,6 +144,22 @@ export function CallScreen({
   const [reactOpen, setReactOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [mini, setMini] = useState(false);
+  // Shown once, on the first call on an iPhone: iOS pauses web apps in the background.
+  const [iosTip, setIosTip] = useState(() => {
+    try {
+      return isIOS() && !localStorage.getItem("clink.iosCallTip");
+    } catch {
+      return false;
+    }
+  });
+  const dismissTip = () => {
+    setIosTip(false);
+    try {
+      localStorage.setItem("clink.iosCallTip", "1");
+    } catch {
+      /* storage blocked */
+    }
+  };
   const [needsTap, setNeedsTap] = useState(false);
   useEffect(() => {
     const a = audioRef.current;
@@ -462,6 +479,24 @@ export function CallScreen({
                     {e}
                   </button>
                 ))}
+              </div>
+            )}
+            {live && iosTip && (
+              <div
+                role="note"
+                className="bg-s3/90 rounded-input flex max-w-[360px] items-start gap-2.5 px-3.5 py-2.5 text-left text-sm text-white"
+              >
+                <span className="flex-1">
+                  Keep Clink open during calls on iPhone. Locking the screen or switching apps
+                  pauses the call; it picks back up when you return.
+                </span>
+                <button
+                  type="button"
+                  onClick={dismissTip}
+                  className="press text-accent -my-1 min-h-9 cursor-pointer border-0 bg-transparent px-1 text-sm font-bold"
+                >
+                  Got it
+                </button>
               </div>
             )}
             {(call.muted || (call.video && call.cameraOff)) && (

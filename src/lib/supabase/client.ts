@@ -10,6 +10,8 @@ export function supabaseBrowser() {
     client = createBrowserClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      // Look fetch up on each call, so app-wide wrappers (offline saves) apply.
+      { global: { fetch: (...args) => window.fetch(...args) } },
     );
   }
   return client;

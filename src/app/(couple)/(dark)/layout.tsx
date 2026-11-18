@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { DarkSkeleton } from "@/features/dark/dark-skeleton";
 import { headers } from "next/headers";
 import { DarkGo } from "@/features/dark/go";
+import { OfflineBar } from "@/components/clink/offline-saves";
 import { loadCoupleContext } from "@/lib/server/couple-context";
 import { hasDarkSession } from "@/lib/server/dark";
 import { sessionUser } from "@/lib/server/api";
@@ -59,6 +60,7 @@ async function DarkShell({ children }: { children: React.ReactNode }) {
   }
   return (
     <div data-mode="dark" className="bg-app min-h-dvh">
+      <OfflineBar />
       {unlocked && <DarkIdle />}
       {children}
     </div>

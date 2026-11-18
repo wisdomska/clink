@@ -235,7 +235,7 @@ export async function notify(
  */
 export async function notifyCall(
   userId: string,
-  call: { id: string; video: boolean; from: string; cancel?: boolean },
+  call: { id: string; video: boolean; from: string; cancel?: boolean; dropped?: boolean },
 ): Promise<{ sent: number; skipped?: string }> {
   if (!configure()) return { sent: 0, skipped: "no_vapid" };
   const admin = supabaseAdmin();
@@ -251,18 +251,26 @@ export async function notifyCall(
   const app = APP_NAMES[profile.app_icon] ?? "Clink";
   const kind = call.video ? "Video call" : "Voice call";
   const payload = JSON.stringify({
-    type: call.cancel ? "call-cancel" : "call",
+    type: call.dropped ? "call-dropped" : call.cancel ? "call-cancel" : "call",
     id: call.id,
     video: call.video,
     title: app,
-    body: call.cancel
+    body: call.dropped
       ? prefs.detailed
-        ? `Missed ${kind.toLowerCase()} from ${call.from}`
-        : "Missed call"
-      : prefs.detailed
-        ? `${call.from}: incoming ${kind.toLowerCase()}`
-        : `Incoming ${kind.toLowerCase()}`,
-    url: call.cancel ? "/chat" : `/us?answer=${encodeURIComponent(call.id)}`,
+        ? `Your call with ${call.from} dropped. Tap to call back.`
+        : "Your call dropped. Tap to call back."
+      : call.cancel
+        ? prefs.detailed
+          ? `Missed ${kind.toLowerCase()} from ${call.from}`
+          : "Missed call"
+        : prefs.detailed
+          ? `${call.from}: incoming ${kind.toLowerCase()}`
+          : `Incoming ${kind.toLowerCase()}`,
+    url: call.dropped
+      ? `/chat?callback=${call.video ? "video" : "voice"}`
+      : call.cancel
+        ? "/chat"
+        : `/us?answer=${encodeURIComponent(call.id)}`,
     tag: `call-${call.id}`,
     icon: `/icons/${profile.app_icon}-192.png`,
   });
@@ -271,7 +279,7 @@ export async function notifyCall(
     .select("id, endpoint, p256dh, auth, ua")
     .eq("user_id", userId);
   const results = await deliver(subs ?? [], payload, {
-    TTL: call.cancel ? 3600 : 45,
+    TTL: call.cancel || call.dropped ? 3600 : 45,
     urgency: "high",
     topic: `call${call.id.replace(/-/g, "").slice(0, 26)}`,
   });

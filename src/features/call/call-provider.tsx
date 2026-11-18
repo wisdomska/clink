@@ -5,6 +5,7 @@ import { toast } from "@/components/ui/toast";
 import { haptic } from "@/lib/feedback";
 import { startTone, stopTones, primeTones, playHangupTone } from "@/lib/tones";
 import { setCallActive } from "@/lib/call-flag";
+import { isIOS } from "@/lib/device";
 import { iceServers } from "./ice";
 import { tuneSdp, prioritise, makeSampler, shapeVideo, type Quality } from "./call-net";
 import { CallScreen } from "./call-screen";
@@ -73,6 +74,9 @@ const RECONNECT_FOR = 30_000;
 /** A page reloaded mid-call has this long to come back to the same call. */
 const RESUME_FOR = 15_000;
 const RESUME_KEY = "clink.call.resume";
+/** How long a call waits for someone whose iPhone put Clink in the background. */
+const AWAY_FOR = 60_000;
+
 interface Resume {
   id: string;
   video: boolean;
@@ -138,6 +142,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const monitor = useRef<ReturnType<typeof setInterval> | null>(null);
   const lostSince = useRef<number | null>(null);
   const pendingAnswer = useRef<string | null>(null);
+  /** Running while they've stepped away; the call waits instead of failing. */
+  const awayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [reactions, setReactions] = useState<CallReaction[]>([]);
 
   // Warm up: audio unlock on the first tap, and relay credentials ahead of time.
@@ -348,7 +354,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         if (callRef.current?.phase !== "live" && callRef.current?.phase !== "connecting") return;
         if (lostSince.current === null) lostSince.current = Date.now();
         update({ reconnecting: true });
-        if (Date.now() - lostSince.current > RECONNECT_FOR) {
+        if (Date.now() - lostSince.current > RECONNECT_FOR && !awayTimer.current) {
           send("call:end", { id, reason: "failed" });
           cleanup("failed");
           return;
@@ -580,17 +586,40 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     setTimeout(() => setReactions((r) => r.filter((x) => x.key !== key)), 2600);
   };
 
-  // Their page reloaded mid-call: hold the call and wait for them to come back.
-  const awayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // They stepped away mid-call: a reload, or (on iPhone) another app or the
+  // lock screen. Hold the call and wait for them; if they don't come back in
+  // time, end it, and when they'd been backgrounded, offer them a call back.
   useCoupleEvent("call:away", (p) => {
     const c = callRef.current;
     if (!c || p.id !== c.id) return;
     update({ reconnecting: true });
     if (awayTimer.current) clearTimeout(awayTimer.current);
-    awayTimer.current = setTimeout(() => {
-      awayTimer.current = null;
-      if (callRef.current?.id === c.id && callRef.current.reconnecting) cleanup("ended");
-    }, RESUME_FOR + 3000);
+    const background = p.kind === "background";
+    awayTimer.current = setTimeout(
+      () => {
+        awayTimer.current = null;
+        if (callRef.current?.id !== c.id || !callRef.current.reconnecting) return;
+        if (background)
+          void fetch("/api/calls/ring", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: c.id, video: c.video, dropped: true }),
+          }).catch(() => undefined);
+        send("call:end", { id: c.id, reason: "ended" });
+        cleanup("ended");
+      },
+      background ? AWAY_FOR : RESUME_FOR + 3000,
+    );
+  });
+
+  // They came back and the connection held: nothing to rebuild.
+  useCoupleEvent("call:back", (p) => {
+    const c = callRef.current;
+    if (!c || p.id !== c.id) return;
+    if (awayTimer.current) clearTimeout(awayTimer.current);
+    awayTimer.current = null;
+    const st = pc.current?.iceConnectionState;
+    if (st === "connected" || st === "completed") update({ reconnecting: false });
   });
 
   // They're back: a fresh connection on the same call, their offer, our answer.
@@ -809,6 +838,66 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     // Runs once, when the channel first connects; the helpers read refs only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connected]);
+
+  // iPhone: switching apps or locking the screen pauses Clink and the call
+  // with it. Tell them we'll be right back; on return, carry on if the
+  // connection held, or rebuild it on the same call if it dropped.
+  useEffect(() => {
+    if (!isIOS()) return;
+    const onVis = async () => {
+      const c = callRef.current;
+      if (!c || c.phase !== "live") return;
+      if (document.visibilityState === "hidden") {
+        send("call:away", { id: c.id, kind: "background" });
+        return;
+      }
+      const st = pc.current?.iceConnectionState;
+      if (st === "connected" || st === "completed") {
+        send("call:back", { id: c.id });
+        return;
+      }
+      try {
+        let stream = localRef.current;
+        // iOS may have stopped the microphone while we were away.
+        if (!stream || !stream.getAudioTracks().some((t) => t.readyState === "live"))
+          stream = await getMedia(c.video && !c.cameraOff);
+        if (c.muted) stream.getAudioTracks().forEach((t) => (t.enabled = false));
+        if (monitor.current) clearInterval(monitor.current);
+        monitor.current = null;
+        pc.current?.close();
+        pc.current = null;
+        pendingIce.current = [];
+        update({ reconnecting: true });
+        const peer = await makePeer(c.id, stream);
+        const offer = await peer.createOffer();
+        await peer.setLocalDescription({ type: "offer", sdp: tuneSdp(offer.sdp) });
+        send("call:resume", { id: c.id, sdp: peer.localDescription?.toJSON() });
+      } catch {
+        send("call:end", { id: c.id, reason: "ended" });
+        cleanup("media");
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+    // The helpers read refs only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [send]);
+
+  // Opened from "Your call dropped": one tap calls them back.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const back = params.get("callback");
+    if (back !== "voice" && back !== "video") return;
+    params.delete("callback");
+    const q = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${q ? `?${q}` : ""}`);
+    toast(`Your call with ${partner.name} dropped.`, {
+      action: { label: "Call back", onClick: () => void start(back === "video") },
+      duration: 15_000,
+    });
+    // Once, on open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // The page is going away mid-call (closed, or reloaded for a new version).
   // A call that's up is handed over: we note it, tell them we'll be right

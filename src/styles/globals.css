@@ -807,3 +807,32 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
     animation: none;
   }
 }
+
+/* Screen changes: the old screen fades out quickly while the new one makes
+   its usual entrance (.an-screen). Only the screen area moves; the rest of
+   the page (tab bar, rail, banners) holds still. Browsers without View
+   Transitions just switch, as before. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+::view-transition-old(.screen) {
+  animation: vtScreenOut 120ms var(--ease-out) both;
+}
+::view-transition-new(.screen) {
+  animation: none;
+}
+@keyframes vtScreenOut {
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(.screen) {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"]::view-transition-old(.screen) {
+  animation: none;
+}

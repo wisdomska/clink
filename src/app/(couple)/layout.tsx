@@ -3,6 +3,7 @@ import { loadCoupleContext } from "@/lib/server/couple-context";
 import { CoupleProvider } from "@/features/couple/context";
 import { CallProvider } from "@/features/call/call-provider";
 import { QueryProvider } from "@/features/couple/query-provider";
+import { OfflineSaves } from "@/components/clink/offline-saves";
 
 /**
  * Shared by the app and After Dark, so moving between them never remounts
@@ -15,6 +16,7 @@ export default async function CoupleLayout({ children }: { children: React.React
   return (
     <QueryProvider>
       <CoupleProvider value={ctx}>
+        <OfflineSaves />
         <CallProvider>{children}</CallProvider>
       </CoupleProvider>
     </QueryProvider>

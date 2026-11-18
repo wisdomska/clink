@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, ViewTransition } from "react";
 import { usePathname } from "next/navigation";
 import { WifiSlash, Megaphone, X } from "@phosphor-icons/react";
 import { TabBar, Rail } from "@/components/clink/nav";
@@ -93,7 +93,7 @@ export function AppShell({
                 className="an-banner bg-s2 border-accent text-text flex items-center gap-2.5 border-b-2 px-4 py-2.5 text-sm font-bold"
               >
                 <WifiSlash size={18} weight="bold" className="text-warning" aria-hidden />
-                You&apos;re offline. Messages send when you&apos;re back.
+                You&apos;re offline. Messages and saves go through when you&apos;re back.
               </div>
             )}
             {visible.map((b) => (
@@ -131,7 +131,8 @@ export function AppShell({
             ))}
           </div>
         )}
-        {body}
+        {/* Screen changes cross-fade (the tab bar and banners stay put). */}
+        <ViewTransition default="screen">{body}</ViewTransition>
       </div>
       {tabs && <TabBar />}
       {!solo && <IncomingClink />}
