@@ -1,8 +1,9 @@
 import { test, expect } from "@playwright/test";
 
 // Visual regression for pages that need no account. Baselines live next to this
-// file; update them with `pnpm test:e2e tests/visual --update-snapshots` after an
-// intended design change.
+// file and are always rendered in Playwright's Docker image: run
+// `scripts/visual.sh` to compare, or `scripts/visual.sh --update-snapshots`
+// after an intended design change.
 const ROUTES = ["/", "/login", "/signup", "/privacy", "/help"];
 
 for (const route of ROUTES) {

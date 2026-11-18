@@ -836,3 +836,18 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
 :root[data-motion="reduced"]::view-transition-old(.screen) {
   animation: none;
 }
+
+/* Long chats: rows far off screen aren't laid out or drawn until you scroll
+   to them. Only where the browser keeps the scroll position steady while
+   their real size comes in (Chrome, Android; not Safari yet). The padding,
+   cancelled by an equal negative margin, leaves room for reaction chips and
+   joined bubbles that sit just outside a row, so nothing is clipped. */
+@supports (overflow-anchor: auto) {
+  .chat-row {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 72px;
+    margin: -6px -12px;
+    padding: 6px 12px;
+    width: calc(100% + 24px);
+  }
+}

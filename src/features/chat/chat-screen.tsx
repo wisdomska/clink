@@ -886,7 +886,9 @@ export function ChatScreen() {
                     ? "first"
                     : "single";
                 return (
-                  <div key={m.id} className="contents">
+                  // Each message is its own row so the browser can skip drawing the
+                  // ones far off screen (.chat-row), which keeps long chats light.
+                  <div key={m.id} className="chat-row flex w-full flex-col gap-2">
                     {gap && (
                       <div className="mono text-faint self-center py-1 text-xs">
                         {dayLabel(new Date(m.sent_at), me.timezone)}

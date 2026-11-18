@@ -11,8 +11,8 @@ const localChromium =
 
 export default defineConfig({
   testDir: "tests",
-  // Visual baselines are recorded on the dev container; CI runs them separately
-  // (see ci.yml) because font rasterising differs between machines.
+  // Visual baselines are recorded and compared inside Playwright's Docker image
+  // (scripts/visual.sh), because font rasterising differs between machines.
   testMatch:
     process.env.CI && !process.env.VISUAL
       ? ["e2e/**/*.spec.ts", "a11y/**/*.spec.ts"]

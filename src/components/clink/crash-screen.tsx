@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import * as Sentry from "@sentry/nextjs";
 import { WarningCircle, WifiSlash } from "@phosphor-icons/react";
 import { useOnline } from "@/lib/hooks";
 import { inCall } from "@/lib/call-flag";
 import { cn } from "@/components/ui/cn";
+import { reportError } from "@/lib/report";
 
 /**
  * Shown when a screen throws. Private routes are never reported (see
@@ -23,7 +23,7 @@ export function CrashScreen({
 }) {
   const online = useOnline();
   useEffect(() => {
-    if (online) Sentry.captureException(error);
+    if (online) reportError(error);
   }, [error, online]);
   const Tag = inline ? "section" : "main";
   const box = cn(
