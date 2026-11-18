@@ -1,11 +1,14 @@
 name: Keep Supabase awake
 
-# Supabase Free pauses a project after 7 days without activity, and an idle
-# app goes cold. Every hour this pings each environment's health endpoint
-# (which touches the database) and the Supabase REST API directly.
+# Supabase Free pauses a project after 7 days without activity. Once a day,
+# one job pings both environments' health endpoints (which touch the
+# database) and the Supabase REST APIs directly. Production also gets a daily
+# Vercel cron on /api/health (vercel.json), so either one alone is enough.
+# Daily, not hourly: every job bills at least a minute of Actions time, and
+# hourly runs used up the free allowance.
 on:
   schedule:
-    - cron: "23 * * * *"
+    - cron: "23 3 * * *"
   workflow_dispatch:
 
 permissions: {}
@@ -13,18 +16,22 @@ permissions: {}
 jobs:
   ping:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        env: [production, preview]
+    timeout-minutes: 2
     steps:
-      - name: Ping app health endpoint
-        env:
-          URL: ${{ matrix.env == 'production' && 'https://clinkapp.vercel.app' || 'https://clinkapp-preview.vercel.app' }}
-        run: curl -fsS --max-time 30 "$URL/api/health" || echo "app ping failed"
+      - name: Ping app health endpoints
+        run: |
+          curl -fsS --max-time 30 "https://clinkapp.vercel.app/api/health" || echo "production ping failed"
+          curl -fsS --max-time 30 "https://clinkapp-preview.vercel.app/api/health" || echo "preview ping failed"
       - name: Ping Supabase REST
         env:
-          SB_URL: ${{ matrix.env == 'production' && secrets.SUPABASE_PROD_URL || secrets.SUPABASE_PREVIEW_URL }}
-          SB_KEY: ${{ matrix.env == 'production' && secrets.SUPABASE_PROD_ANON_KEY || secrets.SUPABASE_PREVIEW_ANON_KEY }}
+          PROD_URL: ${{ secrets.SUPABASE_PROD_URL }}
+          PROD_KEY: ${{ secrets.SUPABASE_PROD_ANON_KEY }}
+          PREVIEW_URL: ${{ secrets.SUPABASE_PREVIEW_URL }}
+          PREVIEW_KEY: ${{ secrets.SUPABASE_PREVIEW_ANON_KEY }}
         run: |
-          if [ -z "$SB_URL" ]; then echo "secret not set, skipping"; exit 0; fi
-          curl -fsS --max-time 30 "$SB_URL/rest/v1/feature_flags?select=key&limit=1" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY"
+          ping() {
+            if [ -z "$1" ]; then echo "secret not set, skipping"; return 0; fi
+            curl -fsS --max-time 30 "$1/rest/v1/feature_flags?select=key&limit=1" -H "apikey: $2" -H "Authorization: Bearer $2" || echo "ping failed"
+          }
+          ping "$PROD_URL" "$PROD_KEY"
+          ping "$PREVIEW_URL" "$PREVIEW_KEY"
