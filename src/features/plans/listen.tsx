@@ -26,6 +26,7 @@ import {
 } from "./music-link";
 import { PAGE, editPaged, flatPaged, nextOffset } from "./paged";
 import { PageBar } from "@/components/clink/page-bar";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type Row = Database["public"]["Tables"]["listen_queue"]["Row"];
 /** `service` comes from migration 20261116000100; older rows default to youtube. */
@@ -263,9 +264,9 @@ export function ListenTogether() {
           )}
         </>
       ) : (
-        <div className="rounded-card border-line text-muted border border-dashed p-5 text-base">
-          The queue is empty. Add the song that&apos;s stuck in your head.
-        </div>
+        <EmptyState art="party" title="The queue is empty.">
+          Add the song that&apos;s stuck in your head. It plays for both of you.
+        </EmptyState>
       )}
       <form
         className="flex items-center gap-2"

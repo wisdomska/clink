@@ -24,6 +24,7 @@ import { DateList } from "./date-list";
 import { editList, rollback } from "./infinite";
 import { FindLinks } from "@/features/search/search-shortcut";
 import { PageBar } from "@/components/clink/page-bar";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export function PlansHub() {
   const { me, partner, coupleId } = useCouple();
@@ -120,13 +121,12 @@ export function PlansHub() {
               )}
             </>
           ) : (
-            <div className="rounded-card border-line flex flex-col items-start gap-3 border border-dashed p-5">
-              <TicketIcon size={36} className="text-faint" aria-hidden />
-              <div className="display text-[28px] leading-[1.05]">The booth is empty.</div>
-              <p className="text-muted m-0 text-base">
-                No date on the books. Pick a kit below, or spin for one.
-              </p>
-            </div>
+            <EmptyState
+              art={<TicketIcon size={40} className="text-faint" aria-hidden />}
+              title="The booth is empty."
+            >
+              No date on the books. Pick a kit below, or spin for one.
+            </EmptyState>
           )}
 
           <div className="grid grid-cols-2 items-stretch gap-2.5">

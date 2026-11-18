@@ -21,7 +21,7 @@ import { IdentityPicker } from "@/components/clink/identity-picker";
 import { InstallCard } from "./install-card";
 import { DateField, TimeField } from "@/components/ui/pickers";
 import { clearUserCaches } from "@/lib/account-scope";
-import { messageToneOn, setMessageTone, playMessageTone } from "@/lib/tones";
+import { SoundsCard } from "./sounds";
 import { asIdentity } from "@/lib/app-identity";
 import { ProfileCard } from "./profile";
 import { Display } from "@/components/ui/heading";
@@ -80,7 +80,6 @@ const SETTINGS_TABS = [
 export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myTiers: string[] }) {
   const ctx = useCouple();
   const { me, partner, settings } = ctx;
-  const [tone, setTone] = useState(() => (typeof window === "undefined" ? true : messageToneOn()));
   const [notify, setNotify] = useState<Record<string, boolean>>({
     clinks: true,
     chat: true,
@@ -181,18 +180,7 @@ export function SettingsScreen({ darkSetUp, myTiers }: { darkSetUp: boolean; myT
           {tab === "alerts" && (
             <TabPanel key="alerts" className="flex flex-col gap-4">
               <h2 className="sr-only">Notifications</h2>
-              <div className="rounded-card border-line bg-s1 overflow-hidden border">
-                <Toggle
-                  label="Message tone"
-                  sub="A soft chime when a message arrives while Clink is open. Calls always ring."
-                  checked={tone}
-                  onChange={(v) => {
-                    setTone(v);
-                    setMessageTone(v);
-                    if (v) playMessageTone();
-                  }}
-                />
-              </div>
+              <SoundsCard />
               <div className="rounded-card border-line bg-s1 overflow-hidden border">
                 <Toggle
                   label="Clinks"

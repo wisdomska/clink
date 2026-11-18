@@ -8,6 +8,7 @@ import type { CursorPage } from "@/features/plans/cursor";
 import { darkFetch } from "./api";
 import { SendSheet } from "./send-sheet";
 import { PageBar } from "@/components/clink/page-bar";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export const vaultListKey = ["vault", "list"] as const;
 
@@ -110,21 +111,24 @@ export function VaultScreen() {
           <LoadMore query={q} />
         </>
       ) : (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3.5 text-center">
-          <div
-            aria-hidden
-            className="rounded-input border-line bg-s2 text-ember flex h-16 w-16 items-center justify-center border"
-          >
-            <Vault size={30} />
-          </div>
-          <div className="display text-[28px] leading-[1.05]">Nothing kept. Yet.</div>
-          <p className="text-muted m-0 text-base leading-normal">
-            When you send with Keep in vault, it lands here for both of you.
-          </p>
-          <Button size="sm" variant="ghost" onClick={() => setSend(true)}>
-            <Plus size={18} aria-hidden /> Send something
-          </Button>
-        </div>
+        <EmptyState
+          art={
+            <div
+              aria-hidden
+              className="rounded-input border-line bg-s2 text-ember flex h-14 w-14 items-center justify-center border"
+            >
+              <Vault size={28} />
+            </div>
+          }
+          title="Nothing kept. Yet."
+          actions={
+            <Button size="sm" variant="ghost" onClick={() => setSend(true)}>
+              <Plus size={18} aria-hidden /> Send something
+            </Button>
+          }
+        >
+          When you send with Keep in vault, it lands here for both of you.
+        </EmptyState>
       )}
       <SendSheet open={send} onClose={() => setSend(false)} />
     </main>

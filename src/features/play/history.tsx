@@ -11,6 +11,7 @@ import {
 } from "@/features/plans/infinite";
 import { GAME_META } from "./meta";
 import type { GameType } from "./engines/types";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface Finished {
   id: string;
@@ -100,19 +101,22 @@ export function GameHistory({ onStart }: { onStart: () => void }) {
           </button>
         </div>
       ) : (
-        <div className="rounded-card border-line flex flex-col items-start gap-3 border border-dashed p-4">
-          <p className="text-muted m-0 text-sm">
-            Finished games land here, with who won. Start one now, it works even when {partner.name}
-            &apos;s away.
-          </p>
-          <button
-            type="button"
-            onClick={onStart}
-            className="press border-line bg-s2 text-text flex h-11 cursor-pointer items-center rounded-full border px-4 text-sm font-medium"
-          >
-            Play a word game
-          </button>
-        </div>
+        <EmptyState
+          art="trophy"
+          title="No games finished yet."
+          actions={
+            <button
+              type="button"
+              onClick={onStart}
+              className="press border-line bg-s2 text-text flex h-11 cursor-pointer items-center rounded-full border px-4 text-sm font-medium"
+            >
+              Play a word game
+            </button>
+          }
+        >
+          Finished games land here, with who won. Start one now, it works even when {partner.name}
+          &apos;s away.
+        </EmptyState>
       )}
     </section>
   );

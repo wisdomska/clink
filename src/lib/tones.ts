@@ -23,6 +23,17 @@ function el(t: Tone): HTMLAudioElement | null {
 }
 
 let primed = false;
+/** Tones a real play has asked for; the unlock trick must leave these alone. */
+const wanted = new Set<Tone>();
+function play(t: Tone, a: HTMLAudioElement) {
+  wanted.add(t);
+  a.muted = false;
+  a.currentTime = 0;
+  void a
+    .play()
+    .catch(() => undefined)
+    .finally(() => setTimeout(() => wanted.delete(t), 1500));
+}
 /** Call once at startup: the first user gesture unlocks audio for later. */
 export function primeTones() {
   if (typeof window === "undefined" || primed) return;
@@ -31,12 +42,17 @@ export function primeTones() {
     for (const t of ["ringtone", "ringback", "message", "hangup"] as const) {
       const a = el(t);
       if (!a) continue;
+      // Already asked to play by this same tap: leave it playing.
+      if (wanted.has(t)) continue;
       a.muted = true;
       void a
         .play()
         .then(() => {
-          a.pause();
-          a.currentTime = 0;
+          // If a real play came in meanwhile, don't silence or stop it.
+          if (!wanted.has(t)) {
+            a.pause();
+            a.currentTime = 0;
+          }
           a.muted = false;
         })
         .catch(() => {
@@ -54,8 +70,7 @@ export function startTone(t: "ringtone" | "ringback") {
   stopTones();
   const a = el(t);
   if (!a) return;
-  a.currentTime = 0;
-  void a.play().catch(() => undefined);
+  play(t, a);
 }
 
 export function stopTones() {
@@ -87,14 +102,42 @@ export function playMessageTone() {
   if (!messageToneOn()) return;
   const a = el("message");
   if (!a) return;
-  a.currentTime = 0;
-  void a.play().catch(() => undefined);
+  play("message", a);
 }
 
-/** Three soft falling notes when a call ends, so you know it's over. */
-export function playHangupTone() {
+const HANGUP_KEY = "clink_hangup_tone";
+export function hangupToneOn(): boolean {
+  try {
+    return localStorage.getItem(HANGUP_KEY) !== "off";
+  } catch {
+    return true;
+  }
+}
+export function setHangupTone(on: boolean) {
+  try {
+    localStorage.setItem(HANGUP_KEY, on ? "on" : "off");
+  } catch {
+    /* storage blocked */
+  }
+}
+
+/** Three soft falling notes when a call ends, so you know it's over (unless switched off). */
+export function playHangupTone(force = false) {
+  if (!force && !hangupToneOn()) return;
   const a = el("hangup");
   if (!a) return;
-  a.currentTime = 0;
-  void a.play().catch(() => undefined);
+  play("hangup", a);
+}
+
+/** Settings preview: a few seconds of any tone, whatever the switches say. */
+export function previewTone(t: Tone) {
+  if (t === "message") {
+    const a = el("message");
+    if (!a) return;
+    play("message", a);
+    return;
+  }
+  if (t === "hangup") return playHangupTone(true);
+  startTone(t);
+  setTimeout(stopTones, 3500);
 }

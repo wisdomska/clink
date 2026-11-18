@@ -18,6 +18,7 @@ import {
 import { useTimeline, timelineKey, tagDate, type TimelineRow } from "./data";
 import { nextAnniversary } from "@/lib/milestones";
 import { PageBar } from "@/components/clink/page-bar";
+import { EmptyState } from "@/components/ui/empty-state";
 
 /** KEEP-03 full timeline: auto milestones plus manual entries with photos. */
 function ordinal(n: number) {
@@ -153,15 +154,17 @@ export function TimelineScreen() {
           <LoadMore query={q} skeleton={<TimelineSkeleton count={3} />} />
         </>
       ) : (
-        <div className="rounded-card border-line flex flex-col items-start gap-3 border border-dashed p-5">
-          <div className="display text-[28px] leading-[1.05]">Nothing on the timeline yet.</div>
-          <p className="text-muted m-0 text-base">
-            Add a moment you want to keep. Dates you finish land here on their own.
-          </p>
-          <Button size="sm" onClick={() => router.push("/keep?write=moment")}>
-            <Plus size={18} aria-hidden /> Add a moment
-          </Button>
-        </div>
+        <EmptyState
+          art="sparkling_heart"
+          title="Nothing on the timeline yet."
+          actions={
+            <Button size="sm" onClick={() => router.push("/keep?write=moment")}>
+              <Plus size={18} aria-hidden /> Add a moment
+            </Button>
+          }
+        >
+          Add a moment you want to keep. Dates you finish land here on their own.
+        </EmptyState>
       )}
     </div>
   );

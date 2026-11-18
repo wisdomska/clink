@@ -40,6 +40,7 @@ import {
 } from "./data";
 import { DateField } from "@/components/ui/pickers";
 import { PageBar } from "@/components/clink/page-bar";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const CONDITIONS = [
   "Open when you miss me",
@@ -127,24 +128,27 @@ export function KeepHub() {
       <Lead className="-mt-2">Things to open later.</Lead>
 
       {empty && (
-        <div className="rounded-card border-line flex flex-col items-start gap-3 border border-dashed p-5">
-          <div className="w-40">
-            <SealedEnvelope initials={initials} tilt={0} />
-          </div>
-          <div className="display text-[28px] leading-[1.05]">Nothing sealed yet.</div>
-          <p className="text-muted m-0 text-base">
-            Write {partner.name} a letter for a bad day, or bottle something up for next
-            Valentine&apos;s.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" onClick={() => setWrite("letter")}>
-              <PencilSimple size={18} aria-hidden /> Write a letter
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => setWrite("capsule")}>
-              <Plus size={18} aria-hidden /> Seal a capsule
-            </Button>
-          </div>
-        </div>
+        <EmptyState
+          art={
+            <div className="w-40">
+              <SealedEnvelope initials={initials} tilt={0} />
+            </div>
+          }
+          title="Nothing sealed yet."
+          actions={
+            <>
+              <Button size="sm" onClick={() => setWrite("letter")}>
+                <PencilSimple size={18} aria-hidden /> Write a letter
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setWrite("capsule")}>
+                <Plus size={18} aria-hidden /> Seal a capsule
+              </Button>
+            </>
+          }
+        >
+          Write {partner.name} a letter for a bad day, or bottle something up for next
+          Valentine&apos;s.
+        </EmptyState>
       )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-10 2xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">

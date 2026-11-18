@@ -2,6 +2,7 @@
 import { OnThisDay } from "./on-this-day";
 import { MissedCallCard } from "@/features/call/missed-call-card";
 import { useEffect, useRef, useState } from "react";
+import { Tips } from "@/components/clink/tips";
 import Link from "@/components/ui/link";
 import { IntentLink } from "@/components/ui/intent-link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -117,6 +118,23 @@ export function UsScreen() {
           <DualClock now={now} />
           <AsleepCard now={now} />
           <ClinkButton streak={streak ?? null} />
+          <Tips
+            tips={[
+              {
+                id: "hold-together",
+                text: "Press and hold the Clink button to hold together. You'll feel each other live.",
+              },
+              {
+                id: "partner-press",
+                text: "Press and hold your partner's picture for quick actions: call, message, clink.",
+              },
+              {
+                id: "discreet-entry",
+                text: "Discreet mode is on: press and hold the Clink wordmark for 2 seconds to open After Dark.",
+                when: discreet && darkVisible,
+              },
+            ]}
+          />
         </div>
         <div className="flex min-w-0 flex-col gap-4 lg:gap-6 2xl:grid 2xl:grid-cols-2 2xl:items-start">
           <div className="flex min-w-0 flex-col gap-4 lg:gap-6">

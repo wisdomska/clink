@@ -19,6 +19,7 @@ import { useCouple } from "@/features/couple/context";
 import { localParts } from "@/lib/time";
 import { useSearchShortcut } from "./search-shortcut";
 import { PageBar } from "@/components/clink/page-bar";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export interface SearchResults {
   q: string;
@@ -207,6 +208,16 @@ export function SearchScreen() {
                 : `Nothing for "${q}". Try another word.`
               : ""}
       </div>
+
+      {ready && res && total === 0 && !isFetching && (
+        <EmptyState
+          art={<MagnifyingGlass size={40} className="text-faint" aria-hidden />}
+          title={`Nothing for "${q}".`}
+        >
+          Try another word, or part of one. Search looks through messages, letters, plans and your
+          list.
+        </EmptyState>
+      )}
 
       {!ready && (
         <div className="rounded-card border-line bg-s1 flex flex-col gap-3 border p-5">

@@ -75,6 +75,7 @@ import { usePins, PinnedBar, PinsSheet } from "./pins";
 import { useScheduled, SendLaterSheet, ScheduledBar, ScheduledSheet } from "./scheduled";
 import { usePrefersReducedMotion } from "@/lib/hooks";
 import { useDraft } from "./draft";
+import { Tips } from "@/components/clink/tips";
 import { useQueue, newClientId, type QueuedPayload } from "./queue";
 import { Bubble, STICKER_LABEL, previewText } from "./bubbles";
 import { StickerArt, STICKER_CAPTION } from "./sticker-art";
@@ -1077,6 +1078,18 @@ export function ChatScreen() {
           </div>
         )}
 
+        {!replyTo && !editing && messages.some((m) => m.sender_id !== me.id) && (
+          <div className="flex-none px-3 pt-2 xl:px-[max(0.75rem,calc((100%-880px)/2))]">
+            <Tips
+              tips={[
+                {
+                  id: "swipe-reply",
+                  text: "Swipe a message to the right to reply to it. On a computer, point at it and tap the arrow.",
+                },
+              ]}
+            />
+          </div>
+        )}
         <form
           className="flex flex-none items-end gap-2 px-3 py-2.5 xl:px-[max(0.75rem,calc((100%-880px)/2))]"
           onSubmit={(e) => {

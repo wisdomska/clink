@@ -9,6 +9,7 @@ import { Segmented } from "@/components/ui/segmented";
 import { toast } from "@/components/ui/toast";
 import { darkFetch } from "./api";
 import { PageBar } from "@/components/clink/page-bar";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface MatchData {
   items: Array<{ id: string; text: string; tier: string }>;
@@ -113,21 +114,18 @@ export function DesireMatch() {
           ))}
         </ul>
       ) : (
-        <div className="rounded-card border-line flex flex-col gap-3 border border-dashed p-5">
-          <div className="display text-[22px] tracking-normal">No matches yet.</div>
-          <p className="text-muted m-0 text-sm">
-            {partner.name} has answered {data?.partnerAnswered ?? 0} of {total}. Matches show up the
-            moment you both land on one.
-          </p>
-          <Button
-            variant="secondary"
-            size="md"
-            className="self-start"
-            onClick={() => setTab("answer")}
-          >
-            Keep answering
-          </Button>
-        </div>
+        <EmptyState
+          art="sparkling_heart"
+          title="No matches yet."
+          actions={
+            <Button variant="secondary" size="md" onClick={() => setTab("answer")}>
+              Keep answering
+            </Button>
+          }
+        >
+          {partner.name} has answered {data?.partnerAnswered ?? 0} of {total}. Matches show up the
+          moment you both land on one.
+        </EmptyState>
       )}
     </main>
   );
