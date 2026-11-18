@@ -106,6 +106,12 @@ export function RoomHeader({
   const active = game?.status === "active";
   const [confirm, setConfirm] = useState(false);
   const [quitting, setQuitting] = useState(false);
+  // Forfeit is a second step: tapping it by mistake only asks, never ends the game.
+  const [sure, setSure] = useState(false);
+  const openSheet = (v: boolean) => {
+    setConfirm(v);
+    if (!v) setSure(false);
+  };
   const liveRef = useRef(live);
   useEffect(() => {
     liveRef.current = live;
@@ -132,10 +138,7 @@ export function RoomHeader({
   return (
     <>
       <div className="flex flex-none items-center gap-3">
-        <IconButton
-          label="Leave game"
-          onClick={() => (live || active ? setConfirm(true) : leave())}
-        >
+        <IconButton label="Leave game" onClick={() => (live || active ? openSheet(true) : leave())}>
           <X size={20} />
         </IconButton>
         <div className="text-muted flex-1 text-sm font-medium">{GAME_META[type].name}</div>
@@ -158,37 +161,61 @@ export function RoomHeader({
           />
         </div>
       )}
-      <Sheet open={confirm} onOpenChange={setConfirm} title="Leave the game?" handle>
-        <div className="display text-[28px] leading-[1.05]">Leave the game?</div>
-        <p className="text-muted m-0 text-base leading-normal">
-          Leave for now and it stays open, so you can come back from Play. Forfeit and it ends here,
-          with {partner.name} taking the win.
-        </p>
-        <Button onClick={() => setConfirm(false)}>Keep playing</Button>
-        <Button variant="ghost" size="lg" onClick={leave}>
-          Leave for now
-        </Button>
-        {active && (
-          <Button
-            variant="danger-outline"
-            size="lg"
-            loading={quitting}
-            onClick={async () => {
-              setQuitting(true);
-              const r = await fetch(`/api/games/${id}/forfeit`, { method: "POST" });
-              setQuitting(false);
-              if (!r.ok) {
-                const d = await r.json().catch(() => ({}));
-                return toast.err(d.message ?? "Couldn't forfeit. Try again.");
-              }
-              liveRef.current = false;
-              setConfirm(false);
-              feedback("tap", "pop");
-              await qc.invalidateQueries({ queryKey: ["game", id] });
-            }}
-          >
-            <Flag size={18} weight="bold" aria-hidden /> Forfeit, {partner.name} wins
-          </Button>
+      <Sheet
+        open={confirm}
+        onOpenChange={openSheet}
+        title={sure ? "Forfeit this game?" : "Leave the game?"}
+        handle
+      >
+        {sure ? (
+          <div role="alertdialog" aria-labelledby="forfeit-h" className="flex flex-col gap-3">
+            <div id="forfeit-h" className="display text-[28px] leading-[1.05]">
+              Forfeit this game?
+            </div>
+            <p className="text-muted m-0 text-base leading-normal">
+              It ends now for both of you and {partner.name} takes the win. You can&apos;t undo
+              this.
+            </p>
+            <Button
+              variant="danger"
+              loading={quitting}
+              onClick={async () => {
+                setQuitting(true);
+                const r = await fetch(`/api/games/${id}/forfeit`, { method: "POST" });
+                setQuitting(false);
+                if (!r.ok) {
+                  const d = await r.json().catch(() => ({}));
+                  return toast.err(d.message ?? "Couldn't forfeit. Try again.");
+                }
+                liveRef.current = false;
+                openSheet(false);
+                feedback("tap", "pop");
+                await qc.invalidateQueries({ queryKey: ["game", id] });
+              }}
+            >
+              <Flag size={18} weight="bold" aria-hidden /> Yes, forfeit
+            </Button>
+            <Button variant="ghost" size="lg" onClick={() => openSheet(false)}>
+              No, keep playing
+            </Button>
+          </div>
+        ) : (
+          <>
+            <div className="display text-[28px] leading-[1.05]">Leave the game?</div>
+            <p className="text-muted m-0 text-base leading-normal">
+              Leave for now and it stays open, so you can come back from Play. Forfeit and it ends
+              here, with {partner.name} taking the win.
+            </p>
+            <Button onClick={() => openSheet(false)}>Keep playing</Button>
+            <Button variant="ghost" size="lg" onClick={leave}>
+              Leave for now
+            </Button>
+            {active && (
+              <Button variant="danger-outline" size="lg" onClick={() => setSure(true)}>
+                <Flag size={18} weight="bold" aria-hidden /> Forfeit, {partner.name} wins
+              </Button>
+            )}
+          </>
         )}
       </Sheet>
     </>

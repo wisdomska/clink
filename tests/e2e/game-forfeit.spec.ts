@@ -10,9 +10,30 @@ test("forfeit ends the game, names the winner on both sides, and leads back to t
   const { id } = await r.json();
   await a.goto(`/play/word/${id}`);
 
+  // A mistaken tap only asks: backing out keeps the game going.
   await a.getByRole("button", { name: "Leave game" }).click();
-  const sheet = a.getByRole("dialog", { name: "Leave the game?" });
-  await sheet.getByRole("button", { name: "Forfeit, Theo wins" }).click();
+  await a
+    .getByRole("dialog", { name: "Leave the game?" })
+    .getByRole("button", { name: "Forfeit, Theo wins" })
+    .click();
+  const ask = a.getByRole("alertdialog", { name: "Forfeit this game?" });
+  await expect(ask.getByText("You can't undo this.", { exact: false })).toBeVisible();
+  await ask.getByRole("button", { name: "No, keep playing" }).click();
+  await expect(ask).toBeHidden();
+  expect((await admin.from("games").select("status").eq("id", id).single()).data?.status).toBe(
+    "active",
+  );
+
+  // Asked again and confirmed: now it ends.
+  await a.getByRole("button", { name: "Leave game" }).click();
+  await a
+    .getByRole("dialog", { name: "Leave the game?" })
+    .getByRole("button", { name: "Forfeit, Theo wins" })
+    .click();
+  await a
+    .getByRole("alertdialog", { name: "Forfeit this game?" })
+    .getByRole("button", { name: "Yes, forfeit" })
+    .click();
 
   // Nia sees who won, by name, and that she quit.
   const mine = a.getByRole("region", { name: "Final score" });
