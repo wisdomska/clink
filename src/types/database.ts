@@ -1329,6 +1329,11 @@ isOneToOne: false
               "active_couples": number,"clinks": number,"day": string,"games": number,"links": number,"messages": number,"signups": number
             }[]
                            },
+"svc_admin_users":
+{ Args: { "p_dir": string,"p_from": string,"p_limit": number,"p_linked": string,"p_offset": number,"p_q": string,"p_sort": string,"p_status": string,"p_to": string }; Returns: {
+              "couple_id": string,"created_at": string,"deleted_at": string,"display_name": string,"email": string,"email_confirmed_at": string,"home_city": string,"id": string,"is_admin": boolean,"last_sign_in_at": string,"linked_at": string,"status": string,"suspended_at": string,"suspended_reason": string,"total": number
+            }[]
+                           },
 "svc_answer_latest_clink":
 { Args: { "p_answerer": string,"p_couple": string }; Returns: string
                            },

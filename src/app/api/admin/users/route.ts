@@ -1,37 +1,36 @@
 import type { NextRequest } from "next/server";
-import type { User } from "@supabase/supabase-js";
 import { handler, ok } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { requireAdmin, adminAudit } from "@/lib/server/admin";
-import {
-  EXPORT_MAX,
-  csvResponse,
-  endOfDay,
-  fetchAll,
-  isDay,
-  paging,
-} from "@/lib/server/admin-list";
+import { EXPORT_MAX, csvResponse, isDay, paging } from "@/lib/server/admin-list";
 
 const SORTS = ["joined", "email", "name", "last_sign_in"] as const;
 const STATUSES = ["active", "suspended", "deleting", "unconfirmed"] as const;
 type Status = (typeof STATUSES)[number];
 
-/** Every auth user, one page of 1,000 at a time (listUsers has no filters or sorting). */
-async function allAuthUsers(): Promise<User[]> {
-  const admin = supabaseAdmin();
-  const out: User[] = [];
-  for (let page = 1; page <= 100; page++) {
-    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
-    if (error) throw error;
-    out.push(...data.users);
-    if (data.users.length < 1000) break;
-  }
-  return out;
-}
+type Row = {
+  id: string;
+  email: string;
+  created_at: string;
+  last_sign_in_at: string | null;
+  email_confirmed_at: string | null;
+  display_name: string | null;
+  home_city: string | null;
+  suspended_at: string | null;
+  suspended_reason: string | null;
+  deleted_at: string | null;
+  is_admin: boolean;
+  couple_id: string | null;
+  linked_at: string | null;
+  status: Status;
+  total: number;
+};
 
 /**
  * Users and couples: search (email or name), filters, sorting and pages.
  * Account status only, never content. ?format=csv exports the whole filtered set.
+ * The database does the searching, sorting, counting and paging
+ * (svc_admin_users), so only the page you're looking at is loaded.
  */
 export const GET = handler(async (req: NextRequest) => {
   const a = await requireAdmin();
@@ -45,72 +44,29 @@ export const GET = handler(async (req: NextRequest) => {
   const to = isDay(p.get("to")) ? p.get("to")! : null;
   const admin = supabaseAdmin();
 
-  const [authUsers, profiles, members] = await Promise.all([
-    allAuthUsers(),
-    fetchAll((f, t) =>
-      admin
-        .from("profiles")
-        .select("id, display_name, home_city, suspended_at, suspended_reason, deleted_at, is_admin")
-        .order("id")
-        .range(f, t),
-    ),
-    fetchAll((f, t) =>
-      admin
-        .from("couple_members")
-        .select("user_id, couple_id, couples!inner(linked_at)")
-        .is("left_at", null)
-        .order("user_id")
-        .range(f, t),
-    ),
-  ]);
-  const prof = new Map(profiles.map((x) => [x.id, x]));
-  const couple = new Map(
-    members.map((m) => [
-      m.user_id,
-      {
-        coupleId: m.couple_id,
-        linkedAt: (m.couples as unknown as { linked_at: string | null } | null)?.linked_at ?? null,
-      },
-    ]),
-  );
-
-  const statusOf = (u: User): Status => {
-    const pr = prof.get(u.id);
-    if (pr?.deleted_at) return "deleting";
-    if (pr?.suspended_at) return "suspended";
-    return u.email_confirmed_at ? "active" : "unconfirmed";
-  };
-
-  let rows = authUsers.filter((u) => {
-    if (q) {
-      const name = (prof.get(u.id)?.display_name ?? "").toLowerCase();
-      if (!(u.email ?? "").toLowerCase().includes(q) && !name.includes(q)) return false;
-    }
-    if (status && statusOf(u) !== status) return false;
-    if (linked === "linked" && !couple.has(u.id)) return false;
-    if (linked === "unlinked" && couple.has(u.id)) return false;
-    if (from && u.created_at < from) return false;
-    if (to && u.created_at > endOfDay(to)) return false;
-    return true;
-  });
-
-  const key = (u: User): string =>
-    pg.sort === "email"
-      ? (u.email ?? "").toLowerCase()
-      : pg.sort === "name"
-        ? (prof.get(u.id)?.display_name ?? "").toLowerCase()
-        : pg.sort === "last_sign_in"
-          ? (u.last_sign_in_at ?? "")
-          : u.created_at;
-  const sign = pg.dir === "asc" ? 1 : -1;
-  // Ties fall back to the id so pages never shuffle between requests.
-  rows = rows.sort((x, y) => {
-    const a1 = key(x);
-    const b1 = key(y);
-    return a1 < b1 ? -sign : a1 > b1 ? sign : x.id < y.id ? -1 : x.id > y.id ? 1 : 0;
-  });
-  const total = rows.length;
-  const slice = pg.csv ? rows.slice(0, EXPORT_MAX) : rows.slice(pg.from, pg.to + 1);
+  const query = (limit: number, offset: number) =>
+    admin.rpc("svc_admin_users", {
+      p_q: q,
+      p_status: status as string,
+      p_linked: linked as string,
+      p_from: from as string,
+      p_to: to as string,
+      p_sort: pg.sort,
+      p_dir: pg.dir,
+      p_limit: limit,
+      p_offset: offset,
+    });
+  const { data, error } = pg.csv
+    ? await query(EXPORT_MAX, 0)
+    : await query(pg.to - pg.from + 1, pg.from);
+  if (error) throw error;
+  const slice = (data ?? []) as unknown as Row[];
+  let total = slice[0] ? Number(slice[0].total) : 0;
+  // Past the last page: still report how many there are.
+  if (!slice.length && pg.from > 0 && !pg.csv) {
+    const { data: one } = await query(1, 0);
+    total = one?.[0] ? Number((one[0] as unknown as Row).total) : 0;
+  }
 
   const ageVerified = new Set<string>();
   const dobs = new Map<string, string>();
@@ -135,37 +91,33 @@ export const GET = handler(async (req: NextRequest) => {
     for (const x of pres ?? []) if (x.last_seen_at) seen.set(x.user_id, x.last_seen_at);
   }
   // Last active: whichever is newer, last seen in the app or last sign-in.
-  const lastActive = (u: User) => {
+  const lastActive = (u: Row) => {
     const a = seen.get(u.id) ?? "";
     const b = u.last_sign_in_at ?? "";
     return (a > b ? a : b) || null;
   };
 
-  const users = slice.map((u) => {
-    const pr = prof.get(u.id);
-    const c = couple.get(u.id);
-    return {
-      id: u.id,
-      email: u.email ?? "",
-      name: pr?.display_name ?? null,
-      city: pr?.home_city ?? null,
-      createdAt: u.created_at,
-      lastSignIn: u.last_sign_in_at ?? null,
-      lastActive: lastActive(u),
-      dob: dobs.get(u.id) ?? null,
-      confirmed: Boolean(u.email_confirmed_at),
-      suspended: pr?.suspended_at ?? null,
-      suspendedReason: pr?.suspended_reason ?? null,
-      deleted: pr?.deleted_at ?? null,
-      // Self-service deletions wait out a 30-day grace period; this is when it runs.
-      deletesAt: pr?.deleted_at ? (deletesAt.get(u.id) ?? null) : null,
-      admin: Boolean(pr?.is_admin),
-      coupleId: c?.coupleId ?? null,
-      linkedAt: c?.linkedAt ?? null,
-      ageVerified: ageVerified.has(u.id),
-      status: statusOf(u),
-    };
-  });
+  const users = slice.map((u) => ({
+    id: u.id,
+    email: u.email ?? "",
+    name: u.display_name ?? null,
+    city: u.home_city ?? null,
+    createdAt: u.created_at,
+    lastSignIn: u.last_sign_in_at ?? null,
+    lastActive: lastActive(u),
+    dob: dobs.get(u.id) ?? null,
+    confirmed: Boolean(u.email_confirmed_at),
+    suspended: u.suspended_at ?? null,
+    suspendedReason: u.suspended_reason ?? null,
+    deleted: u.deleted_at ?? null,
+    // Self-service deletions wait out a 30-day grace period; this is when it runs.
+    deletesAt: u.deleted_at ? (deletesAt.get(u.id) ?? null) : null,
+    admin: Boolean(u.is_admin),
+    coupleId: u.couple_id ?? null,
+    linkedAt: u.linked_at ?? null,
+    ageVerified: ageVerified.has(u.id),
+    status: u.status,
+  }));
 
   if (pg.csv) {
     await adminAudit(a.user.id, "export", {
