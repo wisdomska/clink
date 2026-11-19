@@ -845,7 +845,8 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
 @supports (overflow-anchor: auto) {
   .chat-row {
     content-visibility: auto;
-    contain-intrinsic-size: auto 72px;
+    /* About one short message; real heights replace it once seen. */
+    contain-intrinsic-size: auto 52px;
     margin: -6px -12px;
     padding: 6px 12px;
     width: calc(100% + 24px);

@@ -215,6 +215,10 @@ export function ChatScreen() {
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingSent = useRef(0);
   const stickToBottom = useRef(true);
+  /** True while the list settles at the bottom by itself (not the reader scrolling). */
+  const settling = useRef(false);
+  // Where you were before the earlier page arrived; restored once it's on screen.
+  const anchor = useRef<{ before: number; top: number } | null>(null);
   const reducedMotion = usePrefersReducedMotion();
   const { pins, pinned, pin, unpin } = usePins();
   const [pinsOpen, setPinsOpen] = useState(false);
@@ -393,10 +397,133 @@ export function ChatScreen() {
     };
   }, [discreet]);
 
-  // Keep pinned to the newest message unless the reader scrolled up.
+  // Where the chat opens: at the first message from them you haven't read
+  // (with a divider above it), or else at the newest message. Worked out once,
+  // from what was unread at the moment you opened it.
+  const [unreadFrom, setUnreadFrom] = useState<string | null>(null);
+  const opened = useRef(false);
+  // The newest list, readable after an await while older pages load in.
+  const allRef = useRef(all);
+  useLayoutEffect(() => {
+    allRef.current = all;
+  }, [all]);
+  const findFirstUnread = () => {
+    const list = allRef.current;
+    let first: string | null = null;
+    // The unread run is their trailing messages after anything you sent.
+    for (let i = list.length - 1; i >= 0; i--) {
+      const m = list[i]!;
+      if (m.sender_id === me.id) break;
+      if (m.type === "system") continue;
+      if (m.read_at) break;
+      first = m.id;
+    }
+    // Reached the oldest loaded message still unread: earlier ones may be too.
+    const reachedTop = first !== null && list.find((m) => m.type !== "system")?.id === first;
+    return { first, reachedTop };
+  };
+  const openAtUnread = useEffectEvent(async () => {
+    let { first, reachedTop } = findFirstUnread();
+    let more = hasNextPage;
+    for (let tries = 0; first && reachedTop && more && tries < 10; tries++) {
+      const res = await fetchNextPage();
+      more = res.hasNextPage;
+      await new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+      ({ first, reachedTop } = findFirstUnread());
+    }
+    if (!first) return;
+    stickToBottom.current = false;
+    setUnreadFrom(first);
+    // Bring the divider to the top, and hold it there while the rows around
+    // it get their real heights (a second at most, or until you touch it).
+    const el = listRef.current;
+    if (!el) return;
+    settling.current = true;
+    let frames = 0;
+    let still = 0;
+    let last = NaN;
+    const stop = () => {
+      settling.current = false;
+    };
+    el.addEventListener("wheel", stop, { once: true, passive: true });
+    el.addEventListener("touchstart", stop, { once: true, passive: true });
+    const hold = () => {
+      if (!settling.current) return;
+      const row = el.querySelector<HTMLElement>(`[data-unread-start="true"]`);
+      if (row) {
+        row.scrollIntoView({ block: "start" });
+        // An earlier page already on its way restores from here, not from before.
+        if (anchor.current) anchor.current = { before: el.scrollHeight, top: el.scrollTop };
+        const top = row.getBoundingClientRect().top;
+        still = top === last ? still + 1 : 0;
+        last = top;
+      }
+      if ((!row || still < 3) && ++frames < 60) requestAnimationFrame(hold);
+      else settling.current = false;
+    };
+    requestAnimationFrame(hold);
+  });
+  useEffect(() => {
+    if (isLoading || opened.current || linkedMessage) return;
+    opened.current = true;
+    void openAtUnread();
+  }, [isLoading, linkedMessage]);
+
+  // Photos and videos that finish loading (and rows getting their real
+  // height) make the chat taller: stay at the newest message while you're
+  // there (not if you've scrolled up to read).
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    const keep = () => {
+      if (stickToBottom.current) el.scrollTop = el.scrollHeight;
+    };
+    el.addEventListener("load", keep, true);
+    el.addEventListener("loadedmetadata", keep, true);
+    // A row coming on screen gets its real height (see .chat-row).
+    el.addEventListener("contentvisibilityautostatechange", keep, true);
+    return () => {
+      el.removeEventListener("load", keep, true);
+      el.removeEventListener("loadedmetadata", keep, true);
+      el.removeEventListener("contentvisibilityautostatechange", keep, true);
+    };
+  }, [isLoading]);
+
+  // Keep pinned to the newest message unless the reader scrolled up. Rows far
+  // off screen start at an estimated height (.chat-row), so the total settles
+  // over a few frames as they're measured: keep pinning until it stops moving.
   useLayoutEffect(() => {
     const el = listRef.current;
-    if (el && stickToBottom.current) el.scrollTop = el.scrollHeight;
+    if (!el || !stickToBottom.current) return;
+    settling.current = true;
+    el.scrollTop = el.scrollHeight;
+    let last = -1;
+    let still = 0;
+    let frames = 0;
+    let raf = 0;
+    const settle = () => {
+      if (!stickToBottom.current || !settling.current) return;
+      el.scrollTop = el.scrollHeight;
+      still = el.scrollHeight === last ? still + 1 : 0;
+      last = el.scrollHeight;
+      if (still < 3 && ++frames < 60) raf = requestAnimationFrame(settle);
+      else settling.current = false;
+    };
+    raf = requestAnimationFrame(settle);
+    // The reader taking over (touch, wheel, keys) ends the settling at once.
+    const takeOver = () => {
+      settling.current = false;
+    };
+    el.addEventListener("wheel", takeOver, { passive: true });
+    el.addEventListener("touchstart", takeOver, { passive: true });
+    el.addEventListener("keydown", takeOver);
+    return () => {
+      cancelAnimationFrame(raf);
+      settling.current = false;
+      el.removeEventListener("wheel", takeOver);
+      el.removeEventListener("touchstart", takeOver);
+      el.removeEventListener("keydown", takeOver);
+    };
   }, [all.length, typing]);
 
   useEffect(() => {
@@ -411,17 +538,19 @@ export function ChatScreen() {
       const fromBottom = el.scrollHeight - el.clientHeight - el.scrollTop;
       wallRef.current.style.transform = `translate3d(0, ${Math.min(48, fromBottom * 0.04)}px, 0)`;
     }
+    // While it settles by itself, its own scrolling isn't the reader leaving the bottom.
+    if (settling.current) return;
     stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
     if (el.scrollTop < 120) loadOlder();
   }
 
   // Older messages: keep your place while the earlier page slots in above.
   const loadingOlder = useRef(false);
-  // Where you were before the earlier page arrived; restored once it's on screen.
-  const anchor = useRef<{ before: number; top: number } | null>(null);
   function loadOlder() {
     const el = listRef.current;
     if (!el || !hasNextPage || isFetchingNextPage || loadingOlder.current) return;
+    // Not while the chat is settling into place on open; scrolling up loads them.
+    if (settling.current) return;
     loadingOlder.current = true;
     anchor.current = { before: el.scrollHeight, top: el.scrollTop };
     void fetchNextPage().finally(() => {
@@ -888,10 +1017,25 @@ export function ChatScreen() {
                 return (
                   // Each message is its own row so the browser can skip drawing the
                   // ones far off screen (.chat-row), which keeps long chats light.
-                  <div key={m.id} className="chat-row flex w-full flex-col gap-2">
+                  <div
+                    key={m.id}
+                    className="chat-row flex w-full flex-col gap-2"
+                    data-unread-start={m.id === unreadFrom ? "true" : undefined}
+                  >
                     {gap && (
                       <div className="mono text-faint self-center py-1 text-xs">
                         {dayLabel(new Date(m.sent_at), me.timezone)}
+                      </div>
+                    )}
+                    {m.id === unreadFrom && (
+                      <div
+                        role="separator"
+                        aria-label="Unread messages"
+                        className="text-accent flex items-center gap-3 py-1 text-xs font-bold"
+                      >
+                        <span className="bg-accent/40 h-px flex-1" aria-hidden />
+                        Unread messages
+                        <span className="bg-accent/40 h-px flex-1" aria-hidden />
                       </div>
                     )}
                     <Bubble
