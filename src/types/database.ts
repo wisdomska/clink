@@ -527,6 +527,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"error_log": {
+                  Row: {
+                    "count": number,"day": string,"fingerprint": string,"first_at": string,"id": number,"last_at": string,"message": string,"path": string | null,"release": string | null,"source": string,"stack": string | null,"user_agent": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "count"?: number,"day"?: string,"fingerprint": string,"first_at"?: string,"id"?: never,"last_at"?: string,"message": string,"path"?: string | null,"release"?: string | null,"source": string,"stack"?: string | null,"user_agent"?: string | null
+                  }
+                  Update: {
+                    "count"?: number,"day"?: string,"fingerprint"?: string,"first_at"?: string,"id"?: never,"last_at"?: string,"message"?: string,"path"?: string | null,"release"?: string | null,"source"?: string,"stack"?: string | null,"user_agent"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"export_requests": {
                   Row: {
                     "expires_at": string | null,"id": string,"ready_at": string | null,"requested_at": string,"storage_path": string | null,"user_id": string
@@ -697,14 +711,14 @@ isOneToOne: false
                   ]
                 },"media": {
                   Row: {
-                    "bucket": string,"caption": string | null,"closed_at": string | null,"couple_id": string,"created_at": string,"dare_spin_id": string | null,"deleted_at": string | null,"duration_s": number | null,"expires_at": string | null,"height": number | null,"id": string,"is_favourite": boolean,"is_sensitive": boolean,"kind": string,"mime": string,"owner_id": string,"request_id": string | null,"retention": string,"size_bytes": number,"status": string,"storage_path": string,"storage_verified_gone_at": string | null,"view_count": number,"viewed_at": string | null,"waveform": Json | null,"width": number | null
+                    "bucket": string,"caption": string | null,"closed_at": string | null,"couple_id": string,"created_at": string,"dare_spin_id": string | null,"deleted_at": string | null,"duration_s": number | null,"expires_at": string | null,"height": number | null,"id": string,"is_favourite": boolean,"is_sensitive": boolean,"kind": string,"mime": string,"owner_id": string,"placeholder": string | null,"request_id": string | null,"retention": string,"size_bytes": number,"status": string,"storage_path": string,"storage_verified_gone_at": string | null,"view_count": number,"viewed_at": string | null,"waveform": Json | null,"width": number | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "bucket": string,"caption"?: string | null,"closed_at"?: string | null,"couple_id": string,"created_at"?: string,"dare_spin_id"?: string | null,"deleted_at"?: string | null,"duration_s"?: number | null,"expires_at"?: string | null,"height"?: number | null,"id"?: string,"is_favourite"?: boolean,"is_sensitive"?: boolean,"kind": string,"mime": string,"owner_id": string,"request_id"?: string | null,"retention"?: string,"size_bytes": number,"status"?: string,"storage_path": string,"storage_verified_gone_at"?: string | null,"view_count"?: number,"viewed_at"?: string | null,"waveform"?: Json | null,"width"?: number | null
+                    "bucket": string,"caption"?: string | null,"closed_at"?: string | null,"couple_id": string,"created_at"?: string,"dare_spin_id"?: string | null,"deleted_at"?: string | null,"duration_s"?: number | null,"expires_at"?: string | null,"height"?: number | null,"id"?: string,"is_favourite"?: boolean,"is_sensitive"?: boolean,"kind": string,"mime": string,"owner_id": string,"placeholder"?: string | null,"request_id"?: string | null,"retention"?: string,"size_bytes": number,"status"?: string,"storage_path": string,"storage_verified_gone_at"?: string | null,"view_count"?: number,"viewed_at"?: string | null,"waveform"?: Json | null,"width"?: number | null
                   }
                   Update: {
-                    "bucket"?: string,"caption"?: string | null,"closed_at"?: string | null,"couple_id"?: string,"created_at"?: string,"dare_spin_id"?: string | null,"deleted_at"?: string | null,"duration_s"?: number | null,"expires_at"?: string | null,"height"?: number | null,"id"?: string,"is_favourite"?: boolean,"is_sensitive"?: boolean,"kind"?: string,"mime"?: string,"owner_id"?: string,"request_id"?: string | null,"retention"?: string,"size_bytes"?: number,"status"?: string,"storage_path"?: string,"storage_verified_gone_at"?: string | null,"view_count"?: number,"viewed_at"?: string | null,"waveform"?: Json | null,"width"?: number | null
+                    "bucket"?: string,"caption"?: string | null,"closed_at"?: string | null,"couple_id"?: string,"created_at"?: string,"dare_spin_id"?: string | null,"deleted_at"?: string | null,"duration_s"?: number | null,"expires_at"?: string | null,"height"?: number | null,"id"?: string,"is_favourite"?: boolean,"is_sensitive"?: boolean,"kind"?: string,"mime"?: string,"owner_id"?: string,"placeholder"?: string | null,"request_id"?: string | null,"retention"?: string,"size_bytes"?: number,"status"?: string,"storage_path"?: string,"storage_verified_gone_at"?: string | null,"view_count"?: number,"viewed_at"?: string | null,"waveform"?: Json | null,"width"?: number | null
                   }
                   Relationships: [
                     {
@@ -1356,6 +1370,14 @@ isOneToOne: false
                            },
 "svc_hit_rate_limit":
 { Args: { "p_key": string,"p_max": number,"p_window_seconds": number }; Returns: boolean
+                           },
+"svc_log_error":
+{ Args: { "p_fingerprint": string,"p_message": string,"p_path": string,"p_release": string,"p_source": string,"p_stack": string,"p_user_agent": string }; Returns: undefined
+                           },
+"svc_on_this_day_due":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "day_key": string,"label": string,"user_id": string,"years": number
+            }[]
                            }
           }
           Enums: {

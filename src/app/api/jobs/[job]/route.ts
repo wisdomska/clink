@@ -9,6 +9,7 @@ import {
   accountDeletion,
   exportCleanup,
   milestones,
+  onThisDay,
 } from "@/lib/server/jobs";
 
 export const maxDuration = 60;
@@ -38,6 +39,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ job: strin
     await run("unlink-wipe", retryWipes);
     await run("date-reminders", dateReminders);
     await run("capsule-unlock", capsuleUnlock);
+    await run("on-this-day", onThisDay);
   } else if (job === "daily") {
     await run("account-deletion", accountDeletion);
     await run("export-cleanup", exportCleanup);

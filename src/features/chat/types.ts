@@ -12,6 +12,8 @@ export interface MediaInfo {
   waveform: number[] | null;
   status: string;
   is_favourite: boolean;
+  /** Tiny blurred preview shown while the photo loads. */
+  placeholder: string | null;
 }
 /** A message as the UI sees it, including local (queued) ones. */
 export interface UiMessage extends Message {

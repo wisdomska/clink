@@ -1,5 +1,6 @@
 import "server-only";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, after, type NextRequest } from "next/server";
+import { logError } from "@/lib/server/error-log";
 import type { z } from "zod";
 import type { User } from "@supabase/supabase-js";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -40,6 +41,16 @@ export function handler<C = unknown>(fn: (req: NextRequest, ctx: C) => Promise<R
         );
       }
       console.error("[api]", req.nextUrl.pathname, err);
+      // Unexpected: keep it in the error log (private APIs are skipped there).
+      after(() =>
+        logError({
+          source: "server",
+          message: err instanceof Error ? err.message : String(err),
+          stack: err instanceof Error ? err.stack : null,
+          path: req.nextUrl.pathname,
+          userAgent: req.headers.get("user-agent"),
+        }),
+      );
       return NextResponse.json(
         { error: "server_error", message: "Something broke on our side. Try again in a moment." },
         { status: 500, headers: { "Cache-Control": "no-store" } },

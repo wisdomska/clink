@@ -1,4 +1,5 @@
 "use client";
+import { BlurImg } from "@/components/ui/blur-img";
 import Link from "@/components/ui/link";
 import { useEffect, useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -8,7 +9,13 @@ import { useCouple } from "@/features/couple/context";
 import { PageBar } from "@/components/clink/page-bar";
 
 const PAGE = 60;
-type Tile = { id: string; kind: string; created_at: string; is_favourite: boolean };
+type Tile = {
+  id: string;
+  kind: string;
+  created_at: string;
+  is_favourite: boolean;
+  placeholder: string | null;
+};
 
 /**
  * Every photo and video you've shared in chat, by month (WhatsApp's Media tab).
@@ -23,7 +30,7 @@ export function MediaGallery() {
       queryFn: async ({ pageParam }): Promise<Tile[]> => {
         let req = supabaseBrowser()
           .from("media")
-          .select("id, kind, created_at, is_favourite")
+          .select("id, kind, created_at, is_favourite, placeholder")
           .eq("couple_id", coupleId)
           .in("kind", ["image", "video"])
           .eq("is_sensitive", false)
@@ -113,13 +120,7 @@ export function MediaGallery() {
                       />
                     </>
                   ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={`/api/media/${m.id}/view`}
-                      alt=""
-                      loading="lazy"
-                      className="h-full w-full object-cover"
-                    />
+                    <BlurImg src={`/api/media/${m.id}/view`} placeholder={m.placeholder} alt="" />
                   )}
                   {m.is_favourite && (
                     <Heart

@@ -9,6 +9,7 @@ import {
   ChartBar,
   Flag,
   ListMagnifyingGlass,
+  Bug,
   Palette,
   MagnifyingGlass,
   SlidersHorizontal,
@@ -25,6 +26,7 @@ const PAGES = [
   { href: "/admin/content", label: "Content library", keys: "g c", Icon: Books },
   { href: "/admin/settings", label: "Settings", keys: "g s", Icon: SlidersHorizontal },
   { href: "/admin/audit", label: "Audit log", keys: "g a", Icon: ListMagnifyingGlass },
+  { href: "/admin/errors", label: "Errors", keys: "g e", Icon: Bug },
   { href: "/admin/brand", label: "Brand", keys: "g b", Icon: Palette },
 ] as const;
 const GO: Record<string, string> = Object.fromEntries(

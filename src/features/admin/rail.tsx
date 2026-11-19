@@ -12,6 +12,7 @@ import {
   Books,
   SlidersHorizontal,
   ListMagnifyingGlass,
+  Bug,
   Palette,
   List,
   MagnifyingGlass,
@@ -29,6 +30,7 @@ const ITEMS = [
   { href: "/admin/content", label: "Content library", Icon: Books },
   { href: "/admin/settings", label: "Settings", Icon: SlidersHorizontal },
   { href: "/admin/audit", label: "Audit log", Icon: ListMagnifyingGlass },
+  { href: "/admin/errors", label: "Errors", Icon: Bug },
   { href: "/admin/brand", label: "Brand", Icon: Palette },
 ] as const;
 

@@ -251,3 +251,27 @@ export async function milestones() {
   }
   return { added };
 }
+
+/**
+ * "On this day": once a day, from 9am in each person's own time zone, a
+ * gentle nudge when today is the anniversary of a photo or a timeline moment
+ * from a year or more ago. Only real anniversaries, so it stays a treat.
+ * Runs with the 5-minute tick; the dedupe key keeps it to one a day.
+ */
+export async function onThisDay() {
+  const admin = supabaseAdmin();
+  const { data: due, error } = await admin.rpc("svc_on_this_day_due");
+  if (error) throw error;
+  let sent = 0;
+  for (const d of due ?? []) {
+    const ago = d.years === 1 ? "A year ago today" : `${d.years} years ago today`;
+    const r = await notify(
+      d.user_id,
+      "keepsakes",
+      { body: `${ago}: ${d.label}. Have a look.`, url: "/us", tag: "on-this-day" },
+      `otd:${d.day_key}`,
+    );
+    sent += r.sent;
+  }
+  return { sent, nudged: due?.length ?? 0 };
+}

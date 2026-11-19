@@ -174,7 +174,7 @@ const APP_NAMES: Record<string, string> = { clink: "Clink", notes: "Notes", weat
 export async function notify(
   userId: string,
   category: PushCategory,
-  msg: { title?: string; body: string; url?: string; tag?: string },
+  msg: { title?: string; body: string; url?: string; tag?: string; reply?: boolean },
   dedupeKey?: string,
 ): Promise<{ sent: number; skipped?: string }> {
   if (!configure()) return { sent: 0, skipped: "no_vapid" };
@@ -206,6 +206,8 @@ export async function notify(
   );
   const badge = await badgeFor(userId);
   const payload = JSON.stringify({
+    // A chat message: the notification offers a reply box where the device allows.
+    type: msg.reply ? "message" : undefined,
     title,
     body,
     badge,

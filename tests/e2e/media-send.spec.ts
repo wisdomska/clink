@@ -68,6 +68,17 @@ test.describe("sending photos and videos", () => {
       .setInputFiles({ name: "pano.jpg", mimeType: "image/jpeg", buffer: pano });
     await a.getByRole("button", { name: /^Send to / }).click();
     await expect(b.getByRole("link", { name: "Open media" })).toBeVisible({ timeout: 20000 });
+    // It carries a tiny blurred preview to show while the real photo loads.
+    const { data } = await admin
+      .from("media")
+      .select("placeholder")
+      .eq("owner_id", couple.nia.id)
+      .eq("kind", "image")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+    expect(data?.placeholder).toMatch(/^data:image\/(webp|jpeg);base64,/);
+    expect(data!.placeholder!.length).toBeLessThan(2000);
   });
 
   test("the server accepts iPhone .mov videos and videos up to 3 minutes", async ({ couple }) => {

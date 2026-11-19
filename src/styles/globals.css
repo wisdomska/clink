@@ -851,3 +851,9 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
     width: calc(100% + 24px);
   }
 }
+
+/* Headings get focus after navigation (RouteFocus) so screen readers announce
+   the new screen; they aren't controls, so no focus ring. */
+h1[tabindex="-1"]:focus {
+  outline: none;
+}

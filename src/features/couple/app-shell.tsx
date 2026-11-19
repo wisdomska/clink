@@ -9,6 +9,7 @@ import { useOnline, useStoredString } from "@/lib/hooks";
 import { GameInviteToast } from "@/features/play/invite-toast";
 import { PushAsk } from "@/features/home/push-ask";
 import { SearchShortcut } from "@/features/search/search-shortcut";
+import { RouteFocus } from "@/components/clink/route-focus";
 import { useCouple } from "@/features/couple/context";
 import { enterAccount, scopeUser } from "@/lib/account-scope";
 import { useQueue } from "@/features/chat/queue";
@@ -81,6 +82,7 @@ export function AppShell({
   return (
     <>
       <Rail />
+      <RouteFocus />
       {!solo && <SearchShortcut />}
       {!solo && <GameInviteToast />}
       <div ref={mainRef} className={cn("app-main", !tabs && "no-tabs", hasBanner && "has-banner")}>

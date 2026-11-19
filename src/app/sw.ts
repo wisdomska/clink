@@ -158,8 +158,12 @@ self.addEventListener("push", (event) => {
       silent: data.silent ?? false,
       icon,
       badge: "/icons/badge-96.png",
-      data: { url: data.url ?? "/us" },
-    }),
+      data: { url: data.url ?? "/us", type: data.type },
+      // Answer a message right from the notification (Android, desktop Chrome).
+      ...(data.type === "message"
+        ? { actions: [{ action: "reply", type: "text", title: "Reply", placeholder: "Message" }] }
+        : {}),
+    } as NotificationOptions),
   );
 });
 
@@ -177,6 +181,31 @@ self.addEventListener("notificationclick", (event) => {
       }).catch(() => undefined),
     );
     return;
+  }
+  // Typed a reply in the notification: send it without opening Clink.
+  const reply = (event as NotificationEvent & { reply?: string | null }).reply?.trim();
+  if (d.type === "message" && event.action === "reply") {
+    if (reply) {
+      event.waitUntil(
+        fetch("/api/messages", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            clientId: `notif-${crypto.randomUUID()}`,
+            type: "text",
+            body: reply.slice(0, 4000),
+          }),
+        })
+          .then((r) => {
+            // Couldn't send (signed out, offline): open the chat so nothing is lost.
+            if (!r.ok) return self.clients.openWindow("/chat").then(() => undefined);
+          })
+          .catch(() => self.clients.openWindow("/chat").then(() => undefined)),
+      );
+      return;
+    }
+    // Reply tapped with nothing typed: just open the chat.
   }
   // Answer (or a tap on the call) opens the app straight into the call.
   const url = d.url ?? "/us";

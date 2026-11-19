@@ -141,7 +141,9 @@ export function useMediaInfo(ids: string[]) {
     queryFn: async () => {
       const { data } = await supabaseBrowser()
         .from("media")
-        .select("id, kind, mime, duration_s, width, height, waveform, status, is_favourite")
+        .select(
+          "id, kind, mime, duration_s, width, height, waveform, status, is_favourite, placeholder",
+        )
         .in("id", sorted);
       const map = new Map<string, MediaInfo>();
       for (const m of data ?? []) map.set(m.id, m as MediaInfo);

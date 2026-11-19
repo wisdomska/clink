@@ -16,6 +16,12 @@ const schema = z.object({
   // Panoramas can be very wide; the client caps what it uploads anyway.
   width: z.number().int().positive().max(20000).optional(),
   height: z.number().int().positive().max(20000).optional(),
+  /** A tiny blurred preview (data URL) to show while the photo loads. */
+  placeholder: z
+    .string()
+    .max(2000)
+    .regex(/^data:image\/(webp|jpeg|png);base64,[A-Za-z0-9+/=]+$/)
+    .optional(),
   waveform: z.array(z.number().int().min(0).max(100)).max(64).optional(),
 });
 
@@ -74,6 +80,8 @@ export const POST = handler(async (req) => {
       duration_s: body.durationS ?? null,
       width: body.width ?? null,
       height: body.height ?? null,
+      // Never a preview of something private.
+      placeholder: body.sensitive ? null : (body.placeholder ?? null),
       waveform: body.waveform ?? null,
       is_sensitive: body.sensitive,
       retention,

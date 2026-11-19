@@ -1,14 +1,14 @@
 name: Keep Supabase awake
 
-# Supabase Free pauses a project after 7 days without activity. Once a day,
-# one job pings both environments' health endpoints (which touch the
-# database) and the Supabase REST APIs directly. Production also gets a daily
-# Vercel cron on /api/health (vercel.json), so either one alone is enough.
-# Daily, not hourly: every job bills at least a minute of Actions time, and
-# hourly runs used up the free allowance.
+# Every 6 hours, one small job:
+# - keeps both Supabase projects awake (Free pauses after 7 days idle), and
+# - checks the live app and database. If production is down, the job fails
+#   and GitHub emails you ("Run failed: Keep Supabase awake"), so you hear
+#   about it within hours. Preview problems only warn; they never alert.
+# Production also gets a daily Vercel cron on /api/health (vercel.json).
 on:
   schedule:
-    - cron: "23 3 * * *"
+    - cron: "23 */6 * * *"
   workflow_dispatch:
 
 permissions: {}
@@ -16,22 +16,39 @@ permissions: {}
 jobs:
   ping:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 3
     steps:
-      - name: Ping app health endpoints
-        run: |
-          curl -fsS --max-time 30 "https://clinkapp.vercel.app/api/health" || echo "production ping failed"
-          curl -fsS --max-time 30 "https://clinkapp-preview.vercel.app/api/health" || echo "preview ping failed"
-      - name: Ping Supabase REST
+      - name: Preview (wake only)
         env:
-          PROD_URL: ${{ secrets.SUPABASE_PROD_URL }}
-          PROD_KEY: ${{ secrets.SUPABASE_PROD_ANON_KEY }}
           PREVIEW_URL: ${{ secrets.SUPABASE_PREVIEW_URL }}
           PREVIEW_KEY: ${{ secrets.SUPABASE_PREVIEW_ANON_KEY }}
         run: |
-          ping() {
-            if [ -z "$1" ]; then echo "secret not set, skipping"; return 0; fi
-            curl -fsS --max-time 30 "$1/rest/v1/feature_flags?select=key&limit=1" -H "apikey: $2" -H "Authorization: Bearer $2" || echo "ping failed"
+          curl -fsS --max-time 30 "https://clinkapp-preview.vercel.app/api/health" || echo "::warning::preview app ping failed"
+          if [ -n "$PREVIEW_URL" ]; then
+            curl -fsS --max-time 30 "$PREVIEW_URL/rest/v1/feature_flags?select=key&limit=1" \
+              -H "apikey: $PREVIEW_KEY" -H "Authorization: Bearer $PREVIEW_KEY" || echo "::warning::preview database ping failed"
+          fi
+      - name: Production is up
+        env:
+          PROD_URL: ${{ secrets.SUPABASE_PROD_URL }}
+          PROD_KEY: ${{ secrets.SUPABASE_PROD_ANON_KEY }}
+        run: |
+          # Two tries a minute apart, so a single blip doesn't page anyone.
+          check() {
+            body=$(curl -fsS --max-time 30 "https://clinkapp.vercel.app/api/health") || return 1
+            echo "$body" | grep -q '"db":"ok"' || return 1
+            if [ -n "$PROD_URL" ]; then
+              curl -fsS --max-time 30 "$PROD_URL/rest/v1/feature_flags?select=key&limit=1" \
+                -H "apikey: $PROD_KEY" -H "Authorization: Bearer $PROD_KEY" > /dev/null || return 1
+            fi
           }
-          ping "$PROD_URL" "$PROD_KEY"
-          ping "$PREVIEW_URL" "$PREVIEW_KEY"
+          if check; then echo "Production is up."; exit 0; fi
+          sleep 60
+          if check; then echo "Production is up (second try)."; exit 0; fi
+          echo "::error::Clink production is down: https://clinkapp.vercel.app/api/health did not report a healthy database."
+          {
+            echo "## Clink production is down"
+            echo "The health check at https://clinkapp.vercel.app/api/health failed twice, a minute apart."
+            echo "Check Vercel (deployments) and Supabase (project status) first."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1

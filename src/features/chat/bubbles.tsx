@@ -15,6 +15,7 @@ import { VoicePlayer } from "./voice-player";
 import { CallLogRow } from "@/features/call/call-log-row";
 import { StickerArt } from "./sticker-art";
 import { cn } from "@/components/ui/cn";
+import { BlurImg } from "@/components/ui/blur-img";
 import { haptic } from "@/lib/feedback";
 
 export const STICKER_LABEL = new Map<string, string>();
@@ -420,12 +421,11 @@ export function Bubble({
                   className="h-full w-full object-cover"
                 />
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <BlurImg
                   src={it.url}
+                  placeholder={id ? media?.get(id)?.placeholder : null}
                   alt="Shared photo"
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+                  imgClassName="transition-[opacity,transform] duration-300 hover:scale-[1.03]"
                 />
               );
             const more =

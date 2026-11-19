@@ -3,9 +3,10 @@ import { useEffect } from "react";
 import { WifiSlash } from "@phosphor-icons/react";
 import { toast } from "@/components/ui/toast";
 import { useOnline } from "@/lib/hooks";
+import { allowedInPrivate, inPrivateMode } from "@/lib/private-mode";
 
 /** Saves that never wait: chat has its own queue, calls and pings are live-only. */
-const SKIP = /^\/api\/(messages|calls|push|dark\/(ping|lock|notice)|health)(\/|$)/;
+const SKIP = /^\/api\/(messages|calls|push|errors|dark\/(ping|lock|notice)|health)(\/|$)/;
 const MUTATING = new Set(["POST", "PATCH", "PUT", "DELETE"]);
 /** Direct database writes (countdowns, moods, lists) go to Supabase's REST API. */
 const SUPABASE = (() => {
@@ -51,6 +52,17 @@ function install() {
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const req = input instanceof Request ? input : null;
     const method = (init?.method ?? req?.method ?? "GET").toUpperCase();
+    // After Dark talks only to Clink, its database and its storage.
+    if (inPrivateMode()) {
+      let target: URL | null = null;
+      try {
+        target = new URL(req ? req.url : String(input), window.location.href);
+      } catch {
+        target = null;
+      }
+      if (!target || !allowedInPrivate(target))
+        throw new TypeError("Blocked: After Dark doesn't talk to outside sites.");
+    }
     let ours = false;
     try {
       const url = new URL(req ? req.url : String(input), window.location.href);

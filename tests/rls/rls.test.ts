@@ -88,6 +88,7 @@ const SERVER_ONLY = [
   "desire_items",
   "audit_events",
   "rate_limits",
+  "error_log",
   "age_blocks",
   "user_blocks",
   "wipe_jobs",
