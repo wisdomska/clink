@@ -6,6 +6,7 @@ test("admin tables: pages, sizes, sorting and filters live in the URL; CSV expor
   couple,
   browser,
 }) => {
+  test.setTimeout(150_000);
   const { nia } = couple;
   const ctx = await browser.newContext();
   const p = await ctx.newPage();
@@ -19,8 +20,12 @@ test("admin tables: pages, sizes, sorting and filters live in the URL; CSV expor
   const odd = await (await p.request.get("/api/admin/users?size=7")).json();
   expect(odd.size).toBe(25);
   if (page1.total > 25) {
-    const page2 = await (await p.request.get("/api/admin/users?page=2&size=25")).json();
-    const ids = new Set(page1.users.map((u: { id: string }) => u.id));
+    // Oldest first, so accounts other tests create meanwhile land at the end
+    // instead of shifting the pages under us.
+    const asc = "sort=joined&dir=asc&size=25";
+    const first = await (await p.request.get(`/api/admin/users?page=1&${asc}`)).json();
+    const page2 = await (await p.request.get(`/api/admin/users?page=2&${asc}`)).json();
+    const ids = new Set(first.users.map((u: { id: string }) => u.id));
     expect(page2.users.some((u: { id: string }) => ids.has(u.id))).toBe(false);
   }
   // Filters and sorting on the server.
@@ -68,8 +73,9 @@ test("admin tables: pages, sizes, sorting and filters live in the URL; CSV expor
   await pickOption(p, "Per page", "50");
   await expect(p).toHaveURL(/size=50/);
   await p.reload();
-  await expect(p.getByLabel("Per page")).toHaveText("50");
-  await expect(p.getByLabel("Status")).toHaveText("Active");
+  // The table can take a while to come back under load.
+  await expect(p.getByLabel("Per page")).toHaveText("50", { timeout: 45000 });
+  await expect(p.getByLabel("Status")).toHaveText("Active", { timeout: 15000 });
   await ctx.close();
 });
 

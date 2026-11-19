@@ -40,6 +40,7 @@ test("chat theme and wallpaper are shared; double-tap hearts a message", async (
       async () =>
         (await admin.from("couples").select("chat_theme, chat_wallpaper").eq("id", cid).single())
           .data,
+      { timeout: 30000 },
     )
     .toEqual({ chat_theme: "sunset", chat_wallpaper: "hearts" });
 

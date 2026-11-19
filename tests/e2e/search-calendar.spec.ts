@@ -104,11 +104,18 @@ test("calendar shows birthdays and books a date on a tapped day", async ({ coupl
   const coupleId = (
     await admin.from("couple_members").select("couple_id").eq("user_id", nia.id).single()
   ).data!.couple_id;
-  const { count } = await admin
-    .from("scheduled_dates")
-    .select("id", { count: "exact", head: true })
-    .eq("couple_id", coupleId);
-  expect(count).toBe(1);
+  await expect
+    .poll(
+      async () =>
+        (
+          await admin
+            .from("scheduled_dates")
+            .select("id", { count: "exact", head: true })
+            .eq("couple_id", coupleId)
+        ).count,
+      { timeout: 15000 },
+    )
+    .toBe(1);
 
   // Deep links from search open on that day.
   await a.goto(`/calendar?d=${next.getUTCFullYear()}-${mm}-15`);

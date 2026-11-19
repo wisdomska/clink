@@ -16,8 +16,15 @@ test("schedule a message from the composer, then cancel it", async ({ couple }) 
   await expect(a.getByRole("button", { name: "1 message scheduled" })).toBeVisible();
 
   // Theo can't see it, not even through the API.
+  // The screen updates before the save lands; wait for the database.
+  await expect
+    .poll(
+      async () =>
+        (await admin.from("scheduled_messages").select("id, body").eq("body", text)).data?.length,
+      { timeout: 15000 },
+    )
+    .toBe(1);
   const { data: rows } = await admin.from("scheduled_messages").select("id, body").eq("body", text);
-  expect(rows).toHaveLength(1);
   await b.goto("/chat");
   await expect(b.getByText(text)).toHaveCount(0);
 

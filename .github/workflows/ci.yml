@@ -1,9 +1,16 @@
 name: CI
 
+# Every push gets the quick run: lint, types, unit, database security and the
+# browser tests on a phone-sized screen. The full run (all three screen sizes,
+# visual checks and Lighthouse) happens nightly and on demand ("Run workflow"),
+# which keeps GitHub Actions minutes well inside the free allowance.
 on:
   pull_request:
   push:
     branches: [main, preview]
+  schedule:
+    - cron: "41 1 * * *"
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -11,6 +18,9 @@ concurrency:
 
 permissions:
   contents: read
+
+env:
+  FULL: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
 
 jobs:
   static:
@@ -64,9 +74,11 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - name: ffmpeg (the video send test makes its own clip)
         run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends ffmpeg
-      - name: e2e (two partners, mobile, tablet, desktop) and axe
-        run: pnpm test:e2e --trace off
+      - name: e2e (two partners) and axe
+        # Quick run: phone only. Full run: phone, tablet and desktop.
+        run: pnpm test:e2e --trace off ${{ env.FULL != 'true' && '--project=mobile' || '' }}
       - name: Visual regression (informational)
+        if: env.FULL == 'true'
         continue-on-error: true
         timeout-minutes: 10
         # Rendered in Playwright's Docker image, the same one used to record
@@ -78,6 +90,8 @@ jobs:
 
   lighthouse:
     name: Lighthouse (marketing routes)
+    # Nightly and on demand only.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
