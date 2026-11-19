@@ -73,7 +73,14 @@ jobs:
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium
       - name: ffmpeg (the video send test makes its own clip)
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends ffmpeg
+        # Ubuntu's mirrors sometimes drop a download: try a few times.
+        run: |
+          for i in 1 2 3 4; do
+            sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends --fix-missing ffmpeg && exit 0
+            echo "ffmpeg install failed (try $i), retrying in $((i * 15))s"
+            sleep $((i * 15))
+          done
+          exit 1
       - name: e2e (two partners) and axe
         # Quick run: phone only. Full run: phone, tablet and desktop.
         run: pnpm test:e2e --trace off ${{ env.FULL != 'true' && '--project=mobile' || '' }}
