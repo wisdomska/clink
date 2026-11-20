@@ -63,3 +63,41 @@ test("tap to record, then send", async ({ couple }) => {
     )
     .toBe(1);
 });
+
+// A note in a format this browser can't play says so, with the file to
+// download, instead of a play button that silently does nothing.
+test("a voice note this device can't play says so and offers the file", async ({ couple }) => {
+  const { a, b, nia } = couple;
+  await a.goto("/chat");
+  await a.getByRole("button", { name: "Hold to record a voice note" }).click();
+  await a.waitForTimeout(1200);
+  await a.getByRole("button", { name: "Send voice note" }).click();
+  await expect
+    .poll(
+      async () =>
+        (await admin.from("messages").select("id").eq("sender_id", nia.id).eq("type", "voice")).data
+          ?.length ?? 0,
+      { timeout: 15000 },
+    )
+    .toBe(1);
+  // Serve the recording as bytes no browser can decode.
+  await b.route(
+    (url) => !url.pathname.startsWith("/_next") && !url.pathname.startsWith("/api/"),
+    async (route) =>
+      route.request().resourceType() === "media"
+        ? route.fulfill({ status: 200, contentType: "audio/mp4", body: Buffer.from("not audio") })
+        : route.fallback(),
+  );
+  const errors: string[] = [];
+  b.on("pageerror", (e) => errors.push(e.message));
+  await b.goto("/chat");
+  await b.getByRole("button", { name: /Play voice note/ }).click();
+  await expect(b.getByText("This voice note can't play on this device.")).toBeVisible({
+    timeout: 10000,
+  });
+  await expect(b.getByRole("link", { name: "Download voice note" })).toHaveAttribute(
+    "download",
+    "",
+  );
+  expect(errors.filter((e) => /supported source/i.test(e))).toEqual([]);
+});

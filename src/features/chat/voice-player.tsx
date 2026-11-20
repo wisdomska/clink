@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { Play, Pause } from "@phosphor-icons/react";
+import { Play, Pause, DownloadSimple, SpeakerSlash } from "@phosphor-icons/react";
 
 const SPEEDS = [1, 1.5, 2] as const;
 const BARS = 30;
@@ -31,6 +31,26 @@ export function VoicePlayer({
   const [t, setT] = useState(0);
   const [meta, setMeta] = useState(0);
   const [speed, setSpeed] = useState<(typeof SPEEDS)[number]>(1);
+  // Recorded in a format this browser can't play (e.g. an iPhone note on a
+  // browser without AAC): say so and offer the file, instead of a dead button.
+  const [unplayable, setUnplayable] = useState(false);
+  const retried = useRef(false);
+  const play = () => {
+    const el = audio.current;
+    if (!el) return;
+    el.play().catch((e: unknown) => {
+      if (!(e instanceof DOMException && e.name === "NotSupportedError")) return;
+      giveUpOrRetry();
+    });
+  };
+  // A one-off load failure gets a fresh try before we say it can't play.
+  function giveUpOrRetry() {
+    const el = audio.current;
+    if (!el || retried.current) return setUnplayable(true);
+    retried.current = true;
+    el.load();
+    el.play().catch(() => setUnplayable(true));
+  }
   const raw =
     waveform && waveform.length
       ? waveform
@@ -89,61 +109,82 @@ export function VoicePlayer({
         onPause={() => setPlaying(false)}
         onPlay={() => setPlaying(true)}
       />
-      <motion.button
-        type="button"
-        aria-label={playing ? "Pause voice note" : "Play voice note"}
-        onClick={() => (playing ? audio.current?.pause() : void audio.current?.play())}
-        whileTap={{ scale: 0.97 }}
-        className="bg-accent text-on-accent flex h-10 w-10 flex-none cursor-pointer items-center justify-center rounded-full border-0"
-      >
-        {playing ? (
-          <Pause size={17} weight="fill" />
-        ) : (
-          <Play size={17} weight="fill" className="ml-0.5" />
-        )}
-      </motion.button>
-      <button
-        type="button"
-        aria-label="Seek"
-        onClick={(e) => {
-          const el = audio.current;
-          if (!el || !total) return;
-          const b = e.currentTarget.getBoundingClientRect();
-          el.currentTime = ((e.clientX - b.left) / b.width) * total;
-          setT(el.currentTime);
-          if (!playing) void el.play();
-        }}
-        className="flex h-9 min-w-0 flex-1 cursor-pointer items-center gap-[2px] border-0 bg-transparent p-0"
-      >
-        {bars.map((h, i) => {
-          const base = Math.max(4, Math.round((h / 100) * 28));
-          const played = i < head;
-          return (
-            <span
-              key={i}
-              className="block min-w-[2px] flex-1 rounded-full transition-colors duration-150"
-              style={{
-                height: base,
-                backgroundColor:
-                  played || (playing && i === head) ? "var(--accent)" : "var(--text-faint)",
-              }}
-            />
-          );
-        })}
-      </button>
-      <span className="mono text-muted w-9 flex-none text-right text-[11px]">
-        {fmt(playing || t ? t : total)}
-      </span>
-      <button
-        type="button"
-        aria-label={`Playback speed ${speed}x. Tap to change`}
-        onClick={() => setSpeed(SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length]!)}
-        className="flex h-11 w-11 flex-none cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0"
-      >
-        <span className="mono bg-s2 text-text flex h-7 min-w-9 items-center justify-center rounded-full px-1.5 text-xs font-bold">
-          {speed}x
-        </span>
-      </button>
+      {unplayable ? (
+        <div className="flex min-w-0 flex-1 items-center gap-2" role="status">
+          <SpeakerSlash size={20} className="text-muted flex-none" aria-hidden />
+          <span className="text-muted min-w-0 flex-1 text-sm leading-tight">
+            This voice note can&apos;t play on this device.
+          </span>
+          <a
+            href={src}
+            download
+            aria-label="Download voice note"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+            className="text-accent flex h-10 w-10 flex-none items-center justify-center rounded-full"
+          >
+            <DownloadSimple size={20} />
+          </a>
+        </div>
+      ) : (
+        <>
+          <motion.button
+            type="button"
+            aria-label={playing ? "Pause voice note" : "Play voice note"}
+            onClick={() => (playing ? audio.current?.pause() : play())}
+            whileTap={{ scale: 0.97 }}
+            className="bg-accent text-on-accent flex h-10 w-10 flex-none cursor-pointer items-center justify-center rounded-full border-0"
+          >
+            {playing ? (
+              <Pause size={17} weight="fill" />
+            ) : (
+              <Play size={17} weight="fill" className="ml-0.5" />
+            )}
+          </motion.button>
+          <button
+            type="button"
+            aria-label="Seek"
+            onClick={(e) => {
+              const el = audio.current;
+              if (!el || !total) return;
+              const b = e.currentTarget.getBoundingClientRect();
+              el.currentTime = ((e.clientX - b.left) / b.width) * total;
+              setT(el.currentTime);
+              if (!playing) play();
+            }}
+            className="flex h-9 min-w-0 flex-1 cursor-pointer items-center gap-[2px] border-0 bg-transparent p-0"
+          >
+            {bars.map((h, i) => {
+              const base = Math.max(4, Math.round((h / 100) * 28));
+              const played = i < head;
+              return (
+                <span
+                  key={i}
+                  className="block min-w-[2px] flex-1 rounded-full transition-colors duration-150"
+                  style={{
+                    height: base,
+                    backgroundColor:
+                      played || (playing && i === head) ? "var(--accent)" : "var(--text-faint)",
+                  }}
+                />
+              );
+            })}
+          </button>
+          <span className="mono text-muted w-9 flex-none text-right text-[11px]">
+            {fmt(playing || t ? t : total)}
+          </span>
+          <button
+            type="button"
+            aria-label={`Playback speed ${speed}x. Tap to change`}
+            onClick={() => setSpeed(SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length]!)}
+            className="flex h-11 w-11 flex-none cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0"
+          >
+            <span className="mono bg-s2 text-text flex h-7 min-w-9 items-center justify-center rounded-full px-1.5 text-xs font-bold">
+              {speed}x
+            </span>
+          </button>
+        </>
+      )}
     </div>
   );
 }

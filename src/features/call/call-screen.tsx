@@ -399,7 +399,10 @@ export function CallScreen({
           <button
             type="button"
             onClick={() => {
-              void audioRef.current?.play().then(() => setNeedsTap(false));
+              void audioRef.current
+                ?.play()
+                .then(() => setNeedsTap(false))
+                .catch(() => setNeedsTap(true));
             }}
             className="press mt-2 cursor-pointer rounded-full border-0 bg-white px-4 py-2 text-sm font-bold text-black"
           >
