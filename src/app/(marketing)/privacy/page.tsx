@@ -1,7 +1,28 @@
 import type { Metadata } from "next";
 import { LegalPage } from "../legal-page";
 
-export const metadata: Metadata = { title: "Privacy", robots: { index: true, follow: true } };
+export const metadata: Metadata = {
+  title: "Your privacy",
+  description:
+    "What Clink keeps and why, how private media is protected, what is measured, who can see what, your rights and cookies. Clink never sells your data.",
+  robots: { index: true, follow: true },
+  alternates: { canonical: "/privacy" },
+  openGraph: {
+    title: "Your privacy on Clink",
+    description:
+      "What Clink keeps and why, how private media is protected, what is measured, who can see what, your rights and cookies. Clink never sells your data.",
+    url: "/privacy",
+    type: "article",
+    siteName: "Clink",
+    locale: "en_GB",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Your privacy on Clink",
+    description:
+      "What Clink keeps and why, how private media is protected, what is measured, who can see what, your rights and cookies. Clink never sells your data.",
+  },
+};
 
 export default function Privacy() {
   return (

@@ -1,7 +1,28 @@
 import type { Metadata } from "next";
 import { LegalPage } from "../legal-page";
 
-export const metadata: Metadata = { title: "Terms", robots: { index: true, follow: true } };
+export const metadata: Metadata = {
+  title: "Terms of use",
+  description:
+    "The rules for using Clink: adults only, images and consent, one account linked to one person, fair use, and what Clink can't promise.",
+  robots: { index: true, follow: true },
+  alternates: { canonical: "/terms" },
+  openGraph: {
+    title: "Clink terms of use",
+    description:
+      "The rules for using Clink: adults only, images and consent, one account linked to one person, fair use, and what Clink can't promise.",
+    url: "/terms",
+    type: "article",
+    siteName: "Clink",
+    locale: "en_GB",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Clink terms of use",
+    description:
+      "The rules for using Clink: adults only, images and consent, one account linked to one person, fair use, and what Clink can't promise.",
+  },
+};
 
 export default function Terms() {
   return (

@@ -1,7 +1,28 @@
 import type { Metadata } from "next";
 import { LegalPage } from "../legal-page";
 
-export const metadata: Metadata = { title: "Safety", robots: { index: true, follow: true } };
+export const metadata: Metadata = {
+  title: "Help and safety",
+  description:
+    "How Clink keeps couples safe: image abuse, zero tolerance for minors, leaving a relationship safely with unlink and block, and where to get help right now.",
+  robots: { index: true, follow: true },
+  alternates: { canonical: "/safety" },
+  openGraph: {
+    title: "Help and safety on Clink",
+    description:
+      "How Clink keeps couples safe: image abuse, zero tolerance for minors, leaving a relationship safely with unlink and block, and where to get help right now.",
+    url: "/safety",
+    type: "article",
+    siteName: "Clink",
+    locale: "en_GB",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Help and safety on Clink",
+    description:
+      "How Clink keeps couples safe: image abuse, zero tolerance for minors, leaving a relationship safely with unlink and block, and where to get help right now.",
+  },
+};
 
 export default function Safety() {
   return (

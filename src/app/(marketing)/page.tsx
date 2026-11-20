@@ -10,6 +10,7 @@ import { ClinkDemo } from "@/components/landing/clink-demo";
 import { FeatureBento } from "@/components/landing/feature-bento";
 import { Trust } from "@/components/landing/trust";
 import { Faq } from "@/components/landing/faq";
+import { StructuredData } from "@/components/landing/structured-data";
 import { FinalCta, SiteFooter } from "@/components/landing/final-cta";
 import { RevealController } from "@/components/landing/reveal-controller";
 import "@/components/landing/landing.css";
@@ -23,10 +24,16 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Clink: two people, one clink",
     description: "Calls, chat, games, letters and date nights for two people, together or apart.",
+    url: "/",
     type: "website",
     siteName: "Clink",
+    locale: "en_GB",
   },
-  twitter: { card: "summary_large_image" },
+  twitter: {
+    card: "summary_large_image",
+    title: "Clink: two people, one clink",
+    description: "Calls, chat, games, letters and date nights for two people, together or apart.",
+  },
 };
 
 const TOUR: TourStep[] = [
@@ -103,6 +110,7 @@ export default function Landing() {
 
         <Trust />
         <Faq />
+        <StructuredData />
         <FinalCta />
       </main>
       <SiteFooter />
