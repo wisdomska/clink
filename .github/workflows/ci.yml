@@ -54,8 +54,38 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - uses: supabase/setup-cli@v1
         with: { version: 3.1.0 }
+      # Supabase's Docker images come from GitHub's cache when we have them,
+      # so a registry limit ("Data limit exceeded") can't fail a run.
+      - name: Restore Supabase images
+        id: sb-images
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/sb-images
+          key: supabase-images-3.1.0-${{ hashFiles('supabase/config.toml') }}
+      - name: Load Supabase images
+        if: steps.sb-images.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/sb-images/images.tar
       - name: Start Supabase (migrations + seed)
-        run: supabase start
+        run: |
+          for i in 1 2 3; do
+            supabase start && exit 0
+            echo "supabase start failed (try $i), retrying in $((i * 30))s"
+            supabase stop --no-backup || true
+            sleep $((i * 30))
+          done
+          exit 1
+      - name: Keep the images for next time
+        if: steps.sb-images.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /tmp/sb-images
+          docker save -o /tmp/sb-images/images.tar $(docker images --format '{{.Repository}}:{{.Tag}}' | grep -E 'supabase|postgrest|kong|mailpit|logflare|vector|imgproxy|edge-runtime' | sort -u)
+          ls -lh /tmp/sb-images
+      - name: Save Supabase images
+        if: steps.sb-images.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/sb-images
+          key: supabase-images-3.1.0-${{ hashFiles('supabase/config.toml') }}
       - name: Write .env.local from the local stack
         run: |
           supabase status -o env > /tmp/sb.env
