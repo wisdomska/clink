@@ -576,6 +576,22 @@ export function ChatScreen() {
     };
   }, [all.length, typing]);
 
+  // Reading the chat clears its notifications (and restarts their count).
+  useEffect(() => {
+    const clear = () => {
+      if (document.visibilityState !== "visible" || !("serviceWorker" in navigator)) return;
+      void navigator.serviceWorker.getRegistration().then((r) =>
+        r
+          ?.getNotifications({ tag: "chat" })
+          .then((ns) => ns.forEach((n) => n.close()))
+          .catch(() => undefined),
+      );
+    };
+    clear();
+    document.addEventListener("visibilitychange", clear);
+    return () => document.removeEventListener("visibilitychange", clear);
+  }, []);
+
   useEffect(() => {
     if (params.get("voice") === "1") toast("Hold the mic to record a voice note.");
   }, [params]);

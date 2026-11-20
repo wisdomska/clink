@@ -157,7 +157,13 @@ export const POST = handler(async (req) => {
                   : "a photo"
             }`
           : `${name} ${PREVIEW[m.type]}`;
-    notifyLater(partnerId, "chat", { body: detail, url: "/chat", tag: "chat", reply: true });
+    notifyLater(partnerId, "chat", {
+      body: detail,
+      url: "/chat",
+      tag: "chat",
+      reply: true,
+      from: name,
+    });
   }
   await track("message_sent", user.id, { type: m.type }, coupleId);
   return ok({ message: row }, { status: 201 });

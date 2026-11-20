@@ -1,4 +1,5 @@
 /// <reference lib="webworker" />
+import { groupMessage } from "@/lib/push-group";
 import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist, NetworkOnly, NetworkFirst } from "serwist";
@@ -101,6 +102,7 @@ self.addEventListener("push", (event) => {
     silent?: boolean;
     icon?: string;
     badge?: number;
+    from?: string;
   } = {};
   try {
     data = event.data?.json() ?? {};
@@ -152,18 +154,34 @@ self.addEventListener("push", (event) => {
     return;
   }
   event.waitUntil(
-    self.registration.showNotification(data.title ?? "Clink", {
-      body: data.body ?? "New moment in Clink",
-      tag: data.tag,
-      silent: data.silent ?? false,
-      icon,
-      badge: "/icons/badge-96.png",
-      data: { url: data.url ?? "/us", type: data.type },
-      // Answer a message right from the notification (Android, desktop Chrome).
-      ...(data.type === "message"
-        ? { actions: [{ action: "reply", type: "text", title: "Reply", placeholder: "Message" }] }
-        : {}),
-    } as NotificationOptions),
+    (async () => {
+      // Chat messages stack: one notification that counts up, newest line last.
+      let body = data.body ?? "New moment in Clink";
+      let count: number | undefined;
+      if (data.type === "message" && data.tag) {
+        const [prev] = await self.registration.getNotifications({ tag: data.tag });
+        const g = groupMessage((prev?.data as { count?: number } | undefined)?.count, {
+          body,
+          from: data.from,
+        });
+        body = g.body;
+        count = g.count;
+      }
+      await self.registration.showNotification(data.title ?? "Clink", {
+        body,
+        tag: data.tag,
+        // A grouped update still buzzes (the same tag alone would replace it silently).
+        renotify: Boolean(count && count > 1 && !data.silent),
+        silent: data.silent ?? false,
+        icon,
+        badge: "/icons/badge-96.png",
+        data: { url: data.url ?? "/us", type: data.type, count },
+        // Answer a message right from the notification (Android, desktop Chrome).
+        ...(data.type === "message"
+          ? { actions: [{ action: "reply", type: "text", title: "Reply", placeholder: "Message" }] }
+          : {}),
+      } as NotificationOptions);
+    })(),
   );
 });
 

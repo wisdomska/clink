@@ -174,7 +174,15 @@ const APP_NAMES: Record<string, string> = { clink: "Clink", notes: "Notes", weat
 export async function notify(
   userId: string,
   category: PushCategory,
-  msg: { title?: string; body: string; url?: string; tag?: string; reply?: boolean },
+  msg: {
+    title?: string;
+    body: string;
+    url?: string;
+    tag?: string;
+    reply?: boolean;
+    /** Chat: who it's from, so the device can group them ("3 new messages from Theo"). */
+    from?: string;
+  },
   dedupeKey?: string,
 ): Promise<{ sent: number; skipped?: string }> {
   if (!configure()) return { sent: 0, skipped: "no_vapid" };
@@ -210,6 +218,8 @@ export async function notify(
     type: msg.reply ? "message" : undefined,
     title,
     body,
+    // Only with previews on: discreet notifications never name anyone.
+    from: msg.from && prefs.detailed && category !== "dark" ? msg.from : undefined,
     badge,
     url: category === "dark" ? "/dark" : (msg.url ?? "/us"),
     tag: msg.tag ?? category,
