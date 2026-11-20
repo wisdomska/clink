@@ -33,6 +33,10 @@ describe("weekly email", () => {
     expect(m.html).toContain("&lt;script&gt;");
     expect(m.text).not.toMatch(/—/); // no em dashes in copy
   });
+  it("says 1 error, not 1 errors", () => {
+    const m = digestEmail({ ...h, errors: { ...h.errors, total: 1 } });
+    expect(m.subject.startsWith("Clink this week: 1 error,")).toBe(true);
+  });
   it("groups days into Monday-started weeks", () => {
     expect(weekOf(new Date("2026-11-23T03:17:00Z"))).toBe("2026-11-23"); // a Monday
     expect(weekOf(new Date("2026-11-29T23:00:00Z"))).toBe("2026-11-23"); // that Sunday

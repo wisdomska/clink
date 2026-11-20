@@ -5,7 +5,7 @@ import { handler, ok, parseJson, rateLimit } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { cleanPath, isPrivatePath } from "@/lib/server/error-log";
 
-const schema = z.object({ path: z.string().max(500), lcp: z.number().int().min(0).max(120_000) });
+const schema = z.object({ path: z.string().max(500), lcp: z.number().int().min(0).max(60_000) });
 
 /**
  * How long a screen took to show its main content on first load (see

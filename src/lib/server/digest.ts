@@ -54,7 +54,7 @@ export function digestEmail(h: Health) {
     `Dashboard: ${site()}/admin`,
     `Vercel usage: https://vercel.com/dashboard/usage`,
     "",
-    "You get this every Monday. Turn it off in the admin portal, under Settings.",
+    "You get this every Monday. Turn it off on the admin dashboard, next to This week's health.",
   ];
   const row = (label: string, value: string, sub?: string) =>
     `<tr><td style="padding:10px 0;color:#9a9aa5;font-size:14px">${label}</td><td style="padding:10px 0;text-align:right;font:600 20px ui-monospace,Menlo,monospace;color:#f5f5f7">${value}</td></tr>${
@@ -76,9 +76,9 @@ ${row("Calls connected", `${c.connected} of ${c.total}`, `${c.minutes} min talke
 ${row("Average first load", p.views ? secs(p.avg_ms) : "No data", p.views ? `${p.views} visits, ${Math.round(p.slow_share * 100)}% slower than 2.5 s` : "Fills in as people use Clink.")}
 ${list(p.slowest.slice(0, 3).map((s) => `${s.path}  ${secs(s.avg_ms)}`))}
 <tr><td colspan="2" style="padding-top:16px"><a href="${site()}/admin" style="display:inline-block;background:#ff4f7b;color:#160c10;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:999px">Open the dashboard</a></td></tr>
-<tr><td colspan="2" style="padding-top:16px;color:#6f6f7a;font-size:12px">You get this every Monday. Turn it off in the admin portal, under Settings.</td></tr>
+<tr><td colspan="2" style="padding-top:16px;color:#6f6f7a;font-size:12px">You get this every Monday. Turn it off on the admin dashboard, next to This week's health.</td></tr>
 </table></body></html>`;
-  const subject = `Clink this week: ${e.total} errors, ${c.connected}/${c.total} calls connected${p.views ? `, ${secs(p.avg_ms)} loads` : ""}`;
+  const subject = `Clink this week: ${e.total} ${e.total === 1 ? "error" : "errors"}, ${c.connected}/${c.total} calls connected${p.views ? `, ${secs(p.avg_ms)} loads` : ""}`;
   return { subject, text: lines.join("\n"), html };
 }
 

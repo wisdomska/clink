@@ -80,20 +80,30 @@ export function startReporting() {
 function watchFirstLoad() {
   if (privatePage() || typeof PerformanceObserver === "undefined") return;
   const path = window.location.pathname;
+  // Only loads the person actually watched count (Google's rule for this
+  // measure): a page opened in the background reports its load from when it
+  // was opened, not when it was seen, which made a 2 s screen look like 120 s.
+  let hiddenAt = document.visibilityState === "hidden" ? 0 : Infinity;
+  document.addEventListener(
+    "visibilitychange",
+    () => {
+      if (document.visibilityState === "hidden") hiddenAt = Math.min(hiddenAt, performance.now());
+    },
+    { once: true },
+  );
   let lcp = 0;
   try {
     new PerformanceObserver((list) => {
-      const last = list.getEntries().at(-1);
-      if (last) lcp = Math.round(last.startTime);
+      for (const e of list.getEntries()) if (e.startTime < hiddenAt) lcp = Math.round(e.startTime);
     }).observe({ type: "largest-contentful-paint", buffered: true });
   } catch {
     return;
   }
   let sent = false;
   const send = () => {
-    if (sent || !lcp) return;
+    if (sent || !lcp || lcp > 60_000) return;
     sent = true;
-    const body = JSON.stringify({ path, lcp: Math.min(lcp, 120_000) });
+    const body = JSON.stringify({ path, lcp });
     try {
       if (navigator.sendBeacon?.("/api/vitals", new Blob([body], { type: "application/json" })))
         return;
