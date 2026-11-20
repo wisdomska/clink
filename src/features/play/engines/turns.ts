@@ -165,6 +165,11 @@ export function wordPoints(word: string): number {
 
 /** Can `word` be traced on the 4x4 board through touching, unrepeated tiles? */
 export function traceable(board: string[], word: string): boolean {
+  return tracePath(board, word) !== null;
+}
+
+/** The tiles `word` runs through on the board, in order (or null if it can't). */
+export function tracePath(board: string[], word: string): number[] | null {
   const w = word.toUpperCase();
   const neighbours = (i: number) => {
     const r = Math.floor(i / 4);
@@ -179,17 +184,19 @@ export function traceable(board: string[], word: string): boolean {
       }
     return out;
   };
-  const dfs = (i: number, pos: number, used: Set<number>): boolean => {
+  const path: number[] = [];
+  const dfs = (i: number, pos: number): boolean => {
     const tile = board[i]!;
     if (!w.startsWith(tile, pos)) return false;
+    path.push(i);
     const next = pos + tile.length;
     if (next === w.length) return true;
-    used.add(i);
-    for (const n of neighbours(i)) if (!used.has(n) && dfs(n, next, used)) return true;
-    used.delete(i);
+    for (const n of neighbours(i)) if (!path.includes(n) && dfs(n, next)) return true;
+    path.pop();
     return false;
   };
-  return board.some((_, i) => dfs(i, 0, new Set()));
+  for (let i = 0; i < board.length; i++) if (dfs(i, 0)) return path;
+  return null;
 }
 
 export function wordMove(

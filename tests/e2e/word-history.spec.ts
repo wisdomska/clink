@@ -33,6 +33,23 @@ test("the word history lists every play, and a refusal names the turn", async ({
   await expect(list.getByRole("listitem")).toHaveCount(15);
   await expect(list.getByText("POOR", { exact: true })).toBeVisible();
 
+  // Tapping a played word shows where it ran on the board, letter by letter.
+  const row = list.getByRole("button", { name: /^Turn 2, you: POOR/ });
+  await row.click();
+  await expect(row).toHaveAttribute("aria-pressed", "true");
+  const grid = couple.b.getByRole("grid", { name: "Letter board" });
+  for (const [n, t] of [
+    [1, "P"],
+    [2, "O"],
+    [3, "O"],
+    [4, "R"],
+  ] as const)
+    await expect(grid.getByRole("button", { name: `${t}, letter ${n} of POOR` })).toBeVisible();
+  // The board comes back into view to show it.
+  await expect(grid.getByRole("button", { name: "P, letter 1 of POOR" })).toBeInViewport();
+  await row.click();
+  await expect(grid.getByRole("button", { name: /of POOR/ })).toHaveCount(0);
+
   // Trace P-O-O-R and play it: refused, and the message says where it was played.
   for (const n of [1, 2, 3, 4]) {
     await couple.b

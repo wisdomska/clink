@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Backspace, DownloadSimple } from "@phosphor-icons/react";
 import { useCouple } from "@/features/couple/context";
@@ -10,11 +10,13 @@ import {
   WORD_TURNS_EACH,
   STORY_MAX_LINES,
   wordPoints,
+  tracePath,
   type WordState,
   type StoryState,
 } from "../engines/turns";
 import { RoomHeader, sendMove, FinalScore, ForfeitNote, BackToLobby, type GameRow } from "./shared";
 import { haptic } from "@/lib/feedback";
+import { cn } from "@/components/ui/cn";
 import { startGame } from "../meta";
 
 function adjacent(a: number, b: number) {
@@ -32,6 +34,12 @@ export function WordRoom({ game }: { game: GameRow }) {
   const s = game.state as WordState;
   const [path, setPath] = useState<number[]>([]);
   const [busy, setBusy] = useState(false);
+  // A word picked from the history: its tiles light up on the board.
+  const [shownTurn, setShownTurn] = useState<number | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const shownPlay = shownTurn !== null ? s.plays[shownTurn - 1] : undefined;
+  const shown =
+    path.length === 0 && shownPlay?.word ? (tracePath(s.board, shownPlay.word) ?? []) : [];
   const myTurn = s.turn === me.id && game.status === "active";
   const word = path
     .map((i) => s.board[i])
@@ -81,11 +89,13 @@ export function WordRoom({ game }: { game: GameRow }) {
       </div>
       <div
         className="grid w-full max-w-[400px] grid-cols-4 gap-2 self-center"
+        ref={gridRef}
         role="grid"
         aria-label="Letter board"
       >
         {s.board.map((t, i) => {
           const on = path.includes(i);
+          const lit = shown.indexOf(i);
           const canTap =
             myTurn && !on && (path.length === 0 || adjacent(path[path.length - 1]!, i));
           return (
@@ -93,18 +103,21 @@ export function WordRoom({ game }: { game: GameRow }) {
               key={i}
               type="button"
               disabled={!myTurn}
-              onClick={() =>
-                on && path[path.length - 1] === i
+              onClick={() => {
+                setShownTurn(null);
+                return on && path[path.length - 1] === i
                   ? setPath(path.slice(0, -1))
                   : canTap
                     ? setPath([...path, i])
-                    : undefined
-              }
+                    : undefined;
+              }}
               aria-pressed={on}
-              aria-label={`${t}${on ? `, letter ${path.indexOf(i) + 1}` : ""}`}
-              className="flap mono rounded-flap flex aspect-square cursor-pointer items-center justify-center text-[28px] disabled:cursor-default"
+              aria-label={`${t}${on ? `, letter ${path.indexOf(i) + 1}` : lit >= 0 ? `, letter ${lit + 1} of ${shownPlay?.word?.toUpperCase()}` : ""}`}
+              className="flap mono rounded-flap relative flex aspect-square cursor-pointer items-center justify-center text-[28px] disabled:cursor-default"
               style={{
-                border: on ? "2px solid var(--accent)" : "1px solid var(--line)",
+                border: on || lit >= 0 ? "2px solid var(--accent)" : "1px solid var(--line)",
+                background:
+                  lit >= 0 ? "color-mix(in oklab, var(--accent) 18%, transparent)" : undefined,
                 color: on
                   ? "var(--accent)"
                   : canTap || !myTurn
@@ -113,6 +126,11 @@ export function WordRoom({ game }: { game: GameRow }) {
               }}
             >
               {t === "QU" ? "Qu" : t}
+              {lit >= 0 && (
+                <span aria-hidden className="mono text-accent absolute top-1 left-1.5 text-[10px]">
+                  {lit + 1}
+                </span>
+              )}
             </button>
           );
         })}
@@ -158,12 +176,42 @@ export function WordRoom({ game }: { game: GameRow }) {
           .map((p, i) => ({ p, turn: i + 1 }))
           .reverse()
           .map(({ p, turn }) => (
-            <li key={turn} className="flex items-center gap-2 text-sm">
-              <span className="mono text-faint w-5 text-right text-xs">{turn}</span>
-              <PartnerMark who={p.by === me.id ? me.role : partner.role} />
-              <span className="text-muted flex-1">{p.by === me.id ? "You" : partner.name}</span>
-              <span className="mono">{p.word ? p.word.toUpperCase() : "pass"}</span>
-              <span className="mono text-muted w-8 text-right">+{p.points}</span>
+            <li key={turn}>
+              <button
+                type="button"
+                disabled={!p.word}
+                aria-pressed={shownTurn === turn}
+                aria-label={
+                  p.word
+                    ? `Turn ${turn}, ${p.by === me.id ? "you" : partner.name}: ${p.word.toUpperCase()}, ${p.points} points. Show on the board`
+                    : `Turn ${turn}, ${p.by === me.id ? "you" : partner.name} passed`
+                }
+                onClick={() => {
+                  setPath([]);
+                  const next = shownTurn === turn ? null : turn;
+                  setShownTurn(next);
+                  // A long history pushes the board off screen: bring it back to show the word.
+                  if (next !== null)
+                    gridRef.current?.scrollIntoView({
+                      block: "nearest",
+                      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                        ? "auto"
+                        : "smooth",
+                    });
+                }}
+                className={cn(
+                  "enabled:hover:bg-s2 flex w-full items-center gap-2 rounded-lg border-0 bg-transparent px-1.5 py-1 text-left text-sm enabled:cursor-pointer",
+                  shownTurn === turn && "bg-accent/10",
+                )}
+              >
+                <span className="mono text-faint w-5 text-right text-xs">{turn}</span>
+                <PartnerMark who={p.by === me.id ? me.role : partner.role} />
+                <span className="text-muted flex-1">{p.by === me.id ? "You" : partner.name}</span>
+                <span className={cn("mono", shownTurn === turn && "text-accent")}>
+                  {p.word ? p.word.toUpperCase() : "pass"}
+                </span>
+                <span className="mono text-muted w-8 text-right">+{p.points}</span>
+              </button>
             </li>
           ))}
       </ol>

@@ -500,3 +500,45 @@ export function BackToLobby() {
     </Button>
   );
 }
+
+/**
+ * After a game: if your partner has already started the next one of the same
+ * game, say so with a one-tap Join, instead of leaving you on the old result.
+ */
+export function RematchInvite({ game }: { game: GameRow }) {
+  const { me, partner } = useCouple();
+  const router = useRouter();
+  const { data: next } = useQuery({
+    queryKey: ["rematch", game.id],
+    enabled: game.status === "finished",
+    refetchInterval: 4000,
+    queryFn: async () => {
+      const { data } = await supabaseBrowser()
+        .from("games")
+        .select("id, type, created_by, status")
+        .eq("type", game.type)
+        .in("status", ["invited", "active"])
+        .gt("created_at", game.created_at)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      return data?.[0] ?? null;
+    },
+  });
+  if (!next) return null;
+  const theirs = next.created_by !== me.id;
+  return (
+    <div
+      role="status"
+      className="an-pop border-accent/40 bg-accent/10 rounded-card flex items-center gap-3 border p-3"
+    >
+      <span className="min-w-0 flex-1 text-sm font-medium">
+        {theirs
+          ? `${partner.name} started a rematch.`
+          : "You started a rematch. It's waiting for you."}
+      </span>
+      <Button size="sm" onClick={() => router.push(`/play/${next.type}/${next.id}`)}>
+        {theirs ? "Join" : "Go"}
+      </Button>
+    </div>
+  );
+}

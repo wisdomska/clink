@@ -13,6 +13,7 @@ import {
   normaliseGuess,
   wordInit,
   wordMove,
+  tracePath,
   traceable,
   wordPoints,
   storyInit,
@@ -150,6 +151,11 @@ describe("Word board", () => {
     expect([2, 3, 4, 5, 6, 7, 8, 10].map((n) => wordPoints("a".repeat(n)))).toEqual([
       0, 1, 2, 4, 6, 9, 11, 15,
     ]);
+  });
+  it("finds the tiles a word runs through, in order", () => {
+    expect(tracePath(board, "cats")).toEqual([0, 1, 2, 3]);
+    expect(tracePath(board, "quit")).toEqual([12, 13, 14]); // "Qu" is one tile
+    expect(tracePath(board, "catt")).toBeNull();
   });
   it("refuses a repeat only if it's in this game's plays, and says which turn", () => {
     // Regression: POOR was refused in a game where it was play 2 of 15, and the

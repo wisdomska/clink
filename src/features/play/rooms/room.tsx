@@ -1,5 +1,5 @@
 "use client";
-import { useGame, Waiting } from "./shared";
+import { useGame, Waiting, RematchInvite } from "./shared";
 import { KnowMeRoom, TriviaRoom, WyrRoom } from "./question-rooms";
 import { DrawRoom } from "./draw-room";
 import { WordRoom, StoryRoom } from "./turn-rooms";
@@ -21,6 +21,7 @@ export function GameRoom({ id }: { id: string }) {
         />
       )}
       {error && <p className="text-muted mt-12">That game isn&apos;t here any more.</p>}
+      {game?.status === "finished" && <RematchInvite game={game} />}
       {game &&
         (game.status === "invited" ? (
           <>

@@ -12,7 +12,6 @@ import {
   ResultMoment,
   FinalScore,
   ForfeitNote,
-  BackToLobby,
   sendMove,
   useRevealFeedback,
   type GameRow,
@@ -333,8 +332,17 @@ export function WyrRoom({ game }: { game: GameRow }) {
         </div>
         <div className="flex flex-col gap-2">
           <ForfeitNote game={game} />
-          <Button onClick={() => router.push("/play")}>Another deck</Button>
-          <BackToLobby />
+          <Button
+            onClick={async () => {
+              const id = await startGame("wyr", { deck: s.deck }).catch(() => null);
+              if (id) router.push(`/play/wyr/${id}`);
+            }}
+          >
+            Same deck again
+          </Button>
+          <Button variant="secondary" size="lg" onClick={() => router.push("/play")}>
+            Another deck
+          </Button>
         </div>
       </div>
     );
