@@ -37,6 +37,7 @@ import {
   PushPin,
   PushPinSlash,
   Clock,
+  ArrowDown,
 } from "@phosphor-icons/react";
 import { AddToKeepSheet } from "./add-to-keep";
 import Link from "@/components/ui/link";
@@ -219,6 +220,11 @@ export function ChatScreen() {
   const settling = useRef(false);
   // Where you were before the earlier page arrived; restored once it's on screen.
   const anchor = useRef<{ before: number; top: number } | null>(null);
+  // Scrolled up to read: the newest message you'd seen when you left the
+  // bottom. Their messages after it count as new on the "Jump to latest" button.
+  const [seenUpTo, setSeenUpTo] = useState<string | null>(null);
+  const lastId = useRef("");
+  const leaveBottom = () => setSeenUpTo((v) => v ?? lastId.current);
   const reducedMotion = usePrefersReducedMotion();
   const { pins, pinned, pin, unpin } = usePins();
   const [pinsOpen, setPinsOpen] = useState(false);
@@ -246,6 +252,7 @@ export function ChatScreen() {
       return;
     }
     stickToBottom.current = false;
+    leaveBottom();
     el.scrollIntoView({ block: "center", behavior: reducedMotion ? "auto" : "smooth" });
     // After any closing sheet has handed focus back, move it to the message.
     requestAnimationFrame(() =>
@@ -406,7 +413,33 @@ export function ChatScreen() {
   const allRef = useRef(all);
   useLayoutEffect(() => {
     allRef.current = all;
+    lastId.current = all.at(-1)?.id ?? "";
   }, [all]);
+  const newSince = (() => {
+    if (seenUpTo === null) return 0;
+    const from = all.findIndex((m) => m.id === seenUpTo);
+    return all
+      .slice(from + 1)
+      .filter((m) => m.sender_id !== me.id && m.type !== "system" && !m.id.startsWith("local-"))
+      .length;
+  })();
+  function jumpToLatest() {
+    const el = listRef.current;
+    if (!el) return;
+    stickToBottom.current = true;
+    setSeenUpTo(null);
+    setUnreadFrom(null);
+    const far = el.scrollHeight - el.scrollTop - el.clientHeight > el.clientHeight * 2;
+    el.scrollTo({ top: el.scrollHeight, behavior: reducedMotion || far ? "auto" : "smooth" });
+    // Rows coming into view get their real height; keep landing on the newest.
+    let frames = 0;
+    const pin = () => {
+      if (!stickToBottom.current) return;
+      if (frames > 8) el.scrollTop = el.scrollHeight;
+      if (++frames < 40) requestAnimationFrame(pin);
+    };
+    requestAnimationFrame(pin);
+  }
   const findFirstUnread = () => {
     const list = allRef.current;
     let first: string | null = null;
@@ -433,6 +466,7 @@ export function ChatScreen() {
     }
     if (!first) return;
     stickToBottom.current = false;
+    leaveBottom();
     setUnreadFrom(first);
     // Bring the divider to the top, and hold it there while the rows around
     // it get their real heights (a second at most, or until you touch it).
@@ -541,6 +575,9 @@ export function ChatScreen() {
     // While it settles by itself, its own scrolling isn't the reader leaving the bottom.
     if (settling.current) return;
     stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    if (stickToBottom.current) {
+      if (seenUpTo !== null) setSeenUpTo(null);
+    } else if (seenUpTo === null) leaveBottom();
     if (el.scrollTop < 120) loadOlder();
   }
 
@@ -597,6 +634,7 @@ export function ChatScreen() {
     if (replyTo) item.replyTo = replyTo.id.startsWith("local-") ? undefined : replyTo.id;
     setReplyTo(null);
     stickToBottom.current = true;
+    setSeenUpTo(null);
     queue.add(item);
     const m = await sendQueued(item, presence.online);
     if (m) upsertLocal(m);
@@ -672,6 +710,7 @@ export function ChatScreen() {
     const reply = replyTo?.id;
     setReplyTo(null);
     stickToBottom.current = true;
+    setSeenUpTo(null);
     setPendingMedia((p) => ({ ...p, [clientId]: local }));
     const setProgress = (i: number, v: number) =>
       setPendingMedia((p) => {
@@ -1105,6 +1144,28 @@ export function ChatScreen() {
               </div>
             )}
           </div>
+          {seenUpTo !== null && !isLoading && (
+            <button
+              type="button"
+              onClick={jumpToLatest}
+              aria-label={
+                newSince
+                  ? `Jump to latest, ${newSince} new message${newSince === 1 ? "" : "s"}`
+                  : "Jump to latest"
+              }
+              className={cn(
+                "an-pop press border-line bg-s2 text-text absolute right-4 bottom-3 z-10 flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-full border shadow-[0_6px_20px_rgb(0_0_0/0.45)] xl:right-[max(1rem,calc((100%-880px)/2))]",
+                newSince ? "px-3.5" : "w-10",
+              )}
+            >
+              <ArrowDown size={18} weight="bold" aria-hidden />
+              {newSince > 0 && (
+                <span className="text-accent text-sm font-bold">
+                  {newSince > 99 ? "99+" : newSince} new
+                </span>
+              )}
+            </button>
+          )}
         </div>
 
         {tray && (
