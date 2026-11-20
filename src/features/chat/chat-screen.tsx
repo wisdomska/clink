@@ -1277,6 +1277,10 @@ export function ChatScreen() {
           <div className="border-line bg-s1 flex flex-none items-center gap-2 border-t px-4 py-2 text-sm">
             <PencilSimple size={16} className="text-accent" aria-hidden />
             <span className="text-muted flex-1 truncate">Editing message</span>
+            {/* Keyboards only: the shortcut to back out. */}
+            <kbd className="text-faint mono hidden text-xs [@media(hover:hover)_and_(pointer:fine)]:inline">
+              Esc to cancel
+            </kbd>
             <IconButton
               label="Cancel edit"
               dim={36}
@@ -1311,6 +1315,9 @@ export function ChatScreen() {
                 </span>
               </span>
             </button>
+            <kbd className="text-faint mono hidden flex-none text-xs [@media(hover:hover)_and_(pointer:fine)]:inline">
+              Esc
+            </kbd>
             <IconButton label="Cancel reply" dim={44} onClick={() => setReplyTo(null)}>
               <X size={16} />
             </IconButton>
@@ -1410,6 +1417,32 @@ export function ChatScreen() {
                     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                       e.preventDefault();
                       void sendText();
+                      return;
+                    }
+                    // Up in an empty box edits your last message (while it can still be edited).
+                    if (
+                      e.key === "ArrowUp" &&
+                      !text &&
+                      !editing &&
+                      !e.shiftKey &&
+                      !e.altKey &&
+                      !e.metaKey &&
+                      !e.ctrlKey
+                    ) {
+                      const last = lastMine;
+                      if (!last || last.type !== "text" || last.removed_at) return;
+                      e.preventDefault();
+                      if (now.getTime() - new Date(last.sent_at).getTime() >= 15 * 60 * 1000) {
+                        toast("Messages can be edited for 15 minutes after sending.");
+                        return;
+                      }
+                      setEditing(last);
+                      setReplyTo(null);
+                      setText(last.body ?? "");
+                      requestAnimationFrame(() => {
+                        const box = composerRef.current;
+                        box?.setSelectionRange(box.value.length, box.value.length);
+                      });
                       return;
                     }
                     if (e.key !== "Escape") return;
