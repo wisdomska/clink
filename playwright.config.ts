@@ -11,6 +11,8 @@ const localChromium =
 
 export default defineConfig({
   testDir: "tests",
+  // Test accounts are deleted when the run ends (local databases only).
+  globalTeardown: "./tests/support/global-teardown.ts",
   // Visual baselines are recorded and compared inside Playwright's Docker image
   // (scripts/visual.sh), because font rasterising differs between machines.
   testMatch:

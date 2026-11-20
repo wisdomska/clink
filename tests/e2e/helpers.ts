@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Browser, BrowserContext, Page } from "@playwright/test";
 import { randomBytes, randomUUID, scryptSync } from "node:crypto";
+import { rememberTestUser } from "../support/cleanup";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321";
 const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -21,6 +22,7 @@ export async function makeUser(
   const { data, error } = await admin.auth.admin.createUser({ email, email_confirm: true });
   if (error || !data.user) throw error ?? new Error("createUser failed");
   const id = data.user.id;
+  rememberTestUser(id);
   await admin.from("user_private").insert({ user_id: id, dob: "1996-03-14" });
   if (opts.onboarded !== false) {
     await admin
