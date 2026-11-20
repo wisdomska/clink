@@ -144,7 +144,7 @@ export const config = {
   matcher: [
     {
       source:
-        "/((?!api|_next/static|_next/image|favicon.ico|icons/|sw.js|swe-worker|manifest.webmanifest|robots.txt|sitemap.xml|opengraph-image).*)",
+        "/((?!api|_next/static|_next/image|favicon.ico|icons/|sw.js|swe-worker|manifest.webmanifest|robots.txt|sitemap.xml|llms.txt|opengraph-image).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },
