@@ -21,6 +21,13 @@ const schema = z.object({
   VAPID_PRIVATE_KEY: z.string().optional(),
   VAPID_SUBJECT: z.string().default("https://clinkapp.vercel.app"),
   ADMIN_EMAILS: z.string().default(""),
+  // Outgoing email (the weekly admin summary), through Brevo's SMTP relay.
+  BREVO_SMTP_LOGIN: z.string().optional(),
+  BREVO_SMTP_KEY: z.string().optional(),
+  BREVO_SENDER: z.string().optional(),
+  // Tests point this at the local mail catcher (Supabase's, port 54325).
+  SMTP_HOST: z.string().default("smtp-relay.brevo.com"),
+  SMTP_PORT: z.coerce.number().default(587),
 });
 
 export type ServerEnv = z.infer<typeof schema>;

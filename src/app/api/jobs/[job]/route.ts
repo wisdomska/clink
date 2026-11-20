@@ -12,6 +12,7 @@ import {
   onThisDay,
   backfillPlaceholders,
 } from "@/lib/server/jobs";
+import { weeklyDigest } from "@/lib/server/digest";
 
 export const maxDuration = 60;
 
@@ -46,6 +47,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ job: strin
     await run("account-deletion", accountDeletion);
     await run("export-cleanup", exportCleanup);
     await run("milestones", milestones);
+    await run("weekly-digest", () => weeklyDigest());
   } else {
     return NextResponse.json({ error: "unknown_job" }, { status: 404 });
   }

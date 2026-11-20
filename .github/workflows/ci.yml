@@ -68,6 +68,8 @@ jobs:
             echo "APP_SECRET=$(openssl rand -hex 32)"
             echo "CRON_SECRET=$(openssl rand -hex 24)"
             echo "STORAGE_DRIVER=supabase"
+            echo "SMTP_HOST=127.0.0.1"
+            echo "SMTP_PORT=54325"
           } > .env.local
       - run: pnpm test:rls
       - run: pnpm build

@@ -1,5 +1,9 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { Toggle } from "@/components/ui/toggle";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast";
 import { ArrowSquareOut, Bug, Gauge, PhoneCall } from "@phosphor-icons/react";
 import Link from "@/components/ui/link";
 import { adminFetch } from "./fetch";
@@ -63,6 +67,7 @@ export function WeeklyHealth() {
         </h2>
         <span className="text-faint text-xs">Last 7 days, compared with the 7 before</span>
       </div>
+      <EmailSettings />
       <div className="rounded-card border-line bg-line grid gap-px overflow-hidden border lg:grid-cols-3">
         <article className="bg-s1 flex flex-col gap-2 p-4" aria-label="Errors">
           <div className="text-muted flex items-center gap-2 text-sm">
@@ -158,5 +163,50 @@ export function WeeklyHealth() {
         </article>
       </div>
     </section>
+  );
+}
+
+/** The same summary by email every Monday, per admin. */
+function EmailSettings() {
+  const qc = useQueryClient();
+  const [sending, setSending] = useState(false);
+  const { data } = useQuery({
+    queryKey: ["admin-health-email"],
+    queryFn: () => adminFetch<{ weekly: boolean; email: string | null }>("/api/admin/health/email"),
+  });
+  if (!data) return null;
+  return (
+    <div className="rounded-card border-line bg-s1 flex flex-wrap items-center gap-3 border px-4 py-3">
+      <div className="min-w-0 flex-1">
+        <Toggle
+          label="Email me this every Monday"
+          sub={data.email ? `To ${data.email}` : undefined}
+          last
+          checked={data.weekly}
+          onChange={async (on: boolean) => {
+            qc.setQueryData(["admin-health-email"], { ...data, weekly: on });
+            await adminFetch("/api/admin/health/email", { method: "PATCH", body: { weekly: on } });
+          }}
+        />
+      </div>
+      <Button
+        size="sm"
+        variant="secondary"
+        loading={sending}
+        onClick={async () => {
+          setSending(true);
+          try {
+            await adminFetch("/api/admin/health/email", { method: "POST" });
+            toast.ok("Sent. Check your inbox.");
+          } catch (e) {
+            toast.err(e instanceof Error ? e.message : "That didn't send.");
+          } finally {
+            setSending(false);
+          }
+        }}
+      >
+        Send one now
+      </Button>
+    </div>
   );
 }

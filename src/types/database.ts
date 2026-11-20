@@ -7,17 +7,37 @@ export type Database = {
           Tables: {
             "admin_accounts": {
                   Row: {
-                    "created_at": string,"email": string,"failed_logins": number,"id": string,"last_login_at": string | null,"locked_until": string | null,"must_change_password": boolean,"name": string,"password_hash": string,"session_version": number,"updated_at": string,"user_id": string | null
+                    "created_at": string,"email": string,"failed_logins": number,"id": string,"last_login_at": string | null,"locked_until": string | null,"must_change_password": boolean,"name": string,"password_hash": string,"session_version": number,"updated_at": string,"user_id": string | null,"weekly_email": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"email": string,"failed_logins"?: number,"id"?: string,"last_login_at"?: string | null,"locked_until"?: string | null,"must_change_password"?: boolean,"name"?: string,"password_hash": string,"session_version"?: number,"updated_at"?: string,"user_id"?: string | null
+                    "created_at"?: string,"email": string,"failed_logins"?: number,"id"?: string,"last_login_at"?: string | null,"locked_until"?: string | null,"must_change_password"?: boolean,"name"?: string,"password_hash": string,"session_version"?: number,"updated_at"?: string,"user_id"?: string | null,"weekly_email"?: boolean
                   }
                   Update: {
-                    "created_at"?: string,"email"?: string,"failed_logins"?: number,"id"?: string,"last_login_at"?: string | null,"locked_until"?: string | null,"must_change_password"?: boolean,"name"?: string,"password_hash"?: string,"session_version"?: number,"updated_at"?: string,"user_id"?: string | null
+                    "created_at"?: string,"email"?: string,"failed_logins"?: number,"id"?: string,"last_login_at"?: string | null,"locked_until"?: string | null,"must_change_password"?: boolean,"name"?: string,"password_hash"?: string,"session_version"?: number,"updated_at"?: string,"user_id"?: string | null,"weekly_email"?: boolean
                   }
                   Relationships: [
                     
+                  ]
+                },"admin_digests": {
+                  Row: {
+                    "admin_id": string,"sent_at": string,"week": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "admin_id": string,"sent_at"?: string,"week": string
+                  }
+                  Update: {
+                    "admin_id"?: string,"sent_at"?: string,"week"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "admin_digests_admin_id_fkey"
+      columns: ["admin_id"]
+isOneToOne: false
+      referencedRelation: "admin_accounts"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"age_blocks": {
                   Row: {
