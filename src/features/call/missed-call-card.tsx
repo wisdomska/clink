@@ -8,6 +8,7 @@ import { useCouple, useCoupleEvent } from "@/features/couple/context";
 import { parseCallBody } from "./call-log-row";
 import { useCall } from "./call-provider";
 import { scoped } from "@/lib/account-scope";
+import { callLogReason } from "./call-reasons";
 
 const KEY = "clink.missedSeen";
 const seenId = () => {
@@ -91,6 +92,8 @@ export function MissedCallCard() {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
+                {callLogReason(c!.reason, false, partner.name) &&
+                  ` · ${callLogReason(c!.reason, false, partner.name)}`}
               </span>
             </span>
             <button

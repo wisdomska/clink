@@ -9,6 +9,7 @@ import { isIOS } from "@/lib/device";
 import { iceServers } from "./ice";
 import { tuneSdp, prioritise, makeSampler, shapeVideo, type Quality } from "./call-net";
 import { CallScreen } from "./call-screen";
+import { endedDetailMessage } from "./call-reasons";
 
 export type CallPhase = "idle" | "outgoing" | "incoming" | "connecting" | "live" | "ended";
 
@@ -22,6 +23,10 @@ export interface CallState {
   facing: "user" | "environment";
   remoteCameraOff: boolean;
   endReason: string | null;
+  /** Why, in more detail (call-reasons.ts): "offline", "lost", "away"... */
+  endDetail: string | null;
+  /** We called and it didn't go through: offer "Call again". */
+  canRetry: boolean;
   /** Their audio on the loudspeaker (vs the earpiece). */
   speaker: boolean;
   /** Live connection quality while the call is up. */
@@ -57,6 +62,8 @@ interface CallApi {
   upgradeToVideo: () => void;
   react: (emoji: string) => void;
   reactions: CallReaction[];
+  /** Close the "call ended" screen now. */
+  closeEnded: () => void;
 }
 
 const Ctx = createContext<CallApi | null>(null);
@@ -95,6 +102,8 @@ const baseState = (id: string, video: boolean, phase: CallPhase): CallState => (
   facing: "user",
   remoteCameraOff: false,
   endReason: null,
+  endDetail: null,
+  canRetry: false,
   speaker: video,
   quality: null,
   reconnecting: false,
@@ -141,6 +150,11 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const pendingMerge = useRef(false);
   const monitor = useRef<ReturnType<typeof setInterval> | null>(null);
   const lostSince = useRef<number | null>(null);
+  // Why the call is ending (see call-reasons.ts), and what we know about
+  // whether their device rang: it says so ("call:ringing"), or a push went out.
+  const endDetail = useRef<string | null>(null);
+  const rang = useRef<string | null>(null);
+  const pushed = useRef(false);
   const pendingAnswer = useRef<string | null>(null);
   /** Running while they've stepped away; the call waits instead of failing. */
   const awayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -180,7 +194,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     void fetch("/api/calls/log", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ outcome, video: c.video, seconds }),
+      body: JSON.stringify({ outcome, video: c.video, seconds, reason: endDetail.current }),
     }).catch(() => undefined);
   };
 
@@ -226,17 +240,31 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       pendingIce.current = [];
       setLocal(null);
       setRemote(null);
-      if (!callRef.current) return;
+      if (!callRef.current) {
+        endDetail.current = null;
+        return;
+      }
+      const detail = endDetail.current;
+      const canRetry =
+        iCalled.current &&
+        callRef.current.startedAt === null &&
+        (reason === "missed" || reason === "declined" || reason === "failed" || reason === "busy");
       if (reason !== "media") logCall(callRef.current, reason);
+      endDetail.current = null;
       if (reason && reason !== "local" && reason !== "media") playHangupTone();
       if (reason && reason !== "local") {
-        update({ phase: "ended", endReason: reason });
-        setTimeout(() => {
-          if (callRef.current?.phase === "ended") {
-            callRef.current = null;
-            setCall(null);
-          }
-        }, 2600);
+        const ended = callRef.current.id;
+        update({ phase: "ended", endReason: reason, endDetail: detail, canRetry });
+        // Long enough to tap "Call again" when it didn't go through.
+        setTimeout(
+          () => {
+            if (callRef.current?.phase === "ended" && callRef.current.id === ended) {
+              callRef.current = null;
+              setCall(null);
+            }
+          },
+          canRetry ? 8000 : 2600,
+        );
       } else {
         callRef.current = null;
         setCall(null);
@@ -355,6 +383,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         if (lostSince.current === null) lostSince.current = Date.now();
         update({ reconnecting: true });
         if (Date.now() - lostSince.current > RECONNECT_FOR && !awayTimer.current) {
+          endDetail.current = callRef.current?.startedAt ? "lost" : "no-path";
           send("call:end", { id, reason: "failed" });
           cleanup("failed");
           return;
@@ -409,11 +438,14 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   /* ------------------------------------------------------------- outgoing */
   const start = useCallback(
     async (video: boolean) => {
-      if (callRef.current) {
+      if (callRef.current && callRef.current.phase !== "ended") {
         // Their call reached us a moment before our tap: calling them back means yes.
         if (callRef.current.phase === "incoming") void accept();
         return;
       }
+      rang.current = null;
+      pushed.current = false;
+      endDetail.current = null;
       if (!navigator.mediaDevices?.getUserMedia || typeof RTCPeerConnection === "undefined")
         return toast.err("This browser can't make calls. Try Chrome or Safari.");
       const id = crypto.randomUUID();
@@ -450,10 +482,17 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, video }),
-      }).catch(() => undefined);
+      })
+        .then((r) => r.json())
+        .then((d: { sent?: number }) => {
+          if (callRef.current?.id === id && (d.sent ?? 0) > 0) pushed.current = true;
+        })
+        .catch(() => undefined);
       startTone("ringback");
       ringTimer.current = setTimeout(() => {
         if (callRef.current?.phase === "outgoing") {
+          endDetail.current =
+            rang.current === id ? "no-answer" : pushed.current ? "notified" : "offline";
           send("call:end", { id, reason: "missed" });
           cleanup("missed");
         }
@@ -494,6 +533,9 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       stopRinging();
     }
     iCalled.current = false;
+    // Tell the caller this device is ringing (so a miss reads "no answer",
+    // not "offline").
+    send("call:ringing", { id });
     const next = baseState(id, Boolean(p.video), "incoming");
     callRef.current = next;
     setCall(next);
@@ -509,6 +551,10 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     ringTimer.current = setTimeout(() => {
       if (callRef.current?.phase === "incoming") cleanup("missed");
     }, RING_TIMEOUT);
+  });
+
+  useCoupleEvent("call:ringing", (p) => {
+    if (callRef.current?.id === String(p.id)) rang.current = String(p.id);
   });
 
   const decline = useCallback(() => {
@@ -605,6 +651,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id: c.id, video: c.video, dropped: true }),
           }).catch(() => undefined);
+        endDetail.current = "away";
         send("call:end", { id: c.id, reason: "ended" });
         cleanup("ended");
       },
@@ -946,6 +993,11 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         upgradeToVideo: () => void upgradeToVideo(),
         react,
         reactions,
+        closeEnded: () => {
+          if (callRef.current?.phase !== "ended") return;
+          callRef.current = null;
+          setCall(null);
+        },
       }}
     >
       {children}
@@ -956,7 +1008,11 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
           partnerIcon={partner.avatarIcon}
           partnerOnline={presence.online}
           endMessage={
-            call.endReason ? (ENDED_MESSAGES[call.endReason] ?? ENDED_MESSAGES.ended!) : null
+            call.endReason
+              ? (endedDetailMessage(call.endDetail, partner.name) ??
+                ENDED_MESSAGES[call.endReason] ??
+                ENDED_MESSAGES.ended!)
+              : null
           }
         />
       )}

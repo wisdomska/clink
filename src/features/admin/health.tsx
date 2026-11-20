@@ -20,6 +20,7 @@ interface Health {
     minutes: number;
     previous_total: number;
     previous_dropped: number;
+    reasons?: Record<string, number>;
   };
   pages: {
     views: number;
@@ -28,6 +29,15 @@ interface Health {
     slowest: Array<{ path: string; views: number; avg_ms: number; slow: number }>;
   };
 }
+
+const REASON_LABEL: Record<string, string> = {
+  "no-path": "Networks couldn't connect",
+  lost: "Connection dropped",
+  away: "Left Clink mid-call",
+  offline: "Device offline",
+  notified: "Notified, no answer",
+  "no-answer": "Rang, no answer",
+};
 
 const secs = (ms: number) => `${(ms / 1000).toFixed(1)} s`;
 const vs = (prev: number) => `${prev} the week before`;
@@ -96,6 +106,21 @@ export function WeeklyHealth() {
             <dt className="text-muted">Dropped the week before</dt>
             <dd className="mono m-0 text-right">{c.previous_dropped}</dd>
           </dl>
+          {Object.keys(c.reasons ?? {}).length > 0 && (
+            <dl
+              className="border-line m-0 grid grid-cols-2 gap-x-3 gap-y-1 border-t pt-2 text-xs"
+              aria-label="Why calls didn't go through"
+            >
+              {Object.entries(c.reasons!)
+                .sort((x, y) => y[1] - x[1])
+                .map(([k, n]) => (
+                  <div key={k} className="contents">
+                    <dt className="text-muted">{REASON_LABEL[k] ?? k}</dt>
+                    <dd className="mono m-0 text-right">{n}</dd>
+                  </div>
+                ))}
+            </dl>
+          )}
         </article>
         <article className="bg-s1 flex flex-col gap-2 p-4" aria-label="Page speed">
           <div className="text-muted flex items-center gap-2 text-sm">

@@ -2,11 +2,17 @@
 import { Phone, PhoneIncoming, PhoneOutgoing, PhoneX, VideoCamera } from "@phosphor-icons/react";
 import { cn } from "@/components/ui/cn";
 import { useCall } from "./call-provider";
+import { callLogReason } from "./call-reasons";
 
 export function parseCallBody(body: string | null) {
   if (!body?.startsWith("call:")) return null;
-  const [, outcome, kind, secs] = body.split(":");
-  return { outcome: outcome ?? "ended", video: kind === "video", seconds: Number(secs ?? 0) };
+  const [, outcome, kind, secs, reason] = body.split(":");
+  return {
+    outcome: outcome ?? "ended",
+    video: kind === "video",
+    seconds: Number(secs ?? 0),
+    reason: reason ?? null,
+  };
 }
 
 const dur = (s: number) =>
@@ -29,6 +35,7 @@ export function CallLogRow({
   const { start } = useCall();
   const c = parseCallBody(body)!;
   const missed = c.outcome !== "ended";
+  const why = callLogReason(c.reason, mine, partnerName);
   const time = new Date(at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const kind = c.video ? "video call" : "voice call";
   const title =
@@ -67,6 +74,7 @@ export function CallLogRow({
           {time}
           {c.outcome === "ended" && ` · ${dur(c.seconds)}`}
         </span>
+        {why && <span className="text-muted block truncate text-xs">{why}</span>}
       </span>
       <button
         type="button"

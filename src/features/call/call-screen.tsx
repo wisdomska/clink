@@ -140,6 +140,8 @@ export function CallScreen({
     upgradeToVideo,
     react,
     reactions,
+    start,
+    closeEnded,
   } = useCall();
   const [reactOpen, setReactOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -463,7 +465,31 @@ export function CallScreen({
               )}
             </RoundBtn>
           </div>
-        ) : call.phase === "ended" ? null : (
+        ) : call.phase === "ended" ? (
+          call.canRetry ? (
+            <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={closeEnded}
+                className="press bg-s3 flex h-12 cursor-pointer items-center rounded-full border-0 px-5 text-base font-semibold text-white"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => start(call.video)}
+                className="press bg-accent text-on-accent flex h-12 cursor-pointer items-center gap-2 rounded-full border-0 px-5 text-base font-bold"
+              >
+                {call.video ? (
+                  <VideoCamera size={20} weight="fill" aria-hidden />
+                ) : (
+                  <Phone size={20} weight="fill" aria-hidden />
+                )}
+                Call again
+              </button>
+            </div>
+          ) : null
+        ) : (
           <div className="flex flex-col items-center gap-4">
             {reactOpen && live && (
               <div
