@@ -64,3 +64,54 @@ describe("link preview safety", () => {
     });
   });
 });
+
+describe("link preview fetching", () => {
+  it("refuses hosts that resolve to private addresses, at connect time", async () => {
+    const { guardedLookup, fetchPreview } = await import("@/lib/server/link-preview");
+    const err = await new Promise<NodeJS.ErrnoException | null>((ok) =>
+      guardedLookup("localhost", {}, (e) => ok(e)),
+    );
+    expect(err?.code).toBe("EPRIVATE");
+    // A public-looking name that points inside: no request is ever made.
+    const http = await import("node:http");
+    let hits = 0;
+    const srv = http.createServer((_q, r) => {
+      hits++;
+      r.end("<title>secret</title>");
+    });
+    await new Promise<void>((ok) => srv.listen(0, "127.0.0.1", ok));
+    const port = (srv.address() as { port: number }).port;
+    const p = await fetchPreview(new URL(`http://localhost:${port}/`));
+    expect(p.ok).toBe(false);
+    expect(hits).toBe(0);
+    srv.close();
+  });
+
+  it("follows redirects, reads the page and makes a small picture", async () => {
+    const { fetchPreview } = await import("@/lib/server/link-preview");
+    const http = await import("node:http");
+    const sharp = (await import("sharp")).default;
+    const png = await sharp({
+      create: { width: 900, height: 600, channels: 3, background: "#d33" },
+    })
+      .png()
+      .toBuffer();
+    const srv = http.createServer((q, r) => {
+      if (q.url === "/old") return r.writeHead(301, { Location: "/post" }).end();
+      if (q.url === "/cover.png") return r.writeHead(200, { "Content-Type": "image/png" }).end(png);
+      r.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      r.end(`<html><head><meta property="og:title" content="Kelewele night">
+        <meta property="og:image" content="/cover.png"></head><body></body></html>`);
+    });
+    await new Promise<void>((ok) => srv.listen(0, "127.0.0.1", ok));
+    const port = (srv.address() as { port: number }).port;
+    // Stand-in DNS: the test site's name points at the local server.
+    const lookup = ((_h: string, o: { all?: boolean }, cb: (...a: unknown[]) => void) =>
+      o.all ? cb(null, [{ address: "127.0.0.1", family: 4 }]) : cb(null, "127.0.0.1", 4)) as never;
+    const p = await fetchPreview(new URL(`http://site.example:${port}/old`), lookup);
+    srv.close();
+    expect(p.ok).toBe(true);
+    expect(p.title).toBe("Kelewele night");
+    expect(p.image).toMatch(/^data:image\/webp;base64,/);
+  });
+});

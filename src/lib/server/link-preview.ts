@@ -1,5 +1,7 @@
 import "server-only";
-import { lookup } from "node:dns/promises";
+import { lookup as dnsLookup, type LookupAddress, type LookupOptions } from "node:dns";
+import http from "node:http";
+import https from "node:https";
 import { isIP } from "node:net";
 
 /**
@@ -52,7 +54,7 @@ export function privateAddress(ip: string): boolean {
 }
 
 /** A link worth previewing: http(s), default ports, a public host name. */
-export function cleanUrl(raw: string): URL | null {
+export function cleanUrl(raw: string, opts: { anyPort?: boolean } = {}): URL | null {
   let u: URL;
   try {
     u = new URL(raw);
@@ -61,7 +63,7 @@ export function cleanUrl(raw: string): URL | null {
   }
   if (u.protocol !== "https:" && u.protocol !== "http:") return null;
   if (u.username || u.password) return null;
-  if (u.port && u.port !== "80" && u.port !== "443") return null;
+  if (u.port && u.port !== "80" && u.port !== "443" && !opts.anyPort) return null;
   const host = u.hostname.replace(/^\[|\]$/g, "");
   if (!host.includes(".") && !isIP(host)) return null;
   if (isIP(host) && privateAddress(host)) return null;
@@ -71,23 +73,110 @@ export function cleanUrl(raw: string): URL | null {
   return u;
 }
 
-async function publicHost(u: URL) {
-  const host = u.hostname.replace(/^\[|\]$/g, "");
-  const ips = isIP(host) ? [host] : (await lookup(host, { all: true })).map((x) => x.address);
-  if (!ips.length || ips.some(privateAddress)) throw new Error("private address");
+/**
+ * Resolve a host and refuse private addresses, inside the connection itself:
+ * Node connects to exactly the address this returns, so a site can't pass
+ * the check with one address and then connect us to another (DNS rebinding).
+ */
+export function guardedLookup(
+  hostname: string,
+  options: LookupOptions,
+  callback: (
+    err: NodeJS.ErrnoException | null,
+    address: string | LookupAddress[],
+    family?: number,
+  ) => void,
+) {
+  dnsLookup(hostname, { ...options, all: true }, (err, addresses) => {
+    if (err) return callback(err, "", 0);
+    const list = addresses as LookupAddress[];
+    if (!list.length || list.some((a) => privateAddress(a.address))) {
+      const e: NodeJS.ErrnoException = new Error(`refused private address for ${hostname}`);
+      e.code = "EPRIVATE";
+      return callback(e, "", 0);
+    }
+    if (options.all) return callback(null, list);
+    callback(null, list[0]!.address, list[0]!.family);
+  });
 }
 
-async function safeFetch(start: URL, accept: string): Promise<Response> {
+interface Got {
+  status: number;
+  headers: Record<string, string | string[] | undefined>;
+  url: URL;
+  body: Buffer;
+}
+
+/** One GET through the guarded lookup, with time and size caps. */
+type Lookup = typeof guardedLookup;
+function get(url: URL, accept: string, max: number, lookup: Lookup): Promise<Got> {
+  return new Promise((resolve, reject) => {
+    const host = url.hostname.replace(/^\[|\]$/g, "");
+    if (lookup === guardedLookup && isIP(host) && privateAddress(host))
+      return reject(new Error("private address"));
+    const mod = url.protocol === "https:" ? https : http;
+    const req = mod.get(
+      url,
+      {
+        lookup: lookup as never,
+        headers: { "User-Agent": UA, Accept: accept, "Accept-Language": "en" },
+        timeout: TIMEOUT,
+      },
+      (res) => {
+        const status = res.statusCode ?? 0;
+        const len = Number(res.headers["content-length"] ?? 0);
+        const htmlLike = max === MAX_HTML;
+        if (status >= 300 && status < 400) {
+          res.resume();
+          return resolve({ status, headers: res.headers, url, body: Buffer.alloc(0) });
+        }
+        if (len > max && !htmlLike) {
+          res.destroy();
+          return reject(new Error("too large"));
+        }
+        const parts: Buffer[] = [];
+        let size = 0;
+        res.on("data", (c: Buffer) => {
+          size += c.length;
+          parts.push(c);
+          if (size > max) {
+            res.destroy();
+            // HTML: the head is all we need; images must be whole.
+            if (htmlLike)
+              resolve({
+                status,
+                headers: res.headers,
+                url,
+                body: Buffer.concat(parts).subarray(0, max),
+              });
+            else reject(new Error("too large"));
+          }
+        });
+        res.on("end", () =>
+          resolve({ status, headers: res.headers, url, body: Buffer.concat(parts) }),
+        );
+        res.on("error", reject);
+      },
+    );
+    req.on("timeout", () => req.destroy(new Error("timeout")));
+    req.on("error", reject);
+    // Whole request, redirects aside, never longer than the cap.
+    setTimeout(() => req.destroy(new Error("timeout")), TIMEOUT).unref();
+  });
+}
+
+async function safeGet(
+  start: URL,
+  accept: string,
+  max: number,
+  lookup: Lookup = guardedLookup,
+): Promise<Got> {
   let url = start;
   for (let hop = 0; hop < 4; hop++) {
-    await publicHost(url);
-    const res = await fetch(url, {
-      redirect: "manual",
-      headers: { "User-Agent": UA, Accept: accept, "Accept-Language": "en" },
-      signal: AbortSignal.timeout(TIMEOUT),
-    });
-    if (res.status >= 300 && res.status < 400 && res.headers.get("location")) {
-      const next = cleanUrl(new URL(res.headers.get("location")!, url).toString());
+    const res = await get(url, accept, max, lookup);
+    const loc = res.headers.location;
+    if (res.status >= 300 && res.status < 400 && typeof loc === "string") {
+      const next = cleanUrl(new URL(loc, url).toString(), { anyPort: lookup !== guardedLookup });
       if (!next) throw new Error("bad redirect");
       url = next;
       continue;
@@ -97,27 +186,10 @@ async function safeFetch(start: URL, accept: string): Promise<Response> {
   throw new Error("too many redirects");
 }
 
-async function readCapped(res: Response, max: number): Promise<Uint8Array> {
-  const len = Number(res.headers.get("content-length") ?? 0);
-  if (len > max && max !== MAX_HTML) throw new Error("too large");
-  const reader = res.body?.getReader();
-  if (!reader) return new Uint8Array();
-  const parts: Uint8Array[] = [];
-  let size = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    size += value.length;
-    parts.push(value);
-    if (size > max) {
-      await reader.cancel();
-      // HTML: the head is all we need; images must be whole.
-      if (max === MAX_HTML) break;
-      throw new Error("too large");
-    }
-  }
-  return Buffer.concat(parts).subarray(0, max);
-}
+const header = (h: Got["headers"], k: string) => {
+  const v = h[k];
+  return (Array.isArray(v) ? v[0] : v) ?? "";
+};
 
 const ENT: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
 function decode(s: string) {
@@ -165,13 +237,13 @@ export function parseMeta(html: string, base: URL) {
   };
 }
 
-async function thumbnail(src: string): Promise<string | null> {
-  const u = cleanUrl(src);
+async function thumbnail(src: string, lookup: Lookup): Promise<string | null> {
+  const u = cleanUrl(src, { anyPort: lookup !== guardedLookup });
   if (!u) return null;
   try {
-    const res = await safeFetch(u, "image/*");
-    if (!res.ok || !/^image\//.test(res.headers.get("content-type") ?? "")) return null;
-    const buf = await readCapped(res, MAX_IMAGE);
+    const res = await safeGet(u, "image/*", MAX_IMAGE, lookup);
+    if (res.status !== 200 || !/^image\//.test(header(res.headers, "content-type"))) return null;
+    const buf = res.body;
     const { default: sharp } = await import("sharp");
     const out = await sharp(buf, { limitInputPixels: 40_000_000 })
       .rotate()
@@ -185,15 +257,16 @@ async function thumbnail(src: string): Promise<string | null> {
   }
 }
 
-export async function fetchPreview(u: URL): Promise<Preview> {
+/** `lookup` is for tests only (a local server standing in for a site). */
+export async function fetchPreview(u: URL, lookup: Lookup = guardedLookup): Promise<Preview> {
   const none: Preview = { ok: false, title: null, description: null, site: null, image: null };
   try {
-    const res = await safeFetch(u, "text/html,application/xhtml+xml");
-    if (!res.ok || !/html/i.test(res.headers.get("content-type") ?? "")) return none;
-    const html = new TextDecoder().decode(await readCapped(res, MAX_HTML));
-    const m = parseMeta(html, new URL(res.url || u.toString()));
+    const res = await safeGet(u, "text/html,application/xhtml+xml", MAX_HTML, lookup);
+    if (res.status !== 200 || !/html/i.test(header(res.headers, "content-type"))) return none;
+    const html = new TextDecoder().decode(res.body);
+    const m = parseMeta(html, res.url);
     if (!m.title) return none;
-    return { ok: true, ...m, image: m.image ? await thumbnail(m.image) : null };
+    return { ok: true, ...m, image: m.image ? await thumbnail(m.image, lookup) : null };
   } catch {
     return none;
   }
