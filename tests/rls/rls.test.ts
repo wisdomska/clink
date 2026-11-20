@@ -89,6 +89,7 @@ const SERVER_ONLY = [
   "audit_events",
   "rate_limits",
   "error_log",
+  "link_previews",
   "age_blocks",
   "user_blocks",
   "wipe_jobs",

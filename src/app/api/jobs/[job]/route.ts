@@ -10,6 +10,7 @@ import {
   exportCleanup,
   milestones,
   onThisDay,
+  backfillPlaceholders,
 } from "@/lib/server/jobs";
 
 export const maxDuration = 60;
@@ -40,6 +41,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ job: strin
     await run("date-reminders", dateReminders);
     await run("capsule-unlock", capsuleUnlock);
     await run("on-this-day", onThisDay);
+    await run("placeholder-backfill", () => backfillPlaceholders());
   } else if (job === "daily") {
     await run("account-deletion", accountDeletion);
     await run("export-cleanup", exportCleanup);

@@ -275,3 +275,61 @@ export async function onThisDay() {
   }
   return { sent, nudged: due?.length ?? 0 };
 }
+
+/** A ~16px blurred preview (data URL), like the one devices make when uploading. */
+export async function placeholderFor(image: Buffer): Promise<string | null> {
+  const { default: sharp } = await import("sharp");
+  for (const quality of [50, 30]) {
+    const out = await sharp(image, { limitInputPixels: 80_000_000 })
+      .rotate()
+      .resize({ width: 16 })
+      .webp({ quality })
+      .toBuffer();
+    const url = `data:image/webp;base64,${out.toString("base64")}`;
+    if (url.length <= 2000) return url;
+  }
+  return null;
+}
+
+/**
+ * placeholder-backfill: blurred previews for photos shared before they existed,
+ * newest first, a few per run until none are left. Only the ordinary media
+ * bucket: sensitive (After Dark) media never gets one.
+ */
+export async function backfillPlaceholders(batch = 20) {
+  const admin = supabaseAdmin();
+  const { data: rows, error } = await admin
+    .from("media")
+    .select("id, bucket, is_sensitive, storage_path")
+    .eq("kind", "image")
+    .eq("bucket", "media")
+    .eq("is_sensitive", false)
+    .eq("status", "ready")
+    .is("placeholder", null)
+    .is("placeholder_tried_at", null)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(batch);
+  if (error) throw error;
+  if (!rows?.length) return { made: 0, left: 0 };
+  const s = await storage();
+  let made = 0;
+  for (const m of rows) {
+    if (m.bucket !== "media" || m.is_sensitive) continue;
+    let placeholder: string | null = null;
+    try {
+      const raw = await s.read("media", m.storage_path);
+      if (raw) placeholder = await placeholderFor(raw);
+    } catch {
+      placeholder = null;
+    }
+    await admin
+      .from("media")
+      .update({ placeholder, placeholder_tried_at: new Date().toISOString() })
+      .eq("id", m.id)
+      .eq("bucket", "media")
+      .eq("is_sensitive", false);
+    if (placeholder) made++;
+  }
+  return { made, tried: rows.length };
+}
