@@ -207,7 +207,11 @@ export function wordMove(
   if (!move.pass) {
     word = (move.word ?? "").trim().toLowerCase();
     if (!/^[a-z]{3,16}$/.test(word)) throw new MoveError("Words need 3 letters or more.");
-    if (s.plays.some((pl) => pl.word === word)) throw new MoveError("That one's been played.");
+    const at = s.plays.findIndex((pl) => pl.word === word);
+    if (at >= 0)
+      throw new MoveError(
+        `${word.toUpperCase()} was played on turn ${at + 1}, by ${s.plays[at]!.by === userId ? "you" : "them"}.`,
+      );
     if (!traceable(s.board, word)) throw new MoveError("That word isn't on the board.");
     if (!isWord(word)) throw new MoveError("That's not in our dictionary.");
     points = wordPoints(word);

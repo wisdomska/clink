@@ -152,19 +152,21 @@ export function WordRoom({ game }: { game: GameRow }) {
           We&apos;ll ping you when it&apos;s your turn. It can wait days.
         </p>
       )}
-      <div className="flex flex-col gap-1.5">
-        {[...s.plays]
+      {/* Every play, newest first, so the "already played" rule always matches what you see. */}
+      <ol className="m-0 flex list-none flex-col gap-1.5 p-0" aria-label="Words played">
+        {s.plays
+          .map((p, i) => ({ p, turn: i + 1 }))
           .reverse()
-          .slice(0, 12)
-          .map((p, i) => (
-            <div key={i} className="flex items-center gap-2 text-sm">
+          .map(({ p, turn }) => (
+            <li key={turn} className="flex items-center gap-2 text-sm">
+              <span className="mono text-faint w-5 text-right text-xs">{turn}</span>
               <PartnerMark who={p.by === me.id ? me.role : partner.role} />
               <span className="text-muted flex-1">{p.by === me.id ? "You" : partner.name}</span>
               <span className="mono">{p.word ? p.word.toUpperCase() : "pass"}</span>
               <span className="mono text-muted w-8 text-right">+{p.points}</span>
-            </div>
+            </li>
           ))}
-      </div>
+      </ol>
       {game.status === "finished" && (
         <div className="flex flex-col gap-2">
           <FinalScore game={game} mine={my} theirs={their} />

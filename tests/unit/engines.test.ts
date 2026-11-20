@@ -151,6 +151,34 @@ describe("Word board", () => {
       0, 1, 2, 4, 6, 9, 11, 15,
     ]);
   });
+  it("refuses a repeat only if it's in this game's plays, and says which turn", () => {
+    // Regression: POOR was refused in a game where it was play 2 of 15, and the
+    // history only listed the last 12. The rule only ever looks at this game's plays.
+    const b2 = ["P", "O", "O", "R", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X"];
+    const yes = () => true;
+    const fresh = { ...wordInit(P, seeded(4)).state, board: b2 };
+    expect(wordMove(P, fresh, "A", { word: "POOR" }, yes).state.plays[0]!.word).toBe("poor");
+    const s = wordMove(P, fresh, "A", { word: "poor" }, yes).state;
+    expect(() => wordMove(P, s, "B", { word: " Poor " }, yes)).toThrow(
+      "POOR was played on turn 1, by them.",
+    );
+    const s2 = wordMove(
+      P,
+      wordMove(P, s, "B", { pass: true }, yes).state,
+      "A",
+      { word: "roo" },
+      yes,
+    );
+    expect(() =>
+      wordMove(
+        P,
+        wordMove(P, s2.state, "B", { pass: true }, yes).state,
+        "A",
+        { word: "poor" },
+        yes,
+      ),
+    ).toThrow("POOR was played on turn 1, by you.");
+  });
   it("enforces turns, uniqueness and the dictionary; two passes end it", () => {
     const dict = new Set(["cat", "cats", "care"]);
     let r = { ...wordInit(P, seeded(3)), state: { ...wordInit(P, seeded(3)).state, board } };
