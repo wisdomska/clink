@@ -65,3 +65,31 @@ test("listen together: a Spotify track shows the sync note and can be skipped", 
     await expect(p.getByText(/Apple Music can't be synced/)).toBeVisible({ timeout: 10000 });
   }
 });
+
+// Regression: the YouTube player was used before it was ready (it only gets
+// its methods then), throwing "getCurrentTime is not a function" every second.
+test("listen together: a player that isn't ready yet throws nothing", async ({ couple }) => {
+  const { a, b } = couple;
+  // YouTube loads but never reports ready: the window where it used to crash.
+  for (const p of [a, b])
+    await p.addInitScript(() => {
+      (window as unknown as { YT: unknown }).YT = {
+        Player: function () {
+          return { destroy() {} };
+        },
+        PlayerState: { ENDED: 0, PLAYING: 1, PAUSED: 2 },
+      };
+    });
+  const errors: string[] = [];
+  for (const p of [a, b]) p.on("pageerror", (e) => errors.push(e.message));
+  await a.goto("/plans/listen");
+  await b.goto("/plans/listen");
+  await a.getByLabel("Music link").fill("https://youtu.be/dQw4w9WgXcQ");
+  await a.getByRole("button", { name: "Add to queue" }).click();
+  for (const p of [a, b]) await expect(p.getByText(/Now playing:/)).toBeVisible({ timeout: 10000 });
+  // Both rooms tick and talk to each other for a few seconds.
+  await a.waitForTimeout(4000);
+  await a.getByRole("button", { name: "Play", exact: true }).click();
+  await expect(a.getByText("The player is still loading.")).toBeVisible();
+  expect(errors).toEqual([]);
+});

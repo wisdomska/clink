@@ -48,10 +48,17 @@ export function SyncedPlayer({
   const [partnerHere, setPartnerHere] = useState(false);
   const [floats, setFloats] = useState<Array<{ id: number; e: string; x: number }>>([]);
 
+  // The player only has its methods once YouTube says it's ready; before that
+  // (or if YouTube can't load at all) there's nothing to ask.
+  const live = () => {
+    const pl = player.current;
+    return pl && typeof pl.getCurrentTime === "function" ? pl : null;
+  };
+
   const broadcast = useCallback(
     (p: boolean) => {
       const pl = player.current;
-      if (!pl) return;
+      if (!pl || typeof pl.getCurrentTime !== "function") return;
       send("watch.state", {
         session: sessionId,
         video: videoId,
@@ -74,7 +81,7 @@ export function SyncedPlayer({
         events: {
           onReady: () => {
             setReady(true);
-            setDur(player.current?.getDuration() ?? 0);
+            setDur(live()?.getDuration() ?? 0);
             send("watch.join", { session: sessionId });
           },
           onStateChange: (e: { data: number }) => {
@@ -102,14 +109,17 @@ export function SyncedPlayer({
   useEffect(() => {
     const t = setInterval(
       () => {
-        const pl = player.current;
+        const pl = live();
         if (!pl) return;
         setPos(pl.getCurrentTime());
         if (leader && playing) broadcast(true);
       },
       leader ? 4000 : 1000,
     );
-    const u = setInterval(() => player.current && setPos(player.current.getCurrentTime()), 1000);
+    const u = setInterval(() => {
+      const pl = live();
+      if (pl) setPos(pl.getCurrentTime());
+    }, 1000);
     return () => {
       clearInterval(t);
       clearInterval(u);
@@ -120,13 +130,13 @@ export function SyncedPlayer({
     if (p.session !== sessionId) return;
     setPartnerHere(true);
     send("watch.here", { session: sessionId });
-    if (leader && player.current) broadcast(playing);
+    if (leader && live()) broadcast(playing);
   });
   useCoupleEvent("watch.here", (p) => p.session === sessionId && setPartnerHere(true));
   useCoupleEvent("watch.state", (p) => {
     if (p.session !== sessionId) return;
     setPartnerHere(true);
-    const pl = player.current;
+    const pl = live();
     if (!pl) return;
     const target = expectedPosition(
       { playing: Boolean(p.playing), position: Number(p.position), sentAt: Number(p.sentAt) },
@@ -208,7 +218,7 @@ export function SyncedPlayer({
           tone="accent"
           dim={48}
           onClick={() => {
-            const pl = player.current;
+            const pl = live();
             if (!pl) return toast("The player is still loading.");
             if (playing) pl.pauseVideo();
             else pl.playVideo();
@@ -224,7 +234,7 @@ export function SyncedPlayer({
           value={pos}
           onChange={(e) => {
             const v = Number(e.target.value);
-            player.current?.seekTo(v, true);
+            live()?.seekTo(v, true);
             setPos(v);
             setTimeout(() => broadcast(playing), 200);
           }}
