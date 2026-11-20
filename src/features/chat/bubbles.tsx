@@ -17,6 +17,7 @@ import { StickerArt } from "./sticker-art";
 import { cn } from "@/components/ui/cn";
 import { BlurImg } from "@/components/ui/blur-img";
 import { haptic } from "@/lib/feedback";
+import { LinkedText, LinkPreview } from "./link-preview";
 
 export const STICKER_LABEL = new Map<string, string>();
 
@@ -464,7 +465,7 @@ export function Bubble({
         </div>
         {m.body && (
           <div className="px-3 pt-2 pb-1.5 text-[length:var(--chat-text,16px)] leading-[1.35] [overflow-wrap:anywhere] whitespace-pre-wrap">
-            {m.body}
+            <LinkedText text={m.body} />
             <span
               aria-hidden
               className="mono text-faint relative top-[5px] float-right ml-2.5 text-[11px] leading-none"
@@ -521,7 +522,8 @@ export function Bubble({
               />
             </div>
           )}
-          {m.body}
+          <LinkedText text={m.body ?? ""} />
+          <LinkPreview text={m.body} mine={mine} />
           <span
             aria-hidden
             className={cn(

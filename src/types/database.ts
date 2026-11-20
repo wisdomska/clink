@@ -689,6 +689,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"link_previews": {
+                  Row: {
+                    "description": string | null,"fetched_at": string,"image": string | null,"ok": boolean,"site": string | null,"title": string | null,"url": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "description"?: string | null,"fetched_at"?: string,"image"?: string | null,"ok"?: boolean,"site"?: string | null,"title"?: string | null,"url": string
+                  }
+                  Update: {
+                    "description"?: string | null,"fetched_at"?: string,"image"?: string | null,"ok"?: boolean,"site"?: string | null,"title"?: string | null,"url"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"listen_queue": {
                   Row: {
                     "added_by": string,"couple_id": string,"created_at": string,"id": string,"played_at": string | null,"position": number,"service": string,"title": string | null,"video_id": string

@@ -432,11 +432,23 @@ export function ChatScreen() {
     const far = el.scrollHeight - el.scrollTop - el.clientHeight > el.clientHeight * 2;
     el.scrollTo({ top: el.scrollHeight, behavior: reducedMotion || far ? "auto" : "smooth" });
     // Rows coming into view get their real height; keep landing on the newest.
+    // Its own scrolling isn't the reader leaving the bottom (see onScroll);
+    // a touch or wheel hands control back at once.
+    settling.current = true;
+    const stop = () => {
+      settling.current = false;
+    };
+    el.addEventListener("wheel", stop, { once: true, passive: true });
+    el.addEventListener("touchstart", stop, { once: true, passive: true });
     let frames = 0;
     const pin = () => {
-      if (!stickToBottom.current) return;
-      if (frames > 8) el.scrollTop = el.scrollHeight;
-      if (++frames < 40) requestAnimationFrame(pin);
+      if (!settling.current) return;
+      if (frames > 20) el.scrollTop = el.scrollHeight;
+      if (++frames < 50) requestAnimationFrame(pin);
+      else {
+        settling.current = false;
+        stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+      }
     };
     requestAnimationFrame(pin);
   }
@@ -466,7 +478,6 @@ export function ChatScreen() {
     }
     if (!first) return;
     stickToBottom.current = false;
-    leaveBottom();
     setUnreadFrom(first);
     // Bring the divider to the top, and hold it there while the rows around
     // it get their real heights (a second at most, or until you touch it).
@@ -493,7 +504,12 @@ export function ChatScreen() {
         last = top;
       }
       if ((!row || still < 3) && ++frames < 60) requestAnimationFrame(hold);
-      else settling.current = false;
+      else {
+        settling.current = false;
+        // A short chat ends at the bottom anyway: no "Jump to latest" then.
+        if (el.scrollHeight - el.scrollTop - el.clientHeight < 80) stickToBottom.current = true;
+        else leaveBottom();
+      }
     };
     requestAnimationFrame(hold);
   });
