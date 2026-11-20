@@ -76,6 +76,8 @@ export function usePins() {
       toast.err(`You can pin up to ${MAX_PINS} messages. Unpin one first.`);
       return;
     }
+    // A refresh already on its way would land after this change and undo it.
+    await qc.cancelQueries({ queryKey: key });
     const prev = qc.getQueryData<Pin[]>(key);
     qc.setQueryData<Pin[]>(key, (old) => [
       { message_id: m.id, pinned_by: me.id, pinned_at: new Date().toISOString(), message: m },
@@ -89,10 +91,12 @@ export function usePins() {
       return;
     }
     send("chat.pins", {});
+    void qc.invalidateQueries({ queryKey: key });
     toast("Pinned for you both.");
   }
 
   async function unpin(id: string) {
+    await qc.cancelQueries({ queryKey: key });
     const prev = qc.getQueryData<Pin[]>(key);
     qc.setQueryData<Pin[]>(key, (old) => (old ?? []).filter((p) => p.message_id !== id));
     haptic("tap");
@@ -103,6 +107,8 @@ export function usePins() {
       return;
     }
     send("chat.pins", {});
+    // Settle on what the server has now (realtime doesn't carry deletes here).
+    void qc.invalidateQueries({ queryKey: key });
   }
 
   return { pins, pinned, pin, unpin };
