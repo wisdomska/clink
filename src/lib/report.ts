@@ -56,6 +56,7 @@ export function startReporting() {
   started = true;
   window.addEventListener("error", (e) => reportError(e.error ?? e.message));
   window.addEventListener("unhandledrejection", (e) => reportError(e.reason));
+  watchFirstLoad();
   if (!dsn) return;
   const load = () => {
     if (privatePage()) return;
@@ -69,4 +70,45 @@ export function startReporting() {
   };
   if (w.requestIdleCallback) w.requestIdleCallback(load, { timeout: 5000 });
   else setTimeout(load, 3000);
+}
+
+/**
+ * How long this screen took to show its main content (Largest Contentful
+ * Paint), sent once when you leave or hide it. Path and milliseconds only, for
+ * the weekly health summary. Never for After Dark or admin.
+ */
+function watchFirstLoad() {
+  if (privatePage() || typeof PerformanceObserver === "undefined") return;
+  const path = window.location.pathname;
+  let lcp = 0;
+  try {
+    new PerformanceObserver((list) => {
+      const last = list.getEntries().at(-1);
+      if (last) lcp = Math.round(last.startTime);
+    }).observe({ type: "largest-contentful-paint", buffered: true });
+  } catch {
+    return;
+  }
+  let sent = false;
+  const send = () => {
+    if (sent || !lcp) return;
+    sent = true;
+    const body = JSON.stringify({ path, lcp: Math.min(lcp, 120_000) });
+    try {
+      if (navigator.sendBeacon?.("/api/vitals", new Blob([body], { type: "application/json" })))
+        return;
+    } catch {
+      /* fall through */
+    }
+    void fetch("/api/vitals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+      keepalive: true,
+    }).catch(() => undefined);
+  };
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") send();
+  });
+  window.addEventListener("pagehide", send);
 }

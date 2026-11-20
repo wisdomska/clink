@@ -861,6 +861,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"page_timings": {
+                  Row: {
+                    "day": string,"lcp_sum_ms": number,"path": string,"slow": number,"views": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "day"?: string,"lcp_sum_ms"?: number,"path": string,"slow"?: number,"views"?: number
+                  }
+                  Update: {
+                    "day"?: string,"lcp_sum_ms"?: number,"path"?: string,"slow"?: number,"views"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"presence": {
                   Row: {
                     "ambient_on": boolean,"just_be_here": boolean,"last_seen_at": string,"status": string,"updated_at": string,"user_id": string
@@ -1393,10 +1407,16 @@ isOneToOne: false
 "svc_log_error":
 { Args: { "p_fingerprint": string,"p_message": string,"p_path": string,"p_release": string,"p_source": string,"p_stack": string,"p_user_agent": string }; Returns: undefined
                            },
+"svc_log_page_timing":
+{ Args: { "p_lcp_ms": number,"p_path": string }; Returns: undefined
+                           },
 "svc_on_this_day_due":
 { Args: Record<PropertyKey, never>; Returns: {
               "day_key": string,"label": string,"user_id": string,"years": number
             }[]
+                           },
+"svc_weekly_health":
+{ Args: { "p_days"?: number }; Returns: Json
                            }
           }
           Enums: {

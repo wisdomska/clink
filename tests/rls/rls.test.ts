@@ -90,6 +90,7 @@ const SERVER_ONLY = [
   "rate_limits",
   "error_log",
   "link_previews",
+  "page_timings",
   "age_blocks",
   "user_blocks",
   "wipe_jobs",

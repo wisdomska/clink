@@ -9,6 +9,7 @@ import { Segmented } from "@/components/ui/segmented";
 import { adminFetch, fmtBytes } from "./fetch";
 import { TrendCard, downloadCsv } from "./ui";
 import { AdminPage, UpdatedAgo } from "./list";
+import { WeeklyHealth } from "./health";
 
 type TrendKey = "signups" | "links" | "active_couples" | "clinks" | "messages" | "games";
 interface Trends {
@@ -275,6 +276,7 @@ export function AdminDashboard() {
               sub={`${m.reports_open} open`}
             />
           </section>
+          <WeeklyHealth />
           <LiveSwitches />
           <TrendsSection />
           <section aria-label="Activity mix" className="flex flex-col gap-3">

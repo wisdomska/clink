@@ -6,7 +6,7 @@ import { useOnline } from "@/lib/hooks";
 import { allowedInPrivate, inPrivateMode } from "@/lib/private-mode";
 
 /** Saves that never wait: chat has its own queue, calls and pings are live-only. */
-const SKIP = /^\/api\/(messages|calls|push|errors|dark\/(ping|lock|notice)|health)(\/|$)/;
+const SKIP = /^\/api\/(messages|calls|push|errors|vitals|dark\/(ping|lock|notice)|health)(\/|$)/;
 const MUTATING = new Set(["POST", "PATCH", "PUT", "DELETE"]);
 /** Direct database writes (countdowns, moods, lists) go to Supabase's REST API. */
 const SUPABASE = (() => {
