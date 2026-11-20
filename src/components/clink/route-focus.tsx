@@ -34,7 +34,16 @@ export function RouteFocus() {
         if (++tries < 15) t = setTimeout(attempt, 100);
         return;
       }
-      if (!h.hasAttribute("tabindex")) h.setAttribute("tabindex", "-1");
+      if (!h.hasAttribute("tabindex")) {
+        // Never touch markup React hasn't taken over yet: an extra attribute
+        // there is a hydration mismatch. Wait for it instead.
+        const hydrated = Object.keys(h).some((k) => k.startsWith("__reactFiber$"));
+        if (!hydrated) {
+          if (++tries < 15) t = setTimeout(attempt, 100);
+          return;
+        }
+        h.setAttribute("tabindex", "-1");
+      }
       h.focus({ preventScroll: true });
     };
     t = setTimeout(attempt, 60);

@@ -24,7 +24,13 @@ export function Display({
   id?: string;
 }) {
   return (
-    <Tag id={id} className={cn("display text-text m-0 leading-[1.05]", scale[size], className)}>
+    <Tag
+      id={id}
+      // Screen titles can take focus after a navigation (RouteFocus), rendered
+      // here so the server and the device agree on the markup.
+      tabIndex={Tag === "h1" ? -1 : undefined}
+      className={cn("display text-text m-0 leading-[1.05]", scale[size], className)}
+    >
       {children}
     </Tag>
   );
