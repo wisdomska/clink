@@ -1,6 +1,7 @@
 import "server-only";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendMail } from "@/lib/server/mail";
+import { sign } from "@/lib/server/crypto";
 
 interface Health {
   errors: {
@@ -113,7 +114,8 @@ export async function weeklyDigest(opts: { now?: Date; only?: string } = {}) {
       const { error: dup } = await admin.from("admin_digests").insert({ week, admin_id: a.id });
       if (dup) continue;
     }
-    const r = await sendMail({ to: a.email, ...mail });
+    const unsubscribe = `${site()}/api/digest/unsubscribe?t=${encodeURIComponent(sign(a.id, "digest-unsubscribe"))}`;
+    const r = await sendMail({ to: a.email, ...mail, unsubscribe });
     if (r.sent) sent++;
     else {
       if (!opts.only)

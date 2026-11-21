@@ -6,7 +6,14 @@ import { serverEnv } from "@/lib/env";
  * Email from Clink (only the weekly admin summary for now), through Brevo's
  * SMTP relay. Not set up (no sender): nothing is sent, and the caller is told.
  */
-export async function sendMail(m: { to: string; subject: string; text: string; html: string }) {
+export async function sendMail(m: {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+  /** One-click unsubscribe (RFC 8058): mail apps show it as their Unsubscribe button. */
+  unsubscribe?: string;
+}) {
   const env = serverEnv();
   const local = env.SMTP_HOST === "127.0.0.1" || env.SMTP_HOST === "localhost";
   if (!local && (!env.BREVO_SMTP_LOGIN || !env.BREVO_SMTP_KEY || !env.BREVO_SENDER))
@@ -26,6 +33,12 @@ export async function sendMail(m: { to: string; subject: string; text: string; h
     subject: m.subject,
     text: m.text,
     html: m.html,
+    ...(m.unsubscribe
+      ? {
+          list: { unsubscribe: { url: m.unsubscribe, comment: "Stop the weekly email" } },
+          headers: { "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
+        }
+      : {}),
   });
   return { sent: true as const };
 }
