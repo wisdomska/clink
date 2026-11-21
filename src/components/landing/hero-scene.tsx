@@ -151,9 +151,26 @@ export function HeroScene() {
             <div
               className={cn("relative flex flex-col gap-3", right ? "items-end" : "items-start")}
             >
-              <div
+              {/* As the glasses touch, each leans a little towards the other, then settles. */}
+              <motion.div
                 className="relative h-[112px] w-[112px] sm:h-[148px] sm:w-[148px] lg:h-[184px] lg:w-[184px]"
-                style={{ ["--tint" as string]: c.tint }}
+                style={{
+                  ["--tint" as string]: c.tint,
+                  transformOrigin: "50% 100%",
+                }}
+                animate={
+                  still
+                    ? undefined
+                    : {
+                        rotate: [0, 0, right ? -4 : 4, right ? -4 : 4, 0, 0],
+                        x: [0, 0, right ? -4 : 4, right ? -4 : 4, 0, 0],
+                      }
+                }
+                transition={
+                  still
+                    ? undefined
+                    : { ...LOOP, times: [0, TOUCH_AT - 0.06, TOUCH_AT + 0.02, 0.6, 0.78, 1] }
+                }
               >
                 {/* The frame: a soft disc and a fine ring in their colour. */}
                 <div
@@ -182,7 +199,7 @@ export function HeroScene() {
                     priority
                   />
                 </div>
-              </div>
+              </motion.div>
               <div className={cn("flex flex-col gap-1.5", right ? "items-end" : "items-start")}>
                 <span className="text-text flex items-center gap-2 text-[22px] leading-none font-bold sm:text-[26px] lg:text-[30px]">
                   {right && <OnlineDot />}
@@ -196,6 +213,20 @@ export function HeroScene() {
         );
       })}
 
+      {/* The clink travels along the seam: a soft glow that blooms as the glasses touch. */}
+      {!still && (
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-1/2 w-24 -translate-x-1/2"
+          style={{
+            background:
+              "radial-gradient(40% 50% at 50% 48%, color-mix(in oklab, var(--champagne) 30%, transparent) 0%, transparent 70%)",
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 0, 1, 0.35, 0, 0], scaleY: [0.6, 0.6, 1, 1.1, 1.1, 0.6] }}
+          transition={{ ...LOOP, times: [0, TOUCH_AT - 0.02, TOUCH_AT + 0.04, 0.5, 0.7, 1] }}
+        />
+      )}
       {/* The seam between the two of you. */}
       <div
         aria-hidden
