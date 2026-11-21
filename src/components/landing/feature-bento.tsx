@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Portrait, SKY } from "./portrait";
 import {
   Fingerprint,
   PhoneDisconnect,
@@ -79,25 +80,30 @@ export function FeatureBento() {
       >
         <div aria-hidden className="relative flex flex-1 items-center justify-center pt-4">
           <div className="bg-app border-line rounded-ticket relative w-full max-w-[420px] overflow-hidden border">
+            {/* Two video feeds: each on their own sky, framed, with a name label. */}
             <div className="grid aspect-[16/10] grid-cols-2">
-              <div className="flex items-center justify-center bg-[var(--bg-night)]">
-                <Image
-                  src="/memoji/w1-wave.webp"
-                  alt=""
-                  width={96}
-                  height={96}
-                  className="h-20 w-20 md:h-24 md:w-24"
-                />
-              </div>
-              <div className="bg-s2 flex items-center justify-center">
-                <Image
-                  src="/memoji/m6-wave.webp"
-                  alt=""
-                  width={96}
-                  height={96}
-                  className="h-20 w-20 md:h-24 md:w-24"
-                />
-              </div>
+              {(
+                [
+                  ["ama", "Ama", "/memoji/w1-wave.webp", SKY.warm],
+                  ["theo", "Theo", "/memoji/m6-wave.webp", SKY.night],
+                ] as const
+              ).map(([who, name, src, sky]) => (
+                <div
+                  key={who}
+                  className="relative flex items-end justify-center pb-[12%]"
+                  style={{ background: sky }}
+                >
+                  <Portrait
+                    who={who}
+                    src={src}
+                    className="aspect-square h-[58%] w-auto"
+                    sizes="(min-width: 768px) 150px, 120px"
+                  />
+                  <span className="bg-app/70 text-text absolute bottom-2 left-2 rounded-full px-2 py-0.5 text-[11px] font-semibold backdrop-blur-sm">
+                    {name}
+                  </span>
+                </div>
+              ))}
             </div>
             <div className="flex items-center justify-between px-4 py-3">
               <span className="mono text-text text-sm">1:12:04</span>

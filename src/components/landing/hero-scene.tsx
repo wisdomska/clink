@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import { Portrait } from "./portrait";
 import { motion } from "motion/react";
 import { Heart } from "@phosphor-icons/react";
 import { Flutes, LOOP, TOUCH_AT } from "./flutes";
@@ -172,33 +172,13 @@ export function HeroScene() {
                     : { ...LOOP, times: [0, TOUCH_AT - 0.06, TOUCH_AT + 0.02, 0.6, 0.78, 1] }
                 }
               >
-                {/* The frame: a soft disc and a fine ring in their colour. */}
-                <div
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    background:
-                      "radial-gradient(circle at 50% 35%, color-mix(in oklab, var(--tint) 38%, transparent) 0%, color-mix(in oklab, var(--tint) 14%, transparent) 55%, color-mix(in oklab, var(--tint) 6%, transparent) 100%)",
-                    boxShadow:
-                      "inset 0 0 0 1.5px color-mix(in oklab, var(--tint) 55%, transparent), 0 18px 40px -12px color-mix(in oklab, var(--tint) 45%, transparent)",
-                  }}
+                <Portrait
+                  who={right ? "theo" : "ama"}
+                  src={c.avatar}
+                  className="h-full w-full"
+                  sizes="(min-width: 1024px) 236px, (min-width: 640px) 190px, 144px"
+                  priority
                 />
-                {/* The bust, cropped by the disc at the bottom, head free above it. */}
-                <div
-                  className="absolute inset-x-[-4%] bottom-0 h-[140%]"
-                  style={{
-                    clipPath: "inset(-20% 3.7% 0 3.7% round 0 0 999px 999px)",
-                  }}
-                >
-                  <Image
-                    src={c.avatar}
-                    alt=""
-                    fill
-                    sizes="(min-width: 1024px) 236px, (min-width: 640px) 190px, 144px"
-                    className="object-contain object-bottom drop-shadow-[0_8px_14px_rgba(0,0,0,.35)]"
-                    style={c.flip ? { transform: "scaleX(-1)" } : undefined}
-                    priority
-                  />
-                </div>
               </motion.div>
               <div className={cn("flex flex-col gap-1.5", right ? "items-end" : "items-start")}>
                 <span className="text-text flex items-center gap-2 text-[22px] leading-none font-bold sm:text-[26px] lg:text-[30px]">

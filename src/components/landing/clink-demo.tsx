@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
-import Image from "next/image";
+import { Portrait, SKY } from "./portrait";
 import { AnimatePresence, motion } from "motion/react";
 import { Heart } from "@phosphor-icons/react";
 import { Flutes } from "./flutes";
@@ -64,41 +64,36 @@ export function ClinkDemo() {
         style={{ ["--d" as string]: 1 }}
         className="rounded-card border-line bg-s1 relative grid h-[380px] grid-cols-2 overflow-hidden border sm:h-[440px]"
       >
-        <div className="bg-[var(--bg-night)]" />
-        <div className="bg-s2" />
+        <div style={{ background: SKY.warm }} />
+        <div style={{ background: SKY.night }} />
         <div aria-hidden className="bg-line absolute inset-y-0 left-1/2 w-px" />
 
         {/* Ama (you) */}
-        <div className="absolute bottom-5 left-5 flex items-center gap-2.5" aria-hidden>
-          <Image
+        <div className="absolute bottom-5 left-5 flex flex-col items-start gap-2" aria-hidden>
+          <Portrait
+            who="ama"
             src="/memoji/w1-hearteyes.webp"
-            alt=""
-            width={44}
-            height={44}
-            className="bg-s2 h-11 w-11 rounded-full object-contain p-[8%]"
+            className="h-[72px] w-[72px] sm:h-[88px] sm:w-[88px]"
+            sizes="112px"
           />
           <span className="text-text text-sm font-bold">You</span>
         </div>
 
-        {/* Theo */}
-        <div
-          className="absolute right-5 bottom-5 flex flex-row-reverse items-center gap-2.5"
-          aria-hidden
-        >
+        {/* Theo: his portrait bounces when the clink lands. */}
+        <div className="absolute right-5 bottom-5 flex flex-col items-end gap-2" aria-hidden>
           <motion.div
             key={count}
             ref={theo}
             initial={still || count === 0 ? false : { scale: 1 }}
-            animate={still || count === 0 ? {} : { scale: [1, 1, 1.18, 1] }}
+            animate={still || count === 0 ? {} : { scale: [1, 1, 1.14, 1], rotate: [0, 0, -6, 0] }}
             transition={{ duration: 0.9, times: [0, 0.55, 0.75, 1] }}
-            className="rounded-full"
+            style={{ transformOrigin: "50% 100%" }}
           >
-            <Image
+            <Portrait
+              who="theo"
               src="/memoji/m6-hearteyes.webp"
-              alt=""
-              width={44}
-              height={44}
-              className="bg-s2 h-11 w-11 rounded-full object-contain p-[8%]"
+              className="h-[72px] w-[72px] sm:h-[88px] sm:w-[88px]"
+              sizes="112px"
             />
           </motion.div>
           <span className="text-text text-sm font-bold">Theo</span>
@@ -109,7 +104,7 @@ export function ClinkDemo() {
             <motion.div
               key={count}
               aria-hidden
-              className="bg-s3 border-line text-text absolute right-5 bottom-[84px] flex items-center gap-1.5 rounded-full border py-1.5 pr-3 pl-2 text-sm font-medium"
+              className="bg-s3/90 border-line text-text absolute right-5 bottom-[132px] flex items-center gap-1.5 rounded-full border py-1.5 pr-3 pl-2 text-sm font-medium backdrop-blur-sm sm:bottom-[148px]"
               initial={still ? false : { opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0, transition: { delay: still ? 0 : 0.6, duration: 0.3 } }}
               exit={{ opacity: 0, transition: { duration: 0.12 } }}
