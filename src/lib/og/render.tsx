@@ -68,7 +68,7 @@ export async function renderOg({
 }) {
   const [f, ama, theo] = await Promise.all([
     fonts(),
-    people ? memoji("ama.png") : null,
+    people ? memoji("ama-facing.png") : null,
     people ? memoji("theo.png") : null,
   ]);
   return new ImageResponse(
@@ -102,7 +102,7 @@ export async function renderOg({
             display: "flex",
             flexDirection: "column",
             gap: 18,
-            maxWidth: people ? 560 : 960,
+            maxWidth: people ? 500 : 960,
           }}
         >
           {eyebrow && (
@@ -122,24 +122,175 @@ export async function renderOg({
           )}
         </div>
       </div>
-      {people && ama && theo && (
-        <div
-          style={{
-            position: "absolute",
-            right: 56,
-            bottom: 40,
-            display: "flex",
-            alignItems: "flex-end",
-            gap: 8,
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={ama} width={250} height={250} alt="" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={theo} width={250} height={250} alt="" />
-        </div>
-      )}
+      {people && ama && theo && <Pair ama={ama} theo={theo} />}
     </div>,
     { ...OG_SIZE, fonts: f },
+  );
+}
+
+/**
+ * The two of them as on the landing page: a card split between Accra (warm
+ * morning) and New York (starry night), each in a soft circle in their glass's
+ * colour with the head breaking out of the top, facing each other, the flutes
+ * between them and how far apart they are.
+ */
+function Pair({ ama, theo }: { ama: string; theo: string }) {
+  const W = 500;
+  const H = 486;
+  const half = W / 2;
+  const disc = 168;
+  const person = (who: "ama" | "theo") => {
+    const right = who === "theo";
+    const tint = right ? "#FF7A5C" : BRAND.rouge;
+    return (
+      <div
+        style={{
+          position: "absolute",
+          left: right ? half : 0,
+          top: 0,
+          width: half,
+          height: H,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: right ? "flex-end" : "flex-start",
+          justifyContent: "space-between",
+          padding: 26,
+          background: right
+            ? "linear-gradient(180deg, #151230 0%, #0d0a14 100%)"
+            : "linear-gradient(180deg, #2b1a1f 0%, #160f14 100%)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: right ? "flex-end" : "flex-start",
+          }}
+        >
+          <span style={{ fontFamily: "Cabinet", fontSize: 30, letterSpacing: -0.5 }}>
+            {right ? "New York" : "Accra"}
+          </span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: right ? "flex-end" : "flex-start",
+            gap: 10,
+          }}
+        >
+          {/* Portrait: the disc, and the bust clipped to its round bottom with the head free above. */}
+          <div style={{ display: "flex", position: "relative", width: disc, height: disc }}>
+            <div
+              style={{
+                position: "absolute",
+                left: 0,
+                top: 0,
+                width: disc,
+                height: disc,
+                borderRadius: disc,
+                background: `radial-gradient(circle at 50% 35%, ${tint}66 0%, ${tint}22 60%, ${tint}10 100%)`,
+                border: `2px solid ${tint}99`,
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                left: 0,
+                bottom: 0,
+                width: disc,
+                height: disc * 1.32,
+                display: "flex",
+                overflow: "hidden",
+                borderBottomLeftRadius: disc / 2,
+                borderBottomRightRadius: disc / 2,
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={right ? theo : ama}
+                width={disc * 1.12}
+                height={disc * 1.12}
+                alt=""
+                style={{ position: "absolute", left: -disc * 0.06, bottom: 0 }}
+              />
+            </div>
+          </div>
+          <span style={{ fontSize: 30, fontWeight: 700 }}>{right ? "Theo" : "Ama"}</span>
+        </div>
+      </div>
+    );
+  };
+  return (
+    <div
+      style={{
+        position: "absolute",
+        right: 64,
+        top: 72,
+        width: W,
+        height: H,
+        display: "flex",
+        borderRadius: 28,
+        overflow: "hidden",
+        border: "1px solid #3a2a33",
+      }}
+    >
+      {person("ama")}
+      {person("theo")}
+      {[
+        [300, 70, 2],
+        [430, 120, 1.5],
+        [360, 200, 1.5],
+        [470, 250, 2],
+        [280, 150, 1],
+      ].map(([x, y, r], i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            left: x,
+            top: y,
+            width: r! * 2,
+            height: r! * 2,
+            borderRadius: 4,
+            background: "#ffffff",
+            opacity: 0.55,
+          }}
+        />
+      ))}
+      <div
+        style={{
+          position: "absolute",
+          left: half,
+          top: 0,
+          width: 1,
+          height: H,
+          background: "#3a2a33",
+        }}
+      />
+      <div style={{ position: "absolute", left: half - 60, top: 112, display: "flex" }}>
+        <Mark size={150} />
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          left: half - 78,
+          bottom: 26,
+          width: 156,
+          height: 36,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: 36,
+          border: "1px solid #3a2a33",
+          background: "#120c10",
+          color: "#BBA9B3",
+          fontSize: 17,
+          fontWeight: 500,
+        }}
+      >
+        8,200 km apart
+      </div>
+    </div>
   );
 }
