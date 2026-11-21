@@ -61,6 +61,8 @@ export async function renderOg({
   body,
   people = false,
 }: {
+  /** Only there to change the image URL when the design changes (see the route file). */
+  version?: number;
   eyebrow?: string;
   title: string;
   body?: string;
