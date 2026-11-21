@@ -12,9 +12,12 @@ on:
     - cron: "41 1 * * *"
   workflow_dispatch:
 
+# A new push replaces an older push run on the same branch (only the latest
+# matters), but full runs (nightly, or started by hand) always finish: they
+# get a group of their own and are never cancelled.
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.ref }}-${{ github.event_name == 'push' && 'push' || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 permissions:
   contents: read
@@ -28,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
       - uses: actions/setup-node@v5
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
@@ -48,7 +51,7 @@ jobs:
     timeout-minutes: 75
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
       - uses: actions/setup-node@v5
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
@@ -58,7 +61,7 @@ jobs:
       # so a registry limit ("Data limit exceeded") can't fail a run.
       - name: Restore Supabase images
         id: sb-images
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: /tmp/sb-images
           key: supabase-images-3.1.0-${{ hashFiles('supabase/config.toml') }}
@@ -82,7 +85,7 @@ jobs:
           ls -lh /tmp/sb-images
       - name: Save Supabase images
         if: steps.sb-images.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: /tmp/sb-images
           key: supabase-images-3.1.0-${{ hashFiles('supabase/config.toml') }}
@@ -123,7 +126,7 @@ jobs:
         # Rendered in Playwright's Docker image, the same one used to record
         # the baselines, so fonts match exactly.
         run: scripts/visual.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: failure()
         with: { name: playwright-report, path: playwright-report, retention-days: 7 }
 
@@ -134,7 +137,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
       - uses: actions/setup-node@v5
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
