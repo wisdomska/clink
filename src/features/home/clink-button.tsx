@@ -1,4 +1,5 @@
 "use client";
+import { preload } from "react-dom";
 import { motion } from "motion/react";
 import { useRef } from "react";
 import { Sparks } from "@/components/clink/sparks";
@@ -10,6 +11,9 @@ import { useHold } from "./hold-together";
  * burst. Press and hold 550 ms for hold-together. Enter/Space sends.
  */
 export function ClinkButton({ streak }: { streak: number | null }) {
+  // Hoisted into the page head while rendering on the server, so the browser
+  // starts on it before the screen's code has even loaded.
+  preload("/stickers/clink.webp", { as: "image", fetchPriority: "high" });
   const { sendClink, clinking } = useSendClink();
   const startHold = useHold((s) => s.start);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -64,6 +68,11 @@ export function ClinkButton({ streak }: { streak: number | null }) {
         >
           <motion.img
             src="/stickers/clink.webp"
+            // The Us screen's main picture: fetch it first, before anything else on it.
+            fetchPriority="high"
+            decoding="async"
+            width={132}
+            height={132}
             alt=""
             aria-hidden
             draggable={false}

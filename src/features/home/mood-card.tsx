@@ -262,6 +262,12 @@ export function MoodCard() {
                         alt=""
                         aria-hidden
                         draggable={false}
+                        // Most of the picker is off screen: fetch these as they come into view,
+                        // after the screen's main picture.
+                        loading="lazy"
+                        decoding="async"
+                        width={44}
+                        height={44}
                         className="h-11 w-11 object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,.4)]"
                       />
                       {m}
