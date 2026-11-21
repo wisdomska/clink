@@ -17,6 +17,9 @@ const privatePage = () => /^\/(dark|admin)(\/|$)/.test(window.location.pathname)
 
 function toLog(error: unknown) {
   const e = error instanceof Error ? error : new Error(String(error ?? "Unknown error"));
+  // Cancelled screen-change animations and interrupted plays aren't failures
+  // (the server keeps the full list; this saves the request).
+  if (/^(Transition was (aborted|skipped)|ResizeObserver loop)/i.test(e.message)) return;
   const key = `${e.message}|${(e.stack ?? "").split("\n")[1] ?? ""}`;
   if (seen.has(key) || sent >= 10) return;
   seen.add(key);

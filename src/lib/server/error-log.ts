@@ -33,6 +33,20 @@ function cleanStack(stack: string | undefined | null) {
     .join("\n");
 }
 
+/**
+ * Errors that mean nothing went wrong for anyone: the browser cancelling a
+ * screen-change animation because the app went to the background, or a
+ * playback start interrupted by a pause. Kept out so real ones stand out.
+ */
+const HARMLESS = [
+  /^Transition was aborted because of invalid state/i,
+  /^Transition was skipped/i,
+  /The play\(\) request was interrupted by a call to pause\(\)/i,
+  /^AbortError: The operation was aborted/i,
+  /^ResizeObserver loop/i,
+];
+export const isHarmless = (message: string) => HARMLESS.some((r) => r.test(message));
+
 export async function logError(e: {
   source: "client" | "server";
   message: string;
@@ -42,6 +56,7 @@ export async function logError(e: {
 }) {
   const path = cleanPath(e.path);
   if (path && isPrivatePath(path)) return;
+  if (isHarmless(e.message ?? "")) return;
   const message = (e.message || "Unknown error").replace(/\s+/g, " ").slice(0, 500);
   const stack = cleanStack(e.stack);
   // Same message from the same place counts as the same error.
