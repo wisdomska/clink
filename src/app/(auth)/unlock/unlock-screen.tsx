@@ -1,5 +1,5 @@
 "use client";
-
+import { clearUserCaches } from "@/lib/account-scope";
 import { useState } from "react";
 import { PinPad, PinDots } from "@/features/dark/pin-pad";
 import { Display } from "@/components/ui/heading";
@@ -71,6 +71,7 @@ export function UnlockScreen({ next, fresh }: { next: string; fresh: boolean }) 
           variant="text"
           className="mt-4"
           onClick={async () => {
+            await clearUserCaches();
             await fetch("/api/auth/signout", {
               method: "POST",
               headers: { "Content-Type": "application/json" },

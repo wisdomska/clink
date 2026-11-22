@@ -22,6 +22,13 @@ export function scoped(base: string): string {
 
 /** Drop every cached page and API response (used on any account change). */
 export async function clearUserCaches(): Promise<void> {
+  // The Us cards' saved answers (features/couple/query-persist).
+  try {
+    for (const k of Object.keys(localStorage))
+      if (k.startsWith("clink-q:")) localStorage.removeItem(k);
+  } catch {
+    /* storage blocked */
+  }
   if (typeof caches === "undefined") return;
   try {
     const keys = await caches.keys();
