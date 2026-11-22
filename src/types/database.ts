@@ -1449,6 +1449,9 @@ isOneToOne: false
               "day_key": string,"label": string,"user_id": string,"years": number
             }[]
                            },
+"svc_signup_funnel":
+{ Args: { "p_days"?: number }; Returns: Json
+                           },
 "svc_weekly_health":
 { Args: { "p_days"?: number }; Returns: Json
                            }

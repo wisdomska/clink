@@ -10,6 +10,7 @@ import { adminFetch, fmtBytes } from "./fetch";
 import { TrendCard, downloadCsv } from "./ui";
 import { AdminPage, UpdatedAgo } from "./list";
 import { WeeklyHealth } from "./health";
+import { SignupFunnel } from "./funnel";
 
 type TrendKey = "signups" | "links" | "active_couples" | "clinks" | "messages" | "games";
 interface Trends {
@@ -276,6 +277,7 @@ export function AdminDashboard() {
               sub={`${m.reports_open} open`}
             />
           </section>
+          <SignupFunnel />
           <WeeklyHealth />
           <LiveSwitches />
           <TrendsSection />
