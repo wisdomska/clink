@@ -1,0 +1,63 @@
+name: After deploy
+
+# After each push to main goes live on production, a quick read-only check of
+# the real site (tests/smoke): health, the home and sign-in pages hydrate with
+# no errors, signed-in screens are guarded, and the SEO and app files are
+# there. If it fails, GitHub emails you ("Run failed: After deploy").
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: after-deploy
+  cancel-in-progress: true
+
+jobs:
+  live:
+    name: Live site check
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SITE: https://clinkapp.vercel.app
+    steps:
+      - name: Wait for this commit to go live
+        run: |
+          want="${GITHUB_SHA::7}"
+          for i in $(seq 1 60); do
+            got=$(curl -fsS --max-time 20 "$SITE/api/health" | sed -n 's/.*"release":"\([^"]*\)".*/\1/p' || true)
+            if [ "$got" = "$want" ]; then echo "Live: $got"; exit 0; fi
+            echo "Live is ${got:-unknown}, waiting for $want ($i/60)"
+            sleep 15
+          done
+          # A newer push may have replaced this one; that run checks the site.
+          echo "::warning::$want didn't go live within 15 minutes (a newer deploy may have replaced it)."
+          echo "skip=1" >> "$GITHUB_ENV"
+      - uses: actions/checkout@v5
+        if: env.skip != '1'
+      - uses: pnpm/action-setup@v5
+        if: env.skip != '1'
+      - uses: actions/setup-node@v5
+        if: env.skip != '1'
+        with: { node-version: 22, cache: pnpm }
+      - if: env.skip != '1'
+        run: pnpm install --frozen-lockfile
+      - if: env.skip != '1'
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Check the live site on a phone and a laptop
+        if: env.skip != '1'
+        env:
+          SMOKE: "1"
+          BASE_URL: ${{ env.SITE }}
+        run: pnpm exec playwright test --project=mobile --project=desktop --trace off --retries 1
+      - name: Summary on failure
+        if: failure()
+        run: |
+          {
+            echo "## The live site check failed after a deploy"
+            echo "Commit ${GITHUB_SHA::7} is live on $SITE but the check found a problem."
+            echo "Open the failed step above for the page and error, then roll back in Vercel if needed."
+          } >> "$GITHUB_STEP_SUMMARY"

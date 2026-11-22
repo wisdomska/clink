@@ -15,8 +15,10 @@ export default defineConfig({
   globalTeardown: "./tests/support/global-teardown.ts",
   // Visual baselines are recorded and compared inside Playwright's Docker image
   // (scripts/visual.sh), because font rasterising differs between machines.
-  testMatch:
-    process.env.CI && !process.env.VISUAL
+  // SMOKE runs only the after-deploy check against the live site (tests/smoke).
+  testMatch: process.env.SMOKE
+    ? ["smoke/**/*.spec.ts"]
+    : process.env.CI && !process.env.VISUAL
       ? ["e2e/**/*.spec.ts", "a11y/**/*.spec.ts"]
       : ["e2e/**/*.spec.ts", "a11y/**/*.spec.ts", "visual/**/*.spec.ts"],
   fullyParallel: false,
