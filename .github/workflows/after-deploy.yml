@@ -24,8 +24,16 @@ jobs:
     env:
       SITE: https://clinkapp.vercel.app
     steps:
+      - uses: actions/checkout@v5
+        with: { fetch-depth: 2 }
       - name: Wait for this commit to go live
         run: |
+          # Same rule as vercel.json's ignoreCommand: commits that only touch
+          # tests, docs or workflows don't deploy, so check the site as it is.
+          if git diff --quiet HEAD^ HEAD -- . ':(exclude)docs' ':(exclude)tests' ':(exclude)*.md' ':(exclude).github' ':(exclude)scripts' ':(exclude).husky' ':(exclude)lighthouserc.json'; then
+            echo "No app changes in this commit (no deploy): checking the live site as it is."
+            exit 0
+          fi
           want="${GITHUB_SHA::7}"
           for i in $(seq 1 60); do
             got=$(curl -fsS --max-time 20 "$SITE/api/health" | sed -n 's/.*"release":"\([^"]*\)".*/\1/p' || true)
@@ -36,8 +44,6 @@ jobs:
           # A newer push may have replaced this one; that run checks the site.
           echo "::warning::$want didn't go live within 15 minutes (a newer deploy may have replaced it)."
           echo "skip=1" >> "$GITHUB_ENV"
-      - uses: actions/checkout@v5
-        if: env.skip != '1'
       - uses: pnpm/action-setup@v5
         if: env.skip != '1'
       - uses: actions/setup-node@v5
