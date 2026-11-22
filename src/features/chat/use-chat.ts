@@ -202,8 +202,25 @@ export function useOutboxFlush(onSent: (m: Message) => void, partnerOnline: bool
   }, [onSent, partnerOnline]);
   useEffect(() => {
     void flush();
-    window.addEventListener("online", flush);
-    return () => window.removeEventListener("online", flush);
+    // "online" can fire a moment before the connection really works, so give
+    // it a beat, and keep trying every few seconds while anything is waiting:
+    // a single failed retry must never leave a message stuck as "Not sent".
+    let beat: ReturnType<typeof setTimeout> | undefined;
+    const online = () => {
+      clearTimeout(beat);
+      beat = setTimeout(() => void flush(), 800);
+    };
+    const again = setInterval(() => {
+      // Only once something has failed, so this never races a first send
+      // (the server ignores duplicates anyway: one row per client id).
+      if (Object.values(useQueue.getState().failed).some(Boolean)) void flush();
+    }, 6000);
+    window.addEventListener("online", online);
+    return () => {
+      window.removeEventListener("online", online);
+      clearTimeout(beat);
+      clearInterval(again);
+    };
   }, [flush]);
   return flush;
 }

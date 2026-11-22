@@ -117,12 +117,19 @@ export function AdminLogin({ next }: { next: string }) {
           onSubmit={async (e) => {
             e.preventDefault();
             setError(null);
-            if (!email.trim() || !password) return setError("Enter your admin email and password.");
+            // What's in the boxes is the truth: anything typed before the page
+            // finished loading never reached React's state.
+            const box = (id: string) =>
+              e.currentTarget.querySelector<HTMLInputElement>(`#${id}`)?.value ?? "";
+            const em = box("admin-email") || email;
+            const pw = box("admin-password") || password;
+            if (em !== email) setEmail(em);
+            if (!em.trim() || !pw) return setError("Enter your admin email and password.");
             setBusy(true);
             const r = await fetch("/api/admin/auth/login", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email, password }),
+              body: JSON.stringify({ email: em, password: pw }),
             });
             const d = await r.json().catch(() => ({}));
             if (!r.ok) {
@@ -136,7 +143,7 @@ export function AdminLogin({ next }: { next: string }) {
               return;
             }
             try {
-              if (remember) localStorage.setItem(REMEMBER, email.trim().toLowerCase());
+              if (remember) localStorage.setItem(REMEMBER, em.trim().toLowerCase());
               else localStorage.removeItem(REMEMBER);
             } catch {
               /* fine */

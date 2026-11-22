@@ -52,6 +52,30 @@ test.describe("Chat (CHAT-01 to CHAT-05)", () => {
     expect(data?.length).toBe(1);
   });
 
+  test("a resend that fails just after coming back online is tried again", async ({ couple }) => {
+    const { a, b, ctxA } = couple;
+    await a.goto("/chat");
+    await b.goto("/chat");
+    await a.waitForTimeout(1200);
+    await ctxA.setOffline(true);
+    await a.getByLabel("Message Theo").fill("still on for waakye?");
+    await a.getByRole("button", { name: "Send" }).click();
+    await expect(a.getByText("Not sent. Tap to retry")).toBeVisible({ timeout: 8000 });
+    // Back "online", but the network isn't really there yet: the first resend fails.
+    let dropped = 0;
+    await a.route("**/api/messages", async (route) => {
+      if (route.request().method() === "POST" && dropped < 1) {
+        dropped++;
+        return route.abort("internetdisconnected");
+      }
+      return route.continue();
+    });
+    await ctxA.setOffline(false);
+    await expect(b.getByText("still on for waakye?")).toBeVisible({ timeout: 20000 });
+    await expect(a.getByText("Not sent. Tap to retry")).toBeHidden();
+    expect(dropped).toBe(1);
+  });
+
   test("photo upload: EXIF and GPS are stripped on the server (SAF-03)", async ({ couple }) => {
     const { a, b } = couple;
     // A JPEG carrying camera and copyright EXIF.
