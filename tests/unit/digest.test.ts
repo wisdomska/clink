@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/supabase/admin", () => ({ supabaseAdmin: () => ({}) }));
 vi.mock("@/lib/server/mail", () => ({ sendMail: vi.fn() }));
-import { digestEmail, weekOf } from "@/lib/server/digest";
+import { digestEmail, slowAlerts, weekOf } from "@/lib/server/digest";
 
 const h = {
   errors: {
@@ -36,6 +36,32 @@ describe("weekly email", () => {
   it("says 1 error, not 1 errors", () => {
     const m = digestEmail({ ...h, errors: { ...h.errors, total: 1 } });
     expect(m.subject.startsWith("Clink this week: 1 error,")).toBe(true);
+  });
+  it("flags a screen slow more than 3 times, with where its time went", () => {
+    const slowest = [
+      {
+        path: "/us",
+        avg_ms: 5300,
+        slow: 5,
+        split: { server: 600, wait: 200, fetch: 900, render: 3600 },
+      },
+      { path: "/plans", avg_ms: 2900, slow: 3, split: null },
+      { path: "/keep", avg_ms: 3100, slow: 4 },
+    ];
+    const alerts = slowAlerts({ pages: { ...h.pages, slowest } });
+    expect(alerts).toEqual([
+      "/us was slow 5 times (5.3 s on average). Most of it: drawing and data on the device (3.6 s).",
+      "/keep was slow 4 times (3.1 s on average).",
+    ]);
+    const m = digestEmail({ ...h, pages: { ...h.pages, slowest } });
+    expect(m.subject.startsWith("Clink this week: 2 slow screens, 4 errors")).toBe(true);
+    expect(m.text.startsWith("Worth a look:")).toBe(true);
+    expect(m.html).toContain("Worth a look");
+    expect(m.text).not.toMatch(/—/);
+  });
+  it("says nothing extra when no screen was slow often", () => {
+    expect(slowAlerts(h)).toEqual([]);
+    expect(digestEmail(h).text).not.toContain("Worth a look");
   });
   it("groups days into Monday-started weeks", () => {
     expect(weekOf(new Date("2026-11-23T03:17:00Z"))).toBe("2026-11-23"); // a Monday

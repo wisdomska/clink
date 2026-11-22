@@ -24,7 +24,7 @@ test("admin: weekly health email can be sent now and turned off", async ({ page,
       },
       { timeout: 15000 },
     )
-    .toMatch(/^Clink this week: \d+ errors, \d+\/\d+ calls connected/);
+    .toMatch(/^Clink this week: (\d+ slow screens?, )?\d+ errors?, \d+\/\d+ calls connected/);
 
   // The email's own unsubscribe (what Gmail's button uses) points at Clink's
   // switch, signed for this admin, not at the mail provider's list.
