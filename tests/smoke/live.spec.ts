@@ -14,7 +14,17 @@ import { test, expect, type Page } from "@playwright/test";
  */
 function watch(page: Page) {
   const problems: string[] = [];
-  void page.route(/\/api\/(vitals|errors)$/, (r) => r.fulfill({ status: 204 }));
+  // sendBeacon isn't seen by request interception, so swap it in the page.
+  void page.addInitScript(() => {
+    const quiet = (u: unknown) => /\/api\/(vitals|errors)$/.test(String(u));
+    const beacon = navigator.sendBeacon?.bind(navigator);
+    navigator.sendBeacon = (url, data) => (quiet(url) ? true : (beacon?.(url, data) ?? false));
+    const f = window.fetch.bind(window);
+    window.fetch = (input, init) =>
+      quiet(input instanceof Request ? input.url : input)
+        ? Promise.resolve(new Response(null, { status: 204 }))
+        : f(input, init);
+  });
   const origin = new URL(test.info().project.use.baseURL!).origin;
   page.on("pageerror", (e) => problems.push(`page error: ${e.message}`));
   page.on("console", (m) => {
