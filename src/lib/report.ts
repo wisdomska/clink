@@ -75,6 +75,44 @@ export function startReporting() {
   else setTimeout(load, 3000);
 }
 
+type LcpEntry = PerformanceEntry & { url?: string; element?: Element | null };
+
+/**
+ * Where a first load's time went (Google's four-part breakdown): server until
+ * the first byte, wait until the main picture starts downloading, fetch while
+ * it downloads, render after. Plus plain facts: the main element's tag, the
+ * network type, installed app or browser, and whether the page itself came
+ * from the device's cache. Nothing about who.
+ */
+export function splitLcp(lcp: number, entry: LcpEntry | null) {
+  const nav = performance.getEntriesByType("navigation")[0] as
+    PerformanceNavigationTiming | undefined;
+  const server = Math.max(0, Math.round(nav?.responseStart ?? 0));
+  let wait = 0;
+  let fetchMs = 0;
+  if (entry?.url) {
+    const res = performance.getEntriesByName(entry.url, "resource")[0] as
+      PerformanceResourceTiming | undefined;
+    if (res) {
+      const start = res.requestStart || res.startTime;
+      wait = Math.max(0, Math.round(start - server));
+      fetchMs = Math.max(0, Math.round(res.responseEnd - start));
+    }
+  }
+  const render = Math.max(0, lcp - server - wait - fetchMs);
+  const conn = (navigator as Navigator & { connection?: { effectiveType?: string } }).connection;
+  return {
+    server,
+    wait,
+    fetch: fetchMs,
+    render,
+    element: entry?.element?.tagName.toLowerCase().slice(0, 20) ?? (entry?.url ? "img" : "text"),
+    net: conn?.effectiveType?.slice(0, 10),
+    installed: window.matchMedia?.("(display-mode: standalone)").matches ?? false,
+    warm: nav ? nav.transferSize === 0 : false,
+  };
+}
+
 /**
  * How long this screen took to show its main content (Largest Contentful
  * Paint), sent once when you leave or hide it. Path and milliseconds only, for
@@ -95,9 +133,14 @@ function watchFirstLoad() {
     { once: true },
   );
   let lcp = 0;
+  let last = null as LcpEntry | null;
   try {
     new PerformanceObserver((list) => {
-      for (const e of list.getEntries()) if (e.startTime < hiddenAt) lcp = Math.round(e.startTime);
+      for (const e of list.getEntries())
+        if (e.startTime < hiddenAt) {
+          lcp = Math.round(e.startTime);
+          last = e as LcpEntry;
+        }
     }).observe({ type: "largest-contentful-paint", buffered: true });
   } catch {
     return;
@@ -106,7 +149,13 @@ function watchFirstLoad() {
   const send = () => {
     if (sent || !lcp || lcp > 60_000) return;
     sent = true;
-    const body = JSON.stringify({ path, lcp });
+    let detail: ReturnType<typeof splitLcp> | undefined;
+    try {
+      detail = splitLcp(lcp, last);
+    } catch {
+      /* the total alone still helps */
+    }
+    const body = JSON.stringify({ path, lcp, detail });
     try {
       if (navigator.sendBeacon?.("/api/vitals", new Blob([body], { type: "application/json" })))
         return;

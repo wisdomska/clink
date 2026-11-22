@@ -881,16 +881,30 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"page_timings": {
+                },"page_slow_loads": {
                   Row: {
-                    "day": string,"lcp_sum_ms": number,"path": string,"slow": number,"views": number
+                    "at": string,"element": string | null,"fetch_ms": number | null,"id": number,"installed": boolean | null,"lcp_ms": number,"net": string | null,"path": string,"render_ms": number | null,"server_ms": number | null,"wait_ms": number | null,"warm": boolean | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "day"?: string,"lcp_sum_ms"?: number,"path": string,"slow"?: number,"views"?: number
+                    "at"?: string,"element"?: string | null,"fetch_ms"?: number | null,"id"?: never,"installed"?: boolean | null,"lcp_ms": number,"net"?: string | null,"path": string,"render_ms"?: number | null,"server_ms"?: number | null,"wait_ms"?: number | null,"warm"?: boolean | null
                   }
                   Update: {
-                    "day"?: string,"lcp_sum_ms"?: number,"path"?: string,"slow"?: number,"views"?: number
+                    "at"?: string,"element"?: string | null,"fetch_ms"?: number | null,"id"?: never,"installed"?: boolean | null,"lcp_ms"?: number,"net"?: string | null,"path"?: string,"render_ms"?: number | null,"server_ms"?: number | null,"wait_ms"?: number | null,"warm"?: boolean | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"page_timings": {
+                  Row: {
+                    "day": string,"fetch_sum_ms": number,"lcp_sum_ms": number,"path": string,"render_sum_ms": number,"server_sum_ms": number,"slow": number,"split_views": number,"views": number,"wait_sum_ms": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "day"?: string,"fetch_sum_ms"?: number,"lcp_sum_ms"?: number,"path": string,"render_sum_ms"?: number,"server_sum_ms"?: number,"slow"?: number,"split_views"?: number,"views"?: number,"wait_sum_ms"?: number
+                  }
+                  Update: {
+                    "day"?: string,"fetch_sum_ms"?: number,"lcp_sum_ms"?: number,"path"?: string,"render_sum_ms"?: number,"server_sum_ms"?: number,"slow"?: number,"split_views"?: number,"views"?: number,"wait_sum_ms"?: number
                   }
                   Relationships: [
                     
@@ -1428,7 +1442,7 @@ isOneToOne: false
 { Args: { "p_fingerprint": string,"p_message": string,"p_path": string,"p_release": string,"p_source": string,"p_stack": string,"p_user_agent": string }; Returns: undefined
                            },
 "svc_log_page_timing":
-{ Args: { "p_lcp_ms": number,"p_path": string }; Returns: undefined
+{ Args: { "p_detail"?: Json,"p_lcp_ms": number,"p_path": string }; Returns: undefined
                            },
 "svc_on_this_day_due":
 { Args: Record<PropertyKey, never>; Returns: {

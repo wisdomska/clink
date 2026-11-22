@@ -30,9 +30,32 @@ interface Health {
     views: number;
     avg_ms: number;
     slow_share: number;
-    slowest: Array<{ path: string; views: number; avg_ms: number; slow: number }>;
+    slowest: Array<{
+      path: string;
+      views: number;
+      avg_ms: number;
+      slow: number;
+      split?: Split | null;
+    }>;
+    slow_loads?: {
+      count: number;
+      element: Record<string, number> | null;
+      net: Record<string, number> | null;
+      installed: number;
+      warm: number;
+    };
   };
 }
+
+type Split = { server: number; wait: number; fetch: number; render: number };
+
+// Where a first load's time goes (see lib/report splitLcp).
+const PARTS: Array<{ key: keyof Split; label: string; color: string }> = [
+  { key: "server", label: "Server", color: "var(--champagne)" },
+  { key: "wait", label: "Waiting", color: "var(--text-muted)" },
+  { key: "fetch", label: "Picture download", color: "var(--accent)" },
+  { key: "render", label: "Drawing and data", color: "var(--online)" },
+];
 
 const REASON_LABEL: Record<string, string> = {
   "no-path": "Networks couldn't connect",
@@ -145,13 +168,30 @@ export function WeeklyHealth() {
               aria-label="Slowest screens"
             >
               {p.slowest.map((s) => (
-                <li key={s.path} className="flex gap-2">
-                  <span className="mono min-w-0 flex-1 truncate">{s.path}</span>
-                  <span className="mono text-muted flex-none">{secs(s.avg_ms)}</span>
+                <li key={s.path} className="flex flex-col gap-1">
+                  <div className="flex gap-2">
+                    <span className="mono min-w-0 flex-1 truncate">{s.path}</span>
+                    <span className="mono text-muted flex-none">{secs(s.avg_ms)}</span>
+                  </div>
+                  {s.split && <SplitBar split={s.split} path={s.path} />}
                 </li>
               ))}
             </ol>
           )}
+          {p.slowest.some((s) => s.split) && (
+            <ul
+              className="m-0 flex list-none flex-wrap gap-x-3 gap-y-1 p-0 text-[11px]"
+              aria-hidden
+            >
+              {PARTS.map((x) => (
+                <li key={x.key} className="text-muted flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-full" style={{ background: x.color }} />
+                  {x.label}
+                </li>
+              ))}
+            </ul>
+          )}
+          {p.slow_loads && p.slow_loads.count > 0 && <SlowFacts s={p.slow_loads} />}
           <a
             href="https://vercel.com/dashboard/usage"
             target="_blank"
@@ -163,6 +203,60 @@ export function WeeklyHealth() {
         </article>
       </div>
     </section>
+  );
+}
+
+/** One screen's average first load, split into its four parts. */
+function SplitBar({ split, path }: { split: Split; path: string }) {
+  const total = PARTS.reduce((n, x) => n + split[x.key], 0) || 1;
+  const words = PARTS.map((x) => `${x.label} ${secs(split[x.key])}`).join(", ");
+  return (
+    <div
+      role="img"
+      aria-label={`${path}: ${words}`}
+      title={words}
+      className="bg-s3 flex h-1.5 w-full gap-px overflow-hidden rounded-full"
+    >
+      {PARTS.map((x) =>
+        split[x.key] > 0 ? (
+          <span
+            key={x.key}
+            style={{ width: `${(split[x.key] / total) * 100}%`, background: x.color }}
+          />
+        ) : null,
+      )}
+    </div>
+  );
+}
+
+/** What this week's slow loads (over 2.5 s) had in common. */
+function SlowFacts({ s }: { s: NonNullable<Health["pages"]["slow_loads"]> }) {
+  const top = (m: Record<string, number> | null) =>
+    Object.entries(m ?? {})
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([k, n]) => `${k} ${n}`)
+      .join(", ");
+  return (
+    <dl
+      className="border-line m-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 border-t pt-2 text-xs"
+      aria-label="Slow loads"
+    >
+      <dt className="text-muted">Slow loads</dt>
+      <dd className="mono m-0 text-right">{s.count}</dd>
+      <dt className="text-muted">Main element</dt>
+      <dd className="mono m-0 truncate text-right">{top(s.element) || "unknown"}</dd>
+      <dt className="text-muted">Network</dt>
+      <dd className="mono m-0 truncate text-right">{top(s.net) || "unknown"}</dd>
+      <dt className="text-muted">Installed app</dt>
+      <dd className="mono m-0 text-right">
+        {s.installed} of {s.count}
+      </dd>
+      <dt className="text-muted">Page from device cache</dt>
+      <dd className="mono m-0 text-right">
+        {s.warm} of {s.count}
+      </dd>
+    </dl>
   );
 }
 

@@ -5,7 +5,31 @@ import { handler, ok, parseJson, rateLimit } from "@/lib/server/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { cleanPath, isPrivatePath } from "@/lib/server/error-log";
 
-const schema = z.object({ path: z.string().max(500), lcp: z.number().int().min(0).max(60_000) });
+const ms = z.number().int().min(0).max(60_000);
+const schema = z.object({
+  path: z.string().max(500),
+  lcp: ms,
+  // Where the time went (lib/report splitLcp). Optional: older pages send the total only.
+  detail: z
+    .object({
+      server: ms,
+      wait: ms,
+      fetch: ms,
+      render: ms,
+      element: z
+        .string()
+        .max(20)
+        .regex(/^[a-z0-9-]*$/),
+      net: z
+        .string()
+        .max(10)
+        .regex(/^[a-z0-9-]*$/)
+        .optional(),
+      installed: z.boolean(),
+      warm: z.boolean(),
+    })
+    .optional(),
+});
 
 /**
  * How long a screen took to show its main content on first load (see
@@ -23,7 +47,11 @@ export const POST = handler(async (req) => {
   after(async () => {
     try {
       if (ip && !/^(127\.|::1$|::ffff:127\.)/.test(ip)) await rateLimit(`vitals:${ip}`, 120, 3600);
-      await supabaseAdmin().rpc("svc_log_page_timing", { p_path: path, p_lcp_ms: v.lcp });
+      await supabaseAdmin().rpc("svc_log_page_timing", {
+        p_path: path,
+        p_lcp_ms: v.lcp,
+        p_detail: v.detail ?? null,
+      });
     } catch {
       /* best effort */
     }
