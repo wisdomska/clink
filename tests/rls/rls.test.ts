@@ -91,6 +91,7 @@ const SERVER_ONLY = [
   "error_log",
   "link_previews",
   "page_timings",
+  "page_slow_loads",
   "admin_digests",
   "age_blocks",
   "user_blocks",
