@@ -7,9 +7,14 @@ import { test, expect, type Page } from "@playwright/test";
  * Read-only: no accounts are made and nothing is written.
  */
 
-/** Fails the test on any page error or failed request to the site itself. */
+/**
+ * Fails the test on any page error or failed request to the site itself.
+ * Also keeps these visits out of the real numbers: the page-speed and error
+ * beacons are dropped before they leave the browser.
+ */
 function watch(page: Page) {
   const problems: string[] = [];
+  void page.route(/\/api\/(vitals|errors)$/, (r) => r.fulfill({ status: 204 }));
   const origin = new URL(test.info().project.use.baseURL!).origin;
   page.on("pageerror", (e) => problems.push(`page error: ${e.message}`));
   page.on("console", (m) => {
@@ -60,6 +65,7 @@ test("sign-in page works", async ({ page }) => {
 });
 
 test("signed-in screens send you to sign in first", async ({ page }) => {
+  watch(page);
   for (const path of ["/us", "/chat", "/play", "/dark"]) {
     await page.goto(path);
     await expect(page).toHaveURL(new RegExp(`/login\\?next=${encodeURIComponent(path)}`));
