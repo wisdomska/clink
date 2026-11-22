@@ -657,14 +657,14 @@ isOneToOne: false
                   ]
                 },"invites": {
                   Row: {
-                    "code": string,"created_at": string,"expires_at": string,"id": string,"inviter_id": string,"used_at": string | null,"used_by": string | null
+                    "code": string,"created_at": string,"expires_at": string,"id": string,"inviter_id": string,"reminded_at": string | null,"used_at": string | null,"used_by": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "code": string,"created_at"?: string,"expires_at"?: string,"id"?: string,"inviter_id": string,"used_at"?: string | null,"used_by"?: string | null
+                    "code": string,"created_at"?: string,"expires_at"?: string,"id"?: string,"inviter_id": string,"reminded_at"?: string | null,"used_at"?: string | null,"used_by"?: string | null
                   }
                   Update: {
-                    "code"?: string,"created_at"?: string,"expires_at"?: string,"id"?: string,"inviter_id"?: string,"used_at"?: string | null,"used_by"?: string | null
+                    "code"?: string,"created_at"?: string,"expires_at"?: string,"id"?: string,"inviter_id"?: string,"reminded_at"?: string | null,"used_at"?: string | null,"used_by"?: string | null
                   }
                   Relationships: [
                     

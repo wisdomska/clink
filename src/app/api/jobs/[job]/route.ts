@@ -10,6 +10,7 @@ import {
   exportCleanup,
   milestones,
   onThisDay,
+  inviteReminders,
   backfillPlaceholders,
 } from "@/lib/server/jobs";
 import { weeklyDigest } from "@/lib/server/digest";
@@ -42,6 +43,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ job: strin
     await run("date-reminders", dateReminders);
     await run("capsule-unlock", capsuleUnlock);
     await run("on-this-day", onThisDay);
+    await run("invite-reminders", inviteReminders);
     await run("placeholder-backfill", () => backfillPlaceholders());
   } else if (job === "daily") {
     await run("account-deletion", accountDeletion);

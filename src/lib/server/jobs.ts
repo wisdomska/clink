@@ -3,7 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { storage } from "@/lib/storage";
 import { notify } from "@/lib/server/push";
 import { executeWipe } from "@/lib/server/wipe";
-import { audit } from "@/lib/server/api";
+import { activeCouple, audit } from "@/lib/server/api";
 import { wallTime } from "@/lib/time";
 import { reachedMilestones } from "@/lib/milestones";
 
@@ -274,6 +274,47 @@ export async function onThisDay() {
     sent += r.sent;
   }
   return { sent, nudged: due?.length ?? 0 };
+}
+
+/**
+ * A day after you make a link code, if your partner still hasn't joined, one
+ * gentle reminder while the code still works (codes last 48 hours). Once per
+ * code, respecting notification settings and quiet hours (it waits for them).
+ */
+export async function inviteReminders() {
+  const admin = supabaseAdmin();
+  const now = Date.now();
+  const { data, error } = await admin
+    .from("invites")
+    .select("id, inviter_id")
+    .is("used_at", null)
+    .is("reminded_at", null)
+    .lt("created_at", new Date(now - 24 * 3600_000).toISOString())
+    .gt("expires_at", new Date(now + 15 * 60_000).toISOString())
+    .limit(200);
+  if (error) throw error;
+  let sent = 0;
+  let nudged = 0;
+  for (const i of data ?? []) {
+    if (await activeCouple(i.inviter_id)) continue;
+    const r = await notify(
+      i.inviter_id,
+      "dates",
+      {
+        body: "Your partner hasn't joined yet. Your code works for about one more day. Send it again?",
+        url: "/link",
+        tag: "invite",
+      },
+      `invite:${i.id}`,
+    );
+    // Quiet hours: try again on a later run. Anything else (sent, turned off,
+    // no device) settles it for this code.
+    if (r.skipped === "quiet_hours") continue;
+    await admin.from("invites").update({ reminded_at: new Date().toISOString() }).eq("id", i.id);
+    nudged++;
+    sent += r.sent;
+  }
+  return { sent, nudged };
 }
 
 /** A ~16px blurred preview (data URL), like the one devices make when uploading. */

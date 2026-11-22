@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "@/components/ui/link";
 import { useRouter } from "next/navigation";
 import {
@@ -8,6 +9,7 @@ import {
   Ticket,
   Archive,
   LinkSimple,
+  Hourglass,
   Wine,
   CalendarBlank,
   type Icon,
@@ -75,18 +77,73 @@ function useLinkWatch() {
   }, [router]);
 }
 
+type Invite = { code: string; created_at: string; expires_at: string; used_at: string | null };
+
+/**
+ * Where your link code stands: none yet, shared and waiting (with how long it
+ * still works), or run out (codes last 48 hours, so an old one won't work).
+ */
+type InviteStatus =
+  { state: "none" } | { state: "expired" } | { state: "waiting"; hoursLeft: number };
+
+/** Worked out when fetched (and again each minute), never during render. */
+function statusOf(i: Invite | null, now: number): InviteStatus {
+  if (!i || i.used_at) return { state: "none" };
+  const left = Date.parse(i.expires_at) - now;
+  if (left <= 0) return { state: "expired" };
+  // Only a code made a while ago counts as waiting: one made just now is still being shared.
+  if (now - Date.parse(i.created_at) < 3600_000) return { state: "none" };
+  return { state: "waiting", hoursLeft: Math.max(1, Math.round(left / 3600_000)) };
+}
+
+function useInviteStatus(): InviteStatus {
+  const { data } = useQuery({
+    queryKey: ["my-invite"],
+    queryFn: async () => {
+      const r = await fetch("/api/invites", { cache: "no-store" });
+      if (!r.ok) return { state: "none" } as InviteStatus;
+      return statusOf(((await r.json()) as { invite: Invite | null }).invite, Date.now());
+    },
+    refetchInterval: 60_000,
+  });
+  return data ?? { state: "none" };
+}
+
 function LinkCard() {
+  const status = useInviteStatus();
+  const head =
+    status.state === "waiting"
+      ? {
+          title: "Waiting for your partner",
+          body: `Your code works for ${status.hoursLeft} more ${status.hoursLeft === 1 ? "hour" : "hours"}. A nudge might help.`,
+          cta: "Send it again",
+          Icon: Hourglass,
+        }
+      : status.state === "expired"
+        ? {
+            title: "Your code ran out",
+            body: "Codes last 48 hours, so the one you sent won't work now. Get a fresh one and send it again.",
+            cta: "Get a fresh code",
+            Icon: Hourglass,
+          }
+        : {
+            title: "Link with your partner",
+            body: "Send them your code, or enter theirs. It takes a minute.",
+            cta: "Share my code",
+            Icon: LinkSimple,
+          };
   return (
-    <div className="rounded-card border-line bg-s1 flex flex-col gap-4 border p-5">
+    <div
+      className="rounded-card border-line bg-s1 flex flex-col gap-4 border p-5"
+      data-invite={status.state}
+    >
       <div className="flex items-center gap-3">
         <span className="bg-accent/15 text-accent flex h-12 w-12 flex-none items-center justify-center rounded-full">
-          <LinkSimple size={24} weight="bold" aria-hidden />
+          <head.Icon size={24} weight="bold" aria-hidden />
         </span>
         <div className="min-w-0">
-          <h2 className="m-0 text-lg font-bold">Link with your partner</h2>
-          <p className="text-muted m-0 text-sm">
-            Send them your code, or enter theirs. It takes a minute.
-          </p>
+          <h2 className="m-0 text-lg font-bold">{head.title}</h2>
+          <p className="text-muted m-0 text-sm">{head.body}</p>
         </div>
       </div>
       <div className="flex flex-col gap-2 sm:flex-row">
@@ -94,7 +151,7 @@ function LinkCard() {
           href="/link"
           className="press bg-accent text-on-accent hover:text-on-accent flex h-12 items-center justify-center rounded-full px-5 text-base font-semibold sm:flex-1"
         >
-          Share my code
+          {head.cta}
         </Link>
         <Link
           href="/link?enter=1"

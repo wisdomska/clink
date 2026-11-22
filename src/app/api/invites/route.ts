@@ -3,6 +3,22 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { inviteCode } from "@/lib/server/crypto";
 import { isVerified } from "@/lib/server/verified";
 
+/**
+ * GET /api/invites: your latest code and whether it still works, for the
+ * reminder on Us before you link. Never makes a code.
+ */
+export const GET = handler(async () => {
+  const { user } = await requireUser();
+  const { data } = await supabaseAdmin()
+    .from("invites")
+    .select("code, created_at, expires_at, used_at")
+    .eq("inviter_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return ok({ invite: data ?? null });
+});
+
 /** POST /api/invites: caller not linked, verified, max 5 codes a day. Reuses a live code. */
 export const POST = handler(async (req) => {
   const { user } = await requireUser({ full: true });
