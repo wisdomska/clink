@@ -11,8 +11,8 @@ import { useCoupleEvent, useCouple } from "@/features/couple/context";
 import type { MediaInfo, Message, Reaction } from "./types";
 import { useQueue, type QueuedPayload } from "./queue";
 import { subscribeAuthed } from "@/lib/realtime";
+import { messagesQuery } from "./messages-query";
 
-const PAGE = 40;
 type Pages = InfiniteData<Message[], string | null>;
 
 export function useMessages() {
@@ -20,24 +20,7 @@ export function useMessages() {
   const qc = useQueryClient();
   const key = useMemo(() => ["messages", coupleId], [coupleId]);
 
-  const q = useInfiniteQuery({
-    queryKey: key,
-    initialPageParam: null as string | null,
-    queryFn: async ({ pageParam }) => {
-      let req = supabaseBrowser()
-        .from("messages")
-        .select("*")
-        .eq("couple_id", coupleId)
-        .order("sent_at", { ascending: false })
-        .limit(PAGE);
-      if (pageParam) req = req.lt("sent_at", pageParam);
-      const { data, error } = await req;
-      if (error) throw error;
-      return data ?? [];
-    },
-    getNextPageParam: (last) => (last.length === PAGE ? last[last.length - 1]!.sent_at : undefined),
-    staleTime: Infinity,
-  });
+  const q = useInfiniteQuery(messagesQuery(coupleId));
 
   // Realtime: inserts and updates (read receipts, removals) merge into the cache.
   useEffect(() => {

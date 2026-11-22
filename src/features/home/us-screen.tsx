@@ -20,11 +20,12 @@ import { RitualCard } from "./ritual-card";
 import { MilestoneMoment } from "./milestone-moment";
 import { AsleepCard } from "./asleep-card";
 import { useSendClink } from "./use-send-clink";
+import { useWarmChat } from "./use-warm-chat";
 import { LogoMark, Wordmark } from "@/components/brand/logo";
 import { AfterDarkBadge } from "@/components/clink/after-dark-badge";
 
 export function UsScreen() {
-  const { darkVisible, discreet, coupleId, linkedAt } = useCouple();
+  const { darkVisible, discreet, coupleId, linkedAt, solo } = useCouple();
   const router = useRouter();
   const params = useSearchParams();
   const now = useCoupleNow();
@@ -34,6 +35,7 @@ export function UsScreen() {
     : null;
   const wordTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const firstSent = useRef(false);
+  useWarmChat(solo ? null : coupleId);
 
   const { data: streak } = useQuery({
     queryKey: ["streak", coupleId],
