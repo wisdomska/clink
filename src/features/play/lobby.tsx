@@ -19,6 +19,7 @@ import { toast } from "@/components/ui/toast";
 import { GAME_META, startGame } from "./meta";
 import { BOARD_TYPES, isBoardType, type BoardState } from "./engines/boards";
 import { boardLine } from "./board-line";
+import { recordLine, useGameRecords } from "./record";
 import { GameTile } from "./game-tile";
 import { GameHistory } from "./history";
 import { useOpenPartner } from "@/features/partner/partner-sheet";
@@ -86,6 +87,7 @@ export function useGames() {
 export function Lobby() {
   const { me, partner, presence, send } = useCouple();
   const now = useCoupleNow(60_000);
+  const { data: records } = useGameRecords();
   const openPartner = useOpenPartner();
   const router = useRouter();
   const { data: games = [] } = useGames();
@@ -312,7 +314,9 @@ export function Lobby() {
                     />
                     <div className="min-w-0 flex-1">
                       <div className="text-base font-bold">{GAME_META[type].name}</div>
-                      <div className="text-muted truncate text-sm">{GAME_META[type].meta}</div>
+                      <div className="text-muted truncate text-sm">
+                        {recordLine(records?.[type], partner.name) ?? GAME_META[type].meta}
+                      </div>
                     </div>
                     <Link
                       href={`/play/${type}/practice`}

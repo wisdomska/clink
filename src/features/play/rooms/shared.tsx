@@ -12,6 +12,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { Avatar } from "@/components/ui/avatar";
 import { toast } from "@/components/ui/toast";
 import { GAME_META } from "../meta";
+import { GameRecord } from "../record";
 import { subscribeAuthed } from "@/lib/realtime";
 import { feedback } from "@/lib/feedback";
 import { Confetti } from "@/components/fx/confetti";
@@ -416,6 +417,11 @@ export function FinalScore({
 }) {
   const { me, partner } = useCouple();
   const forfeit = useForfeit(game);
+  const qc = useQueryClient();
+  // This game just counted: fetch the head-to-head fresh.
+  useEffect(() => {
+    void qc.invalidateQueries({ queryKey: ["game-record"] });
+  }, [qc, game.id]);
   const iWon = game.winner_id ? game.winner_id === me.id : mine > theirs;
   const draw = !game.winner_id && (game.is_draw || mine === theirs);
   const headline = draw ? "It's a draw." : iWon ? "You win!" : `${partner.name} wins!`;
@@ -475,6 +481,7 @@ export function FinalScore({
       <span className="sr-only">
         You {mine}, {partner.name} {theirs}.
       </span>
+      <GameRecord type={game.type} />
     </section>
   );
 }

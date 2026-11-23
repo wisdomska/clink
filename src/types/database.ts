@@ -1398,6 +1398,11 @@ isOneToOne: false
             "clink_streak":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"game_record":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "draws": number,"mine": number,"theirs": number,"type": string
+            }[]
+                           },
 "game_rivalry":
 { Args: Record<PropertyKey, never>; Returns: {
               "user_id": string,"wins": number

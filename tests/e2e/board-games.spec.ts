@@ -33,9 +33,13 @@ test("Four Up: a slow game between you two, to a win", async ({ couple }) => {
   await column(a, 4).click();
   await expect(a.getByText("You win!")).toBeVisible({ timeout: 15000 });
   await expect(b.getByText("Nia wins!")).toBeVisible({ timeout: 15000 });
+  // Head to head, from each side.
+  await expect(a.getByLabel("Head to head: You 1 · Theo 0")).toBeVisible({ timeout: 10000 });
+  await expect(b.getByLabel("Head to head: You 0 · Nia 1")).toBeVisible({ timeout: 10000 });
   // The lobby keeps it in the history, not as a game still going.
   await a.goto("/play");
   await expect(a.getByRole("button", { name: "Start Four Up with Theo" })).toBeVisible();
+  await expect(a.getByText("You 1 · Theo 0")).toBeVisible();
   await expect(a.locator('a[href^="/play/fourup/"]:not([href$="/practice"])')).toHaveCount(0);
 });
 

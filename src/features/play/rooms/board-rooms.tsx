@@ -11,6 +11,7 @@ import type { FourUpBoard } from "../engines/board/fourup";
 import { sizeOf, type DraughtsBoard } from "../engines/board/draughts";
 import { waited } from "../board-line";
 import { NudgeButton } from "./nudge";
+import { GameRecord } from "../record";
 import { RoomHeader, sendMove, FinalScore, BackToLobby, type GameRow } from "./shared";
 import { DraughtsView, FourUpView, OwareView, type Sides } from "./board-views";
 
@@ -127,6 +128,7 @@ export function BoardRoom({ game }: { game: GameRow }) {
         )}
       </div>
 
+      {active && <GameRecord type={game.type} />}
       {unit && game.status !== "finished" && (
         <div className="text-muted flex justify-between text-sm" aria-label="Score">
           <span>
