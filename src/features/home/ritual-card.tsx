@@ -30,12 +30,19 @@ export function RitualCard() {
       const n = count || 1;
       const dayNo = Math.floor(Date.parse(`${day}T00:00:00Z`) / 86400000);
       const promptId = (dayNo % n) + 1;
-      const [{ data: prompt }, { data: answers }, { data: partnerDone }] = await Promise.all([
-        sb.from("ritual_prompts").select("id, text").eq("id", promptId).maybeSingle(),
-        sb.from("ritual_answers").select("user_id, answer").eq("day", day),
-        sb.rpc("ritual_partner_answered", { p_day: day }),
-      ]);
-      return { prompt, answers: answers ?? [], partnerDone: Boolean(partnerDone) };
+      const [{ data: prompt }, { data: answers }, { data: partnerDone }, { data: streak }] =
+        await Promise.all([
+          sb.from("ritual_prompts").select("id, text").eq("id", promptId).maybeSingle(),
+          sb.from("ritual_answers").select("user_id, answer").eq("day", day),
+          sb.rpc("ritual_partner_answered", { p_day: day }),
+          sb.rpc("ritual_streak", { p_today: day }),
+        ]);
+      return {
+        prompt,
+        answers: answers ?? [],
+        partnerDone: Boolean(partnerDone),
+        streak: Number(streak ?? 0),
+      };
     },
   });
   useCoupleEvent("ritual.answered", () =>
@@ -82,7 +89,17 @@ export function RitualCard() {
       aria-labelledby="ritual-h"
       className="rounded-card border-line bg-s1 flex flex-none flex-col gap-3 border px-4 py-5"
     >
-      <div className="text-muted text-sm font-medium">Today&apos;s ritual, {when}</div>
+      <div className="flex items-baseline justify-between gap-3">
+        <div className="text-muted text-sm font-medium">Today&apos;s ritual, {when}</div>
+        {(data?.streak ?? 0) >= 2 && (
+          <div
+            className="mono flex-none text-xs text-[var(--champagne)]"
+            aria-label={`${data!.streak} days in a row, both of you`}
+          >
+            {data!.streak} in a row
+          </div>
+        )}
+      </div>
       <h2 id="ritual-h" className="display m-0 text-[22px] leading-[1.15]">
         {data?.prompt?.text ?? " "}
       </h2>

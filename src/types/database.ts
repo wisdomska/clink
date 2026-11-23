@@ -1431,6 +1431,9 @@ isOneToOne: false
 "ritual_partner_answered":
 { Args: { "p_day": string }; Returns: boolean
                            },
+"ritual_streak":
+{ Args: { "p_today": string }; Returns: number
+                           },
 "streak_freeze_status":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
