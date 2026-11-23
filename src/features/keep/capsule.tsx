@@ -1,8 +1,9 @@
 "use client";
 import { feedback } from "@/lib/feedback";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Play } from "@phosphor-icons/react";
-import { useCouple } from "@/features/couple/context";
+import { useCouple, useCoupleEvent } from "@/features/couple/context";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Mono } from "@/components/ui/heading";
 import { countdownParts } from "@/lib/time";
@@ -24,7 +25,8 @@ interface Capsule {
 
 /** KEEP-02: locked with countdown, ready, uncorking, opened (contents fetched from the server only now). */
 export function CapsuleScreen({ capsule }: { capsule: Capsule }) {
-  const { me, partner, coupleId } = useCouple();
+  const { me, partner, coupleId, presence, send } = useCouple();
+  const params = useSearchParams();
   const qc = useQueryClient();
   const [now, setNow] = useState(() => new Date());
   const ready = new Date(capsule.unlock_at) <= now;
@@ -46,6 +48,75 @@ export function CapsuleScreen({ capsule }: { capsule: Capsule }) {
     if (state !== "open") return;
     void fetch(`/api/capsules/${capsule.id}`).then(async (r) => r.ok && setContent(await r.json()));
   }, [state, capsule.id]);
+
+  const uncork = useCallback(async () => {
+    // Optimistic: uncork now, mark it opened on the shelf, roll back on failure.
+    setState("uncorking");
+    feedback("success", "pop");
+    const key = capsulesKey(coupleId);
+    const openedAt = new Date().toISOString();
+    const snap = await editList<CapsuleRow>(qc, key, (items) =>
+      items.map((c) => (c.id === capsule.id ? { ...c, opened_at: openedAt } : c)),
+    );
+    const timer = setTimeout(() => setState("open"), reduced ? 200 : 900);
+    const r = await fetch(`/api/capsules/${capsule.id}/open`, { method: "POST" }).catch(() => null);
+    if (!r?.ok) {
+      clearTimeout(timer);
+      rollback(qc, key, snap);
+      setState("corked");
+      toast.err("Couldn't uncork it. Try again.");
+    }
+  }, [capsule.id, coupleId, qc, reduced]);
+
+  // Open together: one asks, the other joins, and the same short countdown
+  // runs on both devices so the capsule uncorks for you both at once.
+  const [together, setTogether] = useState<"asked" | "invited" | null>(null);
+  const [endsAt, setEndsAt] = useState<number | null>(null);
+  const [tick, setTick] = useState(0);
+  const countdown = endsAt === null ? null : Math.max(0, Math.ceil((endsAt - tick) / 1000));
+  const fired = useRef(false);
+  const startCount = useCallback((inMs: number) => {
+    setTogether(null);
+    setEndsAt(Date.now() + inMs);
+    setTick(Date.now());
+  }, []);
+  const go = useCallback(
+    (inMs: number) => {
+      send("capsule.go", { id: capsule.id, inMs });
+      startCount(inMs);
+    },
+    [send, capsule.id, startCount],
+  );
+  useCoupleEvent("capsule.ask", (p) => {
+    if (p.id === capsule.id && state === "corked") setTogether("invited");
+  });
+  useCoupleEvent("capsule.cancel", (p) => {
+    if (p.id === capsule.id) setTogether(null);
+  });
+  useCoupleEvent("capsule.go", (p) => {
+    if (p.id === capsule.id && state === "corked") startCount(Number(p.inMs) || 4000);
+  });
+  useEffect(() => {
+    if (endsAt === null) return;
+    const t = setInterval(() => {
+      const n = Date.now();
+      setTick(n);
+      if (n >= endsAt && !fired.current) {
+        fired.current = true;
+        clearInterval(t);
+        setEndsAt(null);
+        void uncork();
+      }
+    }, 100);
+    return () => clearInterval(t);
+  }, [endsAt, uncork]);
+  // Arrived from "Join" elsewhere in the app: start at once.
+  const joined = useRef(false);
+  useEffect(() => {
+    if (joined.current || params.get("join") !== "1" || !ready || state !== "corked") return;
+    joined.current = true;
+    go(4000);
+  }, [params, ready, state, go]);
 
   const p = countdownParts(now, new Date(capsule.unlock_at));
   return (
@@ -74,30 +145,22 @@ export function CapsuleScreen({ capsule }: { capsule: Capsule }) {
           {p.days}d {String(p.hours).padStart(2, "0")}h {String(p.minutes).padStart(2, "0")}m
         </div>
       ) : state === "corked" ? (
-        <Button
-          onClick={async () => {
-            // Optimistic: uncork now, mark it opened on the shelf, roll back on failure.
-            setState("uncorking");
-            feedback("success", "pop");
-            const key = capsulesKey(coupleId);
-            const openedAt = new Date().toISOString();
-            const snap = await editList<CapsuleRow>(qc, key, (items) =>
-              items.map((c) => (c.id === capsule.id ? { ...c, opened_at: openedAt } : c)),
-            );
-            const timer = setTimeout(() => setState("open"), reduced ? 200 : 900);
-            const r = await fetch(`/api/capsules/${capsule.id}/open`, { method: "POST" }).catch(
-              () => null,
-            );
-            if (!r?.ok) {
-              clearTimeout(timer);
-              rollback(qc, key, snap);
-              setState("corked");
-              toast.err("Couldn't uncork it. Try again.");
-            }
+        <CorkedActions
+          partnerName={partner.name}
+          partnerHere={presence.online}
+          together={together}
+          countdown={countdown}
+          onUncork={uncork}
+          onAsk={() => {
+            setTogether("asked");
+            send("capsule.ask", { id: capsule.id, title: capsule.title });
           }}
-        >
-          Uncork it
-        </Button>
+          onJoin={() => go(4000)}
+          onCancel={() => {
+            setTogether(null);
+            send("capsule.cancel", { id: capsule.id });
+          }}
+        />
       ) : state === "open" ? (
         <div className="an-letter rounded-card border-line bg-s1 flex flex-col gap-3 border p-[18px]">
           <Mono>
@@ -143,6 +206,65 @@ export function CapsuleScreen({ capsule }: { capsule: Capsule }) {
           )}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+/** The ready-to-open controls: alone, or together with a shared countdown. */
+function CorkedActions({
+  partnerName,
+  partnerHere,
+  together,
+  countdown,
+  onUncork,
+  onAsk,
+  onJoin,
+  onCancel,
+}: {
+  partnerName: string;
+  partnerHere: boolean;
+  together: "asked" | "invited" | null;
+  countdown: number | null;
+  onUncork: () => void;
+  onAsk: () => void;
+  onJoin: () => void;
+  onCancel: () => void;
+}) {
+  if (countdown !== null)
+    return (
+      <div className="flex flex-col items-center gap-1" role="timer" aria-live="assertive">
+        <div className="text-muted text-sm">Opening together in</div>
+        <div key={countdown} className="display an-pop text-[72px] leading-none">
+          {countdown || "Now"}
+        </div>
+      </div>
+    );
+  if (together === "invited")
+    return (
+      <div className="an-pop border-accent/40 bg-accent/10 rounded-card flex flex-col gap-3 border p-4">
+        <p className="m-0 text-base font-medium">
+          {partnerName} wants to open it with you, right now.
+        </p>
+        <Button onClick={onJoin}>Open it together</Button>
+      </div>
+    );
+  if (together === "asked")
+    return (
+      <div className="flex flex-col items-center gap-2" role="status">
+        <p className="text-muted m-0 text-center text-base">
+          Waiting for {partnerName} to join. The countdown starts when they do.
+        </p>
+        <Button variant="ghost" size="sm" onClick={onCancel}>
+          Cancel
+        </Button>
+      </div>
+    );
+  return (
+    <div className="flex flex-col gap-2">
+      {partnerHere && <Button onClick={onAsk}>Open together with {partnerName}</Button>}
+      <Button variant={partnerHere ? "ghost" : "primary"} onClick={onUncork}>
+        Uncork it
+      </Button>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { cn } from "@/components/ui/cn";
 import { useOnline, useStoredString } from "@/lib/hooks";
 import { GameInviteToast } from "@/features/play/invite-toast";
 import { PushAsk } from "@/features/home/push-ask";
+import { CapsuleInvites } from "@/features/keep/capsule-invite";
 import { SearchShortcut } from "@/features/search/search-shortcut";
 import { RouteFocus } from "@/components/clink/route-focus";
 import { useCouple } from "@/features/couple/context";
@@ -141,6 +142,7 @@ export function AppShell({
       {!solo && <MessageTone />}
       {!solo && <BadgeSync />}
       {!solo && <PushAsk />}
+      {!solo && <CapsuleInvites />}
     </>
   );
 }
