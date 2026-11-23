@@ -18,6 +18,7 @@ import { RoomHeader, sendMove, FinalScore, ForfeitNote, BackToLobby, type GameRo
 import { haptic } from "@/lib/feedback";
 import { cn } from "@/components/ui/cn";
 import { startGame } from "../meta";
+import { NudgeButton } from "./nudge";
 
 function adjacent(a: number, b: number) {
   return (
@@ -166,9 +167,12 @@ export function WordRoom({ game }: { game: GameRow }) {
         </div>
       )}
       {!myTurn && game.status === "active" && (
-        <p className="text-muted m-0 text-center text-sm">
-          We&apos;ll ping you when it&apos;s your turn. It can wait days.
-        </p>
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-muted m-0 text-center text-sm">
+            We&apos;ll ping you when it&apos;s your turn. It can wait days.
+          </p>
+          <NudgeButton gameId={game.id} updatedAt={game.updated_at} />
+        </div>
       )}
       {/* Every play, newest first, so the "already played" rule always matches what you see. */}
       <ol className="m-0 flex list-none flex-col gap-1.5 p-0" aria-label="Words played">
@@ -370,9 +374,12 @@ export function StoryRoom({ game }: { game: GameRow }) {
           <BackToLobby />
         </div>
       ) : (
-        <p className="text-muted m-0 text-center text-sm">
-          {partner.name}&apos;s line. We&apos;ll ping you.
-        </p>
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-muted m-0 text-center text-sm">
+            {partner.name}&apos;s line. We&apos;ll ping you.
+          </p>
+          <NudgeButton gameId={game.id} updatedAt={game.updated_at} />
+        </div>
       )}
       {!ended && (
         <button

@@ -92,6 +92,7 @@ const SERVER_ONLY = [
   "link_previews",
   "page_timings",
   "page_slow_loads",
+  "game_nudges",
   "admin_digests",
   "age_blocks",
   "user_blocks",

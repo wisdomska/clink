@@ -10,6 +10,7 @@ import type { OwareBoard } from "../engines/board/oware";
 import type { FourUpBoard } from "../engines/board/fourup";
 import { sizeOf, type DraughtsBoard } from "../engines/board/draughts";
 import { waited } from "../board-line";
+import { NudgeButton } from "./nudge";
 import { RoomHeader, sendMove, FinalScore, BackToLobby, type GameRow } from "./shared";
 import { DraughtsView, FourUpView, OwareView, type Sides } from "./board-views";
 
@@ -148,6 +149,7 @@ export function BoardRoom({ game }: { game: GameRow }) {
           <Handshake size={16} aria-hidden /> Offer a draw
         </Button>
       )}
+      {active && !myTurn && <NudgeButton gameId={game.id} updatedAt={game.updated_at} />}
       {active && s.drawOffer === me.id && (
         <p className="text-muted m-0 text-sm">
           You offered a draw. {partner.name} can accept or play on.

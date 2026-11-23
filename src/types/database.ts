@@ -615,6 +615,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"game_nudges": {
+                  Row: {
+                    "at": string,"by_user": string,"couple_id": string,"game_id": string,"turn_since": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "at"?: string,"by_user": string,"couple_id": string,"game_id": string,"turn_since": string
+                  }
+                  Update: {
+                    "at"?: string,"by_user"?: string,"couple_id"?: string,"game_id"?: string,"turn_since"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "game_nudges_couple_id_fkey"
+      columns: ["couple_id"]
+isOneToOne: false
+      referencedRelation: "couples"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "game_nudges_game_id_fkey"
+      columns: ["game_id"]
+isOneToOne: true
+      referencedRelation: "games"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"game_secrets": {
                   Row: {
                     "data": NonNullable<Json>,"game_id": string
@@ -1443,6 +1469,9 @@ isOneToOne: false
                            },
 "svc_log_page_timing":
 { Args: { "p_detail"?: Json,"p_lcp_ms": number,"p_path": string }; Returns: undefined
+                           },
+"svc_nudge_game":
+{ Args: { "p_game": string,"p_user": string,"p_wait"?: string }; Returns: string
                            },
 "svc_on_this_day_due":
 { Args: Record<PropertyKey, never>; Returns: {
