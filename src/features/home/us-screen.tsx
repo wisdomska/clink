@@ -14,7 +14,7 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 import { PresencePair } from "./presence-pair";
 import { DualClock } from "./dual-clock";
 import { ClinkButton } from "./clink-button";
-import { FreezeToday, StreakRepair } from "./streak-freeze";
+import { FreezeToday, ShareStreak, StreakRepair } from "./streak-freeze";
 import { MoodCard } from "./mood-card";
 import { CountdownCard } from "./countdown-card";
 import { RitualCard } from "./ritual-card";
@@ -122,7 +122,10 @@ export function UsScreen() {
           <AsleepCard now={now} />
           <StreakRepair />
           <ClinkButton streak={streak ?? null} />
-          <FreezeToday />
+          <div className="-mt-2 flex flex-wrap justify-center gap-x-4">
+            <FreezeToday />
+            <ShareStreak streak={streak ?? null} />
+          </div>
           <Tips
             tips={[
               {

@@ -6,6 +6,7 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
 import { toast } from "@/components/ui/toast";
+import { ShareCardSheet } from "@/components/clink/share-card";
 
 interface Status {
   left: number;
@@ -142,6 +143,36 @@ export function FreezeToday() {
           </Button>
         </div>
       </Sheet>
+    </>
+  );
+}
+
+/** Share the streak as an image, once there's one worth showing. */
+export function ShareStreak({ streak }: { streak: number | null }) {
+  const { me, partner } = useCouple();
+  const [open, setOpen] = useState(false);
+  if (!streak || streak < 3) return null;
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="text-muted hover:text-text min-h-11 cursor-pointer self-center border-0 bg-transparent text-sm underline-offset-4 hover:underline"
+      >
+        Share our {streak}-day streak
+      </button>
+      <ShareCardSheet
+        open={open}
+        onOpenChange={setOpen}
+        filename="clink-streak.png"
+        content={(named) => ({
+          art: "fire",
+          kicker: "Clink streak",
+          headline: named ? `${me.name} and ${partner.name}` : "Us two",
+          big: `${streak} ${streak === 1 ? "day" : "days"}`,
+          sub: "A clink answered every day, wherever we are.",
+        })}
+      />
     </>
   );
 }

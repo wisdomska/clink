@@ -35,6 +35,13 @@ test("a shared streak freeze: repair yesterday, freeze today, two a month", asyn
   await card.getByRole("button", { name: "Use a freeze" }).click();
   await expect(card).toBeHidden({ timeout: 10000 });
   await expect(b.getByText(/^3-day streak\./)).toBeVisible({ timeout: 10000 });
+  // The streak, as a picture to share.
+  await b.getByRole("button", { name: "Share our 3-day streak" }).click();
+  await expect(b.locator("[data-share-card]").getByText("3 days")).toBeVisible();
+  const download = b.waitForEvent("download");
+  await b.getByRole("button", { name: "Save image" }).click();
+  expect((await download).suggestedFilename()).toBe("clink-streak.png");
+  await b.keyboard.press("Escape");
 
   // Nia plans a day off: today is frozen too.
   await a.goto("/us");

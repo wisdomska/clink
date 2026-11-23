@@ -1,3 +1,4 @@
+import { stat } from "node:fs/promises";
 import { test, expect } from "./fixtures";
 import { makeUser, signIn, waitLive } from "./helpers";
 import type { Page } from "@playwright/test";
@@ -36,6 +37,19 @@ test("Four Up: a slow game between you two, to a win", async ({ couple }) => {
   // Head to head, from each side.
   await expect(a.getByLabel("Head to head: You 1 · Theo 0")).toBeVisible({ timeout: 10000 });
   await expect(b.getByLabel("Head to head: You 0 · Nia 1")).toBeVisible({ timeout: 10000 });
+  // Share the result as a picture (headless browsers can't share files, so it saves).
+  await a.getByRole("button", { name: "Share the result" }).click();
+  const card = a.locator("[data-share-card]");
+  await expect(card.getByText("Nia wins!")).toBeVisible();
+  await expect(card.getByText("1 : 0")).toBeVisible();
+  await a.getByRole("switch", { name: /Show our names/ }).click();
+  await expect(card.getByText("I won.")).toBeVisible();
+  const download = a.waitForEvent("download");
+  await a.getByRole("button", { name: "Save image" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("clink-fourup.png");
+  const { size } = await stat(await file.path());
+  expect(size).toBeGreaterThan(20_000);
   // The lobby keeps it in the history, not as a game still going.
   await a.goto("/play");
   await expect(a.getByRole("button", { name: "Start Four Up with Theo" })).toBeVisible();

@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { X, Crown, Flag } from "@phosphor-icons/react";
+import { X, Crown, Flag, ShareNetwork } from "@phosphor-icons/react";
 import { CountUp } from "@/components/fx/count-up";
 import { cn } from "@/components/ui/cn";
 import { supabaseBrowser } from "@/lib/supabase/client";
@@ -13,6 +13,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { toast } from "@/components/ui/toast";
 import { GAME_META } from "../meta";
 import { GameRecord } from "../record";
+import { ShareCardSheet } from "@/components/clink/share-card";
 import { subscribeAuthed } from "@/lib/realtime";
 import { feedback } from "@/lib/feedback";
 import { Confetti } from "@/components/fx/confetti";
@@ -418,6 +419,7 @@ export function FinalScore({
   const { me, partner } = useCouple();
   const forfeit = useForfeit(game);
   const qc = useQueryClient();
+  const [sharing, setSharing] = useState(false);
   // This game just counted: fetch the head-to-head fresh.
   useEffect(() => {
     void qc.invalidateQueries({ queryKey: ["game-record"] });
@@ -482,6 +484,27 @@ export function FinalScore({
         You {mine}, {partner.name} {theirs}.
       </span>
       <GameRecord type={game.type} />
+      <Button variant="ghost" size="sm" className="self-start" onClick={() => setSharing(true)}>
+        <ShareNetwork size={16} aria-hidden /> Share the result
+      </Button>
+      <ShareCardSheet
+        open={sharing}
+        onOpenChange={setSharing}
+        filename={`clink-${game.type}.png`}
+        content={(named) => ({
+          art: game.type,
+          kicker: GAME_META[game.type].name,
+          headline: draw
+            ? "A draw."
+            : named
+              ? `${iWon ? me.name : partner.name} wins!`
+              : iWon
+                ? "I won."
+                : "They won.",
+          big: `${mine} : ${theirs}`,
+          sub: named ? `${me.name} vs ${partner.name}` : "Me vs them",
+        })}
+      />
     </section>
   );
 }
