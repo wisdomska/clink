@@ -13,7 +13,7 @@ import { waited } from "../board-line";
 import { NudgeButton } from "./nudge";
 import { GameRecord } from "../record";
 import { RoomHeader, sendMove, FinalScore, BackToLobby, type GameRow } from "./shared";
-import { DraughtsView, FourUpView, OwareView, type Sides } from "./board-views";
+import { DraughtsView, FourUpView, OwareView, useBoardSounds, type Sides } from "./board-views";
 
 /** Oware, Four Up and Draughts against your partner, a turn at a time. */
 export function BoardRoom({ game }: { game: GameRow }) {
@@ -25,6 +25,7 @@ export function BoardRoom({ game }: { game: GameRow }) {
   const active = game.status === "active";
   const myTurn = active && game.current_turn_user === me.id;
   const [busy, setBusy] = useState(false);
+  useBoardSounds(s.kind, s.board);
   const sides: Sides = {
     mine: `var(--partner-${me.role})`,
     theirs: `var(--partner-${partner.role})`,

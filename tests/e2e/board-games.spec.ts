@@ -101,6 +101,21 @@ test("Draughts: pick a piece, then a square; the move reaches your partner", asy
 
 test("practice against Clink, even before linking", async ({ page }) => {
   test.setTimeout(90_000);
+  // Count synthesised sounds (board sounds are made in code, not files).
+  await page.addInitScript(() => {
+    const w = window as unknown as { __thuds: number };
+    w.__thuds = 0;
+    // Sound is off by default; switch it on for this test.
+    localStorage.setItem(
+      "clink_feedback",
+      JSON.stringify({ haptics: true, sound: true, motion: "system" }),
+    );
+    const orig = AudioContext.prototype.createBufferSource;
+    AudioContext.prototype.createBufferSource = function (this: AudioContext) {
+      w.__thuds++;
+      return orig.call(this);
+    };
+  });
   const esi = await makeUser("Esi");
   await signIn(page, esi, "/play/fourup/practice");
   await expect(page.getByRole("heading", { name: "Four Up: practice" })).toBeVisible();
@@ -113,6 +128,10 @@ test("practice against Clink, even before linking", async ({ page }) => {
     .locator("span[style*='radial-gradient']")
     .count();
   expect(discs).toBe(2);
+  // Your disc and Clink's each landed with a sound.
+  expect(
+    await page.evaluate(() => (window as unknown as { __thuds: number }).__thuds),
+  ).toBeGreaterThanOrEqual(2);
   await page.goto("/play/draughts/practice");
   await expect(page.getByRole("grid", { name: "Draughts board, 10 by 10" })).toBeVisible();
   await page.getByRole("button", { name: "8 by 8" }).click();

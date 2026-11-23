@@ -4,10 +4,10 @@
  * side and report taps. Used by real games (board-rooms) and practice against
  * Clink (practice-room), so both look and feel the same.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Crown } from "@phosphor-icons/react";
 import { cn } from "@/components/ui/cn";
-import { haptic } from "@/lib/feedback";
+import { haptic, playSeeds, playSound } from "@/lib/feedback";
 import { BOTTOM_ROW, TOP_ROW, legalPits, type OwareBoard } from "../engines/board/oware";
 import { COLS, ROWS, dropRow, fourupWinner, type FourUpBoard } from "../engines/board/fourup";
 import {
@@ -24,6 +24,41 @@ import {
 export interface Sides {
   mine: string;
   theirs: string;
+}
+
+/**
+ * A sound for each new move, whoever made it: seeds dropping one by one in
+ * Oware, a disc landing in Four Up, a wooden knock in Draughts (two for a
+ * capture). Silent on first load, and when sound is off in Settings.
+ */
+export function useBoardSounds(
+  kind: "oware" | "fourup" | "draughts",
+  board: OwareBoard | FourUpBoard | DraughtsBoard,
+) {
+  const prev = useRef(board);
+  const moves = (b: typeof board) =>
+    kind === "oware"
+      ? (b as OwareBoard).history.length
+      : kind === "fourup"
+        ? (b as FourUpBoard).moves.length
+        : (b as DraughtsBoard).moves.length;
+  useEffect(() => {
+    const before = prev.current;
+    prev.current = board;
+    if (moves(board) !== moves(before) + 1) return;
+    if (kind === "oware") {
+      const pit = (board as OwareBoard).history.at(-1)!;
+      playSeeds((before as OwareBoard).pits[pit] ?? 0);
+    } else if (kind === "fourup") playSound("drop");
+    else {
+      const caps =
+        (before as DraughtsBoard).board.filter(Boolean).length -
+        (board as DraughtsBoard).board.filter(Boolean).length;
+      playSound("knock");
+      if (caps > 0) setTimeout(() => playSound("knock"), 110);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [board, kind]);
 }
 
 /* ------------------------------------------------------------------ Oware */

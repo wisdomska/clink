@@ -27,7 +27,7 @@ import {
 } from "../engines/board/draughts";
 import { BOT_LEVELS, draughtsBot, fourupBot, owareBot, type BotLevel } from "../engines/board/bots";
 import { makeRng } from "../engines/board/rng";
-import { DraughtsView, FourUpView, OwareView } from "./board-views";
+import { DraughtsView, FourUpView, OwareView, useBoardSounds } from "./board-views";
 
 type Pos = OwareBoard | FourUpBoard | DraughtsBoard;
 const LEVEL_LABEL: Record<BotLevel, string> = { easy: "Easy", medium: "Medium", hard: "Hard" };
@@ -66,6 +66,7 @@ export function PracticeRoom({ kind }: { kind: BoardType }) {
   const [youStart, setYouStart] = useState(true);
   const [pos, setPos] = useState<Pos>(() => start(kind, 10));
   const rng = useMemo(() => makeRng(), []);
+  useBoardSounds(kind, pos);
   const mySeat: 0 | 1 = youStart ? 0 : 1;
   const botSeat = (1 - mySeat) as 0 | 1;
   const result = outcome(kind, pos);

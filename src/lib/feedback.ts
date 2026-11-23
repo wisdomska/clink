@@ -122,7 +122,18 @@ export function haptic(kind: HapticName | number | number[] = "tap") {
 /* ---------------------------------------------------------------- sound */
 
 export type SoundName =
-  "clink" | "pop" | "tick" | "send" | "success" | "error" | "unlock" | "flip" | "win" | "toggle";
+  | "clink"
+  | "pop"
+  | "tick"
+  | "send"
+  | "success"
+  | "error"
+  | "unlock"
+  | "flip"
+  | "win"
+  | "toggle"
+  | "knock"
+  | "drop";
 
 let ctx: AudioContext | null = null;
 function audio(): AudioContext | null {
@@ -166,6 +177,41 @@ function tone(
   osc.stop(start + dur + 0.02);
 }
 
+/** A short burst of filtered noise: the body of wood and seed sounds. */
+function thud(c: AudioContext, start: number, freq: number, q: number, dur: number, gain: number) {
+  const len = Math.ceil(c.sampleRate * dur);
+  const buf = c.createBuffer(1, len, c.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  const src = c.createBufferSource();
+  src.buffer = buf;
+  const f = c.createBiquadFilter();
+  f.type = "bandpass";
+  f.frequency.value = freq;
+  f.Q.value = q;
+  const g = c.createGain();
+  g.gain.value = gain;
+  src.connect(f).connect(g).connect(c.destination);
+  src.start(start);
+}
+
+/**
+ * Seeds dropping into pits, one soft click each (Oware), up to a dozen so a
+ * big sow doesn't drag on.
+ */
+export function playSeeds(n: number) {
+  if (!read().sound || n <= 0) return;
+  const c = audio();
+  if (!c) return;
+  const t = c.currentTime + 0.01;
+  const count = Math.min(n, 12);
+  for (let i = 0; i < count; i++) {
+    const at = t + i * 0.07 + Math.random() * 0.015;
+    thud(c, at, 2400 + Math.random() * 900, 6, 0.04, 0.35);
+    tone(c, 900 + Math.random() * 200, at, 0.03, 0.015, "triangle");
+  }
+}
+
 export function playSound(name: SoundName) {
   if (!read().sound) return;
   const c = audio();
@@ -206,6 +252,14 @@ export function playSound(name: SoundName) {
       tone(c, 659, t + 0.1, 0.16, 0.08);
       tone(c, 784, t + 0.2, 0.18, 0.08);
       tone(c, 1047, t + 0.3, 0.5, 0.09);
+      break;
+    case "knock": // a wooden piece set down on a board
+      thud(c, t, 700, 3, 0.08, 0.9);
+      tone(c, 180, t, 0.07, 0.06, "sine", 120);
+      break;
+    case "drop": // a disc landing in its slot
+      thud(c, t, 420, 2, 0.12, 0.8);
+      tone(c, 140, t, 0.12, 0.08, "sine", 90);
       break;
     case "flip":
       tone(c, 1400, t, 0.03, 0.05, "square", 900);
