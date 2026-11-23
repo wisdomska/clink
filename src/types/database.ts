@@ -339,6 +339,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"daily_ladders": {
+                  Row: {
+                    "day": string,"par": number,"start": string,"target": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "day": string,"par": number,"start": string,"target": string
+                  }
+                  Update: {
+                    "day"?: string,"par"?: number,"start"?: string,"target"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"dare_spins": {
                   Row: {
                     "couple_id": string,"created_at": string,"dare_id": string,"id": string,"media_id": string | null,"outcome": string | null,"resolved_at": string | null,"spinner_id": string,"tier": string
@@ -708,6 +722,26 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"ladder_results": {
+                  Row: {
+                    "couple_id": string,"day": string,"finished_at": string,"path": (string)[],"seconds": number,"steps": number,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "couple_id": string,"day": string,"finished_at"?: string,"path": (string)[],"seconds": number,"steps": number,"user_id": string
+                  }
+                  Update: {
+                    "couple_id"?: string,"day"?: string,"finished_at"?: string,"path"?: (string)[],"seconds"?: number,"steps"?: number,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ladder_results_couple_id_fkey"
+      columns: ["couple_id"]
+isOneToOne: false
+      referencedRelation: "couples"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"letters": {
                   Row: {

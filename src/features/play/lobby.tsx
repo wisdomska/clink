@@ -20,6 +20,7 @@ import { GAME_META, startGame } from "./meta";
 import { BOARD_TYPES, isBoardType, type BoardState } from "./engines/boards";
 import { boardLine } from "./board-line";
 import { recordLine, useGameRecords } from "./record";
+import { useLadder, useLadderDay } from "./ladder";
 import { GameTile } from "./game-tile";
 import { GameHistory } from "./history";
 import { useOpenPartner } from "@/features/partner/partner-sheet";
@@ -178,6 +179,7 @@ export function Lobby() {
         <TabPanel key="games">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-10 2xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] 2xl:gap-14">
             <div className="flex min-w-0 flex-col gap-5">
+              <LadderTile />
               {online ? (
                 <div className="flex items-center gap-2 text-base font-medium">
                   <span className="an-dot bg-accent h-2 w-2 rounded-full" aria-hidden />
@@ -398,5 +400,44 @@ export function Lobby() {
         </div>
       </Sheet>
     </div>
+  );
+}
+
+/** Today's ladder, at the top of the games: the puzzle, or how you both did. */
+function LadderTile() {
+  const { partner } = useCouple();
+  const day = useLadderDay();
+  const { data } = useLadder(day);
+  const line = !data
+    ? "One word puzzle a day, the same for you both"
+    : data.mine
+      ? `You: ${data.mine.steps} steps (par ${data.par}) · ${partner.name}: ${data.theirs.done ? `${data.theirs.steps} steps` : "not yet"}`
+      : `Turn ${data.start.toUpperCase()} into ${data.target.toUpperCase()} · par ${data.par}${data.theirs.done ? ` · ${partner.name} is done` : ""}`;
+  return (
+    <Link
+      href="/play/ladder"
+      className="press rounded-card border-line bg-s1 text-text hover:text-text flex items-center gap-3 border px-4 py-3.5"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/art/puzzle.webp"
+        alt=""
+        aria-hidden
+        className="h-11 w-11 flex-none object-contain"
+      />
+      <div className="min-w-0 flex-1">
+        <div className="text-base font-bold">Daily ladder</div>
+        <div className="text-muted truncate text-sm">{line}</div>
+      </div>
+      <span
+        className={
+          data?.mine
+            ? "border-line text-muted rounded-full border px-3 py-1.5 text-[13px] font-medium"
+            : "bg-accent text-on-accent rounded-full px-3 py-1.5 text-[13px] font-bold"
+        }
+      >
+        {data?.mine ? "Done" : "Play"}
+      </span>
+    </Link>
   );
 }

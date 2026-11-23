@@ -94,6 +94,8 @@ const SERVER_ONLY = [
   "page_timings",
   "page_slow_loads",
   "game_nudges",
+  "daily_ladders",
+  "ladder_results",
   "admin_digests",
   "age_blocks",
   "user_blocks",
