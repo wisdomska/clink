@@ -1,6 +1,6 @@
 import sharp from "sharp";
 import { test, expect } from "./fixtures";
-import { admin } from "./helpers";
+import { admin, waitLive } from "./helpers";
 import { expectNoHorizontalScroll } from "./no-horizontal-scroll";
 
 test.describe("Chat (CHAT-01 to CHAT-05)", () => {
@@ -34,6 +34,7 @@ test.describe("Chat (CHAT-01 to CHAT-05)", () => {
     const { a, b, ctxA, nia } = couple;
     await a.goto("/chat");
     await b.goto("/chat");
+    await waitLive(b, "chatLive");
     await a.waitForTimeout(1200);
     await ctxA.setOffline(true);
     await a.getByLabel("Message Theo").fill("ok fine. sunday call?");
@@ -56,6 +57,7 @@ test.describe("Chat (CHAT-01 to CHAT-05)", () => {
     const { a, b, ctxA } = couple;
     await a.goto("/chat");
     await b.goto("/chat");
+    await waitLive(b, "chatLive");
     await a.waitForTimeout(1200);
     await ctxA.setOffline(true);
     await a.getByLabel("Message Theo").fill("still on for waakye?");

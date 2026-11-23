@@ -115,6 +115,8 @@ export function CoupleProvider({
       });
       ch.subscribe(async (status) => {
         setConnected(status === "SUBSCRIBED");
+        // A plain marker for tests (and support): the live channel is joined.
+        document.documentElement.dataset.live = String(status === "SUBSCRIBED");
         if (status !== "SUBSCRIBED") return;
         const track = () => ch.track({ status: statusRef.current, at: new Date().toISOString() });
         await track();

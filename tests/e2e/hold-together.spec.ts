@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import { waitLive } from "./helpers";
 import type { Page } from "@playwright/test";
 
 async function pressAndHold(p: Page) {
@@ -13,6 +14,7 @@ test("hold together glows on both screens and counts the seconds", async ({ coup
   const { a, b } = couple;
   await a.goto("/us");
   await b.goto("/us");
+  await Promise.all([waitLive(a), waitLive(b)]);
   await pressAndHold(a);
   await pressAndHold(b);
   await expect(a.getByRole("dialog", { name: /Holding together/ })).toBeVisible({
@@ -31,6 +33,7 @@ test("holding alone invites your partner; 5 s together is a moment", async ({ co
   const { a, b } = couple;
   await a.goto("/us");
   await b.goto("/chat");
+  await Promise.all([waitLive(a), waitLive(b)]);
   const call = a.waitForRequest((r) => r.url().includes("/api/clinks/hold-call"));
   await pressAndHold(a);
   await call;

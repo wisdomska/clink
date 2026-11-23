@@ -50,12 +50,12 @@ export function useMessages() {
         },
       );
     // Close the gap between the first fetch and the subscription going live.
-    return subscribeAuthed(
-      ch,
-      (status) =>
-        status === "SUBSCRIBED" &&
-        void qc.invalidateQueries({ queryKey: key, refetchType: "active" }),
-    );
+    return subscribeAuthed(ch, (status) => {
+      // A plain marker for tests (and support): new messages arrive live.
+      document.documentElement.dataset.chatLive = String(status === "SUBSCRIBED");
+      if (status === "SUBSCRIBED")
+        void qc.invalidateQueries({ queryKey: key, refetchType: "active" });
+    });
   }, [coupleId, key, qc]);
 
   const messages = useMemo(() => (q.data?.pages.flat() ?? []).slice().reverse(), [q.data]);

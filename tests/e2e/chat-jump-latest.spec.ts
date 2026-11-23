@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
-import { admin } from "./helpers";
+import { admin, waitLive } from "./helpers";
 
 const listOf = (p: Page) => p.locator("[aria-live=polite].overflow-y-auto").first();
 const atBottom = (p: Page) =>
@@ -31,6 +31,7 @@ test("scrolled up, new messages show a Jump to latest button with a count", asyn
   await a.goto("/chat");
   await expect(a.getByText("line 49")).toBeVisible({ timeout: 15000 });
   await expect.poll(() => atBottom(a)).toBe(true);
+  await waitLive(a, "chatLive");
   // Live updates are flowing (one arrives while at the bottom, and it stays there).
   await admin.from("messages").insert({
     couple_id: coupleId,

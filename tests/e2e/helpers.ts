@@ -107,3 +107,14 @@ export async function adminSignIn(
   if (!r.ok()) throw new Error(`admin login failed: ${r.status()}`);
   return { id: data.id, email, password };
 }
+
+/**
+ * Waits until the page's live connection is joined: "live" for the couple's
+ * channel (presence, clinks, holding together), "chatLive" for new messages.
+ * Acting before that can miss a live update on a slow machine.
+ */
+export async function waitLive(page: Page, which: "live" | "chatLive" = "live") {
+  await page.waitForFunction((k) => document.documentElement.dataset[k] === "true", which, {
+    timeout: 20000,
+  });
+}
