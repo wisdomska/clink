@@ -6,6 +6,8 @@ import { WordRoom, StoryRoom } from "./turn-rooms";
 import { RoomHeader } from "./shared";
 import { GameReactions, StartCountdown } from "./live-extras";
 import { RpsRoom, SnapRoom, ZoomRoom, MemoryRoom } from "./image-rooms";
+import { BoardRoom } from "./board-rooms";
+import { isBoardType } from "../engines/boards";
 
 const LIVE = new Set(["know_me", "trivia", "wyr", "draw_guess", "rps", "snap", "zoom", "memory"]);
 
@@ -33,6 +35,8 @@ export function GameRoom({ id }: { id: string }) {
             <RoomHeader type={game.type} />
             <p className="text-muted">This invite was replaced by a newer one.</p>
           </>
+        ) : isBoardType(game.type) ? (
+          <BoardRoom game={game} />
         ) : game.type === "know_me" ? (
           <KnowMeRoom game={game} />
         ) : game.type === "trivia" ? (

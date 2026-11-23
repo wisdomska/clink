@@ -11,6 +11,9 @@ export const GAME_META: Record<GameType, { name: string; meta: string; mode: "li
   snap: { name: "Snap challenge", meta: "3 prompts · photos", mode: "live" },
   zoom: { name: "Zoom guess", meta: "Guess the close-up", mode: "live" },
   memory: { name: "Photo memory", meta: "Your photos · 6 pairs", mode: "live" },
+  oware: { name: "Oware", meta: "Sow, capture, 25 wins", mode: "turn" },
+  fourup: { name: "Four Up", meta: "Four in a row", mode: "turn" },
+  draughts: { name: "Draughts", meta: "10 by 10 or 8 by 8", mode: "turn" },
 };
 
 export async function startGame(

@@ -10,13 +10,15 @@ import {
   ArrowsLeftRight,
   Plus,
 } from "@phosphor-icons/react";
-import { useCouple } from "@/features/couple/context";
+import { useCoupleNow, useCouple } from "@/features/couple/context";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { PartnerMark } from "@/components/ui/heading";
 import { Sheet } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { GAME_META, startGame } from "./meta";
+import { BOARD_TYPES, isBoardType, type BoardState } from "./engines/boards";
+import { boardLine } from "./board-line";
 import { GameTile } from "./game-tile";
 import { GameHistory } from "./history";
 import { useOpenPartner } from "@/features/partner/partner-sheet";
@@ -83,6 +85,7 @@ export function useGames() {
 
 export function Lobby() {
   const { me, partner, presence, send } = useCouple();
+  const now = useCoupleNow(60_000);
   const openPartner = useOpenPartner();
   const router = useRouter();
   const { data: games = [] } = useGames();
@@ -258,8 +261,10 @@ export function Lobby() {
                     plays?: unknown[];
                     lines?: Array<{ text: string }>;
                   };
-                  const sub =
-                    g.type === "word"
+                  const board = isBoardType(g.type) ? (g.state as unknown as BoardState) : null;
+                  const sub = board
+                    ? boardLine(board, me.id, partner.name, now)
+                    : g.type === "word"
                       ? `Turn ${(st.plays?.length ?? 0) + 1} of 16 · ${(st.scores?.[me.id] ?? 0) === (st.scores?.[partner.id] ?? 0) ? `level at ${st.scores?.[me.id] ?? 0}` : `${(st.scores?.[me.id] ?? 0) > (st.scores?.[partner.id] ?? 0) ? "you lead" : `${partner.name} leads`} ${st.scores?.[me.id] ?? 0} to ${st.scores?.[partner.id] ?? 0}`}`
                       : `Line ${(st.lines?.length ?? 0) + 1} of 40${st.lines?.length ? ` · "${st.lines[st.lines.length - 1]!.text.slice(0, 24)}"` : ""}`;
                   return (
@@ -293,6 +298,39 @@ export function Lobby() {
                     </Link>
                   );
                 })}
+                {BOARD_TYPES.map((type) => (
+                  <div
+                    key={type}
+                    className="rounded-card border-line flex items-center gap-3 border border-dashed px-4 py-2.5"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`/art/${type}.webp`}
+                      alt=""
+                      aria-hidden
+                      className="h-10 w-10 flex-none object-contain"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-base font-bold">{GAME_META[type].name}</div>
+                      <div className="text-muted truncate text-sm">{GAME_META[type].meta}</div>
+                    </div>
+                    <Link
+                      href={`/play/${type}/practice`}
+                      className="press text-muted hover:text-text flex h-11 items-center rounded-full px-3 text-sm font-semibold"
+                      aria-label={`Practise ${GAME_META[type].name} against Clink`}
+                    >
+                      Practise
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => play(type)}
+                      aria-label={`Start ${GAME_META[type].name} with ${partner.name}`}
+                      className="press bg-accent text-on-accent flex h-11 cursor-pointer items-center gap-1 rounded-full border-0 px-4 text-sm font-bold"
+                    >
+                      <Plus size={16} weight="bold" aria-hidden /> Play
+                    </button>
+                  </div>
+                ))}
                 {!turnGames.some((g) => g.type === "word") && (
                   <button
                     type="button"

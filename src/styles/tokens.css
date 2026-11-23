@@ -108,6 +108,17 @@
 
   /* Film grain (prototype GRAIN, 5% opacity overlay) */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  /* Board games: wood for Oware and Draughts, night for Four Up. */
+  --board-wood: #5a3a26;
+  --board-wood-deep: #3e2717;
+  --board-pit: #3a2519;
+  --board-pit-deep: #1a0f0b;
+  --board-night: #1d1730;
+  --board-night-deep: #140f22;
+  --board-dark: #4a3226;
+  --board-dark-last: #5d3f2f;
+  --board-light: #b89a78;
 }
 
 /* After Dark swaps the accent everywhere inside it. */

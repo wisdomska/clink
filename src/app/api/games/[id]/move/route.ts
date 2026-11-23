@@ -84,8 +84,14 @@ export const POST = handler(async (req, ctx: { params: Promise<{ id: string }> }
       .select("display_name")
       .eq("id", user.id)
       .single();
+    const name = me?.display_name ?? "They";
+    const offered = "offered" in r && r.offered;
     notifyLater(r.notifyTurn, "games", {
-      body: `Your turn. ${me?.display_name ?? "They"} just played.`,
+      body: offered
+        ? `${name} offered a draw.`
+        : r.finished
+          ? `${name} just played. The game's over: come and see.`
+          : `Your turn. ${name} just played.`,
       url: `/play/${g.type}/${id}`,
       tag: `game-${id}`,
     });

@@ -17,7 +17,11 @@ const schema = z.object({
     "snap",
     "zoom",
     "memory",
+    "oware",
+    "fourup",
+    "draughts",
   ]),
+  size: z.union([z.literal(8), z.literal(10)]).optional(),
   deck: z.enum(["Silly", "Deep", "Future", "Travel"]).optional(),
   subject: z.enum(["me", "partner"]).optional(),
 });
@@ -33,6 +37,9 @@ const NAMES: Record<string, string> = {
   snap: "Snap challenge",
   zoom: "Zoom guess",
   memory: "Photo memory",
+  oware: "Oware",
+  fourup: "Four Up",
+  draughts: "Draughts",
 };
 
 /** PLAY-01: start a game. Live games begin as an invite; turn-based games start at once. */
@@ -56,6 +63,7 @@ export const POST = handler(async (req) => {
     deck: body.deck,
     subject: body.subject === "me" ? user.id : body.subject === "partner" ? partnerId : undefined,
     coupleId,
+    size: body.size,
   });
   const { data: game, error } = await admin
     .from("games")

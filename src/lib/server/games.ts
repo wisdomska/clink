@@ -38,6 +38,7 @@ import {
 import { isWord } from "@/lib/server/dictionary";
 import { MEMOJI_POSES, PEOPLE, memojiKey } from "@/lib/avatars";
 import type { Json } from "@/types/database";
+import { boardInit, boardMove } from "@/features/play/engines/boards";
 
 export const LIVE: GameType[] = [
   "know_me",
@@ -69,7 +70,7 @@ export const SNAP_PROMPTS = [
   "Your favourite mug or glass",
   "A tiny detail most people would miss",
 ];
-export const TURN: GameType[] = ["word", "story"];
+export const TURN: GameType[] = ["word", "story", "oware", "fourup", "draughts"];
 
 async function pick<T>(
   table: string,
@@ -89,9 +90,13 @@ async function pick<T>(
 export async function initGame(
   type: GameType,
   p: Players,
-  opts: { deck?: string; subject?: string; coupleId?: string },
+  opts: { deck?: string; subject?: string; coupleId?: string; size?: 8 | 10 },
 ): Promise<EngineResult<unknown, unknown>> {
   switch (type) {
+    case "oware":
+    case "fourup":
+    case "draughts":
+      return boardInit(type, p, { size: opts.size });
     case "know_me": {
       const qs = await pick<{ id: number; text: string; options: string[] }>(
         "know_me_questions",
@@ -222,6 +227,10 @@ export function applyMove(
         return zoomMove(p, state as never, secrets as never, userId, move as never);
       case "memory":
         return memoryMove(p, state as never, secrets as never, userId, move as never);
+      case "oware":
+      case "fourup":
+      case "draughts":
+        return boardMove(p, state as never, userId, move as never);
     }
   } catch (e) {
     if (e instanceof MoveError) throw deny(422, "bad_move", e.message);

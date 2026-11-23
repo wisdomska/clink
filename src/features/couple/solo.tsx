@@ -20,7 +20,13 @@ import { LogoMark, Wordmark } from "@/components/brand/logo";
 import { Display, Lead } from "@/components/ui/heading";
 
 /** Routes that work before you link. Everything else shows the link prompt. */
-export const SOLO_OPEN = [/^\/us$/, /^\/settings/, /^\/help/];
+export const SOLO_OPEN = [
+  /^\/us$/,
+  /^\/settings/,
+  /^\/help/,
+  // Practice against Clink needs no partner.
+  /^\/play\/(oware|fourup|draughts)\/practice$/,
+];
 
 const FEATURES: Array<{ match: RegExp; title: string; body: string; Icon: Icon }> = [
   {

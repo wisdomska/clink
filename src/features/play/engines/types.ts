@@ -13,7 +13,10 @@ export type GameType =
   | "rps"
   | "snap"
   | "zoom"
-  | "memory";
+  | "memory"
+  | "oware"
+  | "fourup"
+  | "draughts";
 
 export interface Players {
   a: string; // partner A user id
