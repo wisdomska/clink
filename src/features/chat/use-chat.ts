@@ -49,13 +49,36 @@ export function useMessages() {
           if (payload.eventType === "INSERT") useQueue.getState().remove(row.client_id);
         },
       );
+    // If the live channel hasn't joined within 5 s, or drops, fetch new
+    // messages every 5 s while the screen is visible, until it's back.
+    let live = false;
+    let poll: ReturnType<typeof setInterval> | undefined;
+    const startPolling = () => {
+      if (poll) return;
+      poll = setInterval(() => {
+        if (!live && document.visibilityState === "visible")
+          void qc.invalidateQueries({ queryKey: key, refetchType: "active" });
+      }, 5000);
+    };
+    const grace = setTimeout(() => {
+      if (!live) startPolling();
+    }, 5000);
     // Close the gap between the first fetch and the subscription going live.
-    return subscribeAuthed(ch, (status) => {
+    const stop = subscribeAuthed(ch, (status) => {
+      live = status === "SUBSCRIBED";
       // A plain marker for tests (and support): new messages arrive live.
-      document.documentElement.dataset.chatLive = String(status === "SUBSCRIBED");
-      if (status === "SUBSCRIBED")
+      document.documentElement.dataset.chatLive = String(live);
+      if (live) {
+        clearInterval(poll);
+        poll = undefined;
         void qc.invalidateQueries({ queryKey: key, refetchType: "active" });
+      } else startPolling();
     });
+    return () => {
+      clearTimeout(grace);
+      clearInterval(poll);
+      stop();
+    };
   }, [coupleId, key, qc]);
 
   const messages = useMemo(() => (q.data?.pages.flat() ?? []).slice().reverse(), [q.data]);
