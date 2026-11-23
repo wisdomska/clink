@@ -49,19 +49,44 @@ export function useMessages() {
           if (payload.eventType === "INSERT") useQueue.getState().remove(row.client_id);
         },
       );
-    // If the live channel hasn't joined within 5 s, or drops, fetch new
-    // messages every 5 s while the screen is visible, until it's back.
-    let live = false;
-    let poll: ReturnType<typeof setInterval> | undefined;
-    const startPolling = () => {
-      if (poll) return;
-      poll = setInterval(() => {
-        if (!live && document.visibilityState === "visible")
-          void qc.invalidateQueries({ queryKey: key, refetchType: "active" });
-      }, 5000);
+    // Anything newer than the newest message we hold, merged in. Cheap: it
+    // never reloads the history you've scrolled back through.
+    const catchUp = async () => {
+      const cur = qc.getQueryData<Pages>(key);
+      const newest = cur?.pages[0]?.[0]?.sent_at;
+      if (!cur || !newest)
+        return void qc.invalidateQueries({ queryKey: key, refetchType: "active" });
+      const { data } = await sb
+        .from("messages")
+        .select("*")
+        .eq("couple_id", coupleId)
+        .gt("sent_at", newest)
+        .order("sent_at", { ascending: false })
+        .limit(100);
+      if (!data?.length) return;
+      qc.setQueryData<Pages>(key, (old) => {
+        if (!old) return old;
+        const known = new Set(old.pages.flat().map((m) => m.id));
+        const fresh = (data as Message[]).filter((m) => !known.has(m.id));
+        if (!fresh.length) return old;
+        for (const m of fresh) useQueue.getState().remove(m.client_id);
+        return { ...old, pages: [[...fresh, ...(old.pages[0] ?? [])], ...old.pages.slice(1)] };
+      });
     };
+    // If the live channel hasn't joined within 5 s, or drops, check every 5 s
+    // while the screen is visible. Even when it's live, a quiet check every
+    // 15 s catches an event the connection dropped.
+    let live = false;
+    let last = Date.now();
+    const poll = setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      const every = live ? 15_000 : 5000;
+      if (Date.now() - last < every - 100) return;
+      last = Date.now();
+      void catchUp();
+    }, 1000);
     const grace = setTimeout(() => {
-      if (!live) startPolling();
+      if (!live) last = 0;
     }, 5000);
     // Close the gap between the first fetch and the subscription going live.
     const stop = subscribeAuthed(ch, (status) => {
@@ -69,10 +94,11 @@ export function useMessages() {
       // A plain marker for tests (and support): new messages arrive live.
       document.documentElement.dataset.chatLive = String(live);
       if (live) {
-        clearInterval(poll);
-        poll = undefined;
+        last = Date.now();
+        // A full refresh once on (re)joining: also picks up read receipts and
+        // edits made while it was away.
         void qc.invalidateQueries({ queryKey: key, refetchType: "active" });
-      } else startPolling();
+      }
     });
     return () => {
       clearTimeout(grace);
