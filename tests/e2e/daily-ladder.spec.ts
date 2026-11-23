@@ -3,9 +3,13 @@ import { test, expect } from "./fixtures";
 
 // A shortest ladder between two words, for the test to play.
 function solve(start: string, target: string): string[] {
+  // Everyday words only, as par is worked out (wordlist-english levels 10 and 20).
   const words = new Set(
-    readFileSync("node_modules/word-list/words.txt", "utf8")
-      .split("\n")
+    ["english-words-10", "english-words-20", "british-words-10", "british-words-20"]
+      .flatMap(
+        (f) =>
+          JSON.parse(readFileSync(`node_modules/wordlist-english/${f}.json`, "utf8")) as string[],
+      )
       .filter((w) => /^[a-z]{4}$/.test(w)),
   );
   const prev = new Map<string, string | null>([[start, null]]);
@@ -57,12 +61,18 @@ test("the daily ladder: same puzzle for you both, no peeking until you've finish
   }
   await expect(a.getByText("Par. Perfect.")).toBeVisible({ timeout: 10000 });
   await expect(a.getByText("Not yet. We'll let them know.")).toBeVisible();
+  // No hints were used, so none are mentioned.
+  await expect(a.getByText(/hint/)).toHaveCount(0);
 
   // Theo sees she's done, but not her ladder, until he finishes his.
   const peek = await (await b.request.get(`/api/ladder?day=${puzzle.day}`)).json();
   expect(peek.theirs).toEqual({ done: true });
   await b.goto("/play/ladder");
   await expect(b.getByText("Nia has finished. Climb yours to see how they did.")).toBeVisible();
+  // Stuck? A hint fills in the next everyday word on a best route.
+  await b.getByRole("button", { name: "Show me a step" }).click();
+  await expect(b.getByLabel("Next word")).toHaveValue(path[1]!);
+  await expect(b.getByText(/· 1 hint/)).toBeVisible();
   // Handing in a broken ladder is refused by the server.
   const bad = await b.request.post("/api/ladder", {
     data: { day: puzzle.day, path: [puzzle.start, puzzle.target], seconds: 5 },

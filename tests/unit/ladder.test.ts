@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/supabase/admin", () => ({ supabaseAdmin: () => ({}) }));
-import { generateLadder, distances, COMMON } from "@/lib/server/ladder";
+import { generateLadder, distances, COMMON, everyday, hintStep } from "@/lib/server/ladder";
 import { ladderProblem, oneApart, parLine } from "@/lib/ladder";
 
 describe("daily ladder", () => {
@@ -18,9 +18,24 @@ describe("daily ladder", () => {
         expect(a.par).toBeGreaterThanOrEqual(3);
         expect(a.par).toBeLessThanOrEqual(5);
         expect(distances(a.start).get(a.target)).toBe(a.par);
+        // The par route, followed hint by hint, uses everyday words only.
+        const path = [a.start];
+        while (path.at(-1) !== a.target) {
+          const next = hintStep(path.at(-1)!, a.target);
+          expect(next, `${day}: stuck at ${path.at(-1)}`).not.toBeNull();
+          path.push(next!);
+        }
+        expect(path.length - 1).toBe(a.par);
+        for (const w of path) expect(everyday().has(w), `${day}: ${w}`).toBe(true);
       }
     },
   );
+  it("never counts on obscure words for par (WALK to LEAF went through WELK)", () => {
+    expect(everyday().has("welk")).toBe(false);
+    expect(everyday().has("walk") && everyday().has("leaf")).toBe(true);
+    const d = distances("walk").get("leaf");
+    expect(d === undefined || d > 4).toBe(true);
+  });
   it("checks every step", () => {
     const yes = () => true;
     expect(oneApart("love", "lose")).toBe(true);

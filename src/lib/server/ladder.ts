@@ -19,18 +19,31 @@ export const COMMON = (
   .split(" ")
   .filter((w) => /^[a-z]{4}$/.test(w));
 
+/**
+ * Everyday four-letter words: the most common levels of SCOWL (the word lists
+ * behind most spell checkers; wordlist-english, MIT), British spellings
+ * included. Par and hints only ever use these, so the best route never needs a
+ * word nobody knows. Players can still use any real word (isWord) and may beat par.
+ */
+const EVERYDAY_FILES = [
+  "english-words-10.json",
+  "english-words-20.json",
+  "british-words-10.json",
+  "british-words-20.json",
+];
 let graph: Set<string> | null = null;
-function words4(): Set<string> {
+export function everyday(): Set<string> {
   if (!graph) {
-    const file = join(process.cwd(), "node_modules", "word-list", "words.txt");
+    const dir = join(process.cwd(), "node_modules", "wordlist-english");
     graph = new Set(
-      readFileSync(file, "utf8")
-        .split("\n")
-        .filter((w) => /^[a-z]{4}$/.test(w)),
+      EVERYDAY_FILES.flatMap(
+        (f) => JSON.parse(readFileSync(join(dir, f), "utf8")) as string[],
+      ).filter((w) => /^[a-z]{4}$/.test(w)),
     );
   }
   return graph;
 }
+const words4 = everyday;
 
 function neighbours(w: string, set: Set<string>): string[] {
   const out: string[] = [];
@@ -44,7 +57,7 @@ function neighbours(w: string, set: Set<string>): string[] {
 
 const memo = new Map<string, Map<string, number>>();
 
-/** Shortest distance from `start` to every reachable word (kept per start word). */
+/** Shortest distance from `start` to every everyday word it can reach (kept per start word). */
 export function distances(start: string): Map<string, number> {
   const hit = memo.get(start);
   if (hit) return hit;
@@ -86,6 +99,18 @@ export function generateLadder(day: string) {
     }
   }
   return { start: "love", target: "kiss", par: distances("love").get("kiss") ?? 4 };
+}
+
+/**
+ * The next step from `from` towards `target` on a shortest everyday route, or
+ * null when there's no everyday route from there (an unusual word was used).
+ */
+export function hintStep(from: string, target: string): string | null {
+  if (from === target) return null;
+  const toTarget = distances(target);
+  const here = toTarget.get(from);
+  if (here === undefined) return null;
+  return neighbours(from, words4()).find((n) => toTarget.get(n) === here - 1) ?? null;
 }
 
 /** Today's ladder, made once and kept so it never changes under anyone. */

@@ -16,6 +16,7 @@ interface Result {
   path: string[];
   steps: number;
   seconds: number;
+  hints?: number;
 }
 interface Ladder {
   day: string;
@@ -91,6 +92,7 @@ function Climb({ data, partnerName }: { data: Ladder; partnerName: string }) {
   const [path, setPath] = useState<string[]>([data.start]);
   const [next, setNext] = useState("");
   const [busy, setBusy] = useState(false);
+  const [hints, setHints] = useState(0);
   const input = useRef<HTMLInputElement>(null);
   const last = path[path.length - 1]!;
   const now = useCoupleNow(1000);
@@ -117,6 +119,7 @@ function Climb({ data, partnerName }: { data: Ladder; partnerName: string }) {
         day: data.day,
         path: full,
         seconds: Math.round((Date.now() - startedAt) / 1000),
+        hints,
       }),
     });
     const d = await r.json().catch(() => ({}));
@@ -202,9 +205,29 @@ function Climb({ data, partnerName }: { data: Ladder; partnerName: string }) {
         >
           <ArrowUUpLeft size={16} aria-hidden /> Undo a step
         </Button>
-        <span className="text-faint text-sm">{path.length - 1} steps so far</span>
+        <Button
+          variant="text"
+          size="sm"
+          disabled={busy}
+          onClick={async () => {
+            const r = await fetch(`/api/ladder/hint?day=${data.day}&from=${last}`)
+              .then((x) => x.json())
+              .catch(() => null);
+            if (!r?.next)
+              return toast(`There's no everyday route on from ${last.toUpperCase()}. Undo a step.`);
+            setHints((n) => n + 1);
+            setNext(r.next);
+            input.current?.focus();
+          }}
+        >
+          Show me a step
+        </Button>
       </div>
       <Rung word={data.target} tone="target" />
+      <p className="text-faint m-0 text-center text-sm">
+        {path.length - 1} {path.length === 2 ? "step" : "steps"} so far
+        {hints ? ` · ${hints} ${hints === 1 ? "hint" : "hints"}` : ""}
+      </p>
     </>
   );
 }
@@ -242,6 +265,7 @@ function Finished({ data }: { data: Ladder }) {
           <div className="text-sm">
             <span className="mono">{r.steps}</span> steps ·{" "}
             <span className="mono">{clock(r.seconds)}</span>
+            {r.hints ? ` · ${r.hints} ${r.hints === 1 ? "hint" : "hints"}` : ""}
           </div>
         </>
       ) : (
@@ -254,7 +278,9 @@ function Finished({ data }: { data: Ladder }) {
       <div className="flex flex-col gap-1" role="status">
         <div className="display text-[32px] leading-tight">{parLine(mine.steps, data.par)}</div>
         <div className="text-muted text-base">
-          {mine.steps} steps in {clock(mine.seconds)}. Par was {data.par}.
+          {mine.steps} steps in {clock(mine.seconds)}
+          {mine.hints ? `, with ${mine.hints} ${mine.hints === 1 ? "hint" : "hints"}` : ""}. Par was{" "}
+          {data.par}.
           {theirs &&
             (theirs.steps === mine.steps
               ? " Level with " + partner.name + "."
@@ -281,7 +307,7 @@ function Finished({ data }: { data: Ladder }) {
             ? `${me.name}: ${parLine(mine.steps, data.par)}`
             : parLine(mine.steps, data.par),
           big: `${mine.steps} steps`,
-          sub: `Par ${data.par} · ${clock(mine.seconds)}${theirs ? ` · ${named ? partner.name : "them"} ${theirs.steps}` : ""}`,
+          sub: `Par ${data.par} · ${clock(mine.seconds)}${mine.hints ? ` · ${mine.hints} ${mine.hints === 1 ? "hint" : "hints"}` : ""}${theirs ? ` · ${named ? partner.name : "them"} ${theirs.steps}` : ""}`,
         })}
       />
     </>

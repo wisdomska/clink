@@ -725,14 +725,14 @@ isOneToOne: false
                   ]
                 },"ladder_results": {
                   Row: {
-                    "couple_id": string,"day": string,"finished_at": string,"path": (string)[],"seconds": number,"steps": number,"user_id": string
+                    "couple_id": string,"day": string,"finished_at": string,"hints": number,"path": (string)[],"seconds": number,"steps": number,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "couple_id": string,"day": string,"finished_at"?: string,"path": (string)[],"seconds": number,"steps": number,"user_id": string
+                    "couple_id": string,"day": string,"finished_at"?: string,"hints"?: number,"path": (string)[],"seconds": number,"steps": number,"user_id": string
                   }
                   Update: {
-                    "couple_id"?: string,"day"?: string,"finished_at"?: string,"path"?: (string)[],"seconds"?: number,"steps"?: number,"user_id"?: string
+                    "couple_id"?: string,"day"?: string,"finished_at"?: string,"hints"?: number,"path"?: (string)[],"seconds"?: number,"steps"?: number,"user_id"?: string
                   }
                   Relationships: [
                     {

@@ -25,7 +25,7 @@ export const GET = handler(async (req: NextRequest) => {
   const puzzle = await ladderFor(day);
   const { data: rows } = await supabaseAdmin()
     .from("ladder_results")
-    .select("user_id, path, steps, seconds")
+    .select("user_id, path, steps, seconds, hints")
     .eq("couple_id", coupleId)
     .eq("day", day);
   const mine = rows?.find((r) => r.user_id === user.id) ?? null;
@@ -35,10 +35,16 @@ export const GET = handler(async (req: NextRequest) => {
     start: puzzle.start,
     target: puzzle.target,
     par: puzzle.par,
-    mine: mine && { path: mine.path, steps: mine.steps, seconds: mine.seconds },
+    mine: mine && { path: mine.path, steps: mine.steps, seconds: mine.seconds, hints: mine.hints },
     theirs: theirs
       ? mine
-        ? { done: true, path: theirs.path, steps: theirs.steps, seconds: theirs.seconds }
+        ? {
+            done: true,
+            path: theirs.path,
+            steps: theirs.steps,
+            seconds: theirs.seconds,
+            hints: theirs.hints,
+          }
         : { done: true }
       : { done: false },
   });
@@ -51,6 +57,7 @@ const schema = z.object({
     .min(2)
     .max(MAX_STEPS + 1),
   seconds: z.number().int().min(0).max(86400),
+  hints: z.number().int().min(0).max(30).optional(),
 });
 
 /** Hand in your ladder: every step is checked here. One go a day. */
@@ -72,6 +79,7 @@ export const POST = handler(async (req) => {
     steps,
     // A person can't climb faster than about a second a step.
     seconds: Math.max(body.seconds, steps),
+    hints: body.hints ?? 0,
   });
   if (error?.code === "23505") throw deny(409, "already", "You've done today's ladder.");
   if (error) throw error;

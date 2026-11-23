@@ -107,6 +107,9 @@ importers:
       word-list:
         specifier: ^4.1.0
         version: 4.1.0
+      wordlist-english:
+        specifier: 1.2.1
+        version: 1.2.1
       zod:
         specifier: ^4.6.7
         version: 4.6.7
@@ -4322,6 +4325,9 @@ packages:
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
+
+  wordlist-english@1.2.1:
+    resolution: {integrity: sha512-vaiQQiu95UeON0WZFtiTrWfZmIiUd2rhrhMCBeEzwq3oTVzHCX8naGCqv/smSspE9kH2sN+E8lZyV0JZjqSzGw==}
 
   xml-name-validator@5.0.0:
     resolution: {integrity: sha512-EvGK8EJ3DhaHfbRlETOWAS5pO9MZITeauHKJyb8wyajUfQUenkIg2MvLDTZ4T/TgIcm3HU0TFBgWWboAZ30UHg==}
@@ -8540,6 +8546,8 @@ snapshots:
   word-list@4.1.0: {}
 
   word-wrap@1.2.5: {}
+
+  wordlist-english@1.2.1: {}
 
   xml-name-validator@5.0.0: {}
 
