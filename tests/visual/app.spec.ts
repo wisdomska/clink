@@ -28,6 +28,8 @@ const shot = async (p: Page) => {
       p.getByText(/\b(19|20)\d{2}\b/),
       p.getByText(/Today's ritual/),
       p.locator("#ritual-h"),
+      // Today's ladder: a different puzzle every day.
+      p.locator('a[href="/play/ladder"] .text-muted'),
     ],
   });
 };
@@ -76,5 +78,7 @@ test("looks the same: Play", async ({ couple }) => {
   await prepare(a);
   await a.goto("/play");
   await expect(a.getByRole("heading", { level: 1 }).first()).toBeVisible({ timeout: 20000 });
+  // The clock is pinned to another day, so the ladder card shows its steady default line.
+  await expect(a.getByRole("link", { name: /Daily ladder/ })).toBeVisible();
   await shot(a);
 });
