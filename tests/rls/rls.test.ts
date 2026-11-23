@@ -63,6 +63,7 @@ const COUPLE_SCOPED = [
   "challenges",
   "challenge_days",
   "couple_badges",
+  "streak_freezes",
   "letters",
   "capsules",
   "capsule_contents",
@@ -200,6 +201,7 @@ beforeAll(async () => {
     .from("game_moves")
     .insert({ game_id: g.data!.id, couple_id: c1, user_id: A.id, move: {} });
   await admin.from("game_secrets").insert({ game_id: g.data!.id, data: { words: ["moon"] } });
+  await admin.from("streak_freezes").insert({ couple_id: c1, day: "2026-11-13", used_by: A.id });
   await admin
     .from("watch_sessions")
     .insert({ couple_id: c1, video_id: "dQw4w9WgXcQ", created_by: A.id });

@@ -1247,6 +1247,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"streak_freezes": {
+                  Row: {
+                    "couple_id": string,"created_at": string,"day": string,"used_by": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "couple_id": string,"created_at"?: string,"day": string,"used_by": string
+                  }
+                  Update: {
+                    "couple_id"?: string,"created_at"?: string,"day"?: string,"used_by"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "streak_freezes_couple_id_fkey"
+      columns: ["couple_id"]
+isOneToOne: false
+      referencedRelation: "couples"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"timeline_entries": {
                   Row: {
                     "couple_id": string,"created_at": string,"created_by": string | null,"happened_on": string,"id": string,"kind": string,"media_id": string | null,"source_key": string | null,"title": string
@@ -1411,6 +1431,9 @@ isOneToOne: false
 "ritual_partner_answered":
 { Args: { "p_day": string }; Returns: boolean
                            },
+"streak_freeze_status":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "svc_admin_metrics":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -1488,6 +1511,9 @@ isOneToOne: false
                            },
 "svc_weekly_health":
 { Args: { "p_days"?: number }; Returns: Json
+                           },
+"use_streak_freeze":
+{ Args: { "p_day": string }; Returns: string
                            }
           }
           Enums: {
