@@ -19,6 +19,7 @@ test("admin portal: own sign-in, forced password, change email and password, sep
   // /admin asks for the admin login, not the Clink one.
   await p.goto("/admin");
   await expect(p).toHaveURL(/\/admin\/login/);
+  await p.waitForFunction(() => document.documentElement.dataset.hydrated === "true");
   await p.getByLabel("Admin email").fill(email);
   await p.getByLabel("Password", { exact: true }).fill("wrong-password-123");
   await p.getByRole("button", { name: "Sign in to admin" }).click();
@@ -54,6 +55,9 @@ test("admin portal: own sign-in, forced password, change email and password, sep
   await p.request.post("/api/admin/auth/logout");
   await ctx.clearCookies();
   await p.goto("/admin/login");
+  // This page isn't from the fixture: wait for it to be interactive, or the
+  // first click submits the form natively and reloads it empty.
+  await p.waitForFunction(() => document.documentElement.dataset.hydrated === "true");
   await p.getByLabel("Admin email").fill(newEmail);
   await p.getByLabel("Password", { exact: true }).fill("Boss-Own-Pass-2026");
   await p.getByRole("button", { name: "Sign in to admin" }).click();

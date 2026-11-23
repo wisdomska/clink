@@ -23,7 +23,7 @@ test("a gentle nudge: only after 12 hours, once per move", async ({ couple }) =>
   test.setTimeout(90_000);
   const { a } = couple;
   await a.goto("/play");
-  await a.getByRole("button", { name: "Start Four Up with Theo" }).click();
+  await a.getByRole("button", { name: "Play Four Up with Theo" }).click();
   await a.waitForURL(/\/play\/fourup\//);
   const id = a.url().split("/").pop()!;
   await a.getByRole("button", { name: /^Column 4/ }).click();

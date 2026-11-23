@@ -330,7 +330,7 @@ export function Lobby() {
                     <button
                       type="button"
                       onClick={() => play(type)}
-                      aria-label={`Start ${GAME_META[type].name} with ${partner.name}`}
+                      aria-label={`Play ${GAME_META[type].name} with ${partner.name}`}
                       className="press bg-accent text-on-accent flex h-11 cursor-pointer items-center gap-1 rounded-full border-0 px-4 text-sm font-bold"
                     >
                       <Plus size={16} weight="bold" aria-hidden /> Play

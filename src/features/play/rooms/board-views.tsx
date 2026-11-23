@@ -340,7 +340,7 @@ export function DraughtsView({
       <div
         className="rounded-card border-line mx-auto grid w-full max-w-[520px] overflow-hidden border"
         style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}
-        role="grid"
+        role="group"
         aria-label={`Draughts board, ${n} by ${n}`}
       >
         {order.map((sq) => {
@@ -351,23 +351,18 @@ export function DraughtsView({
           const selected = path[0] === sq || path.includes(sq);
           const target = nextSteps.has(sq) || (path.length > 0 && ends.has(sq));
           const wasLast = lastPath.includes(sq);
+          if (!dark)
+            return <div key={sq} aria-hidden className="aspect-square bg-[var(--board-light)]" />;
           return (
             <button
               key={sq}
               type="button"
-              tabIndex={dark ? 0 : -1}
-              disabled={!dark}
               onClick={() => tap(sq)}
-              aria-label={
-                dark
-                  ? `${p ? `${mine ? "Your" : "Their"} ${isKing(p) ? "king" : "piece"}` : "Empty"}${target ? ", move here" : selectable ? ", can move" : ""}`
-                  : undefined
-              }
+              aria-label={`${p ? `${mine ? "Your" : "Their"} ${isKing(p) ? "king" : "piece"}` : "Empty"}${target ? ", move here" : selectable ? ", can move" : ""}`}
               className={cn(
                 "relative flex aspect-square items-center justify-center",
-                dark ? "bg-[var(--board-dark)]" : "bg-[var(--board-light)]",
-                wasLast && dark && "bg-[var(--board-dark-last)]",
-                dark && "cursor-pointer",
+                "cursor-pointer bg-[var(--board-dark)]",
+                wasLast && "bg-[var(--board-dark-last)]",
               )}
             >
               {p ? (

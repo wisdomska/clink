@@ -10,7 +10,7 @@ test("Four Up: a slow game between you two, to a win", async ({ couple }) => {
   test.setTimeout(120_000);
   const { a, b } = couple;
   await a.goto("/play");
-  await a.getByRole("button", { name: "Start Four Up with Theo" }).click();
+  await a.getByRole("button", { name: "Play Four Up with Theo" }).click();
   await a.waitForURL(/\/play\/fourup\/[0-9a-f-]{36}$/);
   const url = a.url();
   await expect(a.getByText("Your move", { exact: true })).toBeVisible();
@@ -52,7 +52,7 @@ test("Four Up: a slow game between you two, to a win", async ({ couple }) => {
   expect(size).toBeGreaterThan(20_000);
   // The lobby keeps it in the history, not as a game still going.
   await a.goto("/play");
-  await expect(a.getByRole("button", { name: "Start Four Up with Theo" })).toBeVisible();
+  await expect(a.getByRole("button", { name: "Play Four Up with Theo" })).toBeVisible();
   await expect(a.getByText("You 1 · Theo 0")).toBeVisible();
   await expect(a.locator('a[href^="/play/fourup/"]:not([href$="/practice"])')).toHaveCount(0);
 });
@@ -61,7 +61,7 @@ test("Oware: sow, see it on the other side, and agree a draw", async ({ couple }
   test.setTimeout(90_000);
   const { a, b } = couple;
   await a.goto("/play");
-  await a.getByRole("button", { name: "Start Oware with Theo" }).click();
+  await a.getByRole("button", { name: "Play Oware with Theo" }).click();
   await a.waitForURL(/\/play\/oware\//);
   const path = new URL(a.url()).pathname;
   await a.getByRole("button", { name: /^Your pit 3, 4 seeds, tap to sow/ }).click();
@@ -83,10 +83,10 @@ test("Draughts: pick a piece, then a square; the move reaches your partner", asy
   test.setTimeout(90_000);
   const { a, b } = couple;
   await a.goto("/play");
-  await a.getByRole("button", { name: "Start Draughts with Theo" }).click();
+  await a.getByRole("button", { name: "Play Draughts with Theo" }).click();
   await a.waitForURL(/\/play\/draughts\//);
   const path = new URL(a.url()).pathname;
-  await expect(a.getByRole("grid", { name: "Draughts board, 10 by 10" })).toBeVisible();
+  await expect(a.getByRole("group", { name: "Draughts board, 10 by 10" })).toBeVisible();
   await a.getByRole("button", { name: "Your piece, can move" }).first().click();
   await a
     .getByRole("button", { name: /move here/ })
@@ -133,7 +133,7 @@ test("practice against Clink, even before linking", async ({ page }) => {
     await page.evaluate(() => (window as unknown as { __thuds: number }).__thuds),
   ).toBeGreaterThanOrEqual(2);
   await page.goto("/play/draughts/practice");
-  await expect(page.getByRole("grid", { name: "Draughts board, 10 by 10" })).toBeVisible();
+  await expect(page.getByRole("group", { name: "Draughts board, 10 by 10" })).toBeVisible();
   await page.getByRole("button", { name: "8 by 8" }).click();
-  await expect(page.getByRole("grid", { name: "Draughts board, 8 by 8" })).toBeVisible();
+  await expect(page.getByRole("group", { name: "Draughts board, 8 by 8" })).toBeVisible();
 });
