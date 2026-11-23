@@ -106,6 +106,8 @@ jobs:
           } > .env.local
       - run: pnpm test:rls
       - run: pnpm build
+      # No secret may reach the code browsers download (service key above all).
+      - run: pnpm check:bundle
       - run: pnpm exec playwright install --with-deps chromium
       - name: ffmpeg (the video send test makes its own clip)
         # Ubuntu's mirrors sometimes drop a download: try a few times.
