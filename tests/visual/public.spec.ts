@@ -4,7 +4,7 @@ import { test, expect } from "@playwright/test";
 // file and are always rendered in Playwright's Docker image: run
 // `scripts/visual.sh` to compare, or `scripts/visual.sh --update-snapshots`
 // after an intended design change.
-const ROUTES = ["/", "/login", "/signup", "/privacy", "/help"];
+const ROUTES = ["/", "/login", "/signup", "/privacy", "/help", "/games", "/games/oware"];
 
 for (const route of ROUTES) {
   test(`looks the same: ${route}`, async ({ page }) => {

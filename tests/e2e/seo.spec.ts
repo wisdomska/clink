@@ -16,7 +16,19 @@ test("robots, sitemap and llms.txt describe the public site and keep the app pri
 
   const sitemap = await (await request.get("/sitemap.xml")).text();
   const urls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]!).pathname);
-  expect(urls.sort()).toEqual(["/", "/privacy", "/safety", "/terms"]);
+  for (const p of [
+    "/",
+    "/games",
+    "/games/oware",
+    "/games/draughts",
+    "/privacy",
+    "/safety",
+    "/terms",
+  ])
+    expect(urls).toContain(p);
+  // Nothing signed-in or private is ever listed.
+  for (const u of urls)
+    expect(u).not.toMatch(/^\/(api|admin|dark|us|chat|play|plans|keep|settings|link)(\/|$)/);
 
   const llms = await request.get("/llms.txt");
   expect(llms.headers()["content-type"]).toContain("text/plain");

@@ -55,11 +55,20 @@ function Mark({ size }: { size: number }) {
   );
 }
 
+/** A piece of the 3D art in /public/art as a PNG data URL (satori can't read webp). */
+async function artPng(name: string) {
+  const sharp = (await import("sharp")).default;
+  const webp = await readFile(path.join(process.cwd(), "public/art", `${name}.webp`));
+  const png = await sharp(webp).resize(320, 320).png().toBuffer();
+  return `data:image/png;base64,${png.toString("base64")}`;
+}
+
 export async function renderOg({
   eyebrow,
   title,
   body,
   people = false,
+  art,
 }: {
   /** Only there to change the image URL when the design changes (see the route file). */
   version?: number;
@@ -67,11 +76,14 @@ export async function renderOg({
   title: string;
   body?: string;
   people?: boolean;
+  /** A file name in /public/art, shown on the right. */
+  art?: string;
 }) {
-  const [f, ama, theo] = await Promise.all([
+  const [f, ama, theo, pic] = await Promise.all([
     fonts(),
     people ? memoji("ama-facing.png") : null,
     people ? memoji("theo.png") : null,
+    art ? artPng(art) : null,
   ]);
   return new ImageResponse(
     <div
@@ -104,7 +116,7 @@ export async function renderOg({
             display: "flex",
             flexDirection: "column",
             gap: 18,
-            maxWidth: people ? 500 : 960,
+            maxWidth: people ? 500 : pic ? 700 : 960,
           }}
         >
           {eyebrow && (
@@ -125,6 +137,16 @@ export async function renderOg({
         </div>
       </div>
       {people && ama && theo && <Pair ama={ama} theo={theo} />}
+      {pic && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={pic}
+          width={320}
+          height={320}
+          alt=""
+          style={{ position: "absolute", right: 72, top: 155 }}
+        />
+      )}
     </div>,
     { ...OG_SIZE, fonts: f },
   );

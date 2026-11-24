@@ -29,6 +29,8 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   typedRoutes: false,
   outputFileTracingIncludes: {
+    // Share images for the public game pages draw the game's 3D art.
+    "/games/**": ["./public/art/*.webp"],
     "/api/games/*": ["./node_modules/word-list/words.txt"],
     "/api/ladder": [
       "./node_modules/word-list/words.txt",

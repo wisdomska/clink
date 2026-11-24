@@ -1,6 +1,7 @@
 import Link from "@/components/ui/link";
 import { Logo } from "@/components/brand/logo";
 import { CtaLink } from "./cta-link";
+import { EXPLORE } from "@/lib/seo";
 
 /** Sticky landing bar: logo home, sign in, get started. One line at every width. */
 export function SiteHeader() {
@@ -11,6 +12,15 @@ export function SiteHeader() {
           <Logo size={24} />
         </Link>
         <nav aria-label="Account" className="flex items-center gap-2">
+          {EXPLORE.slice(0, 2).map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className="text-muted hover:text-text flex h-11 items-center px-2 text-sm font-medium max-md:hidden"
+            >
+              {l.label}
+            </Link>
+          ))}
           <CtaLink href="/login" variant="secondary" size="sm">
             Sign in
           </CtaLink>

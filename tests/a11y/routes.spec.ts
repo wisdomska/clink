@@ -32,7 +32,19 @@ async function scan(page: Page, route: string) {
   expect(bad, `${route}\n${report}`).toEqual([]);
 }
 
-const PUBLIC = ["/", "/login", "/signup", "/privacy", "/terms", "/safety", "/help", "/offline"];
+const PUBLIC = [
+  "/",
+  "/login",
+  "/signup",
+  "/privacy",
+  "/terms",
+  "/safety",
+  "/help",
+  "/offline",
+  "/games",
+  "/games/oware",
+  "/games/draw-and-guess",
+];
 const APP = [
   "/us",
   "/us/countdowns",

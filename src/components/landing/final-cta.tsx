@@ -1,4 +1,5 @@
 import Link from "@/components/ui/link";
+import { EXPLORE } from "@/lib/seo";
 import { LogoMark, Logo } from "@/components/brand/logo";
 import { CtaLink } from "./cta-link";
 
@@ -44,6 +45,17 @@ export function SiteFooter() {
           <Logo size={22} />
           <p className="text-faint mt-3 mb-0 text-sm">Made for two. Adults only.</p>
         </div>
+        <nav aria-label="Explore">
+          <ul className="m-0 flex list-none flex-wrap gap-x-6 gap-y-1 p-0 text-sm font-medium">
+            {EXPLORE.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className="text-muted hover:text-text flex h-11 items-center">
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
         <nav aria-label="Legal">
           <ul className="m-0 flex list-none flex-wrap gap-x-6 gap-y-1 p-0 text-sm font-medium">
             <li>
