@@ -1,17 +1,39 @@
 import { siteUrl } from "@/lib/site";
 import { PUBLIC_GAMES } from "@/lib/public-games";
+import { GUIDES } from "@/lib/guides";
 
 /** Only the real site is indexed: previews and local runs ask crawlers to stay out. */
 export const indexable = () =>
   process.env.VERCEL_ENV === "production" || process.env.SEO_INDEX === "1";
 
 /** Public pages worth a link in the header (first two) and footer. */
-export const EXPLORE = [{ href: "/games", label: "Games" }] as const;
+export const EXPLORE = [
+  { href: "/games", label: "Games" },
+  { href: "/guides", label: "Guides" },
+  { href: "/long-distance", label: "Long distance" },
+  { href: "/faq", label: "FAQ" },
+  { href: "/about", label: "About" },
+] as const;
 
 /** The public pages, for the sitemap and llms.txt. Everything else is private. */
 export const PUBLIC_PAGES = [
   { path: "/", title: "Clink: Made for two", updated: "2026-11-24", priority: 1 },
   { path: "/games", title: "Games for couples", updated: "2026-11-24", priority: 0.9 },
+  {
+    path: "/long-distance",
+    title: "For long distance couples",
+    updated: "2026-11-24",
+    priority: 0.9,
+  },
+  { path: "/guides", title: "Guides for couples", updated: "2026-11-24", priority: 0.8 },
+  ...GUIDES.map((g) => ({
+    path: `/guides/${g.slug}`,
+    title: g.title,
+    updated: g.updated,
+    priority: 0.7,
+  })),
+  { path: "/faq", title: "FAQ", updated: "2026-11-24", priority: 0.7 },
+  { path: "/about", title: "About Clink", updated: "2026-11-24", priority: 0.5 },
   ...PUBLIC_GAMES.map((g) => ({
     path: `/games/${g.slug}`,
     title: g.name,

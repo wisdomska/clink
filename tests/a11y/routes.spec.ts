@@ -44,6 +44,11 @@ const PUBLIC = [
   "/games",
   "/games/oware",
   "/games/draw-and-guess",
+  "/guides",
+  "/guides/long-distance-date-ideas",
+  "/long-distance",
+  "/faq",
+  "/about",
 ];
 const APP = [
   "/us",

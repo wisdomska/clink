@@ -14,7 +14,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   return renderOg({
     eyebrow: `${g.mode} game for two`,
     title: g.name,
-    body: g.bestFor,
+    body: `Best for: ${g.bestFor.charAt(0).toLowerCase()}${g.bestFor.slice(1)}`,
     art: g.art,
   });
 }

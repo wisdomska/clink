@@ -111,7 +111,7 @@ export function Section({
 }
 
 /** Questions and answers, shown openly (no accordions) so every answer is readable and quotable. */
-export function QA({ items }: { items: { q: string; a: string }[] }) {
+export function QA({ items }: { items: readonly { q: string; a: string }[] }) {
   return (
     <dl className="m-0 flex flex-col gap-5">
       {items.map((f) => (
