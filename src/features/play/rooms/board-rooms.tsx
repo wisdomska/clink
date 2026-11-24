@@ -11,6 +11,8 @@ import type { FourUpBoard } from "../engines/board/fourup";
 import { sizeOf, type DraughtsBoard } from "../engines/board/draughts";
 import { waited } from "../board-line";
 import { NudgeButton } from "./nudge";
+import { HowToPlay } from "./how-to-play";
+import { endingLine } from "../board-copy";
 import { GameRecord } from "../record";
 import { RoomHeader, sendMove, FinalScore, BackToLobby, type GameRow } from "./shared";
 import { DraughtsView, FourUpView, OwareView, useBoardSounds, type Sides } from "./board-views";
@@ -59,7 +61,18 @@ export function BoardRoom({ game }: { game: GameRow }) {
             mine={s.kind === "fourup" ? (game.winner_id === me.id ? 1 : 0) : mine}
             theirs={s.kind === "fourup" ? (game.winner_id === partner.id ? 1 : 0) : theirs}
           />
-          {s.reason && <p className="text-muted m-0 -mt-1 text-sm">Ended by {s.reason}.</p>}
+          {!(s as { forfeitBy?: string }).forfeitBy && (
+            <p className="text-muted m-0 -mt-1 text-base">
+              {endingLine(
+                s.kind,
+                s.board,
+                mySeat,
+                game.winner_id ? ((s.seats[game.winner_id] ?? 0) as 0 | 1) : null,
+                partner.name,
+                s.reason,
+              )}
+            </p>
+          )}
         </>
       ) : (
         <div className="flex flex-col gap-1" role="status" aria-live="polite">
@@ -142,16 +155,19 @@ export function BoardRoom({ game }: { game: GameRow }) {
         </div>
       )}
 
-      {active && !s.drawOffer && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="self-start"
-          onClick={() => send({ offerDraw: true })}
-        >
-          <Handshake size={16} aria-hidden /> Offer a draw
-        </Button>
-      )}
+      <div className="flex flex-wrap items-center gap-2">
+        <HowToPlay kind={s.kind} />
+        {active && !s.drawOffer && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="self-start"
+            onClick={() => send({ offerDraw: true })}
+          >
+            <Handshake size={16} aria-hidden /> Offer a draw
+          </Button>
+        )}
+      </div>
       {active && !myTurn && <NudgeButton gameId={game.id} updatedAt={game.updated_at} />}
       {active && s.drawOffer === me.id && (
         <p className="text-muted m-0 text-sm">

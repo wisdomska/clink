@@ -29,7 +29,14 @@ export function searchBest<P, M extends NonNullable<unknown>>(
   g: SearchGame<P, M>,
   root: P,
   seat: number,
-  o: { budgetMs: number; maxDepth: number; rng: Rng; qDepth?: number },
+  o: {
+    budgetMs: number;
+    maxDepth: number;
+    rng: Rng;
+    qDepth?: number;
+    /** pick at random among moves scoring within this much of the best (variety) */
+    margin?: number;
+  },
 ): M {
   const deadline = now() + o.budgetMs;
   const qDepth = o.qDepth ?? 0;
@@ -102,18 +109,26 @@ export function searchBest<P, M extends NonNullable<unknown>>(
     return v;
   };
 
+  // Scores of every root move at the deepest depth fully searched (exact,
+  // not cut off, so near-best moves can be told apart for variety).
+  let scored: Array<{ m: M; v: number }> = [];
   for (let depth = 1; depth <= o.maxDepth; depth++) {
     try {
       let alpha = -Infinity;
       let bestHere = ordered[0]!;
+      const here: Array<{ m: M; v: number }> = [];
       for (const m of ordered) {
-        const c = ab(g.play(root, m), depth - 1, alpha, Infinity, 1);
+        const c = o.margin
+          ? ab(g.play(root, m), depth - 1, -Infinity, Infinity, 1)
+          : ab(g.play(root, m), depth - 1, alpha, Infinity, 1);
+        here.push({ m, v: c });
         if (c > alpha) {
           alpha = c;
           bestHere = m;
         }
       }
       best = bestHere;
+      scored = here;
       ordered = [bestHere, ...ordered.filter((m) => m !== bestHere)];
       if (Math.abs(alpha) >= WIN - 1000) break;
     } catch (e) {
@@ -121,6 +136,14 @@ export function searchBest<P, M extends NonNullable<unknown>>(
       throw e;
     }
     if (now() > deadline) break;
+  }
+  if (o.margin && scored.length > 1) {
+    const top = Math.max(...scored.map((x) => x.v));
+    // Never trade a forced win, or walk into a forced loss, for variety.
+    if (Math.abs(top) < WIN - 1000) {
+      const near = scored.filter((x) => x.v >= top - o.margin! && x.v > -WIN + 1000);
+      if (near.length) return o.rng.pick(near).m;
+    }
   }
   return best;
 }

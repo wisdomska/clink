@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9743f"/><stop offset="1" stop-color="#7a4520"/></linearGradient>
+    <linearGradient id="woodSide" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5e3215"/><stop offset="1" stop-color="#3d1f0b"/></linearGradient>
+    <radialGradient id="pit" cx="50%" cy="35%" r="65%"><stop offset="0" stop-color="#2a140a"/><stop offset="1" stop-color="#5a3016"/></radialGradient>
+    <radialGradient id="seed" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#e9e2d6"/><stop offset=".55" stop-color="#9b8f80"/><stop offset="1" stop-color="#5a5046"/></radialGradient>
+    <radialGradient id="shadow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#000" stop-opacity=".45"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+    <g id="s"><ellipse rx="7" ry="6" fill="url(#seed)"/><ellipse cx="-2" cy="-2" rx="2.5" ry="1.6" fill="#fff" opacity=".6"/></g>
+  </defs>
+  <ellipse cx="128" cy="210" rx="112" ry="16" fill="url(#shadow)"/>
+  <path d="M16 112 q0 -42 42 -42 h140 q42 0 42 42 v34 q0 42 -42 42 h-140 q-42 0 -42 -42 z" fill="url(#woodSide)" transform="translate(0,12)"/>
+  <path d="M16 112 q0 -42 42 -42 h140 q42 0 42 42 v34 q0 42 -42 42 h-140 q-42 0 -42 -42 z" fill="url(#wood)"/>
+  <path d="M40 84 h176" stroke="#e3a36b" stroke-width="5" stroke-linecap="round" opacity=".45"/>
+  <!-- 2 x 3 pits -->
+  <g>
+    <ellipse cx="74" cy="104" rx="30" ry="19" fill="url(#pit)"/><ellipse cx="128" cy="104" rx="30" ry="19" fill="url(#pit)"/><ellipse cx="182" cy="104" rx="30" ry="19" fill="url(#pit)"/>
+    <ellipse cx="74" cy="154" rx="30" ry="19" fill="url(#pit)"/><ellipse cx="128" cy="154" rx="30" ry="19" fill="url(#pit)"/><ellipse cx="182" cy="154" rx="30" ry="19" fill="url(#pit)"/>
+  </g>
+  <!-- seeds -->
+  <use href="#s" x="66" y="104"/><use href="#s" x="80" y="100"/><use href="#s" x="76" y="110"/>
+  <use href="#s" x="120" y="100"/><use href="#s" x="134" y="106"/><use href="#s" x="124" y="110"/><use href="#s" x="136" y="97"/>
+  <use href="#s" x="182" y="104"/>
+  <use href="#s" x="68" y="152"/><use href="#s" x="80" y="157"/>
+  <use href="#s" x="122" y="150"/><use href="#s" x="134" y="155"/><use href="#s" x="128" y="160"/><use href="#s" x="117" y="159"/><use href="#s" x="138" y="146"/>
+  <use href="#s" x="176" y="150"/><use href="#s" x="188" y="157"/><use href="#s" x="184" y="147"/>
+</svg>

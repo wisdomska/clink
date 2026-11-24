@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <radialGradient id="red" cx="40%" cy="30%" r="80%"><stop offset="0" stop-color="#ff8a9e"/><stop offset=".55" stop-color="#e8345a"/><stop offset="1" stop-color="#9c1534"/></radialGradient>
+    <linearGradient id="redSide" x1="0" x2="1"><stop offset="0" stop-color="#8e1230"/><stop offset=".5" stop-color="#c42247"/><stop offset="1" stop-color="#7a0f29"/></linearGradient>
+    <radialGradient id="cream" cx="40%" cy="30%" r="80%"><stop offset="0" stop-color="#fff6e6"/><stop offset=".6" stop-color="#f2d6a8"/><stop offset="1" stop-color="#c79d62"/></radialGradient>
+    <linearGradient id="creamSide" x1="0" x2="1"><stop offset="0" stop-color="#b98b4f"/><stop offset=".5" stop-color="#e3c18c"/><stop offset="1" stop-color="#a8793f"/></linearGradient>
+    <radialGradient id="shadow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#000" stop-opacity=".45"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#e0a43a"/></linearGradient>
+  </defs>
+  <ellipse cx="150" cy="214" rx="96" ry="18" fill="url(#shadow)"/>
+  <!-- a cream piece behind -->
+  <g transform="translate(-6,6)">
+    <path d="M70 172 v18 a52 20 0 0 0 104 0 v-18 z" fill="url(#creamSide)"/>
+    <ellipse cx="122" cy="172" rx="52" ry="20" fill="url(#cream)"/>
+    <ellipse cx="122" cy="172" rx="36" ry="13" fill="none" stroke="#c9a06a" stroke-width="3" opacity=".7"/>
+  </g>
+  <!-- a crowned red king: two pieces stacked -->
+  <path d="M92 176 v22 a62 24 0 0 0 124 0 v-22 z" fill="url(#redSide)"/>
+  <ellipse cx="154" cy="176" rx="62" ry="24" fill="url(#red)"/>
+  <path d="M92 142 v22 a62 24 0 0 0 124 0 v-22 z" fill="url(#redSide)"/>
+  <ellipse cx="154" cy="142" rx="62" ry="24" fill="url(#red)"/>
+  <ellipse cx="154" cy="142" rx="44" ry="16" fill="none" stroke="#ff9fb1" stroke-width="3" opacity=".75"/>
+  <!-- crown -->
+  <path d="M128 140 l6 -26 l13 15 l7 -21 l7 21 l13 -15 l6 26 z" fill="url(#gold)" stroke="#b07a1f" stroke-width="2" stroke-linejoin="round"/>
+  <ellipse cx="148" cy="128" rx="14" ry="4" fill="#fff" opacity=".35"/>
+  <ellipse cx="132" cy="134" rx="22" ry="7" fill="#fff" opacity=".18"/>
+</svg>

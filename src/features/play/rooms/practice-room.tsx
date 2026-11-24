@@ -28,6 +28,8 @@ import {
 import { BOT_LEVELS, draughtsBot, fourupBot, owareBot, type BotLevel } from "../engines/board/bots";
 import { makeRng } from "../engines/board/rng";
 import { DraughtsView, FourUpView, OwareView, useBoardSounds } from "./board-views";
+import { HowToPlay } from "./how-to-play";
+import { endingLine } from "../board-copy";
 
 type Pos = OwareBoard | FourUpBoard | DraughtsBoard;
 const LEVEL_LABEL: Record<BotLevel, string> = { easy: "Easy", medium: "Medium", hard: "Hard" };
@@ -78,15 +80,18 @@ export function PracticeRoom({ kind }: { kind: BoardType }) {
   // Clink's move: a short pause so it reads as a reply, then think.
   useEffect(() => {
     if (over || turnOf(kind, pos) !== botSeat) return;
-    timer.current = setTimeout(() => {
-      const move =
-        kind === "oware"
-          ? owareBot(pos as OwareBoard, level, rng)
-          : kind === "fourup"
-            ? fourupBot(pos as FourUpBoard, level, rng)
-            : draughtsBot(pos as DraughtsBoard, level, rng);
-      setPos((p) => play(kind, p, botSeat, move));
-    }, 450);
+    timer.current = setTimeout(
+      () => {
+        const move =
+          kind === "oware"
+            ? owareBot(pos as OwareBoard, level, rng)
+            : kind === "fourup"
+              ? fourupBot(pos as FourUpBoard, level, rng)
+              : draughtsBot(pos as DraughtsBoard, level, rng);
+        setPos((p) => play(kind, p, botSeat, move));
+      },
+      level === "hard" ? 150 : 450,
+    ); // hard spends the pause thinking
     return () => clearTimeout(timer.current);
   }, [pos, kind, level, botSeat, over, rng]);
 
@@ -172,6 +177,11 @@ export function PracticeRoom({ kind }: { kind: BoardType }) {
         <div className={cn("display text-[30px] leading-tight", thinking && "text-muted")}>
           {headline}
         </div>
+        {over && (
+          <div className="text-text text-base">
+            {endingLine(kind, pos, mySeat, result ?? null, "Clink")}
+          </div>
+        )}
         {score && <div className="text-muted text-sm">{score}</div>}
       </div>
 
@@ -203,13 +213,22 @@ export function PracticeRoom({ kind }: { kind: BoardType }) {
         />
       )}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Button variant={over ? "primary" : "ghost"} onClick={() => restart({ swap: true })}>
           <ArrowCounterClockwise size={18} aria-hidden />
           {over ? "Play again" : "Start over"}
         </Button>
         <span className="text-faint self-center text-sm">
-          {youStart ? "You start this game." : "Clink starts this game."}
+          {over
+            ? youStart
+              ? "Clink starts the next one."
+              : "You start the next one."
+            : youStart
+              ? "You started this game."
+              : "Clink started this game."}
+        </span>
+        <span className="ml-auto">
+          <HowToPlay kind={kind} />
         </span>
       </div>
     </div>
