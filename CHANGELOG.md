@@ -4,6 +4,10 @@ All notable changes to Clink. Versions follow [Semantic Versioning](https://semv
 
 ## [Unreleased]
 
+### Changed
+
+- Faster landing and public pages on phones. The landing animations (the clinking hero, the demo, the statement and the product tour) and the logo now run in CSS instead of an animation library, so public pages download about 60 KB less script and the hero starts moving with the first paint. Looping animations pause while off screen, sections below the fold hydrate separately, and the mono font is subset to Latin (51 KB to 24 KB). Same look and motion, still for reduced motion.
+
 ## [1.3.0] - 2026-11-15
 
 ### Added

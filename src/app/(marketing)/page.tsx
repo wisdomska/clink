@@ -13,6 +13,7 @@ import { Faq } from "@/components/landing/faq";
 import { StructuredData } from "@/components/landing/structured-data";
 import { FinalCta, SiteFooter } from "@/components/landing/final-cta";
 import { RevealController } from "@/components/landing/reveal-controller";
+import { Fold } from "@/components/landing/fold";
 import "@/components/landing/landing.css";
 
 export const metadata: Metadata = {
@@ -72,46 +73,60 @@ export default function Landing() {
       <main>
         <Hero />
         <MomentsMarquee />
-        <Statement />
+        <Fold>
+          <Statement />
+        </Fold>
 
-        <section
-          aria-labelledby="tour-title"
-          className="mx-auto max-w-[1440px] px-4 pb-24 md:px-8 md:pb-36 xl:px-12"
-        >
-          <h2
-            id="tour-title"
-            data-reveal
-            className="display m-0 mb-12 max-w-[16ch] text-[clamp(2.5rem,5.5vw,4.75rem)] leading-[0.98] tracking-[-0.03em] lg:mb-4"
+        <Fold>
+          <section
+            aria-labelledby="tour-title"
+            className="mx-auto max-w-[1440px] px-4 pb-24 md:px-8 md:pb-36 xl:px-12"
           >
-            Built for the hours between visits.
-          </h2>
-          <ProductTour steps={TOUR} />
-        </section>
+            <h2
+              id="tour-title"
+              data-reveal
+              className="display m-0 mb-12 max-w-[16ch] text-[clamp(2.5rem,5.5vw,4.75rem)] leading-[0.98] tracking-[-0.03em] lg:mb-4"
+            >
+              Built for the hours between visits.
+            </h2>
+            <ProductTour steps={TOUR} />
+          </section>
+        </Fold>
 
-        <section aria-labelledby="try-title" className="border-line bg-s1/40 border-y">
-          <div className="mx-auto max-w-[1440px] px-4 py-24 md:px-8 md:py-32 xl:px-12">
-            <ClinkDemo />
-          </div>
-        </section>
+        <Fold>
+          <section aria-labelledby="try-title" className="border-line bg-s1/40 border-y">
+            <div className="mx-auto max-w-[1440px] px-4 py-24 md:px-8 md:py-32 xl:px-12">
+              <ClinkDemo />
+            </div>
+          </section>
+        </Fold>
 
-        <section
-          aria-labelledby="more-title"
-          className="mx-auto max-w-[1440px] px-4 pt-24 md:px-8 md:pt-36 xl:px-12"
-        >
-          <h2
-            id="more-title"
-            data-reveal
-            className="display m-0 mb-10 max-w-[18ch] text-[clamp(2.5rem,5.5vw,4.75rem)] leading-[0.98] tracking-[-0.03em] md:mb-14"
+        <Fold>
+          <section
+            aria-labelledby="more-title"
+            className="mx-auto max-w-[1440px] px-4 pt-24 md:px-8 md:pt-36 xl:px-12"
           >
-            And the small things that add up.
-          </h2>
-          <FeatureBento />
-        </section>
+            <h2
+              id="more-title"
+              data-reveal
+              className="display m-0 mb-10 max-w-[18ch] text-[clamp(2.5rem,5.5vw,4.75rem)] leading-[0.98] tracking-[-0.03em] md:mb-14"
+            >
+              And the small things that add up.
+            </h2>
+            <FeatureBento />
+          </section>
+        </Fold>
 
-        <Trust />
-        <Faq />
+        <Fold>
+          <Trust />
+        </Fold>
+        <Fold>
+          <Faq />
+        </Fold>
         <StructuredData />
-        <FinalCta />
+        <Fold>
+          <FinalCta />
+        </Fold>
       </main>
       <SiteFooter />
     </div>

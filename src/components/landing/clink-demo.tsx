@@ -1,8 +1,8 @@
 "use client";
 import { useRef, useState } from "react";
 import { Portrait, SKY } from "./portrait";
-import { AnimatePresence, motion } from "motion/react";
-import { Heart } from "@phosphor-icons/react";
+import { Heart } from "@phosphor-icons/react/dist/ssr";
+import { cn } from "@/components/ui/cn";
 import { Flutes } from "./flutes";
 import { useStill } from "./use-still";
 import { haptic, playSound } from "@/lib/feedback";
@@ -16,7 +16,9 @@ function reply(n: number) {
 
 /**
  * Try the core gesture: tap the glasses, they clink, a heart crosses the
- * room and Theo's side reacts. Vibrates where the device allows.
+ * room and Theo's side reacts. Vibrates where the device allows. Each tap
+ * remounts the animated pieces (keyed by the count), which replays their CSS
+ * animations (landing.css, "demo").
  */
 export function ClinkDemo() {
   const [count, setCount] = useState(0);
@@ -81,71 +83,52 @@ export function ClinkDemo() {
 
         {/* Theo: his portrait bounces when the clink lands. */}
         <div className="absolute right-5 bottom-5 flex flex-col items-end gap-2" aria-hidden>
-          <motion.div
-            key={count}
-            ref={theo}
-            initial={still || count === 0 ? false : { scale: 1 }}
-            animate={still || count === 0 ? {} : { scale: [1, 1, 1.14, 1], rotate: [0, 0, -6, 0] }}
-            transition={{ duration: 0.9, times: [0, 0.55, 0.75, 1] }}
-            style={{ transformOrigin: "50% 100%" }}
-          >
+          <div key={count} ref={theo} className={cn(!still && count > 0 && "lp-bounce")}>
             <Portrait
               who="theo"
               src="/memoji/m6-hearteyes.webp"
               className="h-[72px] w-[72px] sm:h-[88px] sm:w-[88px]"
               sizes="112px"
             />
-          </motion.div>
+          </div>
           <span className="text-text text-sm font-bold">Theo</span>
         </div>
 
-        <AnimatePresence>
-          {count > 0 && (
-            <motion.div
-              key={count}
-              aria-hidden
-              className="bg-s3/90 border-line text-text absolute right-5 bottom-[132px] flex items-center gap-1.5 rounded-full border py-1.5 pr-3 pl-2 text-sm font-medium backdrop-blur-sm sm:bottom-[148px]"
-              initial={still ? false : { opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0, transition: { delay: still ? 0 : 0.6, duration: 0.3 } }}
-              exit={{ opacity: 0, transition: { duration: 0.12 } }}
-            >
-              <span className="bg-accent text-on-accent flex h-5 w-5 items-center justify-center rounded-full">
-                <Heart size={12} weight="fill" />
-              </span>
-              {reply(count)}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {count > 0 && (
+          <div
+            key={count}
+            aria-hidden
+            className={cn(
+              "bg-s3/90 border-line text-text absolute right-5 bottom-[132px] flex items-center gap-1.5 rounded-full border py-1.5 pr-3 pl-2 text-sm font-medium backdrop-blur-sm sm:bottom-[148px]",
+              !still && "lp-reply",
+            )}
+          >
+            <span className="bg-accent text-on-accent flex h-5 w-5 items-center justify-center rounded-full">
+              <Heart size={12} weight="fill" />
+            </span>
+            {reply(count)}
+          </div>
+        )}
 
         {/* The button, centred over the seam */}
         <div className="absolute inset-0 flex items-center justify-center pb-10">
           <div className="relative">
             {count > 0 && !still && (
-              <motion.span
+              <span
                 key={`r${count}`}
                 aria-hidden
-                className="border-accent absolute inset-0 rounded-full border-2"
-                initial={{ scale: 1, opacity: 0.9 }}
-                animate={{ scale: 1.45, opacity: 0 }}
-                transition={{ duration: 0.7, ease: "easeOut" }}
+                className="lp-ring border-accent absolute inset-0 rounded-full border-2"
               />
             )}
             {count > 0 && !still && (
-              <motion.span
+              <span
                 key={`h${count}`}
                 aria-hidden
-                className="bg-accent text-on-accent absolute top-1/2 left-1/2 -mt-4 -ml-4 flex h-8 w-8 items-center justify-center rounded-full"
-                initial={{ x: 0, y: 0, opacity: 0, scale: 0.6 }}
-                animate={{
-                  x: [0, travel.x * 0.5, travel.x],
-                  y: [0, travel.y * 0.5 - 90, travel.y],
-                  opacity: [0, 1, 0],
-                  scale: [0.6, 1, 0.7],
-                }}
-                transition={{ duration: 0.75, delay: 0.25, ease: "easeInOut" }}
+                className="lp-heart bg-accent text-on-accent absolute top-1/2 left-1/2 -mt-4 -ml-4 flex h-8 w-8 items-center justify-center rounded-full"
+                style={{ ["--tx" as string]: `${travel.x}px`, ["--ty" as string]: `${travel.y}px` }}
               >
                 <Heart size={16} weight="fill" />
-              </motion.span>
+              </span>
             )}
             <button
               ref={btn}

@@ -1,33 +1,19 @@
 "use client";
 import { useEffect, type ReactNode } from "react";
-import { MotionConfig } from "motion/react";
-import {
-  notePressed,
-  playSound,
-  primeSound,
-  useFeedbackPrefs,
-  useReducedMotion,
-} from "@/lib/feedback";
+import { notePressed, playSound, primeSound, useFeedbackPrefs } from "@/lib/feedback";
 import { applyAppearance } from "@/lib/appearance";
 
 const PRESSABLE = "button, [role=button], [role=switch], [role=tab], [role=radio], a[href]";
 
 /**
- * Default for every Motion animation that doesn't set its own: a 180 ms
- * ease-out tween instead of Motion's default spring (which can run 500 ms+
- * and makes whileTap, entrances and exits feel late). Explicit transitions win.
- */
-const SNAPPY = { type: "tween", duration: 0.18, ease: [0.23, 1, 0.32, 1] } as const;
-
-/**
- * App-wide feedback: Motion components follow the in-app Motion setting, the
- * page gets data-motion for CSS, and one capture listener gives every press a
- * quiet tick (when Sound is on), unlocks audio on iOS, and remembers the
- * pressed element for the iPhone haptic stand-in. Opt out with data-no-tick.
+ * App-wide feedback: the page gets data-motion for CSS, and one capture
+ * listener gives every press a quiet tick (when Sound is on), unlocks audio on
+ * iOS, and remembers the pressed element for the iPhone haptic stand-in. Opt
+ * out with data-no-tick. Motion's own defaults live in MotionRoot (app layouts
+ * only), so public pages don't load Motion.
  */
 export function FeedbackRoot({ children }: { children: ReactNode }) {
   const prefs = useFeedbackPrefs();
-  const reduced = useReducedMotion();
 
   // Apply the saved look (accent, chat text, bubbles) on every page.
   useEffect(() => applyAppearance(), []);
@@ -64,9 +50,5 @@ export function FeedbackRoot({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  return (
-    <MotionConfig reducedMotion={reduced ? "always" : "never"} transition={SNAPPY}>
-      {children}
-    </MotionConfig>
-  );
+  return children;
 }

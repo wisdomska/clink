@@ -1,46 +1,22 @@
 "use client";
 import { useRef } from "react";
-import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
-import { useReducedMotion } from "@/lib/feedback";
-
-const FAINT = "#a08d98";
-const TEXT = "#fbf3f6";
-const ROUGE = "#ff4f7b";
+import { useScrollProgress } from "./use-scroll-progress";
 
 /* Words marked with * end in Rouge. */
 const COPY =
   "Love lives in the little things. Clink gives them somewhere to go: *a *tap, *a *voice *note, *a *game, *a *letter *for *later.";
-
-function Word({
-  word,
-  i,
-  n,
-  progress,
-  still,
-}: {
-  word: string;
-  i: number;
-  n: number;
-  progress: MotionValue<number>;
-  still: boolean;
-}) {
-  const hot = word.startsWith("*");
-  const text = hot ? word.slice(1) : word;
-  const end = hot ? ROUGE : TEXT;
-  const start = i / n;
-  const color = useTransform(progress, [start, Math.min(1, start + 1.5 / n)], [FAINT, end]);
-  return <motion.span style={{ color: still ? end : color }}>{text} </motion.span>;
-}
+const WORDS = COPY.split(" ");
+const N = WORDS.length;
 
 /**
  * Editorial statement. Words light up in reading order as it scrolls through
- * the viewport, so the eye lands on the payoff last. Fully lit for reduced motion.
+ * the viewport, so the eye lands on the payoff last. The scroll position is
+ * written to one CSS variable (--p) and each word mixes its own colour from
+ * it (landing.css, "statement"). Fully lit for reduced motion.
  */
 export function Statement() {
   const ref = useRef<HTMLParagraphElement>(null);
-  const still = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.85", "end 0.5"] });
-  const words = COPY.split(" ");
+  useScrollProgress(ref, 0.85, 0.5, (p) => ref.current?.style.setProperty("--p", String(p)));
   return (
     <section
       aria-label="Why Clink"
@@ -50,9 +26,25 @@ export function Statement() {
         ref={ref}
         className="display m-0 max-w-[22ch] text-[clamp(2.25rem,5.4vw,5.25rem)] leading-[1.02] tracking-[-0.03em] text-balance"
       >
-        {words.map((w, i) => (
-          <Word key={i} word={w} i={i} n={words.length} progress={scrollYProgress} still={still} />
-        ))}
+        {WORDS.map((w, i) => {
+          const hot = w.startsWith("*");
+          // Each word lights over 1.5 words' worth of scroll, the last ones by the end.
+          const from = i / N;
+          const to = Math.min(1, from + 1.5 / N);
+          return (
+            <span
+              key={i}
+              className="lp-word"
+              style={{
+                ["--s" as string]: from,
+                ["--k" as string]: 1 / (to - from),
+                ["--end" as string]: hot ? "var(--rouge)" : "var(--text)",
+              }}
+            >
+              {hot ? w.slice(1) : w}{" "}
+            </span>
+          );
+        })}
       </p>
     </section>
   );
