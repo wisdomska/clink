@@ -1,14 +1,7 @@
 "use client";
-import { useRef, useState } from "react";
-import {
-  motion,
-  useMotionValueEvent,
-  useInView,
-  useScroll,
-  useTransform,
-  type MotionValue,
-} from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import { Device } from "./device";
+import { useScrollProgress } from "./use-scroll-progress";
 import { useReducedMotion } from "@/lib/feedback";
 import { cn } from "@/components/ui/cn";
 
@@ -19,50 +12,42 @@ export interface TourStep {
   screen: React.ReactNode;
 }
 
-/** One screen inside the sticky device: fades and lifts in over its slice of the scroll. */
-function Layer({
-  i,
-  n,
-  progress,
-  active,
-  still,
-  children,
-}: {
-  i: number;
-  n: number;
-  progress: MotionValue<number>;
-  active: boolean;
-  still: boolean;
-  children: React.ReactNode;
-}) {
+/** Half the cross-fade between two screens, as a share of the whole tour's scroll. */
+const F = 0.04;
+const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+
+/**
+ * Screen i of n at scroll progress p: it fades and lifts in over its own slice
+ * and fades out as the next arrives. The first starts shown, the last stays.
+ */
+function layerStyle(i: number, n: number, p: number) {
   const a = i / n;
   const b = (i + 1) / n;
-  const f = 0.04;
-  const first = i === 0;
-  const last = i === n - 1;
-  const opacity = useTransform(
-    progress,
-    first ? [-1, -0.5, b - f, b + f] : last ? [a - f, a + f, 2, 3] : [a - f, a + f, b - f, b + f],
-    first ? [1, 1, 1, 0] : last ? [0, 1, 1, 1] : [0, 1, 1, 0],
-  );
-  const y = useTransform(progress, [a - f, a + f], [first ? 0 : 36, 0]);
-  return (
-    <motion.div
-      data-active={active}
-      className="absolute inset-0 flex flex-col"
-      style={still ? { opacity: active ? 1 : 0 } : { opacity, y }}
-    >
-      {children}
-    </motion.div>
-  );
+  const rise = i === 0 ? 1 : clamp01((p - (a - F)) / (2 * F));
+  const fall = i === n - 1 ? 0 : clamp01((p - (b - F)) / (2 * F));
+  return { opacity: Math.min(rise, 1 - fall), y: i === 0 ? 0 : 36 * (1 - rise) };
 }
 
 /** Small screens: each step's own device, which starts its screen once it's in view. */
 function InlineDevice({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
-  const seen = useInView(ref, { once: true, amount: 0.4 });
+  const [seen, setSeen] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e?.isIntersecting) return;
+        setSeen(true);
+        io.disconnect();
+      },
+      { threshold: 0.4 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   return (
-    <div ref={ref} data-reveal className="flex justify-center lg:hidden">
+    <div ref={ref} data-reveal data-loop data-paused className="flex justify-center lg:hidden">
       <Device>
         <div data-active={seen} className="absolute inset-0 flex flex-col">
           {children}
@@ -79,15 +64,23 @@ function InlineDevice({ children }: { children: React.ReactNode }) {
  */
 export function ProductTour({ steps }: { steps: TourStep[] }) {
   const ref = useRef<HTMLDivElement>(null);
+  const rail = useRef<HTMLSpanElement>(null);
+  const layers = useRef<(HTMLDivElement | null)[]>([]);
   const still = useReducedMotion();
   const [active, setActive] = useState(0);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.5", "end 0.5"] });
-  const fill = useTransform(scrollYProgress, [0, 1], [0, 1]);
   const n = steps.length;
 
-  useMotionValueEvent(scrollYProgress, "change", (p) => {
-    const next = Math.min(n - 1, Math.max(0, Math.floor(p * n)));
-    if (next !== active) setActive(next);
+  // Written straight to the elements each frame, like Motion did: no re-render per scroll.
+  useScrollProgress(ref, 0.5, 0.5, (p) => {
+    setActive(Math.min(n - 1, Math.max(0, Math.floor(p * n))));
+    if (still) return;
+    if (rail.current) rail.current.style.transform = `scaleY(${p})`;
+    layers.current.forEach((el, i) => {
+      if (!el) return;
+      const { opacity, y } = layerStyle(i, n, p);
+      el.style.opacity = String(opacity);
+      el.style.transform = y ? `translateY(${y}px)` : "none";
+    });
   });
 
   return (
@@ -95,9 +88,10 @@ export function ProductTour({ steps }: { steps: TourStep[] }) {
       <ol className="relative m-0 list-none p-0 lg:pl-10">
         {/* Progress rail (large screens) */}
         <span aria-hidden className="bg-line absolute top-0 bottom-0 left-0 hidden w-px lg:block">
-          <motion.span
+          <span
+            ref={rail}
             className="bg-accent absolute inset-0 origin-top"
-            style={{ scaleY: still ? 1 : fill }}
+            style={{ transform: `scaleY(${still ? 1 : 0})` }}
           />
         </span>
         {steps.map((s, i) => (
@@ -121,20 +115,31 @@ export function ProductTour({ steps }: { steps: TourStep[] }) {
         ))}
       </ol>
       <div className="hidden lg:block">
-        <div className="sticky top-[max(5.5rem,calc(50vh-310px))] py-2">
+        <div data-loop data-paused className="sticky top-[max(5.5rem,calc(50vh-310px))] py-2">
           <Device>
-            {steps.map((s, i) => (
-              <Layer
-                key={s.id}
-                i={i}
-                n={n}
-                progress={scrollYProgress}
-                active={i === active}
-                still={still}
-              >
-                {s.screen}
-              </Layer>
-            ))}
+            {steps.map((s, i) => {
+              const start = layerStyle(i, n, 0);
+              return (
+                <div
+                  key={s.id}
+                  ref={(el) => {
+                    layers.current[i] = el;
+                  }}
+                  data-active={i === active}
+                  className="absolute inset-0 flex flex-col"
+                  style={
+                    still
+                      ? { opacity: i === active ? 1 : 0 }
+                      : {
+                          opacity: start.opacity,
+                          transform: start.y ? `translateY(${start.y}px)` : "none",
+                        }
+                  }
+                >
+                  {s.screen}
+                </div>
+              );
+            })}
           </Device>
         </div>
       </div>

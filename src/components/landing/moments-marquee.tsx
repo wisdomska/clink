@@ -34,7 +34,7 @@ function Row({ hidden = false }: { hidden?: boolean }) {
 /** A band of the small moments Clink is made of. Pauses on hover; still for reduced motion. */
 export function MomentsMarquee() {
   return (
-    <section aria-label="Moments from Clink" className="border-line border-y py-6">
+    <section aria-label="Moments from Clink" data-loop className="border-line border-y py-6">
       <div className="lp-marquee-wrap overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_6%,#000_94%,transparent)]">
         <div className="lp-marquee flex w-max">
           <Row />

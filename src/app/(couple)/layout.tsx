@@ -5,6 +5,7 @@ import { CallProvider } from "@/features/call/call-provider";
 import { QueryProvider } from "@/features/couple/query-provider";
 import { OfflineSaves } from "@/components/clink/offline-saves";
 import { QueryPersist } from "@/features/couple/query-persist";
+import { MotionRoot } from "@/components/clink/motion-root";
 
 /**
  * Shared by the app and After Dark, so moving between them never remounts
@@ -15,12 +16,14 @@ export default async function CoupleLayout({ children }: { children: React.React
   const path = (await headers()).get("x-pathname") ?? "/us";
   const ctx = await loadCoupleContext(path);
   return (
-    <QueryProvider>
-      <CoupleProvider value={ctx}>
-        <OfflineSaves />
-        <QueryPersist />
-        <CallProvider>{children}</CallProvider>
-      </CoupleProvider>
-    </QueryProvider>
+    <MotionRoot>
+      <QueryProvider>
+        <CoupleProvider value={ctx}>
+          <OfflineSaves />
+          <QueryPersist />
+          <CallProvider>{children}</CallProvider>
+        </CoupleProvider>
+      </QueryProvider>
+    </MotionRoot>
   );
 }

@@ -156,6 +156,76 @@
   }
 }
 
+/*
+ * Logo (components/brand/logo.tsx). The resting pose is the base style: the
+ * flutes tilted 9deg and the spark lit. On mount (and again on hover or tap)
+ * the flutes swing in from apart and the spark pops; the i's heart beats
+ * now and then. Still under reduced motion.
+ */
+.logo-flute {
+  transform-box: view-box;
+  transform-origin: 50% 18.75%;
+  transform: rotate(calc(var(--dir) * 9deg));
+}
+.logo-spark {
+  transform-box: fill-box;
+  transform-origin: 50% 9%;
+}
+.logo-live .logo-flute {
+  animation: logoSwing 900ms ease-out 100ms both;
+}
+.logo-live .logo-spark {
+  animation: logoSpark 500ms ease-in-out 550ms both;
+}
+.wordmark-heart {
+  animation: wordmarkBeat 4.6s ease-in-out infinite;
+}
+@keyframes logoSwing {
+  0% {
+    transform: rotate(calc(var(--dir) * 32deg));
+  }
+  45% {
+    transform: rotate(calc(var(--dir) * 3deg));
+  }
+  72% {
+    transform: rotate(calc(var(--dir) * 11deg));
+  }
+}
+@keyframes logoSpark {
+  0% {
+    transform: scale(0) rotate(-45deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.4) rotate(15deg);
+    opacity: 0.5;
+  }
+}
+/* One 1.1 s beat (1, 1.25, 1, 1.15, 1), then 3.5 s of rest. */
+@keyframes wordmarkBeat {
+  0%,
+  23.9%,
+  100% {
+    transform: scale(1);
+  }
+  6% {
+    transform: scale(1.25);
+  }
+  12% {
+    transform: scale(1);
+  }
+  17.9% {
+    transform: scale(1.15);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-live .logo-flute,
+  .logo-live .logo-spark,
+  .wordmark-heart {
+    animation: none;
+  }
+}
+
 /* Prototype animation map (renderVals().an). Reduced-motion fallbacks below. */
 @layer utilities {
   /* Entrances never hold content back: 160 ms, no delay, input works throughout. */

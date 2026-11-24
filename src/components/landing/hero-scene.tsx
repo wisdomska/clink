@@ -1,8 +1,7 @@
 "use client";
 import { Portrait } from "./portrait";
-import { motion } from "motion/react";
-import { Heart } from "@phosphor-icons/react";
-import { Flutes, LOOP, TOUCH_AT } from "./flutes";
+import { Heart } from "@phosphor-icons/react/dist/ssr";
+import { Flutes } from "./flutes";
 import { clockIn, useMinute } from "./use-minute";
 import { useStill } from "./use-still";
 import { cn } from "@/components/ui/cn";
@@ -98,7 +97,8 @@ const STARS = [
  * sit in a soft circle in their glass's colour, head breaking out of the top
  * (contact-poster style), facing each other. Two flutes swing in and clink in
  * the middle, and the toast lands on the other side. Holds the resting pose
- * for reduced motion.
+ * for reduced motion. Every loop runs in CSS on one 6.5 s clock (landing.css,
+ * "hero"), so it starts with the first paint and costs no script per frame.
  */
 export function HeroScene() {
   const minute = useMinute();
@@ -107,6 +107,7 @@ export function HeroScene() {
 
   return (
     <figure
+      data-loop
       className="rounded-card border-line relative m-0 grid h-[420px] grid-cols-2 overflow-hidden border sm:h-[500px] lg:h-[min(640px,calc(100dvh-160px))] lg:min-h-[520px]"
       aria-label={`Ama in Accra and Theo in New York, about ${KM.toLocaleString("en-GB")} km apart, clinking glasses.`}
     >
@@ -152,25 +153,12 @@ export function HeroScene() {
               className={cn("relative flex flex-col gap-3", right ? "items-end" : "items-start")}
             >
               {/* As the glasses touch, each leans a little towards the other, then settles. */}
-              <motion.div
-                className="relative h-[112px] w-[112px] sm:h-[148px] sm:w-[148px] lg:h-[184px] lg:w-[184px]"
-                style={{
-                  ["--tint" as string]: c.tint,
-                  transformOrigin: "50% 100%",
-                }}
-                animate={
-                  still
-                    ? undefined
-                    : {
-                        rotate: [0, 0, right ? -4 : 4, right ? -4 : 4, 0, 0],
-                        x: [0, 0, right ? -4 : 4, right ? -4 : 4, 0, 0],
-                      }
-                }
-                transition={
-                  still
-                    ? undefined
-                    : { ...LOOP, times: [0, TOUCH_AT - 0.06, TOUCH_AT + 0.02, 0.6, 0.78, 1] }
-                }
+              <div
+                className={cn(
+                  "relative h-[112px] w-[112px] sm:h-[148px] sm:w-[148px] lg:h-[184px] lg:w-[184px]",
+                  !still && "lp-hero-lean",
+                )}
+                style={{ ["--tint" as string]: c.tint, ["--dir" as string]: right ? -1 : 1 }}
               >
                 <Portrait
                   who={right ? "theo" : "ama"}
@@ -179,7 +167,7 @@ export function HeroScene() {
                   sizes="(min-width: 1024px) 236px, (min-width: 640px) 190px, 144px"
                   priority
                 />
-              </motion.div>
+              </div>
               <div className={cn("flex flex-col gap-1.5", right ? "items-end" : "items-start")}>
                 <span className="text-text flex items-center gap-2 text-[22px] leading-none font-bold sm:text-[26px] lg:text-[30px]">
                   {right && <OnlineDot />}
@@ -195,16 +183,13 @@ export function HeroScene() {
 
       {/* The clink travels along the seam: a soft glow that blooms as the glasses touch. */}
       {!still && (
-        <motion.div
+        <div
           aria-hidden
-          className="pointer-events-none absolute inset-y-0 left-1/2 w-24 -translate-x-1/2"
+          className="lp-hero-glow pointer-events-none absolute inset-y-0 left-1/2 w-24 -translate-x-1/2"
           style={{
             background:
               "radial-gradient(40% 50% at 50% 48%, color-mix(in oklab, var(--champagne) 30%, transparent) 0%, transparent 70%)",
           }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 0, 1, 0.35, 0, 0], scaleY: [0.6, 0.6, 1, 1.1, 1.1, 0.6] }}
-          transition={{ ...LOOP, times: [0, TOUCH_AT - 0.02, TOUCH_AT + 0.04, 0.5, 0.7, 1] }}
         />
       )}
       {/* The seam between the two of you. */}
@@ -236,22 +221,18 @@ export function HeroScene() {
       </div>
 
       {/* Lands on Theo's side just after the glasses touch. */}
-      <motion.div
+      <div
         aria-hidden
-        className="bg-s3/90 border-line text-text absolute top-[84px] right-3 flex items-center gap-1.5 rounded-full border py-1.5 pr-3 pl-2 text-xs font-medium backdrop-blur-sm sm:top-[108px] sm:right-6 sm:text-sm lg:top-[128px] lg:right-8"
-        initial={still ? false : { opacity: 0, y: 10 }}
-        animate={
-          still ? { opacity: 1, y: 0 } : { opacity: [0, 0, 1, 1, 0, 0], y: [10, 10, 0, 0, 0, 10] }
-        }
-        transition={
-          still ? undefined : { ...LOOP, times: [0, TOUCH_AT + 0.03, TOUCH_AT + 0.1, 0.8, 0.86, 1] }
-        }
+        className={cn(
+          "bg-s3/90 border-line text-text absolute top-[84px] right-3 flex items-center gap-1.5 rounded-full border py-1.5 pr-3 pl-2 text-xs font-medium backdrop-blur-sm sm:top-[108px] sm:right-6 sm:text-sm lg:top-[128px] lg:right-8",
+          !still && "lp-hero-toast",
+        )}
       >
         <span className="bg-accent text-on-accent flex h-5 w-5 items-center justify-center rounded-full">
           <Heart size={12} weight="fill" />
         </span>
         Ama sent a clink
-      </motion.div>
+      </div>
     </figure>
   );
 }

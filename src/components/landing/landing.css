@@ -25,6 +25,269 @@
   transform: none !important;
 }
 
+/* ---------------------------------------------------------------- loops
+ * Regions with looping animations carry data-loop; RevealController adds
+ * data-paused while they are off screen, so nothing ticks that no one sees.
+ * The product tour's devices start paused (they are far below the fold). */
+[data-loop][data-paused],
+[data-loop][data-paused] * {
+  animation-play-state: paused !important;
+}
+
+/* ---------------------------------------------------------------- flutes
+ * flutes.tsx. The base style is the resting pose: each flute tilted 9deg
+ * towards the other, the spark lit. --dir is 1 (left) or -1 (right). Each
+ * layer is the mark's full 64 by 80 box, so the pivot where the rims touch
+ * (32, 15) is 50% 18.75%, and 13 units apart is 20.3125% of the width. */
+.lp-flute {
+  transform-origin: 50% 18.75%;
+  transform: rotate(calc(var(--dir) * 9deg));
+}
+.lp-flute-spark {
+  transform-origin: 50% 9%;
+}
+
+/* Hero loop, 6.5 s: apart, swing in, touch at 28%, settle, hold, drift apart. */
+@keyframes lpFluteLoop {
+  0%,
+  10%,
+  100% {
+    transform: translateX(calc(var(--dir) * -20.3125%)) rotate(calc(var(--dir) * 24deg));
+  }
+  28% {
+    transform: translateX(0) rotate(calc(var(--dir) * 2deg));
+  }
+  36% {
+    transform: translateX(0) rotate(calc(var(--dir) * 11deg));
+  }
+  42%,
+  86% {
+    transform: translateX(0) rotate(calc(var(--dir) * 9deg));
+  }
+}
+@keyframes lpSparkLoop {
+  0%,
+  28%,
+  86%,
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  33% {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+  40%,
+  80% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.lp-flutes-loop .lp-flute {
+  animation: lpFluteLoop 6.5s ease-in-out infinite;
+}
+.lp-flutes-loop .lp-flute-spark {
+  animation: lpSparkLoop 6.5s ease-in-out infinite;
+}
+
+/* Demo: one swing in per tap (the svg remounts on each tap). */
+@keyframes lpFluteOnce {
+  0% {
+    transform: translateX(calc(var(--dir) * -20.3125%)) rotate(calc(var(--dir) * 24deg));
+  }
+  45% {
+    transform: translateX(0) rotate(calc(var(--dir) * 2deg));
+  }
+  72% {
+    transform: translateX(0) rotate(calc(var(--dir) * 11deg));
+  }
+}
+@keyframes lpSparkOnce {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+}
+.lp-flutes-once .lp-flute {
+  animation: lpFluteOnce 750ms ease-out both;
+}
+.lp-flutes-once .lp-flute-spark {
+  animation: lpSparkOnce 450ms ease-in-out 320ms both;
+}
+
+/* ---------------------------------------------------------------- hero
+ * hero-scene.tsx, on the flutes' 6.5 s clock. As the glasses touch, each
+ * portrait leans towards the other, a glow blooms on the seam and the toast
+ * lands on Theo's side. */
+@keyframes lpLean {
+  0%,
+  22%,
+  78%,
+  100% {
+    transform: none;
+  }
+  30%,
+  60% {
+    transform: translateX(calc(var(--dir) * 4px)) rotate(calc(var(--dir) * 4deg));
+  }
+}
+@keyframes lpGlow {
+  0%,
+  26%,
+  100% {
+    opacity: 0;
+    transform: scaleY(0.6);
+  }
+  32% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scaleY(1.1);
+  }
+  70% {
+    opacity: 0;
+    transform: scaleY(1.1);
+  }
+}
+@keyframes lpToast {
+  0%,
+  31%,
+  100% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  38%,
+  80% {
+    opacity: 1;
+    transform: none;
+  }
+  86% {
+    opacity: 0;
+    transform: none;
+  }
+}
+.lp-hero-lean {
+  transform-origin: 50% 100%;
+  animation: lpLean 6.5s ease-in-out infinite;
+}
+.lp-hero-glow {
+  animation: lpGlow 6.5s ease-in-out infinite;
+}
+.lp-hero-toast {
+  animation: lpToast 6.5s ease-in-out infinite;
+}
+
+/* ---------------------------------------------------------------- demo
+ * clink-demo.tsx: each tap remounts these, which restarts them. */
+@keyframes lpBounce {
+  0%,
+  55%,
+  100% {
+    transform: none;
+  }
+  75% {
+    transform: scale(1.14) rotate(-6deg);
+  }
+}
+@keyframes lpRing {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+@keyframes lpReply {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+/* The heart flies along an arc to Theo (--tx, --ty: the distance, set on tap). */
+@keyframes lpHeart {
+  0% {
+    transform: translate(0, 0) scale(0.6);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(calc(var(--tx) * 0.5), calc(var(--ty) * 0.5 - 90px)) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) scale(0.7);
+    opacity: 0;
+  }
+}
+.lp-bounce {
+  transform-origin: 50% 100%;
+  animation: lpBounce 900ms var(--ease-out);
+}
+.lp-ring {
+  animation: lpRing 700ms ease-out both;
+}
+.lp-reply {
+  animation: lpReply 300ms var(--ease-out) 600ms both;
+}
+.lp-heart {
+  animation: lpHeart 750ms ease-in-out 250ms both;
+}
+
+/* ---------------------------------------------------------------- statement
+ * statement.tsx: words light up in reading order as --p (scroll progress,
+ * 0 to 1) passes each word's --s. Fully lit for reduced motion. */
+.lp-word {
+  color: color-mix(
+    in oklab,
+    var(--end) calc(clamp(0, (var(--p, 0) - var(--s)) * var(--k), 1) * 100%),
+    var(--text-faint)
+  );
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-word {
+    color: var(--end);
+  }
+}
+:root[data-motion="reduce"] .lp-word {
+  color: var(--end);
+}
+
+/* Reduced motion: loops hold their resting pose (the base style), they don't
+ * run once to their last frame. */
+@media (prefers-reduced-motion: reduce) {
+  .lp-flutes-loop .lp-flute,
+  .lp-flutes-loop .lp-flute-spark,
+  .lp-flutes-once .lp-flute,
+  .lp-flutes-once .lp-flute-spark,
+  .lp-hero-lean,
+  .lp-hero-toast,
+  .lp-bounce,
+  .lp-ring,
+  .lp-reply,
+  .lp-heart {
+    animation: none;
+  }
+  .lp-hero-glow,
+  .lp-ring,
+  .lp-heart {
+    display: none;
+  }
+}
+:root[data-motion="reduce"] :is(.lp-flutes-loop, .lp-flutes-once) :is(.lp-flute, .lp-flute-spark),
+:root[data-motion="reduce"] :is(.lp-hero-lean, .lp-hero-toast) {
+  animation-name: none !important;
+}
+:root[data-motion="reduce"] .lp-hero-glow {
+  display: none;
+}
+
 /* ---------------------------------------------------------------- marquee */
 @keyframes lpMarquee {
   to {
