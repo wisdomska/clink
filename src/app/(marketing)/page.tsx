@@ -46,7 +46,7 @@ const TOUR: TourStep[] = [
   {
     id: "play",
     title: "Your move.",
-    body: "Ten games made for two, from Trivia duel to Draw and guess. Play live, or take turns whenever you're free.",
+    body: "Thirteen games made for two, from Trivia duel to Oware. Play live, or take turns whenever you're free.",
     screen: <GameScreen />,
   },
   {

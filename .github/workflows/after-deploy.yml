@@ -59,6 +59,10 @@ jobs:
           SMOKE: "1"
           BASE_URL: ${{ env.SITE }}
         run: pnpm exec playwright test --project=mobile --project=desktop --trace off --retries 1
+      - name: Tell search engines the pages changed (IndexNow)
+        if: env.skip != '1' && success()
+        continue-on-error: true
+        run: node scripts/indexnow.mjs "$SITE"
       - name: Summary on failure
         if: failure()
         run: |

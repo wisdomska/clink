@@ -35,4 +35,29 @@ export const PRIVATE_PATHS = [
   "/auth/",
 ];
 
+/** Crawlers named in robots.txt: search engines and AI answer engines. */
+export const SEARCH_AND_AI_BOTS = [
+  "Googlebot",
+  "Bingbot",
+  "Applebot",
+  "DuckDuckBot",
+  "YandexBot",
+  "GPTBot",
+  "OAI-SearchBot",
+  "ChatGPT-User",
+  "ClaudeBot",
+  "Claude-SearchBot",
+  "Claude-User",
+  "PerplexityBot",
+  "Perplexity-User",
+  "Google-Extended",
+  "Applebot-Extended",
+  "Amazonbot",
+  "meta-externalagent",
+  "MistralAI-User",
+] as const;
+
+/** IndexNow key (public by design: the file at /<key>.txt proves the site is ours). */
+export const INDEXNOW_KEY = "4e598bc64cb12147b3bc4a9367980bb2";
+
 export const abs = (path: string) => `${siteUrl()}${path === "/" ? "" : path}`;

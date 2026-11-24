@@ -36,6 +36,14 @@ export async function generateMetadata(): Promise<Metadata> {
       startupImage: splash,
     },
     formatDetection: { telephone: false },
+    // Search Console, Bing Webmaster Tools and Yandex: set the codes in Vercel.
+    verification: {
+      google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
+      yandex: process.env.YANDEX_VERIFICATION || undefined,
+      other: process.env.BING_SITE_VERIFICATION
+        ? { "msvalidate.01": process.env.BING_SITE_VERIFICATION }
+        : undefined,
+    },
     robots: { index: false, follow: false },
   };
 }
@@ -51,7 +59,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
-      lang="en"
+      lang="en-GB"
       className={`${cabinet.variable} ${satoshi.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >

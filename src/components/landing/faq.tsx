@@ -15,7 +15,7 @@ export const FAQS = [
   },
   {
     q: "What can we do on Clink?",
-    a: "Send a clink (one tap they feel straight away), call, chat with voice notes and photos, play ten games made for two, write letters that open later, plan dates and count down to your next visit, and watch or listen together.",
+    a: "Send a clink (one tap they feel straight away), call, chat with voice notes and photos, play thirteen games made for two (including Oware and Draughts), solve a daily word puzzle together, write letters that open later, plan dates and count down to your next visit, and watch or listen together.",
   },
   {
     q: "Is Clink free?",
