@@ -44,8 +44,10 @@ export default function Privacy() {
       <h2 className="text-text m-0 text-lg font-bold">What we measure</h2>
       <p>
         We use cookie-free product analytics that count actions, never content. No message text,
-        media, dares or desire answers are ever sent to analytics. There&apos;s no session replay
-        and no advertising tracking.
+        media, dares or desire answers are ever sent to analytics. We also count page visits with
+        Vercel Web Analytics, which sets no cookies and records the page address only, without
+        anything after a question mark. After Dark and admin pages are never counted. There&apos;s
+        no session replay and no advertising tracking.
       </p>
       <h2 className="text-text m-0 text-lg font-bold">Who can see what</h2>
       <p>

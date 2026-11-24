@@ -9,6 +9,7 @@ import { ServiceWorker } from "@/components/clink/sw-register";
 import { Hydrated } from "@/components/clink/hydrated";
 import { FeedbackRoot } from "@/components/clink/feedback-root";
 import "@/styles/globals.css";
+import { VercelAnalytics } from "@/components/vercel-analytics";
 
 export async function generateMetadata(): Promise<Metadata> {
   const id = asIdentity((await cookies()).get(IDENTITY_COOKIE)?.value);
@@ -59,6 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Toaster />
         <ServiceWorker />
         <Hydrated />
+        <VercelAnalytics />
         <div className="grain" aria-hidden="true" />
       </body>
     </html>
