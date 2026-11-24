@@ -17,13 +17,16 @@ export function StructuredData() {
         name: "Clink",
         url,
         logo: `${url}/icons/clink-512.png`,
+        slogan: "Made for two",
+        description:
+          "Clink makes a free, private web app for couples, especially long distance couples: calls, chat, two-player games, letters and date planning for two people. 18+.",
       },
       {
         "@type": "WebSite",
         "@id": `${url}/#site`,
         name: "Clink",
         url,
-        inLanguage: "en",
+        inLanguage: "en-GB",
         publisher: { "@id": `${url}/#org` },
       },
       {

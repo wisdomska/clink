@@ -36,4 +36,9 @@ test("robots, sitemap and llms.txt describe the public site and keep the app pri
   expect(text.startsWith("# Clink\n")).toBe(true);
   expect(text).toContain("18+");
   expect(text).not.toMatch(/—/); // no em dashes
+
+  const full = await request.get("/llms-full.txt");
+  expect(full.status()).toBe(200);
+  expect(full.headers()["content-type"]).toContain("text/plain");
+  expect(await full.text()).toContain("# Games");
 });
