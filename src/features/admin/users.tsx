@@ -377,7 +377,7 @@ export function AdminUsers() {
           total={total}
           noun="accounts"
           label="Account pages"
-          onPage={(page) => list.set({ page })}
+          onPage={(page, opts) => list.set({ page }, opts)}
           onSize={(size) => list.set({ size })}
         />
       )}

@@ -242,7 +242,7 @@ export function AdminContent() {
           total={total}
           noun="items"
           label="Content pages"
-          onPage={(page) => list.set({ page })}
+          onPage={(page, opts) => list.set({ page }, opts)}
           onSize={(size) => list.set({ size })}
         />
       )}

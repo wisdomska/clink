@@ -259,7 +259,7 @@ export function AdminAudit() {
           total={total}
           noun="events"
           label="Audit log pages"
-          onPage={(page) => list.set({ page })}
+          onPage={(page, opts) => list.set({ page }, opts)}
           onSize={(size) => list.set({ size })}
         />
       )}

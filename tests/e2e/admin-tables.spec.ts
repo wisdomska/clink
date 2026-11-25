@@ -67,14 +67,30 @@ test("admin tables: pages, sizes, sorting and filters live in the URL; CSV expor
   await expect(p).not.toHaveURL(/page=2/);
   await p.getByRole("button", { name: /^Joined(?! (from|to))/ }).click();
   await expect(p).toHaveURL(/sort=joined/);
-  await expect(
-    p.getByText(/^Showing [\d,]+-[\d,]+ of [\d,]+ accounts?$|^No accounts$/),
-  ).toBeVisible();
-  await pickOption(p, "Per page", "50");
+  const summary = p.getByText(/^Showing [\d,]+ to [\d,]+ of [\d,]+ accounts?$/);
+  await expect(summary).toBeVisible();
+  const bar = p.getByRole("navigation", { name: "Account pages" });
+  // Paging adds a history entry: Back returns to the page you were on.
+  const total = Number((await summary.innerText()).match(/of ([\d,]+)/)![1]!.replace(/,/g, ""));
+  if (total > 25) {
+    await bar.getByRole("button", { name: "Next page" }).click();
+    await expect(p).toHaveURL(/page=2/);
+    await expect(bar.getByRole("button", { name: "Page 2" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await p.goBack();
+    await expect(p).not.toHaveURL(/page=2/);
+    await expect(bar.getByRole("button", { name: "Page 1" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+  }
+  await pickOption(p, "Rows", "50");
   await expect(p).toHaveURL(/size=50/);
   await p.reload();
   // The table can take a while to come back under load.
-  await expect(p.getByLabel("Per page")).toHaveText("50", { timeout: 45000 });
+  await expect(p.getByLabel("Rows")).toHaveText("50", { timeout: 45000 });
   await expect(p.getByLabel("Status")).toHaveText("Active", { timeout: 15000 });
   await ctx.close();
 });

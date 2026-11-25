@@ -1,32 +1,23 @@
 "use client";
-import { useId } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { pageCount, pageItems, pageOf, shownRange } from "@/lib/pagination";
 import { cn } from "./cn";
 import { Select } from "./select";
 
-/** Page numbers to show: first, last, and the current page with one neighbour each side. */
-export function pageItems(page: number, pages: number): Array<number | "gap"> {
-  if (pages <= 7) return Array.from({ length: pages }, (_, i) => i + 1);
-  const keep = new Set([1, pages, page - 1, page, page + 1]);
-  // Near either end, show a full run so the bar doesn't jump in width.
-  if (page <= 4) [2, 3, 4, 5].forEach((n) => keep.add(n));
-  if (page >= pages - 3) [pages - 4, pages - 3, pages - 2, pages - 1].forEach((n) => keep.add(n));
-  const nums = [...keep].filter((n) => n >= 1 && n <= pages).sort((a, b) => a - b);
-  const out: Array<number | "gap"> = [];
-  nums.forEach((n, i) => {
-    if (i > 0 && n - nums[i - 1]! > 1) out.push(n - nums[i - 1]! === 2 ? n - 1 : "gap");
-    out.push(n);
-  });
-  return out;
-}
+const fmt = (n: number) => n.toLocaleString("en-GB");
 
 const btn =
-  "press inline-flex h-11 min-w-11 cursor-pointer items-center justify-center rounded-input border px-3 text-sm font-medium tabular-nums transition-colors disabled:cursor-not-allowed disabled:opacity-40";
+  "press inline-flex h-11 min-w-11 cursor-pointer items-center justify-center gap-1 rounded-input px-3 text-sm font-semibold tabular-nums transition-colors disabled:cursor-not-allowed disabled:opacity-40";
+const ghost = "border-line text-text hover:bg-s2 border bg-transparent";
 
 /**
- * Page numbers with gaps, previous and next, a page-size picker and a
- * "Showing 26-50 of 312" summary. Plain buttons and a native select, so it
- * works with Tab, Enter and Space, and screen readers hear the current page.
+ * The pagination bar for every paged list, after SPUZL's: "Showing 26 to 50 of
+ * 312 accounts", rows per page, First, Previous, page numbers with gaps (first
+ * and last always shown, fixed width so it never jumps), Next and Last. 44 px
+ * targets, real buttons with disabled ends, one labelled landmark, and the
+ * summary announced politely. Steps back to the last page by itself when the
+ * current one stops existing (rows resolved or deleted).
  */
 export function Pagination({
   page,
@@ -42,7 +33,8 @@ export function Pagination({
   page: number;
   size: number;
   total: number;
-  onPage: (page: number) => void;
+  /** `replace` is set when the bar corrects itself, so it doesn't add a history entry. */
+  onPage: (page: number, opts?: { replace?: boolean }) => void;
   onSize?: (size: number) => void;
   sizes?: number[];
   /** Plural noun for the summary, e.g. "accounts". */
@@ -51,56 +43,75 @@ export function Pagination({
   className?: string;
 }) {
   const id = useId();
-  const pages = Math.max(1, Math.ceil(total / size));
+  const pages = pageCount(total, size);
+
+  useEffect(() => {
+    if (total > 0 && page > pages) onPage(pages, { replace: true });
+  }, [total, page, pages, onPage]);
+
+  if (total <= 0) return null;
   const cur = Math.min(Math.max(1, page), pages);
-  const first = total ? (cur - 1) * size + 1 : 0;
-  const last = Math.min(total, cur * size);
+  const { first, last } = shownRange(cur, size, total);
+  const options = (sizes.includes(size) ? sizes : [size, ...sizes]).map((s) => ({
+    value: String(s),
+    label: String(s),
+  }));
+
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between",
-        className,
-      )}
+    <nav
+      aria-label={label}
+      className={cn("flex flex-wrap items-center gap-x-4 gap-y-3", className)}
     >
-      <div className="text-muted flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-        <span aria-live="polite" className="tabular-nums">
-          {total
-            ? `Showing ${first.toLocaleString("en-GB")}-${last.toLocaleString("en-GB")} of ${total.toLocaleString("en-GB")} ${noun}`
-            : `No ${noun}`}
-        </span>
-        {onSize && (
-          <span className="flex items-center gap-2">
-            <label htmlFor={`${id}-size`}>Per page</label>
-            <Select
-              id={`${id}-size`}
-              value={String(size)}
-              onChange={(v) => onSize(Number(v))}
-              options={sizes.map((s) => ({ value: String(s), label: String(s) }))}
-              size="sm"
-              className="w-[84px]"
-            />
-          </span>
-        )}
-      </div>
+      <p
+        className="text-muted m-0 text-sm font-medium tabular-nums"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        Showing {fmt(first)} to {fmt(last)} of {fmt(total)} {noun}
+      </p>
+      {onSize && (
+        <div className="text-muted flex items-center gap-2 text-sm font-semibold">
+          <label htmlFor={`${id}-size`}>Rows</label>
+          <Select
+            id={`${id}-size`}
+            value={String(size)}
+            onChange={(v) => onSize(Number(v))}
+            options={options}
+            size="sm"
+            className="w-[84px]"
+          />
+        </div>
+      )}
       {pages > 1 && (
-        <nav aria-label={label}>
-          <ul className="m-0 flex list-none flex-wrap items-center gap-1 p-0">
-            <li>
-              <button
-                type="button"
-                className={cn(btn, "border-line text-text hover:bg-s2 gap-1 bg-transparent")}
-                disabled={cur <= 1}
-                onClick={() => onPage(cur - 1)}
-                aria-label="Previous page"
-              >
-                <CaretLeft size={16} aria-hidden />
-                <span className="hidden sm:inline">Previous</span>
-              </button>
-            </li>
+        <div className="flex flex-wrap items-center gap-1.5 sm:ml-auto">
+          <button
+            type="button"
+            className={cn(btn, ghost, "max-md:hidden")}
+            disabled={cur <= 1}
+            onClick={() => onPage(1)}
+            aria-label="First page"
+          >
+            First
+          </button>
+          <button
+            type="button"
+            className={cn(btn, ghost)}
+            disabled={cur <= 1}
+            onClick={() => onPage(cur - 1)}
+            aria-label="Previous page"
+          >
+            <CaretLeft size={16} aria-hidden />
+            <span className="max-sm:sr-only">Previous</span>
+          </button>
+          <ul className="m-0 flex list-none items-center gap-1 p-0">
             {pageItems(cur, pages).map((n, i) =>
               n === "gap" ? (
-                <li key={`gap-${i}`} aria-hidden className="text-faint px-1 text-sm">
-                  ...
+                <li
+                  key={`gap-${i}`}
+                  aria-hidden
+                  className="text-faint flex h-11 w-6 items-center justify-center text-sm"
+                >
+                  …
                 </li>
               ) : (
                 <li key={n}>
@@ -111,31 +122,82 @@ export function Pagination({
                     aria-label={`Page ${n}`}
                     className={cn(
                       btn,
+                      "px-2",
                       n === cur
-                        ? "bg-accent text-on-accent border-transparent font-bold"
-                        : "border-line text-text hover:bg-s2 bg-transparent",
+                        ? "bg-accent text-on-accent font-bold"
+                        : "text-muted hover:bg-s2 hover:text-text bg-transparent",
                     )}
                   >
-                    {n}
+                    {fmt(n)}
                   </button>
                 </li>
               ),
             )}
-            <li>
-              <button
-                type="button"
-                className={cn(btn, "border-line text-text hover:bg-s2 gap-1 bg-transparent")}
-                disabled={cur >= pages}
-                onClick={() => onPage(cur + 1)}
-                aria-label="Next page"
-              >
-                <span className="hidden sm:inline">Next</span>
-                <CaretRight size={16} aria-hidden />
-              </button>
-            </li>
           </ul>
-        </nav>
+          <button
+            type="button"
+            className={cn(btn, ghost)}
+            disabled={cur >= pages}
+            onClick={() => onPage(cur + 1)}
+            aria-label="Next page"
+          >
+            <span className="max-sm:sr-only">Next</span>
+            <CaretRight size={16} aria-hidden />
+          </button>
+          <button
+            type="button"
+            className={cn(btn, ghost, "max-md:hidden")}
+            disabled={cur >= pages}
+            onClick={() => onPage(pages)}
+            aria-label={`Last page, ${fmt(pages)}`}
+          >
+            Last
+          </button>
+        </div>
       )}
-    </div>
+    </nav>
+  );
+}
+
+/**
+ * A long list that's already loaded, shown a page at a time, with the bar
+ * under it once there's more than one page. Page state stays on the screen
+ * (not the address bar), so several lists can share a screen.
+ */
+export function Paged<T>({
+  items,
+  size = 25,
+  noun,
+  label,
+  children,
+}: {
+  items: readonly T[];
+  size?: number;
+  noun?: string;
+  label: string;
+  children: (rows: readonly T[]) => ReactNode;
+}) {
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(size);
+  return (
+    <>
+      {children(pageOf(items, page, perPage))}
+      {items.length > size && (
+        <Pagination
+          className="pt-3"
+          page={page}
+          size={perPage}
+          total={items.length}
+          noun={noun}
+          label={label}
+          onPage={setPage}
+          onSize={(s) => {
+            setPerPage(s);
+            setPage(1);
+          }}
+          sizes={[size, ...[25, 50, 100].filter((s) => s > size)]}
+        />
+      )}
+    </>
   );
 }

@@ -27,7 +27,14 @@ export function useListParams<S extends string>(defaults: { sort: S; dir: "asc" 
   const dir: "asc" | "desc" = d === "asc" || d === "desc" ? d : defaults.dir;
   const get = (k: string) => params.get(k) ?? "";
 
-  function set(patch: Record<string, string | number | null | undefined>) {
+  /**
+   * Update the URL. A page change adds a history entry, so Back returns to the
+   * page you were on; filters, sort and size replace it (and go to page 1).
+   */
+  function set(
+    patch: Record<string, string | number | null | undefined>,
+    opts: { replace?: boolean } = {},
+  ) {
     const next = new URLSearchParams(params);
     for (const [k, v] of Object.entries(patch)) {
       if (v === null || v === undefined || v === "") next.delete(k);
@@ -39,7 +46,10 @@ export function useListParams<S extends string>(defaults: { sort: S; dir: "asc" 
     if (next.get("size") === String(PAGE_SIZES[0])) next.delete("size");
     if (next.get("sort") === defaults.sort && !next.get("dir")) next.delete("sort");
     const qs = next.toString();
-    router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
+    const url = `${pathname}${qs ? `?${qs}` : ""}`;
+    const onlyPage = Object.keys(patch).length === 1 && "page" in patch;
+    if (onlyPage && !opts.replace) router.push(url, { scroll: false });
+    else router.replace(url, { scroll: false });
   }
 
   /** Click a column: same column flips direction, a new one starts descending (or asc for text). */

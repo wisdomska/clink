@@ -429,7 +429,7 @@ export function AdminReports() {
           total={total}
           noun="reports"
           label="Report pages"
-          onPage={(page) => list.set({ page })}
+          onPage={(page, opts) => list.set({ page }, opts)}
           onSize={(size) => list.set({ size })}
         />
       )}
