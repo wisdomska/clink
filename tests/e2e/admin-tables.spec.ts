@@ -75,13 +75,13 @@ test("admin tables: pages, sizes, sorting and filters live in the URL; CSV expor
   if (total > 25) {
     await bar.getByRole("button", { name: "Next page" }).click();
     await expect(p).toHaveURL(/page=2/);
-    await expect(bar.getByRole("button", { name: "Page 2" })).toHaveAttribute(
+    await expect(bar.getByRole("button", { name: "Page 2", exact: true })).toHaveAttribute(
       "aria-current",
       "page",
     );
     await p.goBack();
     await expect(p).not.toHaveURL(/page=2/);
-    await expect(bar.getByRole("button", { name: "Page 1" })).toHaveAttribute(
+    await expect(bar.getByRole("button", { name: "Page 1", exact: true })).toHaveAttribute(
       "aria-current",
       "page",
     );

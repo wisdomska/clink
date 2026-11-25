@@ -31,6 +31,15 @@ const DEPTH: Record<BotLevel, number> = { easy: 2, medium: 4, hard: 20 };
 /** How close to its best a move must score to be picked at random, per level (in each game's own units). */
 type Margins = Record<BotLevel, number>;
 
+/**
+ * Tests only: search to a fixed depth with no clock, so strength checks give
+ * the same games on a fast laptop and a slow CI machine.
+ */
+let fixedDepth: Partial<Record<BotLevel, number>> | null = null;
+export function setFixedDepthForTests(depths: Partial<Record<BotLevel, number>> | null) {
+  fixedDepth = depths;
+}
+
 function choose<P, M extends NonNullable<unknown>>(
   g: SearchGame<P, M>,
   pos: P,
@@ -42,9 +51,10 @@ function choose<P, M extends NonNullable<unknown>>(
 ): M {
   const legal = g.moves(pos);
   if (!legal.length) throw new Error("no legal moves");
+  const fixed = fixedDepth?.[level];
   return searchBest(g, pos, seat, {
-    budgetMs: BUDGET[level],
-    maxDepth: DEPTH[level],
+    budgetMs: fixed ? 1e9 : BUDGET[level],
+    maxDepth: fixed ?? DEPTH[level],
     rng,
     qDepth: level === "hard" ? qDepth : 0,
     margin: margins[level],

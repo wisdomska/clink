@@ -23,7 +23,7 @@ test("a long admin list pages cleanly", async ({ page }, info) => {
     const bar = page.getByRole("navigation", { name: "Error pages" });
     await expect(bar).toBeVisible({ timeout: 20_000 });
     await expect(bar.getByText(/^Showing 1 to 25 of [\d,]+ errors$/)).toBeVisible();
-    await expect(bar.getByRole("button", { name: "Page 1" })).toHaveAttribute(
+    await expect(bar.getByRole("button", { name: "Page 1", exact: true })).toHaveAttribute(
       "aria-current",
       "page",
     );
@@ -31,7 +31,7 @@ test("a long admin list pages cleanly", async ({ page }, info) => {
 
     await bar.getByRole("button", { name: "Next page" }).click();
     await expect(bar.getByText(/^Showing 26 to 50 of /)).toBeVisible();
-    await expect(bar.getByRole("button", { name: "Page 2" })).toHaveAttribute(
+    await expect(bar.getByRole("button", { name: "Page 2", exact: true })).toHaveAttribute(
       "aria-current",
       "page",
     );
@@ -51,7 +51,7 @@ test("a long admin list pages cleanly", async ({ page }, info) => {
       await bar.getByRole("button", { name: "First page" }).click();
       await expect(bar.getByText(/^Showing 1 to 25 of /)).toBeVisible();
     } else {
-      await bar.getByRole("button", { name: "Page 1" }).click();
+      await bar.getByRole("button", { name: "Page 1", exact: true }).click();
     }
 
     await pickOption(page, "Rows", "50");

@@ -29,6 +29,7 @@ import {
   owareBot,
   fourupBot,
   draughtsBot,
+  setFixedDepthForTests,
   type BotLevel,
 } from "@/features/play/engines/board/bots";
 import { makeRng } from "@/features/play/engines/board/rng";
@@ -112,6 +113,8 @@ describe("draughts: random games on both boards", () => {
 });
 
 const BOT_LEVELS_ALL: BotLevel[] = ["easy", "medium", "hard"];
+// Depths for strength checks: easy as in play (2), hard at a depth any machine reaches quickly.
+const DEPTHS = { easy: 2, hard: 6 } as const;
 
 describe("the practice bot", () => {
   const levels: BotLevel[] = ["easy", "medium", "hard"];
@@ -160,6 +163,8 @@ describe("the practice bot", () => {
     expect(rand).toBeGreaterThanOrEqual(15);
   }, 120_000);
   it("hard beats easy far more often than not", () => {
+    // At fixed depths (no clock), so a slow test machine plays the same games.
+    setFixedDepthForTests({ easy: DEPTHS.easy, hard: DEPTHS.hard });
     let hardWins = 0;
     let hardLosses = 0;
     for (let g = 0; g < 6; g++) {
@@ -175,9 +180,9 @@ describe("the practice bot", () => {
       if (w === hardSeat) hardWins++;
       else if (w !== undefined) hardLosses++;
     }
-    // Draws happen against a careful blocker. Hard thinks against the clock, so
-    // on a busy test machine it sees less far; allow one slip, not more.
-    expect(hardLosses, `hard lost ${hardLosses} of 6`).toBeLessThanOrEqual(1);
+    setFixedDepthForTests(null);
+    // Draws happen against a careful blocker; hard should never lose.
+    expect(hardLosses, `hard lost ${hardLosses} of 6`).toBe(0);
     expect(hardWins, `hard won ${hardWins} of 6`).toBeGreaterThanOrEqual(4);
   }, 120_000);
   it("finishes a won draughts ending at every level instead of drifting into a draw", () => {
